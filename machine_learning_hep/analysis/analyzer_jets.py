@@ -173,7 +173,7 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes
         cats = {'pr', 'np'}
         rfilename = self.n_fileeff
         with TFile(rfilename) as rfile:
-            bins_ptjet = (2, 3)
+            bins_ptjet = (1, 4)
             # TODO: fix projection range
             h_gen = {cat: project_hist(rfile.Get(f'h_ptjet-pthf_{cat}_gen'), [1], {0: bins_ptjet}) for cat in cats}
             h_det = {cat: project_hist(rfile.Get(f'h_ptjet-pthf_{cat}_det'), [1], {0: bins_ptjet}).Clone(f'h_eff_{cat}')
@@ -208,7 +208,7 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes
             return
 
         self.logger.debug('scaling hist %s (ipt %i) with 1. / %g', hist.GetName(), ipt, eff)
-        hist.Scale(1.0 / eff)
+        hist.Scale(1. / eff)
 
 
     #region fitting
@@ -342,7 +342,8 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes
                             var_m = fitcfg.get('var', 'm')
                             if roo_ws.pdf("bkg"):
                                 self.fit_func_bkg[level][ipt] = roo_ws.pdf("bkg").asTF(roo_ws.var(var_m))
-                            self.fit_range[level][ipt] = (roo_ws.var(var_m).getMin(), roo_ws.var(var_m).getMax())
+                            self.fit_range[level][ipt] = (roo_ws.var(var_m).getMin('fit'), roo_ws.var(var_m).getMax('fit'))
+                            self.logger.info(f'fit range for {level}-{ipt}: {self.fit_range[level][ipt]}')
                         else:
                             self.logger.error('RooFit failed for %s bin %d', level, ipt)
 
@@ -383,8 +384,8 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes
             'sideband_left': (mean + regcfg['left'][0] * sigma, mean + regcfg['left'][1] * sigma),
             'sideband_right': (mean + regcfg['right'][0] * sigma, mean + regcfg['right'][1] * sigma)
         }
+        # FIXME: change back to critical
         if regions['sideband_left'][1] < fit_range[0] or regions['sideband_right'][0] > fit_range[1]:
-            # TODO: restore to critical
             self.logger.error('sidebands %s not in fit range %s, fix regions!', regions, fit_range)
         for reg, lim in regions.items():
             if lim[0] < fit_range[0] or lim[1] > fit_range[1]:
@@ -416,36 +417,42 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes
 
         fh_subtracted = fh['signal'].Clone(f'h_ptjet{label}_subtracted_{ipt}_{mcordata}')
         ensure_sumw2(fh_subtracted)
-        fh_subtracted.Add(fh_sideband, -areaNormFactor)
+        if mcordata == 'data':
+            fh_subtracted.Add(fh_sideband, -areaNormFactor)
 
+        roows = self.roows[ipt]
+        roows.var('mean').setVal(self.fit_mean[mcordata][ipt])
+        roows.var('sigma_g1').setVal(self.fit_sigma[mcordata][ipt])
+        var_m.setRange('signal', *limits['signal'])
+        var_m.setRange('sidel', *limits['sideband_left'])
+        var_m.setRange('sider', *limits['sideband_right'])
         # correct for reflections
-        if self.cfg('corr_refl'):
-            # TODO: check relative normalization
+        if self.cfg('corr_refl') and mcordata == 'data': # TODO: temporary disable for MC
             # model = self.roows[ipt].pdf('sum')
             # if model:
             #     model.Print('t')
 
-            var_m.setRange('signal', *limits['signal'])
-            var_m.setRange('sidel', *limits['sideband_left'])
-            var_m.setRange('sider', *limits['sideband_right'])
-            var_m.setRange('full', 1., 5.)
-            print(f'{limits=}', flush=True)
-            roows = self.roows[ipt]
-            roows.var('mean').setVal(self.fit_mean[mcordata][ipt])
-            roows.var('sigma_g1').setVal(self.fit_sigma[mcordata][ipt])
             pdf_sig = self.roows[ipt].pdf('sig')
             pdf_refl = self.roows[ipt].pdf('refl')
             pdf_bkg = self.roows[ipt].pdf('bkg')
             frac_sig = roows.var('frac').getVal() if mcordata == 'data' else 1.
             frac_bkg = 1. - frac_sig
-
             fac_sig = frac_sig * (1. - roows.var('frac_refl').getVal())
             fac_refl = frac_sig * roows.var('frac_refl').getVal()
             fac_bkg = frac_bkg
-            print('-----', flush=True)
-            print(pdf_sig.createIntegral(var_m, ROOT.RooFit.NormSet(var_m), ROOT.RooFit.Range('full')), flush=True)
-            print(pdf_refl.createIntegral(var_m, ROOT.RooFit.NormSet(var_m), ROOT.RooFit.Range('full')), flush=True)
-            print(pdf_bkg.createIntegral(var_m, ROOT.RooFit.NormSet(var_m), ROOT.RooFit.Range('full')), flush=True)
+
+            # var_m.setRange('full', 1.5, 2.2)
+            # var_m.setRange('fit_range', fit_range[0], fit_range[1])
+            # print(f'{limits=}', flush=True)
+            # print(f'var_m: ', var_m.getRange(), fit_range, flush=True)
+            # print(f'----- {fac_sig=}, {fac_refl=}, {fac_bkg=}', flush=True)
+            # print(pdf_sig.createIntegral(var_m, ROOT.RooFit.NormSet(var_m), ROOT.RooFit.Range('full')), flush=True)
+            # print(pdf_sig.createIntegral(var_m, ROOT.RooFit.NormSet(var_m), ROOT.RooFit.Range('fit_range')), flush=True)
+            # print(pdf_refl.createIntegral(var_m, ROOT.RooFit.NormSet(var_m), ROOT.RooFit.Range('full')), flush=True)
+            # print(pdf_refl.createIntegral(var_m, ROOT.RooFit.NormSet(var_m), ROOT.RooFit.Range('fit_range')), flush=True)
+            # print(pdf_bkg.createIntegral(var_m, ROOT.RooFit.NormSet(var_m), ROOT.RooFit.Range('full')), flush=True)
+            # print(pdf_bkg.createIntegral(var_m, ROOT.RooFit.NormSet(var_m), ROOT.RooFit.Range('fit_range')), flush=True)
+
             area_sig_sig = pdf_sig.createIntegral(var_m, ROOT.RooFit.NormSet(var_m), ROOT.RooFit.Range('signal')).getVal() * fac_sig
             area_refl_sig = pdf_refl.createIntegral(var_m, ROOT.RooFit.NormSet(var_m), ROOT.RooFit.Range('signal')).getVal() * fac_refl
             area_refl_sidel = pdf_refl.createIntegral(var_m, ROOT.RooFit.NormSet(var_m), ROOT.RooFit.Range('sidel')).getVal() * fac_refl
@@ -455,12 +462,6 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes
             area_bkg_sidel = pdf_bkg.createIntegral(var_m, ROOT.RooFit.NormSet(var_m), ROOT.RooFit.Range('sidel')).getVal() * fac_bkg
             area_bkg_sider = pdf_bkg.createIntegral(var_m, ROOT.RooFit.NormSet(var_m), ROOT.RooFit.Range('sider')).getVal() * fac_bkg
             area_bkg_side = area_bkg_sidel + area_bkg_sider
-
-            # test = pdf_sig.createIntegral(var_m, ROOT.RooFit.NormSet(var_m), ROOT.RooFit.Range('signal')).getVal()
-            # test2 = self.roows[ipt].pdf('sig').asTF(var_m).Integral(*limits['signal'])
-            # test3 = self.roows[ipt].pdf('sig').asTF(var_m).Integral(0., 10.)
-            # test *= self.roows[ipt].var('frac').getVal() * (1. - self.roows[ipt].var('frac_refl').getVal())
-            # print(f'{test=}, {test2=}, {test3=}', flush=True)
 
             # self.roows[ipt].pdf("refl").fixCoefNormalization("default")
             # area_sig_sig = self.roows[ipt].pdf("sig").asTF(var_m).Integral(*limits['signal'])
@@ -472,6 +473,7 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes
             # area_bkg_sidel = self.roows[ipt].pdf("bkg").asTF(var_m).Integral(*limits['sideband_left'])
             # area_bkg_sider = self.roows[ipt].pdf("bkg").asTF(var_m).Integral(*limits['sideband_right'])
             # area_bkg_side = area_bkg_sidel + area_bkg_sider
+
             scale_bkg = area_bkg_sig / area_bkg_side if mcordata == 'data' else 1.
             corr = area_sig_sig / (area_sig_sig + area_refl_sig - area_refl_side * scale_bkg)
             self.logger.info('Correcting %s-%i for reflections with factor %g', mcordata, ipt, corr)
@@ -484,11 +486,9 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes
                 fh_subtracted.SetBinContent(ibin, 0.)
                 fh_subtracted.SetBinError(ibin, 0.)
 
-        # TODO: set correct parameters (ws was updated for data)
         pdf_sig = self.roows[ipt].pdf('sig')
-        # var_m.setRange(0., 1000.)
-        frac_sig = pdf_sig.createIntegral(var_m, ROOT.RooFit.NormSet(var_m), ROOT.RooFit.Range('signal'))
-        # self.logger.info('fractional signal area: %s', frac_sig)
+        frac_sig = pdf_sig.createIntegral(var_m, ROOT.RooFit.NormSet(var_m), ROOT.RooFit.Range('signal')).getVal()
+        self.logger.info('correcting %s-%i for fractional signal area: %g', mcordata, ipt, frac_sig)
 
         # f_sig = self.roows[ipt].pdf('sig').asTF(var_m)
         # self.roows[ipt].pdf('sig').Print('v')
@@ -503,7 +503,7 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes
         # self.logger.info('Correcting for signal %s fraction: %g = %g / %g',
         #                  limits['signal'], frac_sig, int_sig, int_all)
 
-        fh_subtracted.Scale(1. / frac_sig.getVal())
+        fh_subtracted.Scale(1. / frac_sig)
         self._save_hist(fh_subtracted, f'sideband/h_ptjet{label}_subtracted_{ptrange[0]}-{ptrange[1]}_{mcordata}.png')
 
         if get_dim(hist) == 2: # TODO: extract 1d distribution also in case of higher dimension
@@ -539,18 +539,22 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes
                         for ipt in range(self.nbins):
                             h = project_hist(fh, axes_proj, {2: (ipt+1, ipt+1)})
                             ensure_sumw2(h)
-                            if method == 'sidesub':
+                            if mcordata == 'mc':
+                                h = project_hist(h, axes_proj[1:], {})
+                            elif method == 'sidesub':
                                 h = self._subtract_sideband(h, var, mcordata, ipt)
                             elif method == 'sigextr':
                                 h = self._extract_signal(h, var, mcordata, ipt)
                             else:
                                 self.logger.critical('invalid method %s', method)
-                            self._correct_efficiency(h, ipt)
+                            if mcordata == 'data':
+                                self._correct_efficiency(h, ipt)
                             fh_sub.append(h)
                         fh_sum = sum_hists(fh_sub)
                         self._save_hist(fh_sum, f'h_ptjet{label}_{method}_effscaled_{mcordata}.png')
 
-                        self._subtract_feeddown(fh_sum, var, mcordata)
+                        if mcordata == 'data': # TODO: temporary
+                            self._subtract_feeddown(fh_sum, var, mcordata)
                         self._save_hist(fh_sum, f'h_ptjet{label}_{method}_{mcordata}.png')
 
                         if not var:
@@ -771,14 +775,15 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes
                     np.asarray([hbin[0][0], hbin[1][0], hbin[2][0], hbin[3][0], hbin[4][0]], 'i'))
                 eff = self.hcandeff.GetBinContent(hbin[4][0])
                 for _ in range(int(n)):
-                    response_matrix_pr.Fill(hbin[0][1], hbin[1][1], hbin[2][1], hbin[3][1], 1./eff)
+                    # FIXME: temporary not using efficiency for MC
+                    response_matrix_pr.Fill(hbin[0][1], hbin[1][1], hbin[2][1], hbin[3][1],
+                                            1./eff if mcordata == 'data' else 1.)
 
             # response_matrix_pr = rfile.Get(f'h_effkine_pr_det_nocuts_{var}_h_effkine_pr_gen_nocuts_{var}')
 
             h_effkine_pr_detnogencuts = rfile.Get(f'h_effkine_pr_det_nocuts_{var}{suffix}')
             h_effkine_pr_detgencuts = rfile.Get(f'h_effkine_pr_det_cut_{var}{suffix}')
             ensure_sumw2(h_effkine_pr_detgencuts)
-
             h_effkine_pr_detgencuts.Divide(h_effkine_pr_detnogencuts)
             self._save_hist(h_effkine_pr_detgencuts, f'uf/h_effkine-ptjet-{var}_pr_det_{mcordata}.png', 'text')
 
@@ -796,20 +801,20 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes
             h_effkine_pr_gendetcuts.Divide(h_effkine_pr_gennodetcuts)
             self._save_hist(h_effkine_pr_gendetcuts, f'uf/h_effkine-ptjet-{var}_pr_gen_{mcordata}.png', 'text')
 
+            # TODO: move, has nothing to do with unfolding
             if mcordata == 'mc':
-                # TODO: need this per D0 pt bin
                 h_mctruth_pr = rfile.Get(f'h_ptjet-pthf-{var}_pr_gen')
                 if h_mctruth_pr:
                     h_mctruth_pr = project_hist(h_mctruth_pr, [0, 2], {})
-                    self._save_hist(h_mctruth_pr, 'h_ptjet-{var}_pr_mctruth.png', 'text')
+                    self._save_hist(h_mctruth_pr, f'h_ptjet-{var}_pr_mctruth.png', 'text')
                     # FIXME: temporary testing
                     h_mctruth_all = h_mctruth_pr.Clone()
                     h_mctruth_np = rfile.Get(f'h_ptjet-pthf-{var}_np_gen')
                     if h_mctruth_np:
                         h_mctruth_np = project_hist(h_mctruth_np, [0, 2], {})
-                        self._save_hist(h_mctruth_np, 'h_ptjet-{var}_np_mctruth.png', 'text')
+                        self._save_hist(h_mctruth_np, f'h_ptjet-{var}_np_mctruth.png', 'text')
                         h_mctruth_all.Add(h_mctruth_np)
-                        self._save_hist(h_mctruth_all, 'h_ptjet-{var}_all_mctruth.png', 'text')
+                        self._save_hist(h_mctruth_all, f'h_ptjet-{var}_all_mctruth.png', 'text')
 
             h_unfolding_output = []
             for n in range(self.cfg('unfolding_iterations', 8)):
@@ -826,6 +831,9 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes
                         h_mcunfolded = fh_unfolding_output.Clone()
                         h_mcunfolded.Divide(h_mctruth_pr)
                         self._save_hist(h_mcunfolded, f'uf/h_ptjet-{var}_{mcordata}_closure{n}.png', 'text')
+                        for ibin in range(get_nbins(h_mcunfolded, 0)):
+                            h = project_hist(h_mcunfolded, [1], {0: (ibin+1,ibin+1)})
+                            self._save_hist(h, f'uf/h_{var}_{mcordata}_closure{n}_ptjet{ibin}.png', 'text')
                     else:
                         self.logger.error('Could not find histogram %s', f'h_mctruth_pr_{var}')
                         rfile.ls()

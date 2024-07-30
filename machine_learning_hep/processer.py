@@ -394,6 +394,19 @@ class Processer: # pylint: disable=too-many-instance-attributes
                             dfs[df_name][tag] = np.array(
                                 tag_bit_df(dfs[df_name], value['var'], value['req'], value.get('abs', False)),
                                 dtype=int)
+
+                    # if self.mcordata == 'mc' and df_name == 'jetgen':
+                    #     dfs[df_name].info()
+                    #     try:
+                    #         # print(dfs[df_name], flush=True)
+                    #         pd.set_option('display.max_columns', None)
+                    #         pd.set_option('display.max_colwidth', None)
+                    #         pd.set_option('display.max_rows', 25)
+                    #         pd.set_option('display.width', 200)
+                    #         print(dfs[df_name][['fFlagMcMatchGen', 'ismcsignal', 'ismcbkg', 'fOriginMcGen', 'ismcprompt', 'ismcfd']], flush=True)
+                    #     except:
+                    #         pass
+
                 if 'swap' in df_spec:
                     self.logger.debug(' %s -> swap', df_name)
                     spec = df_spec['swap']

@@ -191,10 +191,19 @@ class ProcesserJets(Processer):
 
             if self.mcordata == 'mc':
                 df, _ = self.split_df(df, self.cfg('frac_mcana', .2))
-                if not df.empty:
-                    print('MC det', df.index.get_level_values(0).unique(), flush=True)
-            if len(df) == 0:
-                return
+                if len(df) == 0:
+                    return
+                # print('MC det', df.index.get_level_values(0).unique(), flush=True)
+                # TODO: move to DB
+                # remove feeddown
+                dfquery(df, 'ismcsignal==1 & ismcprompt==1', inplace=True)
+                # remove reflections
+                dfquery(df, '(isd0 & seld0) or (isd0bar & seld0bar)', inplace=True)
+                # filter unmatched det level
+                if idx := self.cfg('efficiency.index_match'):
+                    df['idx_match'] = df[idx].apply(lambda ar: ar[0] if len(ar) > 0 else -1)
+                    dfquery(df, 'idx_match >= 0', inplace=True)
+
             # remove entries that would end up in under-/overflow bins to save compute time
             df = df.loc[(df.fJetPt >= min(self.binarray_ptjet)) & (df.fJetPt < max(self.binarray_ptjet))]
             df = df.loc[(df.fPt >= min(self.bins_analysis[:,0])) & (df.fPt < max(self.bins_analysis[:,1]))]
@@ -335,14 +344,15 @@ class ProcesserJets(Processer):
                 if '-' in var or self.cfg(f'observables.{var}.arraycols'):
                     continue
 
-                df_mcana, _ = self.split_df(dfgen[cat], self.cfg('frac_mcana', .2))
-                if not df_mcana.empty:
-                    print(f'MC gen {cat} {var}', df_mcana.index.get_level_values(0).unique(), flush=True)
+                # df_mcana, _ = self.split_df(dfgen[cat], self.cfg('frac_mcana', .2))
+                df_mcana, _ = self.split_df(dfmatch[cat], self.cfg('frac_mcana', .2))
+                dfquery(df_mcana, 'ismcsignal_gen==1 & ismcprompt_gen==1', inplace=True)
                 fill_hist(h_mctruth[(cat, var)], df_mcana[['fJetPt_gen', 'fPt_gen', f'{var}_gen']])
 
                 if cat in dfmatch and dfmatch[cat] is not None:
                     self._prepare_response(dfmatch[cat], h_effkine, h_response, response_matrix, cat, var)
-                    _, df_mccorr = self.split_df(dfmatch[cat], self.cfg('frac_mcana', .2))
+                    f = self.cfg('frac_mcana', .2)
+                    _, df_mccorr = self.split_df(dfmatch[cat], f if f < 1. else 0.)
                     self._prepare_response(df_mccorr, h_effkine_frac, h_response_frac, response_matrix_frac, cat, var)
 
             for name, obj in itertools.chain(
@@ -362,6 +372,7 @@ class ProcesserJets(Processer):
         var_max = max(self.binarrays_obs[var])
 
         df = dfi
+        # TODO: check ptjet/shape ranges
         df = df.loc[(df.fJetPt >= ptjet_min) & (df.fJetPt < ptjet_max) &
                     (df[var] >= var_min) & (df[var] < var_max)]
         fill_hist(h_effkine[(cat, 'det', 'nocuts', var)], df[['fJetPt', var]])
