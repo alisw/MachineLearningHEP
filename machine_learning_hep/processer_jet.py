@@ -194,15 +194,17 @@ class ProcesserJets(Processer):
                 if len(df) == 0:
                     return
                 # print('MC det', df.index.get_level_values(0).unique(), flush=True)
-                # TODO: move to DB
-                # remove feeddown
-                dfquery(df, 'ismcsignal==1 & ismcprompt==1', inplace=True)
-                # remove reflections
-                dfquery(df, '(isd0 & seld0) or (isd0bar & seld0bar)', inplace=True)
-                # filter unmatched det level
-                if idx := self.cfg('efficiency.index_match'):
-                    df['idx_match'] = df[idx].apply(lambda ar: ar[0] if len(ar) > 0 else -1)
-                    dfquery(df, 'idx_match >= 0', inplace=True)
+                if f := self.cfg('closure.exclude_feeddown_det'):
+                    self.logger.info('excluding feeddown det')
+                    dfquery(df, f, inplace=True)
+                if f := self.cfg('closure.filter_reflections'):
+                    self.logger.info('excluding reflections')
+                    dfquery(df, f, inplace=True)
+                if self.cfg('closure.use_matched'):
+                    self.logger.info('using matched')
+                    if idx := self.cfg('efficiency.index_match'):
+                        df['idx_match'] = df[idx].apply(lambda ar: ar[0] if len(ar) > 0 else -1)
+                        dfquery(df, 'idx_match >= 0', inplace=True)
 
             # remove entries that would end up in under-/overflow bins to save compute time
             df = df.loc[(df.fJetPt >= min(self.binarray_ptjet)) & (df.fJetPt < max(self.binarray_ptjet))]
@@ -344,9 +346,14 @@ class ProcesserJets(Processer):
                 if '-' in var or self.cfg(f'observables.{var}.arraycols'):
                     continue
 
-                # df_mcana, _ = self.split_df(dfgen[cat], self.cfg('frac_mcana', .2))
-                df_mcana, _ = self.split_df(dfmatch[cat], self.cfg('frac_mcana', .2))
-                dfquery(df_mcana, 'ismcsignal_gen==1 & ismcprompt_gen==1', inplace=True)
+                if self.cfg('closure.use_matched'):
+                    self.logger.info('using matched for truth')
+                    df_mcana, _ = self.split_df(dfmatch[cat], self.cfg('frac_mcana', .2))
+                else:
+                    df_mcana, _ = self.split_df(dfgen[cat], self.cfg('frac_mcana', .2))
+                if f := self.cfg('closure.exclude_feeddown_gen'):
+                    self.logger.info('excluding feeddown gen')
+                    dfquery(df_mcana, f, inplace=True)
                 fill_hist(h_mctruth[(cat, var)], df_mcana[['fJetPt_gen', 'fPt_gen', f'{var}_gen']])
 
                 if cat in dfmatch and dfmatch[cat] is not None:

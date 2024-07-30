@@ -389,9 +389,9 @@ LcJet_pp:
         - level: mc
           components:
             sig:
-              fn: 'Gaussian::sig(m[2.1,2.50], mean[2.28,2.29], sigma_g1[.01,.01,.03])'
+              fn: 'Gaussian::sig(m[1., 5.], mean[2.28,2.29], sigma_g1[.01,.01,.03])'
             bkg:
-              fn: 'Exponential::mcbkg(m[2.1, 2.50], alpha[0.])'
+              fn: 'Exponential::mcbkg(m, alpha[0.])'
               #fn: 'Polynomial::bkg(m[2.1, 2.50], {a0[0.2, -3, 3], a1[0.2 , -3, 3], a2[0.2, -3, 3]})'
             model:
               fn: 'SUM::mctot(mcfrac[0.,1.]*sig, mcbkg)'
@@ -533,6 +533,7 @@ LcJet_pp:
 
       branching_ratio: 3.95e-2
       xsection_inel: 57.8 # (mb) cross-section of minimum-bias events
+      xsection_inel_mc: 57.8 # (mb) cross-section of minimum-bias events
 
       doprior: false
       domodeldep: false

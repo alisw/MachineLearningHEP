@@ -593,6 +593,11 @@ D0jet_pp:
               fn: 'SUM::sum(frac[0.,1.]*sigrefl, bkg)'
 
       sidesub:
+        - level: mc
+          regions:
+            left: [-2., -2.]
+            signal: [-3., 3.]
+            right: [3., 3.]
         - ptrange: [24., 100.]
           regions:
             left: [-2., -2.]
@@ -619,6 +624,12 @@ D0jet_pp:
         store_matched: true
 
       unfolding_iterations: 8
+      closure:
+        # pure_signal: true
+        exclude_feeddown_det: 'ismcsignal==1 & ismcprompt==1'
+        exclude_feeddown_gen: 'ismcsignal_gen==1 & ismcprompt_gen==1'
+        filter_reflections: '(isd0 & seld0) or (isd0bar & seld0bar)'
+        use_matched: true
 
       frac_mcana: .2
       fd_root: '/data2/vkucera/powheg/trees_powheg_fd_central.root'

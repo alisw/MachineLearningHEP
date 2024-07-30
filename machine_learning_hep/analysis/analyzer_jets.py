@@ -396,6 +396,7 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes
         bins = {key: tuple(map(axis.FindBin, region)) for key, region in regions.items()}
         limits = {key: (axis.GetBinLowEdge(bins[key][0]), axis.GetBinUpEdge(bins[key][1]))
                   for key in regions}
+        self.logger.info('Using for %s-%i: %s, %s', mcordata, ipt, regions, limits)
 
         fh = {}
         area = {}
@@ -409,6 +410,8 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes
             f = self.roo_ws[mcordata][ipt].pdf("bkg").asTF(self.roo_ws[mcordata][ipt].var("m"))
             area[region] = f.Integral(*limits[region])
 
+        self.logger.info('areas for %s-%s: %g, %g, %g',
+                         mcordata, ipt, area['signal'], area['sideband_left'], area['sideband_right'])
         areaNormFactor = area['signal'] / (area['sideband_left'] + area['sideband_right'])
 
         fh_sideband = sum_hists(
@@ -427,7 +430,7 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes
         var_m.setRange('sidel', *limits['sideband_left'])
         var_m.setRange('sider', *limits['sideband_right'])
         # correct for reflections
-        if self.cfg('corr_refl') and mcordata == 'data': # TODO: temporary disable for MC
+        if self.cfg('corr_refl') and (mcordata == 'data' or not self.cfg('closure.filter_reflections')):
             # model = self.roows[ipt].pdf('sum')
             # if model:
             #     model.Print('t')
@@ -539,7 +542,8 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes
                         for ipt in range(self.nbins):
                             h = project_hist(fh, axes_proj, {2: (ipt+1, ipt+1)})
                             ensure_sumw2(h)
-                            if mcordata == 'mc':
+                            if mcordata == 'mc' and self.cfg('closure.pure_signal'):
+                                self.logger.info('assuming pure signal, projecting hist')
                                 h = project_hist(h, axes_proj[1:], {})
                             elif method == 'sidesub':
                                 h = self._subtract_sideband(h, var, mcordata, ipt)
@@ -547,7 +551,8 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes
                                 h = self._extract_signal(h, var, mcordata, ipt)
                             else:
                                 self.logger.critical('invalid method %s', method)
-                            if mcordata == 'data':
+                            if mcordata == 'data' or not self.cfg('closure.use_matched'):
+                                self.logger.info('correcting efficiency')
                                 self._correct_efficiency(h, ipt)
                             fh_sub.append(h)
                         fh_sum = sum_hists(fh_sub)

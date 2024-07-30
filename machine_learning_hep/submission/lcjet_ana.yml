@@ -65,12 +65,12 @@ analysis:
     efficiency: false # processer: process_efficiency
   steps:
     init:
+    calculate_efficiencies:
     qa:
     fit:
-    calculate_efficiencies:
-    estimate_feeddown:
+    # estimate_feeddown:
     analyze_with_sidesub:
-    analyze_with_sigextr:
+    # analyze_with_sigextr:
 
 systematics:
   cutvar:
