@@ -148,8 +148,6 @@ class ProcesserJets(Processer):
         '''split data frame based on df number'''
         # dfa = dfi.split(frac=frac, random_state=1234)
         # return dfa, dfi.drop(dfa.index)
-        # FIXME: check consistency for gen and det level
-        # TODO: print fraction of selected
         mask = (dfi.index.get_level_values(0) % 100) <= frac * 100
         return dfi[mask], dfi[~mask]
 
