@@ -302,7 +302,7 @@ D0jet_pp:
     binmax:   [2,4,6,8,12,24,48] # must be equal to sel_skim_binmax (sel_skim_binmin bins)
     mltype: BinaryClassification
     ncorescrossval: 10
-    prefix_dir_ml: /data2/jklein/MLhep/
+    prefix_dir_ml: /data2/${USER}/MLhep/
     mlplot: mlplot
     mlout: mlout
 
@@ -326,11 +326,11 @@ D0jet_pp:
 
   mlapplication:
     data:
-      prefix_dir_app: /data2/jklein/
+      prefix_dir_app: /data2/${USER}/
       pkl_skimmed_dec: [LHC22pp/MLapplication/prod_LHC22o/skpkldecdata] #list of periods
       pkl_skimmed_decmerged: [LHC22pp/MLapplication/prod_LHC22o/skpkldecdatamerged] #list of periods
     mc:
-      prefix_dir_app: /data2/jklein/
+      prefix_dir_app: /data2/${USER}/
       pkl_skimmed_dec: [LHC22pp_mc/MLapplication/prod_LHC22b1b/skpkldecmc] #list of periods
       pkl_skimmed_decmerged: [LHC22pp_mc/MLapplication/prod_LHC22b1b/skpkldecmcmerged] #list of periods
     modelname: xgboost
@@ -352,7 +352,7 @@ D0jet_pp:
     fd_method: "Nb" #fc, Nb
     cctype: "pp"
     inputfonllpred: data/fonll/D0DplusDstarPredictions_13TeV_y05_all_300416_BDShapeCorrected.root
-    dir_general_plots: /data2/jklein/data/analysis_plots
+    dir_general_plots: /data2/${USER}/data/analysis_plots
 
     jet_obs: &jet_default
       sel_an_binmin:    [1,2,3,4,5,6,7,8,10,12,16,24] # hadron pt bins (sel_an_binmin bins)
