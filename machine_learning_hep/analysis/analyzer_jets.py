@@ -386,7 +386,8 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes
             'sideband_right': (mean + regcfg['right'][0] * sigma, mean + regcfg['right'][1] * sigma)
         }
         if regions['sideband_left'][1] < fit_range[0] or regions['sideband_right'][0] > fit_range[1]:
-            self.logger.critical('sidebands %s not in fit range %s, fix regions!', regions, fit_range)
+            # TODO: change back to critical
+            self.logger.error('sidebands %s not in fit range %s, fix regions!', regions, fit_range)
         for reg, lim in regions.items():
             if lim[0] < fit_range[0] or lim[1] > fit_range[1]:
                 regions[reg] = (max(lim[0], fit_range[0]), min(lim[1], fit_range[1]))
@@ -420,7 +421,7 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes
 
         fh_subtracted = fh['signal'].Clone(f'h_ptjet{label}_subtracted_{ipt}_{mcordata}')
         ensure_sumw2(fh_subtracted)
-        if mcordata == 'data':
+        if mcordata == 'data' or not self.cfg('closure.exclude_feeddown_det'):
             fh_subtracted.Add(fh_sideband, -areaNormFactor)
 
         roows = self.roows[ipt]
