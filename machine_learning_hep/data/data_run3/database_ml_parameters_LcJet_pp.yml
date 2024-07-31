@@ -361,26 +361,26 @@ LcJet_pp:
       observables:
         zg:
           bins_fix: [6, -.1, .5]
-          label: 'z_{g}'
+          label: '#it{z}_{g}'
         nsd:
           bins_fix: [10, -.5, 9.5]
-          label: 'N_{sd}'
+          label: '#it{n}_{SD}'
         rg:
           bins_fix: [11, -.1, 1.]
-          label: 'R_{g}'
+          label: '#it{R}_{g}'
         zpar:
           bins_fix: [10, 0., 1.]
-          label: 'z_{#parallel}'
+          label: '#it{z}_{#parallel}'
         dr:
           bins_fix: [10, 0., 1.]
-          label: '#Deltar'
+          label: '#Delta#it{r}'
         lntheta:
           bins_fix: [10, 0., 5.]
-          label: '-ln(#theta)'
+          label: '#minusln(#it{#theta})'
           arraycols: [3]
         lnkt:
           bins_fix: [10, -8., 2.]
-          label: 'ln k_{T}'
+          label: 'ln(#it{k}_{T}/(GeV/#it{c}))'
           arraycols: [3]
         lntheta-lnkt:
           arraycols: [3, 4]
