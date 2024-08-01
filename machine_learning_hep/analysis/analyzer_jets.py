@@ -74,6 +74,7 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes
         self.fit_range = {}
         self.hcandeff = None
         self.hcandeff_np = None
+        self.h_eff_ptjet_pthf = {}
         self.hfeeddown_det = { 'mc': {}, 'data': {}}
         self.n_events = {}
         self.n_colls = {}
@@ -173,8 +174,24 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes
         cats = {'pr', 'np'}
         rfilename = self.n_fileeff
         with TFile(rfilename) as rfile:
-            bins_ptjet = (1, 4)
-            # TODO: fix projection range
+            h_gen = {cat: rfile.Get(f'h_ptjet-pthf_{cat}_gen') for cat in cats}
+            h_det = {cat: rfile.Get(f'h_ptjet-pthf_{cat}_det').Clone(f'h_eff_{cat}') for cat in cats}
+            n_bins_ptjet = get_nbins(h_gen['pr'], 0)
+            for cat in cats:
+                ensure_sumw2(h_det[cat])
+                h_det[cat].Divide(h_gen[cat])
+                self.h_eff_ptjet_pthf[cat] = h_det[cat]
+                self._save_hist(h_det[cat], f'h_ptjet-pthf_eff_{cat}.png')
+                c = TCanvas()
+                c.cd()
+                for iptjet in range(get_nbins(h_det[cat], 0)):
+                    h = project_hist(h_det[cat], [1], {0: (iptjet+1, iptjet+1)})
+                    h.Scale(1. + .1 * iptjet)
+                    h.Draw('' if iptjet == 0 else 'same')
+                    h.SetLineColor(iptjet)
+                self._save_canvas(c, f'h_ptjet-pthf_eff_{cat}_ptjet.png')
+
+            bins_ptjet = (1, n_bins_ptjet)
             h_gen = {cat: project_hist(rfile.Get(f'h_ptjet-pthf_{cat}_gen'), [1], {0: bins_ptjet}) for cat in cats}
             h_det = {cat: project_hist(rfile.Get(f'h_ptjet-pthf_{cat}_det'), [1], {0: bins_ptjet}).Clone(f'h_eff_{cat}')
                      for cat in cats}
@@ -190,25 +207,40 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes
             self.hcandeff_np = h_det['np']
 
 
-    def _correct_efficiency(self, hist, ipt):
+    def _correct_efficiency(self, hist, ipt, use_ptjet = False):
         if not hist:
             self.logger.error('no histogram to correct for efficiency')
             return
 
-        if not self.hcandeff:
-            self.logger.error('no efficiency available for %s', hist.GetName())
-            return
+        if not use_ptjet:
+            if not self.hcandeff:
+                self.logger.error('no efficiency available for %s', hist.GetName())
+                return
 
-        eff = self.hcandeff.GetBinContent(ipt + 1)
-        if np.isclose(eff, 0):
-            if hist.GetEntries() > 0:
-                # TODO: how should we handle this?
-                self.logger.error('Efficiency 0 for %s ipt %d, no correction possible',
-                                  hist.GetName(), ipt)
-            return
+            eff = self.hcandeff.GetBinContent(ipt + 1)
+            if np.isclose(eff, 0):
+                if hist.GetEntries() > 0:
+                    # TODO: how should we handle this?
+                    self.logger.error('Efficiency 0 for %s ipt %d, no correction possible',
+                                      hist.GetName(), ipt)
+                return
 
-        self.logger.debug('scaling hist %s (ipt %i) with 1. / %g', hist.GetName(), ipt, eff)
-        hist.Scale(1. / eff)
+            self.logger.debug('scaling hist %s (ipt %i) with 1. / %g', hist.GetName(), ipt, eff)
+            hist.Scale(1. / eff)
+        else:
+            self.logger.info('using 2d efficiency scaling')
+            if not self.h_eff_ptjet_pthf['pr']:
+                self.logger.error('no efficiency available for %s', hist.GetName())
+                return
+
+            for iptjet in range(get_nbins(hist, 0)):
+                eff = self.h_eff_ptjet_pthf['pr'].GetBinContent(iptjet+1, ipt+1)
+                if np.isclose(eff, 0):
+                    self.logger.error('Efficiency 0 for %s ipt %d iptjet %d, no correction possible',
+                                      hist.GetName(), ipt, iptjet)
+                    continue
+                for ivar in range(get_nbins(hist, 1)):
+                    scale_bin(hist, 1./eff, iptjet+1, ivar+1)
 
 
     #region fitting
@@ -402,6 +434,7 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes
         fh = {}
         area = {}
         var_m = self.roows[ipt].var("m")
+        # bins['signal'] = (1, get_nbins(hist, 0))
         for region in regions:
             # project out the mass regions (first axis)
             axes = list(range(get_dim(hist)))[1:]
@@ -471,7 +504,10 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes
 
         pdf_sig = self.roows[ipt].pdf('sig')
         frac_sig = pdf_sig.createIntegral(var_m, ROOT.RooFit.NormSet(var_m), ROOT.RooFit.Range('signal')).getVal()
-        self.logger.info('correcting %s-%i for fractional signal area: %g', mcordata, ipt, frac_sig)
+        pdf_peak = self.roows[ipt].pdf('peak')
+        frac_peak = pdf_peak.createIntegral(var_m, ROOT.RooFit.NormSet(var_m), ROOT.RooFit.Range('signal')).getVal()
+        self.logger.info('correcting %s-%i for fractional signal area: %g (Gaussian: %g)',
+                         mcordata, ipt, frac_sig, frac_peak)
 
         fh_subtracted.Scale(1. / frac_sig)
         self._save_hist(fh_subtracted, f'sideband/h_ptjet{label}_subtracted_{ptrange[0]}-{ptrange[1]}_{mcordata}.png')
@@ -495,7 +531,7 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes
     # region analysis
     def _analyze(self, method = 'sidesub'):
         self.logger.info("Running sideband subtraction")
-        for mcordata in ['mc', 'data']:
+        for mcordata in ['mc']: #, 'data']:
             rfilename = self.n_filemass_mc if mcordata == "mc" else self.n_filemass
             with TFile(rfilename) as rfile:
                 for var in [None] + self.observables['all']:
@@ -507,20 +543,30 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes
                         axes_proj.remove(2)
                         fh_sub = []
                         for ipt in range(self.nbins):
-                            h = project_hist(fh, axes_proj, {2: (ipt+1, ipt+1)})
-                            ensure_sumw2(h)
-                            if mcordata == 'mc' and self.cfg('closure.pure_signal'):
-                                self.logger.info('assuming pure signal, projecting hist')
-                                h = project_hist(h, axes_proj[1:], {})
-                            elif method == 'sidesub':
-                                h = self._subtract_sideband(h, var, mcordata, ipt)
+                            h_in = project_hist(fh, axes_proj, {2: (ipt+1, ipt+1)})
+                            ensure_sumw2(h_in)
+                            if method == 'sidesub':
+                                h = self._subtract_sideband(h_in, var, mcordata, ipt)
                             elif method == 'sigextr':
-                                h = self._extract_signal(h, var, mcordata, ipt)
+                                h = self._extract_signal(h_in, var, mcordata, ipt)
                             else:
                                 self.logger.critical('invalid method %s', method)
+                            self._save_hist(h, f'h_ptjet{label}_{method}_noeff_{mcordata}_pt{ipt}.png')
+                            if mcordata == 'mc':
+                                h_proj = project_hist(h_in, axes_proj[1:], {})
+                                h_proj_lim = project_hist(h_in, axes_proj[1:], {0: (1, get_nbins(h_in, 0))})
+                                self._save_hist(h_proj, f'h_ptjet{label}_proj_noeff_{mcordata}_pt{ipt}.png')
+                                if h and h_proj:
+                                    self.logger.info('signal loss %s-%i: %g, fraction in under-/overflow: %g',
+                                                     mcordata, ipt,
+                                                     1. - h.Integral()/h_proj.Integral(),
+                                                     1. - h_proj_lim.Integral()/h_proj.Integral())
+                                if self.cfg('closure.pure_signal'):
+                                    self.logger.info('assuming pure signal, using projection')
+                                    h = h_proj
                             if mcordata == 'data' or not self.cfg('closure.use_matched'):
                                 self.logger.info('correcting efficiency')
-                                self._correct_efficiency(h, ipt)
+                                self._correct_efficiency(h, ipt, use_ptjet=True)
                             fh_sub.append(h)
                         fh_sum = sum_hists(fh_sub)
                         self._save_hist(fh_sum, f'h_ptjet{label}_{method}_effscaled_{mcordata}.png')

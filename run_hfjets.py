@@ -29,6 +29,9 @@ args = parser.parse_args()
 if args.case == 'd0jet':
     DB = 'machine_learning_hep/data/data_run3/database_ml_parameters_D0pp_jet.yml'
     DB_SUB = 'd0jet'
+elif args.case == 'd0jetr2':
+    DB = 'machine_learning_hep/data/data_run3/database_ml_parameters_D0pp_jet_run2cmp.yml'
+    DB_SUB = 'd0jet'
 elif args.case == 'lcjet':
     DB = 'machine_learning_hep/data/data_run3/database_ml_parameters_LcJet_pp.yml'
     DB_SUB = 'lcjet'
