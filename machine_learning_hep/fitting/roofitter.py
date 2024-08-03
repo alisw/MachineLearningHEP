@@ -49,7 +49,9 @@ class RooFitter:
             frame = m.frame()
             dh.plotOn(frame)
             model.plotOn(frame)
-            model.paramOn(frame)
+            model.paramOn(frame, Layout=(.65,1.,.9))
+            frame.getAttText().SetTextFont(42)
+            frame.getAttText().SetTextSize(.03)
             try:
                 for pdf in model.pdfList():
                     model.plotOn(frame, ROOT.RooFit.Components(pdf),

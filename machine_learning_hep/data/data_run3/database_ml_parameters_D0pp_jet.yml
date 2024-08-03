@@ -535,7 +535,8 @@ D0jet_pp:
               fn: 'SUM::sigrefl(frac_refl[0.,1.]*refl, sig)'
         - ptrange: [1., 2.]
           range: [1.720, 2.02]
-          fix_params: ['frac_refl', 'sigma_g1']
+          fix_params: ['frac_refl']
+          free_params: ['sigma_g1']
           # fix_params: ['mean', 'sigma_g1', 'frac_refl']
           components:
             bkg:
@@ -544,6 +545,7 @@ D0jet_pp:
               fn: 'SUM::sum(frac[0.,1.]*sigrefl, bkg)'
         - ptrange: [2., 3.]
           fix_params: ['frac_refl']
+          free_params: ['sigma_g1']
           # fix_params: ['mean', 'sigma_g1', 'frac_refl']
           range: [1.72, 2.04]
           components:
@@ -553,6 +555,7 @@ D0jet_pp:
               fn: 'SUM::sum(frac[0.,1.]*sigrefl, bkg)'
         - ptrange: [3., 4.]
           fix_params: ['frac_refl']
+          free_params: ['sigma_g1']
           # fix_params: ['mean', 'sigma_g1', 'frac_refl']
           range: [1.72, 2.06]
           components:
@@ -562,6 +565,7 @@ D0jet_pp:
               fn: 'SUM::sum(frac[0.,1.]*sigrefl, bkg)'
         - ptrange: [4., 5.]
           fix_params: ['frac_refl']
+          free_params: ['sigma_g1']
           # fix_params: ['mean', 'sigma_g1', 'frac_refl']
           range: [1.72, 2.08]
           components:
@@ -571,6 +575,7 @@ D0jet_pp:
               fn: 'SUM::sum(frac[0.,1.]*sigrefl, bkg)'
         - ptrange: [5., 6.]
           fix_params: ['frac_refl']
+          free_params: ['sigma_g1']
           # fix_params: ['mean', 'sigma_g1', 'frac_refl']
           range: [1.72, 2.10]
           components:
@@ -580,6 +585,7 @@ D0jet_pp:
               fn: 'SUM::sum(frac[0.,1.]*sigrefl, bkg)'
         - ptrange: [6., 8.]
           fix_params: ['frac_refl']
+          free_params: ['sigma_g1']
           # fix_params: ['mean', 'sigma_g1', 'frac_refl']
           range: [1.72, 2.14]
           components:
@@ -589,6 +595,7 @@ D0jet_pp:
               fn: 'SUM::sum(frac[0.,1.]*sigrefl, bkg)'
         - range: [1.72, 2.20]
           fix_params: ['frac_refl']
+          free_params: ['sigma_g1']
           # fix_params: ['mean', 'sigma_g1', 'frac_refl']
           components:
             bkg:
@@ -633,7 +640,7 @@ D0jet_pp:
         exclude_feeddown_det: 'ismcsignal==1 & ismcprompt==1'
         exclude_feeddown_gen: 'ismcsignal_gen==1 & ismcprompt_gen==1'
         filter_reflections: '(isd0 & seld0) or (isd0bar & seld0bar)'
-        use_matched: false
+        use_matched: true
 
       frac_mcana: .2
       fd_root: '/data2/vkucera/powheg/trees_powheg_fd_central.root'

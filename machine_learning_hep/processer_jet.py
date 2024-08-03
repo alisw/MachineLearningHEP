@@ -75,6 +75,8 @@ class ProcesserJets(Processer):
                 else:
                     self.logger.error('no binning specified for %s, using defaults', v)
                     self.binarrays_obs[v] = bin_array(10, 0., 1.)
+        self.binarrays_obs['fPt'] = self.binarray_pthf
+        self.binarrays_obs['fPtJet'] = self.binarray_ptjet
 
 
     # region observables
@@ -241,6 +243,7 @@ class ProcesserJets(Processer):
         levels = ['gen', 'det']
         cuts = ['nocuts', 'cut']
         observables = self.cfg('observables', [])
+        observables.update({'fPt': {}})
         h_eff = {(cat, level): create_hist(f'h_ptjet-pthf_{cat}_{level}',
                                            ';p_{T}^{jet} (GeV/#it{c});p_{T}^{HF} (GeV/#it{c})',
                                            self.binarray_ptjet, self.binarray_pthf)
@@ -264,7 +267,6 @@ class ProcesserJets(Processer):
             if not '-' in var}
         h_mctruth = {
             (cat, var): create_hist(
-                # f'h_mctruth_{cat}_{var}',
                 f'h_ptjet-pthf-{var}_{cat}_gen',
                 f";p_{{T}}^{{jet}} (GeV/#it{{c}});p_{{T}}^{{HF}} (GeV/#it{{c}});{var}",
                 self.binarray_ptjet, self.binarray_pthf, self.binarrays_obs[var])
@@ -311,13 +313,16 @@ class ProcesserJets(Processer):
                         for cat in cats if 'idx_match' in dfdet[cat]}
 
             for cat in cats:
-                fill_hist(h_eff[(cat, 'gen')], dfgen[cat][['fJetPt_gen', 'fPt_gen']])
-
+                df = dfgen[cat]
+                df = df.loc[(df.fJetPt_gen >= min(self.binarray_ptjet)) & (df.fJetPt_gen < max(self.binarray_ptjet))]
+                fill_hist(h_eff[(cat, 'gen')], df[['fJetPt_gen', 'fPt_gen']])
                 if cat in dfmatch and dfmatch[cat] is not None:
-                    fill_hist(h_eff[(cat, 'det')], dfmatch[cat][['fJetPt_gen', 'fPt_gen']])
+                    df = dfmatch[cat]
+                    # df = df.loc[(df.fJetPt_gen >= min(self.binarray_ptjet)) & (df.fJetPt_gen < max(self.binarray_ptjet))]
                 else:
                     self.logger.error('No matching, using unmatched detector level for efficiency')
-                    fill_hist(h_eff[(cat, 'det')], dfdet[cat][['fJetPt', 'fPt']])
+                    df = dfdet[cat]
+                fill_hist(h_eff[(cat, 'det')], df[['fJetPt', 'fPt']])
 
             for cat in cats:
                 df = dfdet[cat]
@@ -352,9 +357,6 @@ class ProcesserJets(Processer):
                 if f := self.cfg('closure.exclude_feeddown_gen'):
                     self.logger.info('excluding feeddown gen')
                     dfquery(df_mcana, f, inplace=True)
-                # TODO: consider kinematic cuts
-                # df = df.loc[(df.fJetPt >= min(self.binarray_ptjet)) & (df.fJetPt < max(self.binarray_ptjet))]
-                # df = df.loc[(df.fPt >= min(self.bins_analysis[:,0])) & (df.fPt < max(self.bins_analysis[:,1]))]
                 fill_hist(h_mctruth[(cat, var)], df_mcana[['fJetPt_gen', 'fPt_gen', f'{var}_gen']])
 
                 if cat in dfmatch and dfmatch[cat] is not None:
