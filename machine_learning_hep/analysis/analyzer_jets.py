@@ -198,21 +198,28 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes
             self.hcandeff_np = h_det_proj['np']
 
             for cat in cats:
-                rm = self._build_response_matrix(rfile.Get(f'h_response_{cat}_fPt'), self.hcandeff)
+                h_response = rfile.Get(f'h_response_{cat}_fPt')
+                h_response_ptjet = project_hist(h_response, [0, 2], {})
+                h_response_pthf = project_hist(h_response, [1, 3], {})
+                self._save_hist(h_response_ptjet, f'eff/h_ptjet-pthf_responsematrix-ptjet_{cat}.png', 'colz')
+                self._save_hist(h_response_pthf, f'eff/h_ptjet-pthf_responsematrix-pthf_{cat}.png', 'colz')
+                rm = self._build_response_matrix(h_response, self.hcandeff)
                 h_effkine_gen = self._build_effkine(
                     rfile.Get(f'h_effkine_{cat}_gen_nocuts_fPt'),
                     rfile.Get(f'h_effkine_{cat}_gen_cut_fPt'))
-                self._save_hist(h_effkine_gen, f'eff/h_effkine_{cat}_gen.png', 'texte')
+                self._save_hist(h_effkine_gen, f'eff/h_effkine-ptjet-pthf_{cat}_gen.png', 'texte')
                 h_effkine_det = self._build_effkine(
                     rfile.Get(f'h_effkine_{cat}_det_nocuts_fPt'),
                     rfile.Get(f'h_effkine_{cat}_det_cut_fPt'))
-                self._save_hist(h_effkine_det, f'eff/h_effkine_{cat}_det.png', 'texte')
+                self._save_hist(h_effkine_det, f'eff/h_effkine-ptjet-pthf_{cat}_det.png', 'texte')
 
                 h_in = h_gen[cat].Clone()
+                self._save_hist(project_hist(h_in, [1], {}), f'eff/h_pthf_gen.png')
                 h_in.Multiply(h_effkine_gen)
                 h_out = h_in.Clone()
                 h_out = folding(h_in, rm, h_out)
                 h_out.Divide(h_effkine_det)
+                self._save_hist(project_hist(h_out, [1], {}), f'eff/h_pthf_gen_folded.png')
 
                 eff = h_det[cat].Clone()
                 ensure_sumw2(eff)
@@ -367,13 +374,14 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes
             with TFile(rfilename) as rfile:
                 h = rfile.Get('h_mass-ptjet-pthf')
                 for iptjet, ipt in itertools.product(
-                    range(get_nbins(h, 1) + 1),
+                    itertools.chain((None,), range(1, get_nbins(h, 1) - 1)),
                     range(get_nbins(h, 2))):
                     self.logger.debug('fitting %s - %i', level, ipt)
                     roows = self.roows.get(ipt)
                     axis_jetpt = get_axis(h, 1)
                     cuts_proj = {2: (ipt+1, ipt+1)}
-                    if iptjet < get_nbins(h, 1):
+                    if iptjet:
+                        # FIXME: fix mean and sigma
                         cuts_proj.update({1: (iptjet+1, iptjet+1)})
                         jetptlabel = f'_ptjet-{axis_jetpt.GetBinLowEdge(iptjet+1)}-{axis_jetpt.GetBinUpEdge(iptjet+1)}'
                     else:
@@ -413,6 +421,10 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes
                         for par in fitcfg.get('free_params', []):
                             if var := roows.var(par):
                                 var.setConstant(False)
+                        if iptjet:
+                            for par in fitcfg.get('fix_params_ptjet', []):
+                                if var := roows.var(par):
+                                    var.setConstant(True)
                         roo_res, roo_ws = self._roofit_mass(
                             h_invmass, ipt, fitcfg, roows,
                             f'roofit/h_mass_fitted{jetptlabel}_pthf-{ptrange[0]}-{ptrange[1]}_{level}.png')
@@ -420,6 +432,9 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes
                         #     roo_ws.Print()
                         # TODO: save snapshot per level
                         # roo_ws.saveSnapshot(level, None)
+                        # FIXME: store fit results per jet pt bin
+                        if iptjet:
+                            continue
                         self.roo_ws[level][ipt] = roo_ws
                         self.roows[ipt] = roo_ws
                         if roo_res.status() == 0:
@@ -534,19 +549,15 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes
             self._save_canvas(c, f'sideband/h_ptjet{label}_overview_{ptrange[0]}-{ptrange[1]}_{mcordata}.png')
         else:
             axis_jetpt = get_axis(hist, 1)
+            hists = [fh['signal'], fh_sideband, fh_subtracted]
+            cmap = [ROOT.kBlue, ROOT.kRed, ROOT.kGreen+3]
             for iptjet in range(get_nbins(hist, 1)):
                 c = TCanvas()
-                h_sig = project_hist(fh['signal'], [1], {0: (iptjet+1, iptjet+1)})
-                h_side = project_hist(fh_sideband, [1], {0: (iptjet+1, iptjet+1)})
-                h_subt = project_hist(fh_subtracted, [1], {0: (iptjet+1, iptjet+1)})
-                h_sig.Draw()
-                h_sig.SetLineColor(ROOT.kRed)
-                h_side.Draw('same')
-                h_side.SetLineColor(ROOT.kMagenta)
-                h_subt.Draw('same')
-                h_subt.SetLineColor(ROOT.kBlue)
-                fh_subtracted.GetYaxis().SetRangeUser(
-                    0., 1.1 * max(h_sig.GetMaximum(), h_side.GetMaximum(), h_subt.GetMaximum()))
+                hcs = []
+                for i, h in enumerate(map(lambda h: project_hist(h, [1], {0: (iptjet+1, iptjet+1)}), hists)):
+                    hcs.append(h.DrawCopy('same' if i > 0 else ''))
+                    hcs[-1].SetLineColor(cmap[i])
+                hcs[0].GetYaxis().SetRangeUser(0., 1.1 * max(map(lambda h: h.GetMaximum(), hcs)))
                 jetptrange = (axis_jetpt.GetBinLowEdge(iptjet+1), axis_jetpt.GetBinUpEdge(iptjet+1))
                 filename = (f'sideband/h_{label[1:]}_overview_ptjet-{jetptrange[0]}-{jetptrange[1]}' +
                             f'_{ptrange[0]}-{ptrange[1]}_{mcordata}.png')
@@ -715,7 +726,8 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes
                                     f'uf/h_{var}_{method}_unfolded_{mcordata}_' +
                                     f'jetpt-{jetptrange[0]}-{jetptrange[1]}_{i}.png')
                                 c.cd()
-                                hproj.DrawCopy('same')
+                                hcopy = hproj.DrawCopy('same' if i > 0 else '')
+                                hcopy.SetLineColor(i+1)
                             self._save_canvas(c,
                                               f'uf/h_{var}_{method}_convergence_{mcordata}_' +
                                               f'jetpt-{jetptrange[0]}-{jetptrange[1]}.png')

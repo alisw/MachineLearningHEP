@@ -60,11 +60,12 @@ D0jet_pp:
         trees:
           O2d0collcount: [fReadCounts, fReadSelectedCounts, fWrittenCounts]
 
-      # collgen: # table not filled at the moment
-      #   level: gen
-      #   index: fIndexD0CMCPJetCOs
-      #   trees:
-      #     O2d0cmcpjetco: [fPosZ, fCentrality, fEventSel]
+      collgen:
+        level: gen
+        index: fIndexD0CMCPJETCOS
+        trees:
+          O2d0cmcpjetco: [fPosZ, fCentrality, fEventSel]
+        filter: "abs(fPosZ) < 10."
       jetgen:
         level: gen
         index: fIndexD0CMCPJETOS
@@ -87,6 +88,7 @@ D0jet_pp:
         index: fIndexD0CMCDJETCOS
         trees:
           O2d0cmcdjetco: [fPosZ, fCentrality, fEventSel]
+        filter: "abs(fPosZ) < 10."
       jetdet:
         level: det
         index: fIndexD0CMCDJETOS
@@ -129,6 +131,7 @@ D0jet_pp:
         index: fIndexD0CJETCOS
         trees:
           O2d0cjetco: [fPosZ, fCentrality, fEventSel]
+        filter: "abs(fPosZ) < 10."
       jetdata:
         level: data
         index: fIndexD0CJETOS
@@ -154,7 +157,7 @@ D0jet_pp:
         filter: "fPt >= 1. and abs(fY) <= 0.8 and abs(fJetEta) < (.9 - (fJetR / 100.))" # TODO: check jet eta cut
 
     merge:
-      # - {base: jetgen, ref: collgen}
+      - {base: jetgen, ref: collgen}
       - {base: jetdet, ref: colldet}
       - {base: jetdata, ref: colldata}
 
@@ -241,7 +244,7 @@ D0jet_pp:
       maxfiles: [-1] #list of periods
       chunksizeunp:  [100] #list of periods
       chunksizeskim: [100] #list of periods
-      fracmerge: [0.] #list of periods
+      fracmerge: [.1] #list of periods
       seedmerge: [12] #list of periods
       period: [LHC22o] #list of periods
       select_period: [1]
@@ -259,7 +262,7 @@ D0jet_pp:
       maxfiles: [-1] #list of periods
       chunksizeunp: [100] #list of periods
       chunksizeskim: [1000] #list of periods
-      fracmerge: [0.] #list of periods
+      fracmerge: [.1] #list of periods
       seedmerge: [12] #list of periods
       period: [LHC24d3a] #list of periods
       select_period: [1]
@@ -537,7 +540,7 @@ D0jet_pp:
           range: [1.720, 2.02]
           fix_params: ['frac_refl']
           free_params: ['sigma_g1']
-          # fix_params: ['mean', 'sigma_g1', 'frac_refl']
+          fix_params_ptjet: ['mean', 'sigma_g1']
           components:
             bkg:
               fn: 'Exponential::bkg(m, alpha[-100,0])'
@@ -546,7 +549,7 @@ D0jet_pp:
         - ptrange: [2., 3.]
           fix_params: ['frac_refl']
           free_params: ['sigma_g1']
-          # fix_params: ['mean', 'sigma_g1', 'frac_refl']
+          fix_params_ptjet: ['mean', 'sigma_g1']
           range: [1.72, 2.04]
           components:
             bkg:
@@ -556,7 +559,7 @@ D0jet_pp:
         - ptrange: [3., 4.]
           fix_params: ['frac_refl']
           free_params: ['sigma_g1']
-          # fix_params: ['mean', 'sigma_g1', 'frac_refl']
+          fix_params_ptjet: ['mean', 'sigma_g1']
           range: [1.72, 2.06]
           components:
             bkg:
@@ -566,6 +569,7 @@ D0jet_pp:
         - ptrange: [4., 5.]
           fix_params: ['frac_refl']
           free_params: ['sigma_g1']
+          fix_params_ptjet: ['mean', 'sigma_g1']
           # fix_params: ['mean', 'sigma_g1', 'frac_refl']
           range: [1.72, 2.08]
           components:
@@ -576,7 +580,7 @@ D0jet_pp:
         - ptrange: [5., 6.]
           fix_params: ['frac_refl']
           free_params: ['sigma_g1']
-          # fix_params: ['mean', 'sigma_g1', 'frac_refl']
+          fix_params_ptjet: ['mean', 'sigma_g1']
           range: [1.72, 2.10]
           components:
             bkg:
@@ -586,7 +590,7 @@ D0jet_pp:
         - ptrange: [6., 8.]
           fix_params: ['frac_refl']
           free_params: ['sigma_g1']
-          # fix_params: ['mean', 'sigma_g1', 'frac_refl']
+          fix_params_ptjet: ['mean', 'sigma_g1']
           range: [1.72, 2.14]
           components:
             bkg:
@@ -596,7 +600,7 @@ D0jet_pp:
         - range: [1.72, 2.20]
           fix_params: ['frac_refl']
           free_params: ['sigma_g1']
-          # fix_params: ['mean', 'sigma_g1', 'frac_refl']
+          fix_params_ptjet: ['mean', 'sigma_g1']
           components:
             bkg:
               fn: 'Exponential::bkg(m, alpha[-100,0])'
@@ -619,13 +623,13 @@ D0jet_pp:
             signal: [-2., 2.]
             right: [3., 5.5]
 
-      mass_fit:
-        func_sig: 'gaus'
-        func_bkg: 'expo'
-        # par_start: {1: 1.86}
-        # par_fix: {1: 1.86}
-        par_constrain: {1: [1.85, 1.87], 2: [.01, .08]}
-        range: [1.695, 2.06]
+      # mass_fit:
+      #   func_sig: 'gaus'
+      #   func_bkg: 'expo'
+      #   # par_start: {1: 1.86}
+      #   # par_fix: {1: 1.86}
+      #   par_constrain: {1: [1.85, 1.87], 2: [.01, .08]}
+      #   range: [1.695, 2.06]
       mass_fit_lim: [1.5, 2.2] # histogram range of the invariant mass distribution [GeV/c^2]
       bin_width: 0.005 # bin width of the invariant mass histogram
       efficiency:

@@ -248,7 +248,7 @@ class ProcesserJets(Processer):
                                            ';p_{T}^{jet} (GeV/#it{c});p_{T}^{HF} (GeV/#it{c})',
                                            self.binarray_ptjet, self.binarray_pthf)
                                            for cat in cats for level in levels}
-        # TODO: for now only 1d observables supported
+        # TODO: extend to multi-dimensional observables
         h_effkine = {(cat, level, cut, var):
                         create_hist(f'h_effkine_{cat}_{level}_{cut}_{var}',
                                     f";p_{{T}}^{{jet}} (GeV/#it{{c}});{var}",
@@ -291,7 +291,8 @@ class ProcesserJets(Processer):
             # read generator level
             dfgen_orig = pd.concat(read_df(self.mptfiles_gensk[bin][index], columns=cols)
                                    for bin in self.active_bins_skim)
-            df = dfgen_orig.rename(lambda name: name + '_gen', axis=1)
+            df = self._calculate_variables(dfgen_orig)
+            df = df.rename(lambda name: name + '_gen', axis=1)
             dfgen = {'pr': df.loc[(df.ismcsignal_gen == 1) & (df.ismcprompt_gen == 1)],
                      'np': df.loc[(df.ismcsignal_gen == 1) & (df.ismcfd_gen == 1)]}
 
@@ -306,6 +307,7 @@ class ProcesserJets(Processer):
                 df['idx_match'] = df[idx].apply(lambda ar: ar[0] if len(ar) > 0 else -1)
             else:
                 self.logger.warning('No matching criterion specified, cannot match det and gen')
+            df = self._calculate_variables(df)
             dfdet = {'pr': df.loc[(df.ismcsignal == 1) & (df.ismcprompt == 1)],
                      'np': df.loc[(df.ismcsignal == 1) & (df.ismcfd == 1)]}
 
@@ -314,7 +316,8 @@ class ProcesserJets(Processer):
 
             for cat in cats:
                 df = dfgen[cat]
-                df = df.loc[(df.fJetPt_gen >= min(self.binarray_ptjet)) & (df.fJetPt_gen < max(self.binarray_ptjet))]
+                # FIXME: check cuts
+                # df = df.loc[(df.fJetPt_gen >= min(self.binarray_ptjet)) & (df.fJetPt_gen < max(self.binarray_ptjet))]
                 fill_hist(h_eff[(cat, 'gen')], df[['fJetPt_gen', 'fPt_gen']])
                 if cat in dfmatch and dfmatch[cat] is not None:
                     df = dfmatch[cat]
@@ -322,27 +325,28 @@ class ProcesserJets(Processer):
                 else:
                     self.logger.error('No matching, using unmatched detector level for efficiency')
                     df = dfdet[cat]
+                # FIXME: check use of matched sample
                 fill_hist(h_eff[(cat, 'det')], df[['fJetPt', 'fPt']])
 
-            for cat in cats:
-                df = dfdet[cat]
-                df = df.loc[(df.fJetPt >= min(self.binarray_ptjet)) & (df.fJetPt < max(self.binarray_ptjet))]
-                df = df.loc[(df.fPt >= min(self.bins_analysis[:,0])) & (df.fPt < max(self.bins_analysis[:,1]))]
-                df = self._calculate_variables(df)
-                dfdet[cat] = df
+            # for cat in cats:
+            #     df = dfdet[cat]
+            #     df = df.loc[(df.fJetPt >= min(self.binarray_ptjet)) & (df.fJetPt < max(self.binarray_ptjet))]
+            #     df = df.loc[(df.fPt >= min(self.bins_analysis[:,0])) & (df.fPt < max(self.bins_analysis[:,1]))]
+            #     df = self._calculate_variables(df)
+            #     dfdet[cat] = df
 
-            # done separately since calculate_var assumes columns without _gen
-            df = dfgen_orig
-            df = df.loc[(df.fJetPt >= min(self.binarray_ptjet)) & (df.fJetPt < max(self.binarray_ptjet))]
-            df = df.loc[(df.fPt >= min(self.bins_analysis[:,0])) & (df.fPt < max(self.bins_analysis[:,1]))]
-            self._calculate_variables(df)
-            df = df.rename(lambda name: name + '_gen', axis=1)
-            dfgen = {'pr': df.loc[(df.ismcsignal_gen == 1) & (df.ismcprompt_gen == 1)],
-                     'np': df.loc[(df.ismcsignal_gen == 1) & (df.ismcfd_gen == 1)]}
+            # # done separately since calculate_var assumes columns without _gen
+            # df = dfgen_orig
+            # df = df.loc[(df.fJetPt >= min(self.binarray_ptjet)) & (df.fJetPt < max(self.binarray_ptjet))]
+            # df = df.loc[(df.fPt >= min(self.bins_analysis[:,0])) & (df.fPt < max(self.bins_analysis[:,1]))]
+            # self._calculate_variables(df)
+            # df = df.rename(lambda name: name + '_gen', axis=1)
+            # dfgen = {'pr': df.loc[(df.ismcsignal_gen == 1) & (df.ismcprompt_gen == 1)],
+            #          'np': df.loc[(df.ismcsignal_gen == 1) & (df.ismcfd_gen == 1)]}
 
-            # TODO: foresee multiple merge conditions
-            dfmatch = {cat: pd.merge(dfdet[cat], dfgen[cat], left_on=['df', 'idx_match'], right_index=True)
-                       for cat in cats if 'idx_match' in dfdet[cat]}
+            # # TODO: foresee multiple merge conditions
+            # dfmatch = {cat: pd.merge(dfdet[cat], dfgen[cat], left_on=['df', 'idx_match'], right_index=True)
+            #            for cat in cats if 'idx_match' in dfdet[cat]}
 
             for var, cat in itertools.product(observables, cats):
                 # TODO: add support for more complex observables
