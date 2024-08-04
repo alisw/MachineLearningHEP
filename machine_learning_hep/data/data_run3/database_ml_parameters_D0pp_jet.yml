@@ -60,12 +60,12 @@ D0jet_pp:
         trees:
           O2d0collcount: [fReadCounts, fReadSelectedCounts, fWrittenCounts]
 
-      collgen:
+      collgen: # TODO: check if we can use the HF collision table instead
         level: gen
         index: fIndexD0CMCPJETCOS
         trees:
           O2d0cmcpjetco: [fPosZ, fCentrality, fEventSel]
-        filter: "abs(fPosZ) < 10."
+        # filter: "abs(fPosZ) < 10."
       jetgen:
         level: gen
         index: fIndexD0CMCPJETOS
@@ -88,7 +88,7 @@ D0jet_pp:
         index: fIndexD0CMCDJETCOS
         trees:
           O2d0cmcdjetco: [fPosZ, fCentrality, fEventSel]
-        filter: "abs(fPosZ) < 10."
+        # filter: "abs(fPosZ) < 10."
       jetdet:
         level: det
         index: fIndexD0CMCDJETOS
@@ -131,7 +131,7 @@ D0jet_pp:
         index: fIndexD0CJETCOS
         trees:
           O2d0cjetco: [fPosZ, fCentrality, fEventSel]
-        filter: "abs(fPosZ) < 10."
+        # filter: "abs(fPosZ) < 10."
       jetdata:
         level: data
         index: fIndexD0CJETOS
@@ -157,7 +157,7 @@ D0jet_pp:
         filter: "fPt >= 1. and abs(fY) <= 0.8 and abs(fJetEta) < (.9 - (fJetR / 100.))" # TODO: check jet eta cut
 
     merge:
-      - {base: jetgen, ref: collgen}
+      # - {base: jetgen, ref: collgen}
       - {base: jetdet, ref: colldet}
       - {base: jetdata, ref: colldata}
 
@@ -355,8 +355,8 @@ D0jet_pp:
     dir_general_plots: /data2/jklein/data/analysis_plots
 
     jet_obs: &jet_default
-      sel_an_binmin:    [1,2,3,4,5,6,7,8,10,12,16,24] # hadron pt bins (sel_an_binmin bins)
-      sel_an_binmax:    [2,3,4,5,6,7,8,10,12,16,24,36] # hadron pt bins (sel_an_binmin bins)
+      sel_an_binmin:    [2,3,4,5,6,7,8,10,12,16,24] # hadron pt bins (sel_an_binmin bins)
+      sel_an_binmax:    [3,4,5,6,7,8,10,12,16,24,36] # hadron pt bins (sel_an_binmin bins)
       bins_ptjet: [5, 7, 15, 30, 50]
 
       sigmamb: 57.8e-3 #NB: multiplied by 1e12 before giving to HFPtSpectrum!

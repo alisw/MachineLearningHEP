@@ -150,7 +150,7 @@ class ProcesserJets(Processer):
         '''split data frame based on df number'''
         # dfa = dfi.split(frac=frac, random_state=1234)
         # return dfa, dfi.drop(dfa.index)
-        mask = (dfi.index.get_level_values(0) % 100) <= frac * 100
+        mask = (dfi.index.get_level_values(0) % 100) < frac * 100
         return dfi[mask], dfi[~mask]
 
 
@@ -193,27 +193,21 @@ class ProcesserJets(Processer):
                 df, _ = self.split_df(df, self.cfg('frac_mcana', .2))
                 if len(df) == 0:
                     return
-                # print('MC det', df.index.get_level_values(0).unique(), flush=True)
+                self.logger.debug('MC det: %s', df.index.get_level_values(0).unique())
                 if f := self.cfg('closure.exclude_feeddown_det'):
-                    self.logger.info('excluding feeddown det')
                     dfquery(df, f, inplace=True)
                 if f := self.cfg('closure.filter_reflections'):
-                    self.logger.info('excluding reflections')
                     dfquery(df, f, inplace=True)
                 if self.cfg('closure.use_matched'):
-                    self.logger.info('using matched')
                     if idx := self.cfg('efficiency.index_match'):
                         df['idx_match'] = df[idx].apply(lambda ar: ar[0] if len(ar) > 0 else -1)
                         dfquery(df, 'idx_match >= 0', inplace=True)
 
-            # remove entries that would end up in under-/overflow bins to save compute time
-            # df = df.loc[(df.fJetPt >= min(self.binarray_ptjet)) & (df.fJetPt < max(self.binarray_ptjet))]
-            # df = df.loc[(df.fPt >= min(self.bins_analysis[:,0])) & (df.fPt < max(self.bins_analysis[:,1]))]
-            self._calculate_variables(df) # TODO: only calculate requested variables
+            self._calculate_variables(df)
 
             # fill histograms for all (active) observables
             for obs, spec in self.cfg('observables', {}).items():
-                self.logger.info('preparing histograms for %s', obs)
+                self.logger.debug('preparing histograms for %s', obs)
                 var = obs.split('-')
                 if not all(v in df for v in var):
                     self.logger.error('dataframe does not contain %s', var)
@@ -247,7 +241,7 @@ class ProcesserJets(Processer):
         h_eff = {(cat, level): create_hist(f'h_ptjet-pthf_{cat}_{level}',
                                            ';p_{T}^{jet} (GeV/#it{c});p_{T}^{HF} (GeV/#it{c})',
                                            self.binarray_ptjet, self.binarray_pthf)
-                                           for cat in cats for level in levels}
+                                           for cat in cats for level in (levels + ['det_gencuts'])}
         # TODO: extend to multi-dimensional observables
         h_effkine = {(cat, level, cut, var):
                         create_hist(f'h_effkine_{cat}_{level}_{cut}_{var}',
@@ -272,15 +266,9 @@ class ProcesserJets(Processer):
                 self.binarray_ptjet, self.binarray_pthf, self.binarrays_obs[var])
             for (cat, var) in itertools.product(cats, observables)
             if not '-' in var}
-        response_matrix = {
-            (cat, var): ROOT.RooUnfoldResponse(h_effkine[(cat, 'det', 'nocuts', var)],
-                                               h_effkine[(cat, 'gen', 'nocuts', var)])
-            for (cat, var) in itertools.product(cats, observables)
-            if not '-' in var}
         h_effkine_frac = copy.deepcopy(h_effkine)
         h_response_frac = copy.deepcopy(h_response)
-        response_matrix_frac = copy.deepcopy(response_matrix)
-        for hist in itertools.chain(h_effkine_frac.values(), h_response_frac.values(), response_matrix_frac.values()):
+        for hist in itertools.chain(h_effkine_frac.values(), h_response_frac.values()):
             hist.SetName(hist.GetName() + '_frac')
 
         with TFile.Open(self.l_histoeff[index], "recreate") as rfile:
@@ -315,38 +303,14 @@ class ProcesserJets(Processer):
                         for cat in cats if 'idx_match' in dfdet[cat]}
 
             for cat in cats:
-                df = dfgen[cat]
-                # FIXME: check cuts
-                # df = df.loc[(df.fJetPt_gen >= min(self.binarray_ptjet)) & (df.fJetPt_gen < max(self.binarray_ptjet))]
-                fill_hist(h_eff[(cat, 'gen')], df[['fJetPt_gen', 'fPt_gen']])
+                fill_hist(h_eff[(cat, 'gen')], dfgen[cat][['fJetPt_gen', 'fPt_gen']])
+                fill_hist(h_eff[(cat, 'det')], dfdet[cat][['fJetPt', 'fPt']])
                 if cat in dfmatch and dfmatch[cat] is not None:
                     df = dfmatch[cat]
-                    # df = df.loc[(df.fJetPt_gen >= min(self.binarray_ptjet)) & (df.fJetPt_gen < max(self.binarray_ptjet))]
+                    df = df.loc[(df.fJetPt_gen >= min(self.binarray_ptjet)) & (df.fJetPt_gen < max(self.binarray_ptjet))]
+                    fill_hist(h_eff[(cat, 'det_gencuts')], df[['fJetPt', 'fPt']])
                 else:
-                    self.logger.error('No matching, using unmatched detector level for efficiency')
-                    df = dfdet[cat]
-                # FIXME: check use of matched sample
-                fill_hist(h_eff[(cat, 'det')], df[['fJetPt', 'fPt']])
-
-            # for cat in cats:
-            #     df = dfdet[cat]
-            #     df = df.loc[(df.fJetPt >= min(self.binarray_ptjet)) & (df.fJetPt < max(self.binarray_ptjet))]
-            #     df = df.loc[(df.fPt >= min(self.bins_analysis[:,0])) & (df.fPt < max(self.bins_analysis[:,1]))]
-            #     df = self._calculate_variables(df)
-            #     dfdet[cat] = df
-
-            # # done separately since calculate_var assumes columns without _gen
-            # df = dfgen_orig
-            # df = df.loc[(df.fJetPt >= min(self.binarray_ptjet)) & (df.fJetPt < max(self.binarray_ptjet))]
-            # df = df.loc[(df.fPt >= min(self.bins_analysis[:,0])) & (df.fPt < max(self.bins_analysis[:,1]))]
-            # self._calculate_variables(df)
-            # df = df.rename(lambda name: name + '_gen', axis=1)
-            # dfgen = {'pr': df.loc[(df.ismcsignal_gen == 1) & (df.ismcprompt_gen == 1)],
-            #          'np': df.loc[(df.ismcsignal_gen == 1) & (df.ismcfd_gen == 1)]}
-
-            # # TODO: foresee multiple merge conditions
-            # dfmatch = {cat: pd.merge(dfdet[cat], dfgen[cat], left_on=['df', 'idx_match'], right_index=True)
-            #            for cat in cats if 'idx_match' in dfdet[cat]}
+                    self.logger.error('No matching, could not fill histogram with gen cuts')
 
             for var, cat in itertools.product(observables, cats):
                 # TODO: add support for more complex observables
@@ -364,22 +328,19 @@ class ProcesserJets(Processer):
                 fill_hist(h_mctruth[(cat, var)], df_mcana[['fJetPt_gen', 'fPt_gen', f'{var}_gen']])
 
                 if cat in dfmatch and dfmatch[cat] is not None:
-                    self._prepare_response(dfmatch[cat], h_effkine, h_response, response_matrix, cat, var)
+                    self._prepare_response(dfmatch[cat], h_effkine, h_response, cat, var)
                     f = self.cfg('frac_mcana', .2)
                     _, df_mccorr = self.split_df(dfmatch[cat], f if f < 1. else 0.)
-                    self._prepare_response(df_mccorr, h_effkine_frac, h_response_frac, response_matrix_frac, cat, var)
+                    self._prepare_response(df_mccorr, h_effkine_frac, h_response_frac, cat, var)
 
-            for name, obj in itertools.chain(
-                h_eff.items(),
-                h_effkine.items(), h_response.items(), response_matrix.items(),
-                h_effkine_frac.items(), h_response_frac.items(), response_matrix_frac.items(),
-                h_mctruth.items()):
+            for name, obj in itertools.chain(h_eff.items(), h_effkine.items(), h_response.items(),
+                                             h_effkine_frac.items(), h_response_frac.items(), h_mctruth.items()):
                 try:
                     rfile.WriteObject(obj, obj.GetName())
                 except Exception as ex: # pylint: disable=broad-exception-caught
                     self.logger.error('Writing of <%s> (%s) failed: %s', name, str(obj), str(ex))
 
-    def _prepare_response(self, dfi, h_effkine, h_response, response_matrix, cat, var):
+    def _prepare_response(self, dfi, h_effkine, h_response, cat, var):
         ptjet_min = min(self.binarray_ptjet)
         ptjet_max = max(self.binarray_ptjet)
         var_min = min(self.binarrays_obs[var])
@@ -394,7 +355,6 @@ class ProcesserJets(Processer):
                     (df[f'{var}_gen'] >= var_min) & (df[f'{var}_gen'] < var_max)]
         fill_hist(h_effkine[(cat, 'det', 'cut', var)], df[['fJetPt', var]])
 
-        fill_response(response_matrix[(cat, var)], df[['fJetPt', f'{var}', 'fJetPt_gen', f'{var}_gen']])
         fill_hist(h_response[(cat, var)], df[['fJetPt', f'{var}', 'fJetPt_gen', f'{var}_gen', 'fPt']])
 
         df = dfi

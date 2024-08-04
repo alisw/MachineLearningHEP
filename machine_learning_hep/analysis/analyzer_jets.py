@@ -69,8 +69,7 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes
         self.fit_mean = {}
         self.fit_func_bkg = {}
         self.fit_range = {}
-        self.hcandeff = None
-        self.hcandeff_np = None
+        self.hcandeff = {'pr': None, 'np': None}
         self.h_eff_ptjet_pthf = {}
         self.hfeeddown_det = { 'mc': {}, 'data': {}}
         self.n_events = {}
@@ -141,50 +140,28 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes
             for var in self.observables['all']:
                 if '-' in var:
                     continue
-                h_gen = []
-                h_ineff = {'pr': [], 'np': []}
                 for cat in ('pr', 'np'):
-                    if fh := rfile.Get(f'h_ptjet-pthf-{var}_{cat}_gen'):
-                        h_gen.append(fh)
-                        for ipt in range(self.nbins):
-                            h = project_hist(fh, [0, 2], {1: (ipt+1, ipt+1)})
-                            self._save_hist(h, f'qa/h_ptjet-{var}_{cat}_gen_ptbin{ipt}.png')
-                            h = h.Clone()
-                            h.Scale(self.hcandeff[ipt+1] if cat == 'pr' else self.hcandeff_np[ipt+1])
-                            self._save_hist(h, f'qa/h_ptjet-{var}_{cat}_exp_ptbin{ipt}.png')
-                            h_ineff[cat].append(h)
-                    else:
-                        self.logger.error('could not find %s', f'h_ptjet-pthf-{var}_{cat}_gen')
-                        rfile.ls()
-
                     h_response = rfile.Get(f'h_response_{cat}_{var}')
                     h_response_ptjet = project_hist(h_response, [0, 2], {})
                     h_response_shape = project_hist(h_response, [1, 3], {})
                     self._save_hist(h_response_ptjet, f'qa/h_ptjet-{var}_responsematrix-ptjet_{cat}.png', 'colz')
                     self._save_hist(h_response_shape, f'qa/h_ptjet-{var}_responsematrix-shape_{cat}.png', 'colz')
 
-                h_sum = sum_hists(h_gen)
-                for ipt in range(self.nbins):
-                    h = project_hist(h_sum, [0, 2], {1: (ipt+1, ipt+1)})
-                    self._save_hist(h, f'qa/h_ptjet-{var}_all_gen_ptbin{ipt}.png')
-
-                    h_exp = sum_hists([h_ineff['pr'][ipt], h_ineff['np'][ipt]])
-                    self._save_hist(h_exp, f'qa/h_ptjet-{var}_all_exp_ptbin{ipt}.png')
-
 
     #region efficiency
     def calculate_efficiencies(self):
         self.logger.info("Calculating efficiencies")
         cats = {'pr', 'np'}
-        rfilename = self.n_fileeff
-        with TFile(rfilename) as rfile:
+        with TFile(self.n_fileeff) as rfile:
             h_gen = {cat: rfile.Get(f'h_ptjet-pthf_{cat}_gen') for cat in cats}
-            h_det = {cat: rfile.Get(f'h_ptjet-pthf_{cat}_det').Clone(f'h_eff_{cat}') for cat in cats}
+            h_det = {cat: rfile.Get(f'h_ptjet-pthf_{cat}_det') for cat in cats}
+            h_det_gencuts = {cat: rfile.Get(f'h_ptjet-pthf_{cat}_det_gencuts') for cat in cats}
             n_bins_ptjet = get_nbins(h_gen['pr'], 0)
 
+            # Run 2 efficiencies
             bins_ptjet = (1, n_bins_ptjet)
-            h_gen_proj = {cat: project_hist(rfile.Get(f'h_ptjet-pthf_{cat}_gen'), [1], {0: bins_ptjet}) for cat in cats}
-            h_det_proj = {cat: project_hist(rfile.Get(f'h_ptjet-pthf_{cat}_det'), [1], {0: bins_ptjet}).Clone(f'h_eff_{cat}')
+            h_gen_proj = {cat: project_hist(h_gen[cat], [1], {0: bins_ptjet}) for cat in cats}
+            h_det_proj = {cat: project_hist(h_det_gencuts[cat], [1], {0: bins_ptjet}).Clone(f'h_eff_{cat}')
                           for cat in cats}
 
             for cat in cats:
@@ -194,16 +171,30 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes
                 h_det_proj[cat].Divide(h_gen_proj[cat])
                 self._save_hist(h_det_proj[cat], f'h_eff_{cat}.png')
 
-            self.hcandeff = h_det_proj['pr']
-            self.hcandeff_np = h_det_proj['np']
+                # extract efficiencies in bins of jet pt
+                ensure_sumw2(h_det[cat])
+                self.h_eff_ptjet_pthf[cat] = h_det[cat].Clone()
+                self.h_eff_ptjet_pthf[cat].Divide(h_gen[cat])
+                self._save_hist(self.h_eff_ptjet_pthf[cat], f'h_ptjet-pthf_eff_{cat}.png')
+                c = TCanvas()
+                c.cd()
+                for iptjet in range(get_nbins(self.h_eff_ptjet_pthf[cat], 0)):
+                    h = project_hist(self.h_eff_ptjet_pthf[cat], [1], {0: (iptjet+1, iptjet+1)})
+                    h.DrawCopy('' if iptjet == 0 else 'same')
+                    h.SetLineColor(iptjet)
+                self._save_canvas(c, f'h_ptjet-pthf_eff_{cat}_ptjet.png')
 
+            self.hcandeff['pr'] = h_det_proj['pr']
+            self.hcandeff['np'] = h_det_proj['np']
+
+            # Run 3 efficiencies
             for cat in cats:
                 h_response = rfile.Get(f'h_response_{cat}_fPt')
                 h_response_ptjet = project_hist(h_response, [0, 2], {})
                 h_response_pthf = project_hist(h_response, [1, 3], {})
                 self._save_hist(h_response_ptjet, f'eff/h_ptjet-pthf_responsematrix-ptjet_{cat}.png', 'colz')
                 self._save_hist(h_response_pthf, f'eff/h_ptjet-pthf_responsematrix-pthf_{cat}.png', 'colz')
-                rm = self._build_response_matrix(h_response, self.hcandeff)
+                rm = self._build_response_matrix(h_response, self.hcandeff['pr'])
                 h_effkine_gen = self._build_effkine(
                     rfile.Get(f'h_effkine_{cat}_gen_nocuts_fPt'),
                     rfile.Get(f'h_effkine_{cat}_gen_cut_fPt'))
@@ -228,34 +219,20 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes
 
                 c = TCanvas()
                 c.cd()
-                self.hcandeff.Draw()
-                self.hcandeff.SetLineColor(ROOT.kViolet)
-                self.hcandeff.SetLineWidth(3)
-                amax = self.hcandeff.GetMaximum() * 1.1
+                hc_eff = self.hcandeff['pr'].DrawCopy()
+                hc_eff.SetLineColor(ROOT.kViolet)
+                hc_eff.SetLineWidth(3)
+                amax = hc_eff.GetMaximum() * 1.1
                 hfirst = None
                 for iptjet in reversed(range(get_nbins(eff, 0) - 1)):
                     h = project_hist(eff, [1], {0: (iptjet+1, iptjet+1)})
                     h.SetName(h.GetName() + f'_ptjet{iptjet}')
-                    h.Draw('same') #'' if not hfirst else 'same')
+                    h.Draw('same')
                     h.SetLineColor(iptjet + 1)
                     amax = max(amax, h.GetMaximum() * 1.1)
                     hfirst = hfirst or h
-                self.hcandeff.GetYaxis().SetRangeUser(0., amax)
+                hc_eff.GetYaxis().SetRangeUser(0., amax)
                 self._save_canvas(c, f'h_ptjet-pthf_effnew_{cat}_ptjet.png')
-
-            for cat in cats:
-                ensure_sumw2(h_det[cat])
-                h_det[cat].Divide(h_gen[cat])
-                self.h_eff_ptjet_pthf[cat] = h_det[cat]
-                self._save_hist(h_det[cat], f'h_ptjet-pthf_eff_{cat}.png')
-                c = TCanvas()
-                c.cd()
-                for iptjet in range(get_nbins(h_det[cat], 0)):
-                    h = project_hist(h_det[cat], [1], {0: (iptjet+1, iptjet+1)})
-                    h.Scale(1. + .1 * iptjet)
-                    h.Draw('' if iptjet == 0 else 'same')
-                    h.SetLineColor(iptjet)
-                self._save_canvas(c, f'h_ptjet-pthf_eff_{cat}_ptjet.png')
 
 
     def _correct_efficiency(self, hist, ipt, use_ptjet = False):
@@ -263,23 +240,10 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes
             self.logger.error('no histogram to correct for efficiency')
             return
 
-        if not use_ptjet:
-            if not self.hcandeff:
-                self.logger.error('no efficiency available for %s', hist.GetName())
-                return
-
-            eff = self.hcandeff.GetBinContent(ipt + 1)
-            if np.isclose(eff, 0):
-                if hist.GetEntries() > 0:
-                    # TODO: how should we handle this?
-                    self.logger.error('Efficiency 0 for %s ipt %d, no correction possible',
-                                      hist.GetName(), ipt)
-                return
-
-            self.logger.debug('scaling hist %s (ipt %i) with 1. / %g', hist.GetName(), ipt, eff)
-            hist.Scale(1. / eff)
-        else:
-            self.logger.info('using 2d efficiency scaling')
+        if self.cfg('efficiency.correction_method') == 'run3':
+            raise NotImplementedError
+        elif self.cfg('efficiency.correction_method') == 'run2_2d':
+            self.logger.info('using Run 2 efficiencies per jet pt bin')
             if not self.h_eff_ptjet_pthf['pr']:
                 self.logger.error('no efficiency available for %s', hist.GetName())
                 return
@@ -292,6 +256,22 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes
                     continue
                 for ivar in range(get_nbins(hist, 1)):
                     scale_bin(hist, 1./eff, iptjet+1, ivar+1)
+        else:
+            self.logger.info('Correcting with Run 2 efficiencies')
+            if not self.hcandeff['pr']:
+                self.logger.error('no efficiency available for %s', hist.GetName())
+                return
+
+            eff = self.hcandeff['pr'].GetBinContent(ipt + 1)
+            if np.isclose(eff, 0):
+                if hist.GetEntries() > 0:
+                    # TODO: how should we handle this?
+                    self.logger.error('Efficiency 0 for %s ipt %d, no correction possible',
+                                      hist.GetName(), ipt)
+                return
+
+            self.logger.debug('scaling hist %s (ipt %i) with 1. / %g', hist.GetName(), ipt, eff)
+            hist.Scale(1. / eff)
 
 
     #region fitting
@@ -373,17 +353,15 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes
             fitcfg = None
             with TFile(rfilename) as rfile:
                 h = rfile.Get('h_mass-ptjet-pthf')
-                for iptjet, ipt in itertools.product(
-                    itertools.chain((None,), range(1, get_nbins(h, 1) - 1)),
-                    range(get_nbins(h, 2))):
+                for iptjet, ipt in itertools.product(itertools.chain((None,), range(1, get_nbins(h, 1) - 1)),
+                                                     range(get_nbins(h, 2))):
                     self.logger.debug('fitting %s - %i', level, ipt)
                     roows = self.roows.get(ipt)
-                    axis_jetpt = get_axis(h, 1)
+                    axis_ptjet = get_axis(h, 1)
                     cuts_proj = {2: (ipt+1, ipt+1)}
                     if iptjet:
-                        # FIXME: fix mean and sigma
                         cuts_proj.update({1: (iptjet+1, iptjet+1)})
-                        jetptlabel = f'_ptjet-{axis_jetpt.GetBinLowEdge(iptjet+1)}-{axis_jetpt.GetBinUpEdge(iptjet+1)}'
+                        jetptlabel = f'_ptjet-{axis_ptjet.GetBinLowEdge(iptjet+1)}-{axis_ptjet.GetBinUpEdge(iptjet+1)}'
                     else:
                         jetptlabel = ''
                     h_invmass = project_hist(h, [0], cuts_proj)
@@ -412,6 +390,7 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes
                             fitcfg = entry
                             break
                         self.logger.debug("Using fit config for %i: %s", ipt, fitcfg)
+                        # TODO: link datasel to fit stage
                         if datasel := fitcfg.get('datasel'):
                             hsel = rfile.Get(f'h_mass-ptjet-pthf_{datasel}')
                             h_invmass = project_hist(hsel, [0], cuts_proj)
@@ -447,7 +426,7 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes
                                 self.fit_func_bkg[level][ipt] = roo_ws.pdf("bkg").asTF(roo_ws.var(var_m))
                             self.fit_range[level][ipt] = (roo_ws.var(var_m).getMin('fit'),
                                                           roo_ws.var(var_m).getMax('fit'))
-                            self.logger.info('fit range for %s-%i: %s', level, ipt, self.fit_range[level][ipt])
+                            self.logger.debug('fit range for %s-%i: %s', level, ipt, self.fit_range[level][ipt])
                         else:
                             self.logger.error('RooFit failed for %s bin %d', level, ipt)
 
@@ -653,7 +632,7 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes
                                     h = h_proj
                             if mcordata == 'data' or not self.cfg('closure.use_matched'):
                                 self.logger.info('correcting efficiency')
-                                self._correct_efficiency(h, ipt, use_ptjet=True)
+                                self._correct_efficiency(h, ipt, use_ptjet=False)
                             fh_sub.append(h)
                         fh_sum = sum_hists(fh_sub)
                         self._save_hist(fh_sum, f'h_ptjet{label}_{method}_effscaled_{mcordata}.png')
@@ -821,8 +800,8 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes
             self._save_hist(project_hist(h3_fd_gen, [1, 2], {}), f'fd/h_ptjet-{var}_feeddown_gen_noeffscaling.png')
 
             for ipt in range(get_nbins(h3_fd_gen, axis=0)):
-                eff_pr = self.hcandeff.GetBinContent(ipt+1)
-                eff_np = self.hcandeff_np.GetBinContent(ipt+1)
+                eff_pr = self.hcandeff['pr'].GetBinContent(ipt+1)
+                eff_np = self.hcandeff['np'].GetBinContent(ipt+1)
                 if np.isclose(eff_pr, 0.):
                     self.logger.error('Efficiency zero for %s in pt bin %d, continuing', var, ipt)
                     continue # TODO: how should we handle this?
@@ -847,7 +826,7 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes
                 self._save_hist(h_fd_gen, f'fd/h_ptjet-{var}_feeddown_gen_kineeffscaled.png')
 
                 h_response = rfile.Get(f'h_response_np_{var}')
-                response_matrix_np  = self._build_response_matrix(h_response, self.hcandeff)
+                response_matrix_np  = self._build_response_matrix(h_response, self.hcandeff['pr'])
                 self._save_hist(response_matrix_np.Hresponse(), f'fd/h_ptjet-{var}_responsematrix_np_lin.png', 'colz')
 
                 # response_matrix_np = rfile.Get(f'h_effkine_np_det_nocuts_{var}_h_effkine_np_gen_nocuts_{var}')
@@ -925,7 +904,8 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes
             if not h_response:
                 self.logger.error('Response matrix for %s not available, cannot unfold', var + suffix)
                 return []
-            response_matrix_pr = self._build_response_matrix(h_response, self.hcandeff if mcordata == 'data' else None)
+            response_matrix_pr = self._build_response_matrix(
+                h_response, self.hcandeff['pr'] if mcordata == 'data' else None)
             # response_matrix_pr = rfile.Get(f'h_effkine_pr_det_nocuts_{var}_h_effkine_pr_gen_nocuts_{var}')
             self._save_hist(response_matrix_pr.Hresponse(), f'uf/h_ptjet-{var}-responsematrix_pr_lin_{mcordata}.png', 'colz')
 
