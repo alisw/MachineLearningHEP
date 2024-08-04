@@ -309,6 +309,8 @@ class ProcesserJets(Processer):
                     df = dfmatch[cat]
                     df = df.loc[(df.fJetPt_gen >= min(self.binarray_ptjet)) & (df.fJetPt_gen < max(self.binarray_ptjet))]
                     fill_hist(h_eff[(cat, 'det_gencuts')], df[['fJetPt', 'fPt']])
+                    # FIXME: check if we want to use the matched distribution here
+                    # fill_hist(h_eff[(cat, 'det')], df[['fJetPt', 'fPt']])
                 else:
                     self.logger.error('No matching, could not fill histogram with gen cuts')
 
