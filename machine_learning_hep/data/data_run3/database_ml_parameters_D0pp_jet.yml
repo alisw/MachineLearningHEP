@@ -405,11 +405,11 @@ D0jet_pp:
           range: [1.69, 2.04]
           components:
             sig:
-              fn: 'Gaussian::peak(m[1.,5.], mean[1.85,1.87], sigma_g1[.01,.08])'
+              fn: 'Gaussian::peak(m[1.,5.], mean[1.85,1.89], sigma_g1[.01,.08])'
             bkg:
               fn: 'Gaussian::wide(m, mean, sigma_wide[.05,1.])'
             model:
-              fn: 'SUM::sig(frac_wide[0.,1.]*wide, peak)'
+              fn: 'SUM::sig(frac_wide[0.,.3]*wide, peak)'
         - level: mcrefl
           ptrange: [1., 3.]
           datasel: mcrefl
@@ -537,6 +537,7 @@ D0jet_pp:
             model:
               fn: 'SUM::sigrefl(frac_refl[0.,1.]*refl, sig)'
         - ptrange: [1., 2.]
+          per_ptjet: true
           range: [1.720, 2.02]
           fix_params: ['frac_refl']
           free_params: ['sigma_g1']
@@ -547,6 +548,7 @@ D0jet_pp:
             model:
               fn: 'SUM::sum(frac[0.,1.]*sigrefl, bkg)'
         - ptrange: [2., 3.]
+          per_ptjet: true
           fix_params: ['frac_refl']
           free_params: ['sigma_g1']
           fix_params_ptjet: ['mean', 'sigma_g1']
@@ -557,6 +559,7 @@ D0jet_pp:
             model:
               fn: 'SUM::sum(frac[0.,1.]*sigrefl, bkg)'
         - ptrange: [3., 4.]
+          per_ptjet: true
           fix_params: ['frac_refl']
           free_params: ['sigma_g1']
           fix_params_ptjet: ['mean', 'sigma_g1']
@@ -567,6 +570,7 @@ D0jet_pp:
             model:
               fn: 'SUM::sum(frac[0.,1.]*sigrefl, bkg)'
         - ptrange: [4., 5.]
+          per_ptjet: true
           fix_params: ['frac_refl']
           free_params: ['sigma_g1']
           fix_params_ptjet: ['mean', 'sigma_g1']
@@ -578,6 +582,7 @@ D0jet_pp:
             model:
               fn: 'SUM::sum(frac[0.,1.]*sigrefl, bkg)'
         - ptrange: [5., 6.]
+          per_ptjet: true
           fix_params: ['frac_refl']
           free_params: ['sigma_g1']
           fix_params_ptjet: ['mean', 'sigma_g1']
@@ -588,6 +593,7 @@ D0jet_pp:
             model:
               fn: 'SUM::sum(frac[0.,1.]*sigrefl, bkg)'
         - ptrange: [6., 8.]
+          per_ptjet: true
           fix_params: ['frac_refl']
           free_params: ['sigma_g1']
           fix_params_ptjet: ['mean', 'sigma_g1']
@@ -598,6 +604,7 @@ D0jet_pp:
             model:
               fn: 'SUM::sum(frac[0.,1.]*sigrefl, bkg)'
         - range: [1.72, 2.20]
+          per_ptjet: true
           fix_params: ['frac_refl']
           free_params: ['sigma_g1']
           fix_params_ptjet: ['mean', 'sigma_g1']

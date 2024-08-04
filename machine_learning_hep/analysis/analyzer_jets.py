@@ -83,6 +83,7 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes
 
         self.fitter = RooFitter()
         self.roo_ws = {}
+        self.roo_ws_ptjet = {}
         self.roows = {}
 
     #region helpers
@@ -282,13 +283,10 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes
         frame.SetTitle(f'inv. mass for p_{{T}} {self.bins_candpt[ipt]} - {self.bins_candpt[ipt+1]} GeV/c')
         c = TCanvas()
         frame.Draw()
-        if res.status() == 0:
-            self._save_canvas(c, filename)
-        else:
+        if res.status() != 0:
             self.logger.warning('Invalid fit result for %s', hist.GetName())
-            # func_tot.Print('v')
             filename = filename.replace('.png', '_invalid.png')
-            self._save_canvas(c, filename)
+        self._save_canvas(c, filename)
         return res, ws
 
 
@@ -349,6 +347,7 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes
             self.fit_func_bkg[level] = [None] * self.nbins
             self.fit_range[level] = [None] * self.nbins
             self.roo_ws[level] = [None] * self.nbins
+            self.roo_ws_ptjet[level] = [[None] * self.nbins] * 10
             rfilename = self.n_filemass_mc if "mc" in level else self.n_filemass
             fitcfg = None
             with TFile(rfilename) as rfile:
@@ -365,11 +364,12 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes
                     else:
                         jetptlabel = ''
                     h_invmass = project_hist(h, [0], cuts_proj)
-                    if h_invmass.GetEntries() < 100: # TODO: reconsider criterion
-                        self.logger.error('Not enough entries to fit for %s bin %d', level, ipt)
-                        continue
                     ptrange = (self.bins_candpt[ipt], self.bins_candpt[ipt+1])
                     if self.cfg('mass_fit'):
+                        if h_invmass.GetEntries() < 100: # TODO: reconsider criterion
+                            self.logger.error('Not enough entries to fit %s iptjet %d ipt %d',
+                                              level, iptjet or -1, ipt)
+                            continue
                         fit_res, _, func_bkg = self._fit_mass(
                             h_invmass,
                             f'fit/h_mass_fitted_pthf-{ptrange[0]}-{ptrange[1]}_{level}.png')
@@ -390,6 +390,13 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes
                             fitcfg = entry
                             break
                         self.logger.debug("Using fit config for %i: %s", ipt, fitcfg)
+                        # check
+                        if iptjet and not fitcfg.get('per_ptjet'):
+                            continue
+                        if h_invmass.GetEntries() < 100: # TODO: reconsider criterion
+                            self.logger.warning('Not enough entries to fit for %s iptjet %d ipt %d',
+                                                level, iptjet or -1, ipt)
+                            continue
                         # TODO: link datasel to fit stage
                         if datasel := fitcfg.get('datasel'):
                             hsel = rfile.Get(f'h_mass-ptjet-pthf_{datasel}')
@@ -407,16 +414,17 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes
                         roo_res, roo_ws = self._roofit_mass(
                             h_invmass, ipt, fitcfg, roows,
                             f'roofit/h_mass_fitted{jetptlabel}_pthf-{ptrange[0]}-{ptrange[1]}_{level}.png')
+                        if roo_res.status() != 0:
+                            self.logger.error('RooFit failed for %s iptjet %d ipt %d', level, iptjet or -1, ipt)
                         # if level == 'mc':
                         #     roo_ws.Print()
                         # TODO: save snapshot per level
                         # roo_ws.saveSnapshot(level, None)
-                        # FIXME: store fit results per jet pt bin
-                        if iptjet:
-                            continue
-                        self.roo_ws[level][ipt] = roo_ws
                         self.roows[ipt] = roo_ws
-                        if roo_res.status() == 0:
+                        if iptjet:
+                            self.roo_ws_ptjet[level][iptjet][ipt] = roo_ws
+                        else:
+                            self.roo_ws[level][ipt] = roo_ws
                             # TODO: take parameter names from DB
                             if level in ('data', 'mc_sig'):
                                 self.fit_mean[level][ipt] = roo_ws.var('mean').getValV()
@@ -427,8 +435,6 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes
                             self.fit_range[level][ipt] = (roo_ws.var(var_m).getMin('fit'),
                                                           roo_ws.var(var_m).getMax('fit'))
                             self.logger.debug('fit range for %s-%i: %s', level, ipt, self.fit_range[level][ipt])
-                        else:
-                            self.logger.error('RooFit failed for %s bin %d', level, ipt)
 
 
     #region sidebands
