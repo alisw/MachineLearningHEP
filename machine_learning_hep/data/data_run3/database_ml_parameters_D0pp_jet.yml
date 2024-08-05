@@ -643,7 +643,7 @@ D0jet_pp:
         extra_cols: ['isd0', 'isd0bar', 'seld0', 'seld0bar']
         filter_det: '(isd0 & seld0) or (isd0bar & seld0bar)'
         index_match: fIndexArrayD0CMCPJETOS_hf
-        store_matched: true
+        # correction_method: run2_2d
 
       unfolding_iterations: 8
       closure:

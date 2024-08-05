@@ -23,7 +23,7 @@ import ROOT
 from ROOT import TH1F, TFile
 
 from machine_learning_hep.processer import Processer
-from machine_learning_hep.utilities import dfquery, fill_response, read_df
+from machine_learning_hep.utilities import dfquery, read_df
 from machine_learning_hep.utils.hist import bin_array, create_hist, fill_hist, get_axis
 
 
@@ -173,7 +173,6 @@ class ProcesserJets(Processer):
 
             df = pd.concat(read_df(self.mptfiles_recosk[bin][index]) for bin in self.active_bins_skim)
 
-            # fill before cuts on jet/HF pt, leaving option of excluding under-/overflow to analyzer
             h = create_hist(
                 'h_mass-ptjet-pthf',
                 ';M (GeV/#it{c}^{2});p_{T}^{jet} (GeV/#it{c});p_{T}^{HF} (GeV/#it{c})',
@@ -205,24 +204,20 @@ class ProcesserJets(Processer):
 
             self._calculate_variables(df)
 
-            # fill histograms for all (active) observables
             for obs, spec in self.cfg('observables', {}).items():
                 self.logger.debug('preparing histograms for %s', obs)
                 var = obs.split('-')
                 if not all(v in df for v in var):
                     self.logger.error('dataframe does not contain %s', var)
                     continue
-
                 h = create_hist(
                     f'h_mass-ptjet-pthf-{obs}',
                     f';M (GeV/#it{{c}}^{{2}});p_{{T}}^{{jet}} (GeV/#it{{c}});p_{{T}}^{{HF}} (GeV/#it{{c}});{obs}',
                     self.binarray_mass, self.binarray_ptjet, self.binarray_pthf, *[self.binarrays_obs[v] for v in var])
                 for i, v in enumerate(var):
-                    # additional axis titles are not derived from title string
                     get_axis(h, 3+i).SetTitle(self.cfg(f'observables.{v}.label', v))
 
-                fill_hist(h, df[['fM', 'fJetPt', 'fPt', *var]],
-                          arraycols=spec.get('arraycols', None), write=True)
+                fill_hist(h, df[['fM', 'fJetPt', 'fPt', *var]], arraycols=spec.get('arraycols', None), write=True)
 
     # TODO:
     # - binning variations (separate ranges for MC and data)
@@ -243,12 +238,6 @@ class ProcesserJets(Processer):
                                            self.binarray_ptjet, self.binarray_pthf)
                                            for cat in cats for level in (levels + ['det_gencuts'])}
         # TODO: extend to multi-dimensional observables
-        h_effkine = {(cat, level, cut, var):
-                        create_hist(f'h_effkine_{cat}_{level}_{cut}_{var}',
-                                    f";p_{{T}}^{{jet}} (GeV/#it{{c}});{var}",
-                                    self.binarray_ptjet, self.binarrays_obs[var])
-                        for var, level, cat, cut in itertools.product(observables, levels, cats, cuts)
-                        if not '-' in var}
         # TODO: allow different binnings for gen and det
         h_response = {
             (cat, var): create_hist(
@@ -259,6 +248,13 @@ class ProcesserJets(Processer):
                 self.binarray_pthf)
             for (cat, var) in itertools.product(cats, observables)
             if not '-' in var}
+        # TODO: derive bins from response histogram
+        h_effkine = {(cat, level, cut, var):
+                        create_hist(f'h_effkine_{cat}_{level}_{cut}_{var}',
+                                    f";p_{{T}}^{{jet}} (GeV/#it{{c}});{var}",
+                                    self.binarray_ptjet, self.binarrays_obs[var])
+                        for var, level, cat, cut in itertools.product(observables, levels, cats, cuts)
+                        if not '-' in var}
         h_mctruth = {
             (cat, var): create_hist(
                 f'h_ptjet-pthf-{var}_{cat}_gen',
@@ -266,13 +262,15 @@ class ProcesserJets(Processer):
                 self.binarray_ptjet, self.binarray_pthf, self.binarrays_obs[var])
             for (cat, var) in itertools.product(cats, observables)
             if not '-' in var}
+
+        # create partial versions for closure testing
         h_effkine_frac = copy.deepcopy(h_effkine)
         h_response_frac = copy.deepcopy(h_response)
         for hist in itertools.chain(h_effkine_frac.values(), h_response_frac.values()):
             hist.SetName(hist.GetName() + '_frac')
 
         with TFile.Open(self.l_histoeff[index], "recreate") as rfile:
-            # TODO: avoid hard-coding values here
+            # TODO: avoid hard-coding values here (check if restriction is needed at all)
             cols = ['ismcprompt', 'ismcsignal', 'ismcfd', 'fPt', 'fEta', 'fPhi', 'fJetPt', 'fJetEta', 'fJetPhi',
                     'fPtLeading', 'fPtSubLeading', 'fTheta', 'fNSub2DR', 'fNSub1', 'fNSub2']
 
@@ -304,21 +302,20 @@ class ProcesserJets(Processer):
 
             for cat in cats:
                 fill_hist(h_eff[(cat, 'gen')], dfgen[cat][['fJetPt_gen', 'fPt_gen']])
-                fill_hist(h_eff[(cat, 'det')], dfdet[cat][['fJetPt', 'fPt']])
+                # fill_hist(h_eff[(cat, 'det')], dfdet[cat][['fJetPt', 'fPt']])
                 if cat in dfmatch and dfmatch[cat] is not None:
                     df = dfmatch[cat]
+                    # FIXME: using matched to be consistent with kinematic efficiencies
+                    fill_hist(h_eff[(cat, 'det')], df[['fJetPt', 'fPt']])
                     df = df.loc[(df.fJetPt_gen >= min(self.binarray_ptjet)) & (df.fJetPt_gen < max(self.binarray_ptjet))]
                     fill_hist(h_eff[(cat, 'det_gencuts')], df[['fJetPt', 'fPt']])
-                    # FIXME: check if we want to use the matched distribution here
-                    # fill_hist(h_eff[(cat, 'det')], df[['fJetPt', 'fPt']])
                 else:
-                    self.logger.error('No matching, could not fill histogram with gen cuts')
+                    self.logger.error('No matching, could not fill matched detector-level histograms')
 
             for var, cat in itertools.product(observables, cats):
                 # TODO: add support for more complex observables
                 if '-' in var or self.cfg(f'observables.{var}.arraycols'):
                     continue
-
                 if self.cfg('closure.use_matched'):
                     self.logger.info('using matched for truth')
                     df_mcana, _ = self.split_df(dfmatch[cat], self.cfg('frac_mcana', .2))
@@ -349,7 +346,8 @@ class ProcesserJets(Processer):
         var_max = max(self.binarrays_obs[var])
 
         df = dfi
-        # TODO: check ptjet/shape ranges
+        # TODO: derive cuts from definition of response histogram
+        # TODO: is the first cut really needed? taken care of by under-/overflow bins
         df = df.loc[(df.fJetPt >= ptjet_min) & (df.fJetPt < ptjet_max) &
                     (df[var] >= var_min) & (df[var] < var_max)]
         fill_hist(h_effkine[(cat, 'det', 'nocuts', var)], df[['fJetPt', var]])
