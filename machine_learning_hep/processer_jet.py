@@ -19,7 +19,6 @@ import math
 
 import numpy as np
 import pandas as pd
-import ROOT
 from ROOT import TH1F, TFile
 
 from machine_learning_hep.processer import Processer
@@ -302,12 +301,15 @@ class ProcesserJets(Processer):
 
             for cat in cats:
                 fill_hist(h_eff[(cat, 'gen')], dfgen[cat][['fJetPt_gen', 'fPt_gen']])
+                # TODO: eventually use the full det-level sample (requires extension of gen-level folding)
                 # fill_hist(h_eff[(cat, 'det')], dfdet[cat][['fJetPt', 'fPt']])
                 if cat in dfmatch and dfmatch[cat] is not None:
                     df = dfmatch[cat]
-                    # FIXME: using matched to be consistent with kinematic efficiencies
                     fill_hist(h_eff[(cat, 'det')], df[['fJetPt', 'fPt']])
-                    df = df.loc[(df.fJetPt_gen >= min(self.binarray_ptjet)) & (df.fJetPt_gen < max(self.binarray_ptjet))]
+                    df = df.loc[(df.fJetPt_gen >= min(self.binarray_ptjet)) &
+                                (df.fJetPt_gen < max(self.binarray_ptjet))]
+                    df = df.loc[(df.fPt_gen >= min(self.binarray_pthf)) &
+                                (df.fPt_gen < max(self.binarray_pthf))]
                     fill_hist(h_eff[(cat, 'det_gencuts')], df[['fJetPt', 'fPt']])
                 else:
                     self.logger.error('No matching, could not fill matched detector-level histograms')

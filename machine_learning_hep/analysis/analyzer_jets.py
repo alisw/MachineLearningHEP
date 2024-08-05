@@ -151,6 +151,7 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes
 
 
     #region efficiency
+    # pylint: disable=too-many-statements
     def calculate_efficiencies(self):
         self.logger.info("Calculating efficiencies")
         cats = {'pr', 'np'}
@@ -204,12 +205,12 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes
                 self._save_hist(h_effkine_det, f'eff/h_effkine-ptjet-pthf_{cat}_det.png', 'texte')
 
                 h_in = h_gen[cat].Clone()
-                self._save_hist(project_hist(h_in, [1], {}), f'eff/h_pthf_gen.png')
+                self._save_hist(project_hist(h_in, [1], {}), f'eff/h_pthf_{cat}_gen.png')
                 h_in.Multiply(h_effkine_gen)
                 h_out = h_in.Clone()
                 h_out = folding(h_in, rm, h_out)
                 h_out.Divide(h_effkine_det)
-                self._save_hist(project_hist(h_out, [1], {}), f'eff/h_pthf_gen_folded.png')
+                self._save_hist(project_hist(h_out, [1], {}), f'eff/h_pthf_{cat}_gen_folded.png')
 
                 eff = h_det[cat].Clone(f'h_effnew_{cat}')
                 ensure_sumw2(eff)
@@ -239,7 +240,7 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes
 
         if self.cfg('efficiency.correction_method') == 'run3':
             raise NotImplementedError
-        elif self.cfg('efficiency.correction_method') == 'run2_2d':
+        if self.cfg('efficiency.correction_method') == 'run2_2d':
             self.logger.info('using Run 2 efficiencies per jet pt bin')
             if not self.h_eff_ptjet_pthf['pr']:
                 self.logger.error('no efficiency available for %s', hist.GetName())
@@ -510,7 +511,8 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes
             # TODO: scale ptjet bins separately
             areaNormFactor = area['signal'] / (area['sideband_left'] + area['sideband_right'])
             fh_sideband.Scale(areaNormFactor)
-            self._save_hist(fh_sideband, f'sideband/h_ptjet{label}_sideband_pthf-{ptrange[0]}-{ptrange[1]}_{mcordata}.png')
+            self._save_hist(fh_sideband,
+                            f'sideband/h_ptjet{label}_sideband_pthf-{ptrange[0]}-{ptrange[1]}_{mcordata}.png')
             fh_subtracted.Add(fh_sideband, -1.)
 
         # clip negative values to 0
@@ -537,7 +539,7 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes
             for iptjet in range(get_nbins(hist, 1)):
                 c = TCanvas()
                 hcs = []
-                for i, h in enumerate(map(lambda h: project_hist(h, [1], {0: (iptjet+1, iptjet+1)}), hists)):
+                for i, h in enumerate(map(lambda h, ibin=iptjet+1: project_hist(h, [1], {0: (ibin, ibin)}), hists)):
                     hcs.append(h.DrawCopy('same' if i > 0 else ''))
                     hcs[-1].SetLineColor(cmap[i])
                 hcs[0].GetYaxis().SetRangeUser(0., 1.1 * max(map(lambda h: h.GetMaximum(), hcs)))
