@@ -478,6 +478,9 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes
                 regions[reg] = (max(lim[0], fit_range[0]), min(lim[1], fit_range[1]))
                 self.logger.warning('region %s for %s bin %d (%s) extends beyond fit range: %s, clipping to %s',
                                     reg, mcordata, ipt, ptrange, lim, regions[reg])
+                if regions[reg][1] < regions[reg][0]:
+                    self.logger.error('region limits inverted, reducing to zero width')
+                    regions[reg] = (regions[reg][0], regions[reg][0])
         axis = get_axis(hist, 0)
         bins = {key: (axis.FindBin(region[0]), axis.FindBin(region[1]) - 1) for key, region in regions.items()}
         limits = {key: (axis.GetBinLowEdge(bins[key][0]), axis.GetBinUpEdge(bins[key][1])) for key in bins}
@@ -491,6 +494,7 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes
             # project out the mass regions (first axis)
             axes = list(range(get_dim(hist)))[1:]
             fh[region] = project_hist(hist, axes, {0: bins[region]})
+            self.logger.info("Projecting %s to %s in %s: %g entries", hist, axes, bins[region], fh[region].GetEntries())
             self._save_hist(fh[region],
                             f'sideband/h_ptjet{label}_{region}_pthf-{ptrange[0]}-{ptrange[1]}_{mcordata}.png')
             # TODO: calculate areas per ptjet bin
