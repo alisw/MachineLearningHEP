@@ -42,41 +42,65 @@ def get_nbins(hist, axis:int):
 # pylint: disable=too-many-branches
 def project_hist(hist, axes: list, limits: dict[int, tuple[int]]):
     # TODO: add consistent suffix for projections
+    # TODO: add option for uncertainties ???
     if len(axes) == 2:
         axes = axes[:] # slice to avoid modifying the list passed as parameter
         axes.reverse() # compensation for ROOT signature using ydim, xdim for 2d projection
+    reset = False
     if isinstance(hist, ROOT.THn):
+        assert len(axes) < hist.GetNdimensions()
         ranges = []
         for iaxis in range(hist.GetNdimensions()):
             ranges.append(get_range(hist, iaxis))
         for iaxis, bins in limits.items():
             get_axis(hist, iaxis).SetRange(bins[0], bins[1])
+            if bins[0] == 1 and bins[1] == get_nbins(hist, iaxis):
+                get_axis(hist, iaxis).SetBit(ROOT.TAxis.kAxisRange)
+            reset |= bins[1] < bins[0]
         hproj = hist.Projection(*axes, 'e') if len(axes) < 4 else hist.Projection(len(axes), np.asarray(axes, 'i'), 'e')
         for iaxis in limits:
             get_axis(hist, iaxis).SetRange(*ranges[iaxis])
+        if reset:
+            hproj.Reset()
         return hproj
 
     if isinstance(hist, ROOT.TH3):
+        assert len(axes) < hist.GetDimension()
         ranges = []
         for iaxis in range(hist.GetDimension()):
             ranges.append(get_range(hist, iaxis))
             if iaxis in limits:
                 bins = limits[iaxis]
                 get_axis(hist, iaxis).SetRange(bins[0], bins[1])
+                if bins[0] == 1 and bins[1] == get_nbins(hist, iaxis):
+                    get_axis(hist, iaxis).SetBit(ROOT.TAxis.kAxisRange)
+                reset |= bins[1] < bins[0]
         proj_spec = ""
         for axis in axes:
             proj_spec += ('x' if axis == 0 else 'y' if axis == 1 else 'z')
         hproj = hist.Project3D(proj_spec)
         for iaxis in limits:
             get_axis(hist, iaxis).SetRange(*ranges[iaxis])
+        if reset:
+            hproj.Reset()
         return hproj
 
     if isinstance(hist, ROOT.TH2):
         assert len(axes) == 1
         if axes[0] == 0:
-            return hist.ProjectionX("_px", *limits.get(1, []))
+            bins = limits.get(1, [])
+            reset = len(bins) == 2 and bins[1] < bins[0]
+            hproj = hist.ProjectionX("_px", *bins)
+            if reset:
+                hproj.Reset()
+            return hproj
         if axes[0] == 1:
-            return hist.ProjectionY("_py", *limits.get(0, []))
+            bins = limits.get(0, [])
+            reset = len(bins) == 2 and bins[1] < bins[0]
+            hproj = hist.ProjectionY("_py", *bins)
+            if reset:
+                hproj.Reset()
+            return hproj
         raise ValueError
 
     raise NotImplementedError
