@@ -5,17 +5,18 @@ DIR_THIS="$(dirname "$(realpath "$0")")"
 
 # Config file prefix
 # CONFIG="default"
-# CONFIG="d0jet"
-CONFIG="lcjet"
+CONFIG="d0jet"
+# CONFIG="lcjet"
 
 # Config file suffix
 # STAGE="complete"
-# STAGE="all"
+STAGE="all"
 # STAGE="ana"
-STAGE="variations"
+# STAGE="variations"
 
 # Suffix of the analysis database
-DATABASE="LcJet_pp"
+DATABASE="D0Jet_pp"
+# DATABASE="LcJet_pp"
 
 # Name of the analysis section in the analysis database
 ANALYSIS="jet_obs"
