@@ -342,27 +342,26 @@ class ProcesserJets(Processer):
                     self.logger.error('Writing of <%s> (%s) failed: %s', name, str(obj), str(ex))
 
     def _prepare_response(self, dfi, h_effkine, h_response, cat, var):
-        ptjet_min = min(self.binarray_ptjet)
-        ptjet_max = max(self.binarray_ptjet)
-        var_min = min(self.binarrays_obs[var])
-        var_max = max(self.binarrays_obs[var])
+        axis_ptjet_det = get_axis(h_response[(cat, var)], 0)
+        axis_var_det = get_axis(h_response[(cat, var)], 1)
+        axis_ptjet_gen = get_axis(h_response[(cat, var)], 2)
+        axis_var_gen = get_axis(h_response[(cat, var)], 3)
 
         df = dfi
-        # TODO: derive cuts from definition of response histogram
-        # TODO: is the first cut really needed? taken care of by under-/overflow bins
-        df = df.loc[(df.fJetPt >= ptjet_min) & (df.fJetPt < ptjet_max) &
-                    (df[var] >= var_min) & (df[var] < var_max)]
+        # TODO: the first cut should be taken care of by under-/overflow bins, check their usage in analyzer
+        df = df.loc[(df.fJetPt >= axis_ptjet_det.GetXmin()) & (df.fJetPt < axis_ptjet_det.GetXmax()) &
+                    (df[var] >= axis_var_det.GetXmin()) & (df[var] < axis_var_det.GetXmax())]
         fill_hist(h_effkine[(cat, 'det', 'nocuts', var)], df[['fJetPt', var]])
-        df = df.loc[(df.fJetPt_gen >= ptjet_min) & (df.fJetPt_gen < ptjet_max) &
-                    (df[f'{var}_gen'] >= var_min) & (df[f'{var}_gen'] < var_max)]
+        df = df.loc[(df.fJetPt_gen >= axis_ptjet_gen.GetXmin()) & (df.fJetPt_gen < axis_ptjet_gen.GetXmax()) &
+                    (df[f'{var}_gen'] >= axis_var_gen.GetXmin()) & (df[f'{var}_gen'] < axis_var_gen.GetXmax())]
         fill_hist(h_effkine[(cat, 'det', 'cut', var)], df[['fJetPt', var]])
 
         fill_hist(h_response[(cat, var)], df[['fJetPt', f'{var}', 'fJetPt_gen', f'{var}_gen', 'fPt']])
 
         df = dfi
-        df = df.loc[(df.fJetPt_gen >= ptjet_min) & (df.fJetPt_gen < ptjet_max) &
-                    (df[f'{var}_gen'] >= var_min) & (df[f'{var}_gen'] < var_max)]
+        df = df.loc[(df.fJetPt_gen >= axis_ptjet_gen.GetXmin()) & (df.fJetPt_gen < axis_ptjet_gen.GetXmax()) &
+                    (df[f'{var}_gen'] >= axis_var_gen.GetXmin()) & (df[f'{var}_gen'] < axis_var_gen.GetXmax())]
         fill_hist(h_effkine[(cat, 'gen', 'nocuts', var)], df[['fJetPt_gen', f'{var}_gen']])
-        df = df.loc[(df.fJetPt >= ptjet_min) & (df.fJetPt < ptjet_max) &
-                    (df[f'{var}'] >= var_min) & (df[f'{var}'] < var_max)]
+        df = df.loc[(df.fJetPt >= axis_ptjet_det.GetXmin()) & (df.fJetPt < axis_ptjet_det.GetXmax()) &
+                    (df[f'{var}'] >= axis_var_det.GetXmin()) & (df[f'{var}'] < axis_var_det.GetXmax())]
         fill_hist(h_effkine[(cat, 'gen', 'cut', var)], df[['fJetPt_gen', f'{var}_gen']])
