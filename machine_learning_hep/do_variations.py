@@ -17,27 +17,31 @@ Author: Vit Kucera <vit.kucera@cern.ch>
 
 # pylint: disable=consider-using-f-string
 
-import os
-import sys
-import shutil
 import argparse
-import subprocess
-import shlex
-from copy import deepcopy
 import datetime
+import os
+import shlex
+import shutil
+import subprocess
+import sys
+from copy import deepcopy
+
 import yaml  # pylint: disable=import-error
 
+
 def msg_err(message: str):
-    '''Print an error message.'''
+    """Print an error message."""
     print("\x1b[1;31mError: %s\x1b[0m" % message)
 
+
 def msg_warn(message: str):
-    '''Print a warning message.'''
+    """Print a warning message."""
     print("\x1b[1;36mWarning:\x1b[0m %s" % message)
 
+
 def replace_strings(obj, old: str, new: str, strict=False):
-    '''Replace old with new in every string in obj.
-    Return None if strict is True and old is not found in every string.'''
+    """Replace old with new in every string in obj.
+    Return None if strict is True and old is not found in every string."""
     if isinstance(obj, str):
         if strict and old not in obj:
             return None
@@ -49,12 +53,13 @@ def replace_strings(obj, old: str, new: str, strict=False):
         return new_obj
     return obj
 
+
 def modify_paths(dic: dict, old: str, new: str, do_proc: bool):
-    '''Modify the paths of the results directories.
-    If do_proc is True, modify also paths of the input directories.'''
-    strict = True # If True, require old to be in every string.
+    """Modify the paths of the results directories.
+    If do_proc is True, modify also paths of the input directories."""
+    strict = True  # If True, require old to be in every string.
     if "analysis" not in dic:
-        msg_err("key \"analysis\" not found.")
+        msg_err('key "analysis" not found.')
         return False
     for key_a, val_a in dic["analysis"].items():
         if not isinstance(val_a, dict):
@@ -75,13 +80,14 @@ def modify_paths(dic: dict, old: str, new: str, do_proc: bool):
                     continue
                 new_val_d = replace_strings(val_d, old, new, strict)
                 if new_val_d is None and val_d is not None:
-                    msg_err("\"%s\" not found in %s/%s/%s" % (old, key_a, data, key_d))
+                    msg_err('"%s" not found in %s/%s/%s' % (old, key_a, data, key_d))
                     return False
                 dic_ana[data][key_d] = new_val_d
     return True
 
+
 def ask_delete_dir(path: str):
-    '''Check whether the directory exists and delete it if the user approves.'''
+    """Check whether the directory exists and delete it if the user approves."""
     if isinstance(path, list):
         for p in path:
             if not ask_delete_dir(p):
@@ -110,17 +116,18 @@ def ask_delete_dir(path: str):
             return False
     return True
 
+
 def delete_output_dirs(dic: dict, ana: str, varstring: str):
-    '''Check whether the output directories exist and delete them if the user approves.'''
+    """Check whether the output directories exist and delete them if the user approves."""
     if "analysis" not in dic:
-        msg_err("key \"analysis\" not found.")
+        msg_err('key "analysis" not found.')
         return False
     if ana not in dic["analysis"]:
-        msg_err("Analysis \"%s\" not found." % ana)
+        msg_err('Analysis "%s" not found.' % ana)
         return False
     dic_ana = dic["analysis"][ana]
     if not isinstance(dic_ana, dict):
-        msg_err("key \"%s\" is not a dictionary." % ana)
+        msg_err('key "%s" is not a dictionary.' % ana)
         return False
     results = dic_ana["data"]["resultsallp"]
     i_cut = results.rfind(varstring) + len(varstring)
@@ -129,19 +136,19 @@ def delete_output_dirs(dic: dict, ana: str, varstring: str):
         return False
     return True
 
+
 def format_value(old, new):
-    '''Format the new value based on the format of the old one.
+    """Format the new value based on the format of the old one.
     If old is a list and new is not, replace all elements in old with new, recursively.
-    Keep the old value if new is the special character.'''
-    spec_char = "#" # Special character: Value will not be changed.
+    Keep the old value if new is the special character."""
+    spec_char = "#"  # Special character: Value will not be changed.
     if new == spec_char:
         return old
     if type(old) is type(new):
         if isinstance(old, list):
             len_old, len_new = len(old), len(new)
             if len_old != len_new:
-                msg_warn("Change of number of elements: %d -> %d\n\t%s -> %s" % \
-                    (len_old, len_new, old, new))
+                msg_warn("Change of number of elements: %d -> %d\n\t%s -> %s" % (len_old, len_new, old, new))
         return new
     if isinstance(old, list):
         # Return a list of the same structure, filled with new.
@@ -149,19 +156,22 @@ def format_value(old, new):
     msg_warn("Change of type: %s -> %s\n\t%s -> %s" % (type(old), type(new), old, new))
     return new
 
+
 def format_varname(varname: str, index: int, n_var: int):
-    '''Format the name of a variation in a variation group. Used in paths of output directories.'''
+    """Format the name of a variation in a variation group. Used in paths of output directories."""
     return "%s_%d" % (varname, index) if n_var > 1 else varname
 
+
 def format_varlabel(varlabel: list, index: int, n_var: int):
-    '''Format the label of a variation in a variation group.'''
+    """Format the label of a variation in a variation group."""
     return "%s: %d" % (varlabel[0], index) if len(varlabel) != n_var else varlabel[index]
 
+
 def modify_dictionary(dic: dict, diff: dict, add_not_present=False):
-    '''Modify the dic dictionary using the diff dictionary.
+    """Modify the dic dictionary using the diff dictionary.
 
     Add additional keys if add_not_present is True
-    '''
+    """
     for key, value in diff.items():
         if key in dic:
             if isinstance(value, dict):
@@ -173,10 +183,11 @@ def modify_dictionary(dic: dict, diff: dict, add_not_present=False):
         else:
             msg_warn("Key %s was not found and will be ignored." % key)
 
+
 def good_list_length(obj, length: int, name=None):
-    '''Check whether all the values are lists of the correct length.'''
+    """Check whether all the values are lists of the correct length."""
     result = True
-    #if name:
+    # if name:
     #    print(name)
     if isinstance(obj, dict):
         for key in obj:
@@ -187,32 +198,36 @@ def good_list_length(obj, length: int, name=None):
         l_obj = len(obj)
         result = bool(l_obj == length)
         if not result:
-            msg_err("List%s does not have correct length: %d (expected: %d)." % \
-                (" %s" % name if name else "", l_obj, length))
+            msg_err(
+                "List%s does not have correct length: %d (expected: %d)."
+                % (" %s" % name if name else "", l_obj, length)
+            )
     else:
         msg_err("Object%s is neither a dictionary nor a list." % (" %s" % name if name else ""))
         result = False
     return result
 
+
 def slice_dic(dic: dict, index: int):
-    '''Replace every list in the dictionary with its i-th element'''
+    """Replace every list in the dictionary with its i-th element"""
     for key, val in dic.items():
         if isinstance(val, list):
             dic[key] = val[index]
         elif isinstance(val, dict):
             slice_dic(val, index)
 
-def healthy_structure(dic_diff: dict): # pylint: disable=too-many-return-statements, too-many-branches
-    '''Check correct structure of the variation dictionary.'''
+
+def healthy_structure(dic_diff: dict):  # pylint: disable=too-many-return-statements, too-many-branches
+    """Check correct structure of the variation dictionary."""
     if not isinstance(dic_diff, dict):
         msg_err("No dictionary found.")
         return False
     if "categories" not in dic_diff:
-        msg_err("Key \"categories\" not found.")
+        msg_err('Key "categories" not found.')
         return False
     dic_cats = dic_diff["categories"]
     if not isinstance(dic_cats, dict):
-        msg_err("\"categories\" is not a dictionary.")
+        msg_err('"categories" is not a dictionary.')
         return False
     # Categories
     for cat in dic_cats:
@@ -223,22 +238,22 @@ def healthy_structure(dic_diff: dict): # pylint: disable=too-many-return-stateme
         good = True
         for key in ["activate", "label", "variations", "processor"]:
             if key not in dic_cat_single:
-                msg_err("Key \"%s\" not found in category %s." % (key, cat))
+                msg_err('Key "%s" not found in category %s.' % (key, cat))
                 good = False
         if not good:
             return False
         if not isinstance(dic_cat_single["activate"], bool):
-            msg_err("\"activate\" in category %s is not a boolean." % cat)
+            msg_err('"activate" in category %s is not a boolean.' % cat)
             return False
         if not isinstance(dic_cat_single["processor"], bool):
-            msg_err("\"processor\" in category %s is not a boolean." % cat)
+            msg_err('"processor" in category %s is not a boolean.' % cat)
             return False
         if not isinstance(dic_cat_single["label"], str):
-            msg_err("\"label\" in category %s is not a string." % cat)
+            msg_err('"label" in category %s is not a string.' % cat)
             return False
         dic_vars = dic_cat_single["variations"]
         if not isinstance(dic_vars, dict):
-            msg_err("\"variations\" in category %s is not a dictionary." % cat)
+            msg_err('"variations" in category %s is not a dictionary.' % cat)
             return False
         # Variations
         for var in dic_vars:
@@ -249,69 +264,74 @@ def healthy_structure(dic_diff: dict): # pylint: disable=too-many-return-stateme
             good = True
             for key in ["activate", "label", "diffs"]:
                 if key not in dic_var_single:
-                    msg_err("Key \"%s\" not found in variation group %s/%s." % (key, cat, var))
+                    msg_err('Key "%s" not found in variation group %s/%s.' % (key, cat, var))
                     good = False
             if not good:
                 return False
             # Activate
             if not isinstance(dic_var_single["activate"], list):
-                msg_err("\"activate\" in %s/%s is not a list." % (cat, var))
+                msg_err('"activate" in %s/%s is not a list.' % (cat, var))
                 return False
             for i, act in enumerate(dic_var_single["activate"]):
                 if not isinstance(act, bool):
-                    msg_err("Element %d of \"activate\" in %s/%s is not a boolean." % (i, cat, var))
+                    msg_err('Element %d of "activate" in %s/%s is not a boolean.' % (i, cat, var))
                     return False
             length = len(dic_var_single["activate"])
             # Label
             if not isinstance(dic_var_single["label"], list):
-                msg_err("\"label\" in %s/%s is not a list." % (cat, var))
+                msg_err('"label" in %s/%s is not a list.' % (cat, var))
                 return False
             len_lab = len(dic_var_single["label"])
             if len_lab not in (length, 1) or len_lab == 0:
-                msg_err("\"label\" in %s/%s does not have correct length: %d (expected: 1%s)." % \
-                    (cat, var, len_lab, " or %d" % length if length > 1 else ""))
+                msg_err(
+                    '"label" in %s/%s does not have correct length: %d (expected: 1%s).'
+                    % (cat, var, len_lab, " or %d" % length if length > 1 else "")
+                )
                 return False
             for i, lab in enumerate(dic_var_single["label"]):
                 if not isinstance(lab, str):
-                    msg_err("Element %d of \"label\" in %s/%s is not a string." % (i, cat, var))
+                    msg_err('Element %d of "label" in %s/%s is not a string.' % (i, cat, var))
                     return False
             # Diffs
             if not isinstance(dic_var_single["diffs"], dict):
-                msg_err("\"diffs\" in %s/%s is not a dictionary." % (cat, var))
+                msg_err('"diffs" in %s/%s is not a dictionary.' % (cat, var))
                 return False
             if not good_list_length(dic_var_single["diffs"], length, "diffs"):
-                msg_err("\"diffs\" in %s/%s does not contain lists of correct length (%d)." % \
-                    (cat, var, length))
+                msg_err('"diffs" in %s/%s does not contain lists of correct length (%d).' % (cat, var, length))
                 return False
     return True
 
-def main(yaml_in, yaml_diff, analysis, clean, proc, script_name): # pylint: disable=too-many-locals, too-many-statements, too-many-branches
-    '''Main function'''
-    with open(yaml_in, 'r', encoding="utf-8") as file_in:
+
+def main(
+    yaml_in, yaml_diff, analysis, clean, proc, script_name
+):  # pylint: disable=too-many-locals, too-many-statements, too-many-branches
+    """Main function"""
+    with open(yaml_in, "r", encoding="utf-8") as file_in:
         dic_in = yaml.safe_load(file_in)
-    with open(yaml_diff, 'r', encoding="utf-8") as file_diff:
+    with open(yaml_diff, "r", encoding="utf-8") as file_diff:
         dic_diff = yaml.safe_load(file_diff)
 
     if not healthy_structure(dic_diff):
         msg_err("Bad structure.")
         sys.exit(1)
 
-    #print(yaml.safe_dump(dic_in, default_flow_style=False, sort_keys=False))
+    # print(yaml.safe_dump(dic_in, default_flow_style=False, sort_keys=False))
 
-    new_files = [] # List of created database files.
-    script_lines = [] # Execution lines written into a script.
+    new_files = []  # List of created database files.
+    script_lines = []  # Execution lines written into a script.
 
     # Save the original database in the same format as the output for debugging.
-    i_dot = yaml_in.rfind(".") # Find the position of the suffix.
+    i_dot = yaml_in.rfind(".")  # Find the position of the suffix.
     yaml_out = yaml_in[:i_dot] + "_orig" + yaml_in[i_dot:]
     print("\nSaving the original database to %s" % yaml_out)
-    with open(yaml_out, 'w', encoding="utf-8") as file_out:
+    with open(yaml_out, "w", encoding="utf-8") as file_out:
         yaml.safe_dump(dic_in, file_out, default_flow_style=False, sort_keys=False)
     new_files.append(yaml_out)
 
     if proc is not None:
-        msg_warn("Only categories that DO%s require running the processor will be processed." % \
-            ("" if proc else " NOT"))
+        msg_warn(
+            "Only categories that DO%s require running the processor will be processed." % ("" if proc else " NOT")
+        )
     dic_cats = dic_diff["categories"]
     # Loop over categories.
     for cat in dic_cats:
@@ -332,23 +352,28 @@ def main(yaml_in, yaml_diff, analysis, clean, proc, script_name): # pylint: disa
             label_var = dic_var_single["label"]
             n_var = len(dic_var_single["activate"])
             if not n_var:
-                print("\nSkipping empty variation group %s/%s (%s: %s)" % \
-                    (cat, var, label_cat, label_var[0]))
+                print("\nSkipping empty variation group %s/%s (%s: %s)" % (cat, var, label_cat, label_var[0]))
                 continue
-            print("\nProcessing variation group %s/%s (%s: %s)" % \
-                (cat, var, label_cat, label_var[0] if len(label_var) == 1 else var))
+            print(
+                "\nProcessing variation group %s/%s (%s: %s)"
+                % (cat, var, label_cat, label_var[0] if len(label_var) == 1 else var)
+            )
             # Loop over list items.
             for index in range(n_var):
                 varstring = "%s/%s" % (cat, format_varname(var, index, n_var))
 
                 if not dic_var_single["activate"][index]:
-                    print("\nSkipping variation %s (%s: %s)" % \
-                        (varstring, label_cat, format_varlabel(label_var, index, n_var)))
+                    print(
+                        "\nSkipping variation %s (%s: %s)"
+                        % (varstring, label_cat, format_varlabel(label_var, index, n_var))
+                    )
                     continue
-                print("\nProcessing variation %s (\x1b[1;33m%s: %s\x1b[0m)" % \
-                    (varstring, label_cat, format_varlabel(label_var, index, n_var)))
+                print(
+                    "\nProcessing variation %s (\x1b[1;33m%s: %s\x1b[0m)"
+                    % (varstring, label_cat, format_varlabel(label_var, index, n_var))
+                )
 
-                dic_db = deepcopy(dic_in) # Avoid ovewriting the original database.
+                dic_db = deepcopy(dic_in)  # Avoid ovewriting the original database.
                 # Get the database from the first top-level key.
                 for k in dic_db:
                     dic_new = dic_db[k]
@@ -366,14 +391,13 @@ def main(yaml_in, yaml_diff, analysis, clean, proc, script_name): # pylint: disa
                     msg_warn("Empty diffs. No changes to make.")
                 modify_dictionary(dic_new, dic_var_single_slice)
 
-                #print(yaml.safe_dump(dic_db, default_flow_style=False, sort_keys=False))
+                # print(yaml.safe_dump(dic_db, default_flow_style=False, sort_keys=False))
 
                 # Save the new database.
-                i_dot = yaml_in.rfind(".") # Find the position of the suffix.
-                yaml_out = yaml_in[:i_dot] + "_%s_%s" % \
-                    (cat, format_varname(var, index, n_var)) + yaml_in[i_dot:]
+                i_dot = yaml_in.rfind(".")  # Find the position of the suffix.
+                yaml_out = yaml_in[:i_dot] + "_%s_%s" % (cat, format_varname(var, index, n_var)) + yaml_in[i_dot:]
                 print("Saving the new database to %s" % yaml_out)
-                with open(yaml_out, 'w', encoding="utf-8") as file_out:
+                with open(yaml_out, "w", encoding="utf-8") as file_out:
                     yaml.safe_dump(dic_db, file_out, default_flow_style=False, sort_keys=False)
                 new_files.append(yaml_out)
 
@@ -383,23 +407,35 @@ def main(yaml_in, yaml_diff, analysis, clean, proc, script_name): # pylint: disa
                         sys.exit(1)
                     mode = "complete" if do_processor else "analyzer"
                     config = "submission/default_%s.yml" % mode
-                    print("Starting the analysis \x1b[1;32m%s\x1b[0m for the variation " \
-                        "\x1b[1;32m%s: %s\x1b[0m" % \
-                        (analysis, label_cat, format_varlabel(label_var, index, n_var)))
+                    print(
+                        "Starting the analysis \x1b[1;32m%s\x1b[0m for the variation "
+                        "\x1b[1;32m%s: %s\x1b[0m" % (analysis, label_cat, format_varlabel(label_var, index, n_var))
+                    )
                     now = datetime.datetime.now()
                     timestamp = now.strftime("%Y%m%d_%H%M%S")
-                    logfile = "stdouterr_%s_%s_%s_%s.log" % \
-                        (timestamp, analysis, cat, format_varname(var, index, n_var))
+                    logfile = "stdouterr_%s_%s_%s_%s.log" % (
+                        timestamp,
+                        analysis,
+                        cat,
+                        format_varname(var, index, n_var),
+                    )
                     print("Logfile: %s" % logfile)
                     if script_name:
-                        script_lines.append("python do_entire_analysis.py " \
-                            "-a %s -r %s -d %s -c > %s 2>&1\n" % (analysis, config, yaml_out, logfile))
+                        script_lines.append(
+                            "python do_entire_analysis.py "
+                            "-a %s -r %s -d %s -c > %s 2>&1\n" % (analysis, config, yaml_out, logfile)
+                        )
                     else:
                         with open(logfile, "w", encoding="utf-8") as ana_out:
                             subprocess.Popen(  # pylint: disable=consider-using-with
-                                shlex.split("python do_entire_analysis.py "
-                                "-a %s -r %s -d %s -c" % (analysis, config, yaml_out)),
-                                stdout=ana_out, stderr=ana_out, universal_newlines=True)
+                                shlex.split(
+                                    "python do_entire_analysis.py "
+                                    "-a %s -r %s -d %s -c" % (analysis, config, yaml_out)
+                                ),
+                                stdout=ana_out,
+                                stderr=ana_out,
+                                universal_newlines=True,
+                            )
 
     if analysis and script_name:
         with open(script_name, "w", encoding="utf-8") as script_file:
@@ -418,18 +454,28 @@ def main(yaml_in, yaml_diff, analysis, clean, proc, script_name): # pylint: disa
                 print(fil)
                 os.remove(fil)
 
-if __name__ == '__main__':
-    PARSER = argparse.ArgumentParser(description="Run the analysis with " \
-                                                 "variations of parameters.")
+
+if __name__ == "__main__":
+    PARSER = argparse.ArgumentParser(description="Run the analysis with " "variations of parameters.")
     PARSER.add_argument("input", help="database with default parameters")
     PARSER.add_argument("diff", help="database with variations")
-    PARSER.add_argument("-a", dest="analysis", help="analysis type " \
-        "(If provided, the analysis will be started for all activated variations.)")
-    PARSER.add_argument("-s", dest="script", help="script name " \
-        "(If provided, the analysis execution lines will be written in the script file.)")
-    PARSER.add_argument("-c", "--clean", action="store_true", \
-        help="Delete the created database files at the end.")
-    PARSER.add_argument("-p", type=int, choices=[1, 0], dest="proc", help="If 1/0, process only " \
-        "categories that do/don't require running the processor.")
+    PARSER.add_argument(
+        "-a",
+        dest="analysis",
+        help="analysis type " "(If provided, the analysis will be started for all activated variations.)",
+    )
+    PARSER.add_argument(
+        "-s",
+        dest="script",
+        help="script name " "(If provided, the analysis execution lines will be written in the script file.)",
+    )
+    PARSER.add_argument("-c", "--clean", action="store_true", help="Delete the created database files at the end.")
+    PARSER.add_argument(
+        "-p",
+        type=int,
+        choices=[1, 0],
+        dest="proc",
+        help="If 1/0, process only " "categories that do/don't require running the processor.",
+    )
     ARGS = PARSER.parse_args()
     main(ARGS.input, ARGS.diff, ARGS.analysis, ARGS.clean, ARGS.proc, ARGS.script)

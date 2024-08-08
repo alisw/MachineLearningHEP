@@ -15,8 +15,8 @@ Methods to: manage input/output
 """
 
 import os
-from numbers import Number
 from inspect import isclass
+from numbers import Number
 
 import yaml  # pylint: disable=import-error
 
@@ -72,12 +72,13 @@ def checkdir(path):
     if not os.path.exists(path):
         os.makedirs(path)
 
+
 def print_dict(to_be_printed, indent=0, skip=None):
     for key, value in to_be_printed.items():
         if isinstance(skip, list) and key in skip:
             continue
-        print('\t' * indent + str(key))
+        print("\t" * indent + str(key))
         if isinstance(value, dict):
-            print_dict(value, indent+1)
+            print_dict(value, indent + 1)
         else:
-            print('\t' * (indent+1) + str(value))
+            print("\t" * (indent + 1) + str(value))
