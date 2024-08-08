@@ -489,7 +489,6 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes
         fh = {}
         area = {}
         var_m = self.roows[ipt].var("m")
-        # bins['signal'] = (1, get_nbins(hist, 0))
         for region in regions:
             # project out the mass regions (first axis)
             axes = list(range(get_dim(hist)))[1:]
