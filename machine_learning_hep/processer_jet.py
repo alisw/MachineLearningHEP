@@ -171,6 +171,9 @@ class ProcesserJets(Processer):
             histonorm.Write()
 
             df = pd.concat(read_df(self.mptfiles_recosk[bin][index]) for bin in self.active_bins_skim)
+            # remove entries outside of kinematic range (should be taken care of by projections in analyzer)
+            df = df.loc[(df.fJetPt >= min(self.binarray_ptjet)) & (df.fJetPt < max(self.binarray_ptjet))]
+            df = df.loc[(df.fPt >= min(self.bins_analysis[:,0])) & (df.fPt < max(self.bins_analysis[:,1]))]
 
             h = create_hist(
                 'h_mass-ptjet-pthf',
