@@ -70,6 +70,8 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes,too
         self.fit_func_bkg = {}
         self.fit_range = {}
         self.hcandeff = {'pr': None, 'np': None}
+        self.hcandeff_gen = {}
+        self.hcandeff_det = {}
         self.h_eff_ptjet_pthf = {}
         self.hfeeddown_det = { 'mc': {}, 'data': {}}
         self.n_events = {}
@@ -158,15 +160,10 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes,too
         with TFile(self.n_fileeff) as rfile:
             h_gen = {cat: rfile.Get(f'h_ptjet-pthf_{cat}_gen') for cat in cats}
             h_det = {cat: rfile.Get(f'h_ptjet-pthf_{cat}_det') for cat in cats}
+            h_genmatch = {cat: rfile.Get(f'h_ptjet-pthf_{cat}_genmatch') for cat in cats}
             h_detmatch = {cat: rfile.Get(f'h_ptjet-pthf_{cat}_detmatch') for cat in cats}
             h_detmatch_gencuts = {cat: rfile.Get(f'h_ptjet-pthf_{cat}_detmatch_gencuts') for cat in cats}
             n_bins_ptjet = get_nbins(h_gen['pr'], 0)
-
-            # matching loss
-            for cat in cats:
-                h_eff_match = h_detmatch[cat].Clone()
-                h_eff_match.Divide(h_det[cat])
-                self._save_hist(h_eff_match, f'eff/h_effmatch_{cat}.png')
 
             # Run 2 efficiencies
             bins_ptjet = (1, n_bins_ptjet)
@@ -196,6 +193,17 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes,too
 
             # Run 3 efficiencies
             for cat in cats:
+                # gen-level efficiency for feeddown estimation
+                h_eff_gen = h_genmatch[cat].Clone()
+                h_eff_gen.Divide(h_gen[cat])
+                self._save_hist(h_eff_gen, f'eff/h_effgen_{cat}.png')
+                self.hcandeff_gen[cat] = h_eff_gen
+
+                # matching loss
+                h_eff_match = h_detmatch[cat].Clone()
+                h_eff_match.Divide(h_det[cat])
+                self._save_hist(h_eff_match, f'eff/h_effmatch_{cat}.png')
+
                 h_response = rfile.Get(f'h_response_{cat}_fPt')
                 h_response_ptjet = project_hist(h_response, [0, 2], {})
                 h_response_pthf = project_hist(h_response, [1, 3], {})
