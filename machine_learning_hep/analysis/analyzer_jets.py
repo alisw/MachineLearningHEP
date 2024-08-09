@@ -30,7 +30,7 @@ from machine_learning_hep.utils.hist import (bin_array, create_hist,
                                              scale_bin, sum_hists, ensure_sumw2)
 
 
-class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes
+class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes,too-many-lines
     species = "analyzer"
 
     def __init__(self, datap, case, typean, period):
@@ -349,7 +349,7 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes
             fitcfg = None
             with TFile(rfilename) as rfile:
                 h = rfile.Get('h_mass-ptjet-pthf')
-                for iptjet, ipt in itertools.product(itertools.chain((None,), range(1, get_nbins(h, 1) - 1)),
+                for iptjet, ipt in itertools.product(itertools.chain((None,), range(0, get_nbins(h, 1))),
                                                      range(get_nbins(h, 2))):
                     self.logger.debug('fitting %s - %i', level, ipt)
                     roows = self.roows.get(ipt)
@@ -496,12 +496,6 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes
             self.logger.info("Projecting %s to %s in %s: %g entries", hist, axes, bins[region], fh[region].GetEntries())
             self._save_hist(fh[region],
                             f'sideband/h_ptjet{label}_{region}_pthf-{ptrange[0]}-{ptrange[1]}_{mcordata}.png')
-            # TODO: calculate areas per ptjet bin
-            f = self.roo_ws[mcordata][ipt].pdf("bkg").asTF(self.roo_ws[mcordata][ipt].var("m"))
-            area[region] = f.Integral(*limits[region])
-
-        self.logger.info('areas for %s-%s: %g, %g, %g',
-                         mcordata, ipt, area['signal'], area['sideband_left'], area['sideband_right'])
 
         fh_subtracted = fh['signal'].Clone(f'h_ptjet{label}_subtracted_{ipt}_{mcordata}')
         ensure_sumw2(fh_subtracted)
@@ -510,10 +504,38 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes
             [fh['sideband_left'], fh['sideband_right']], f'h_ptjet{label}_sideband_{ipt}_{mcordata}')
         ensure_sumw2(fh_sideband)
 
-        if (area['sideband_left'] + area['sideband_right']) > 0.:
-            # TODO: scale ptjet bins separately
-            areaNormFactor = area['signal'] / (area['sideband_left'] + area['sideband_right'])
-            fh_sideband.Scale(areaNormFactor)
+        subtract_sidebands = False
+        if mcordata == 'data' and self.cfg('sidesub_per_ptjet'):
+            self.logger.info('Subtracting sidebands in pt jet bins')
+            for iptjet in range(1, get_nbins(fh_subtracted, 0)):
+                if rws := self.roo_ws_ptjet[mcordata][iptjet][ipt]:
+                    f = rws.pdf("bkg").asTF(self.roo_ws[mcordata][ipt].var("m"))
+                else:
+                    self.logger.error('Could not retrieve roows for %s-%i-%i', mcordata, iptjet, ipt)
+                    continue
+                area = {region: f.Integral(*limits[region]) for region in regions}
+                self.logger.info('areas for %s-%s: %g, %g, %g',
+                                 mcordata, ipt, area['signal'], area['sideband_left'], area['sideband_right'])
+                if (area['sideband_left'] + area['sideband_right']) > 0.:
+                    subtract_sidebands = True
+                    areaNormFactor = area['signal'] / (area['sideband_left'] + area['sideband_right'])
+                    # TODO: extend to higher dimensions
+                    for ibin in range(get_nbins(fh_subtracted, 1)):
+                        scale_bin(fh_sideband, areaNormFactor, iptjet + 1, ibin + 1)
+        else:
+            for region in regions:
+                f = self.roo_ws[mcordata][ipt].pdf("bkg").asTF(self.roo_ws[mcordata][ipt].var("m"))
+                area[region] = f.Integral(*limits[region])
+
+            self.logger.info('areas for %s-%s: %g, %g, %g',
+                             mcordata, ipt, area['signal'], area['sideband_left'], area['sideband_right'])
+
+            if (area['sideband_left'] + area['sideband_right']) > 0.:
+                subtract_sidebands = True
+                areaNormFactor = area['signal'] / (area['sideband_left'] + area['sideband_right'])
+                fh_sideband.Scale(areaNormFactor)
+
+        if subtract_sidebands:
             self._save_hist(fh_sideband,
                             f'sideband/h_ptjet{label}_sideband_pthf-{ptrange[0]}-{ptrange[1]}_{mcordata}.png')
             fh_subtracted.Add(fh_sideband, -1.)

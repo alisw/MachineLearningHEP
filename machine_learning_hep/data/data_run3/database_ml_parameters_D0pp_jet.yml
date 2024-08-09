@@ -615,6 +615,7 @@ D0jet_pp:
             model:
               fn: 'SUM::sum(frac[0.,1.]*sigrefl, bkg)'
 
+      sidesub_per_ptjet: true
       sidesub:
         - level: mc
           regions:
