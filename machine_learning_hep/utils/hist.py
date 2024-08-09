@@ -32,6 +32,11 @@ def get_dim(hist):
 
 def get_range(hist, axis: int):
     axis = get_axis(hist, axis)
+    return (axis.GetXmin(), axis.GetXmax())
+
+
+def get_binrange(hist, axis: int):
+    axis = get_axis(hist, axis)
     return (axis.GetFirst(), axis.GetLast())
 
 
@@ -51,7 +56,7 @@ def project_hist(hist, axes: list, limits: dict[int, tuple[int]]):
         assert len(axes) < hist.GetNdimensions()
         ranges = []
         for iaxis in range(hist.GetNdimensions()):
-            ranges.append(get_range(hist, iaxis))
+            ranges.append(get_binrange(hist, iaxis))
         for iaxis, bins in limits.items():
             get_axis(hist, iaxis).SetRange(bins[0], bins[1])
             if bins[0] == 1 and bins[1] == get_nbins(hist, iaxis):
@@ -68,7 +73,7 @@ def project_hist(hist, axes: list, limits: dict[int, tuple[int]]):
         assert len(axes) < hist.GetDimension()
         ranges = []
         for iaxis in range(hist.GetDimension()):
-            ranges.append(get_range(hist, iaxis))
+            ranges.append(get_binrange(hist, iaxis))
             if iaxis in limits:
                 bins = limits[iaxis]
                 get_axis(hist, iaxis).SetRange(bins[0], bins[1])
