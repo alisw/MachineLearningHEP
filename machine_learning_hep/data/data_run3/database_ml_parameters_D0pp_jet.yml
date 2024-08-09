@@ -53,9 +53,10 @@ D0jet_pp:
   dfs:
     read:
       evtorig:
-        index: fIndexD0CollBases
+        index: fIndexHfD0McCollBases
         trees:
-          O2hfd0collbase: [fNumContrib]
+          O2hfd0collbase: [fNumContrib, fPosZ]
+        filter: "abs(fPosZ) < 10."
       collcnt:
         trees:
           O2d0collcount: [fReadCounts, fReadSelectedCounts, fWrittenCounts]
@@ -65,12 +66,12 @@ D0jet_pp:
         index: fIndexD0CMCPJETCOS
         trees:
           O2d0cmcpjetco: [fPosZ, fCentrality, fEventSel]
-        # filter: "abs(fPosZ) < 10."
+        filter: "abs(fPosZ) < 10."
       jetgen:
         level: gen
         index: fIndexD0CMCPJETOS
         trees:
-          O2hfd0pbase: [fPt, fEta, fPhi, fFlagMcMatchGen, fOriginMcGen]
+          O2hfd0pbase: [fIndexHfD0McCollBases, fPt, fEta, fPhi, fFlagMcMatchGen, fOriginMcGen]
           O2d0cmcpjeto: [fIndexD0CMCPJETCOS, fJetPt, fJetPhi, fJetEta, fJetNConstituents, fJetR]
           O2d0cmcpjetmo: [fIndexArrayD0CMCDJETOS_hf, fIndexArrayD0CMCDJETOS_geo, fIndexArrayD0CMCDJETOS_pt]
           O2d0cmcpjetsso: [fEnergyMother, fPtLeading, fPtSubLeading, fTheta, fNSub2DR, fNSub1, fNSub2]
@@ -88,7 +89,7 @@ D0jet_pp:
         index: fIndexD0CMCDJETCOS
         trees:
           O2d0cmcdjetco: [fPosZ, fCentrality, fEventSel]
-        # filter: "abs(fPosZ) < 10."
+        filter: "abs(fPosZ) < 10."
       jetdet:
         level: det
         index: fIndexD0CMCDJETOS
@@ -131,7 +132,7 @@ D0jet_pp:
         index: fIndexD0CJETCOS
         trees:
           O2d0cjetco: [fPosZ, fCentrality, fEventSel]
-        # filter: "abs(fPosZ) < 10."
+        filter: "abs(fPosZ) < 10."
       jetdata:
         level: data
         index: fIndexD0CJETOS
@@ -157,7 +158,7 @@ D0jet_pp:
         filter: "fPt >= 1. and abs(fY) <= 0.8 and abs(fJetEta) < (.9 - (fJetR / 100.))" # TODO: check jet eta cut
 
     merge:
-      # - {base: jetgen, ref: collgen}
+      - {base: jetgen, ref: evtorig}
       - {base: jetdet, ref: colldet}
       - {base: jetdata, ref: colldata}
 
