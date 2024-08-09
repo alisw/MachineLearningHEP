@@ -236,14 +236,15 @@ class ProcesserJets(Processer):
         self.logger.info('Processing (efficiency) %s', self.l_evtorig[index])
 
         cats = ['pr', 'np']
-        levels = ['gen', 'det']
+        levels_eff = ['gen', 'det', 'genmatch', 'detmatch', 'detmatch_gencuts']
+        levels_effkine = ['gen', 'det']
         cuts = ['nocuts', 'cut']
         observables = self.cfg('observables', [])
         observables.update({'fPt': {}})
         h_eff = {(cat, level): create_hist(f'h_ptjet-pthf_{cat}_{level}',
                                            ';p_{T}^{jet} (GeV/#it{c});p_{T}^{HF} (GeV/#it{c})',
                                            self.binarrays_ptjet['fPt'], self.binarray_pthf)
-                                           for cat in cats for level in (levels + ['det_gencuts'])}
+                                           for cat in cats for level in levels_eff}
         # TODO: extend to multi-dimensional observables
         # TODO: allow different binnings for gen and det
         h_response = {
@@ -260,7 +261,7 @@ class ProcesserJets(Processer):
                         create_hist(f'h_effkine_{cat}_{level}_{cut}_{var}',
                                     f";p_{{T}}^{{jet}} (GeV/#it{{c}});{var}",
                                     self.binarrays_ptjet[var], self.binarrays_obs[var])
-                        for var, level, cat, cut in itertools.product(observables, levels, cats, cuts)
+                        for var, level, cat, cut in itertools.product(observables, levels_effkine, cats, cuts)
                         if not '-' in var}
         h_mctruth = {
             (cat, var): create_hist(
@@ -309,19 +310,17 @@ class ProcesserJets(Processer):
 
             for cat in cats:
                 fill_hist(h_eff[(cat, 'gen')], dfgen[cat][['fJetPt_gen', 'fPt_gen']])
-                # TODO: eventually use the full det-level sample (requires extension of gen-level folding)
-                # fill_hist(h_eff[(cat, 'det')], dfdet[cat][['fJetPt', 'fPt']])
+                fill_hist(h_eff[(cat, 'det')], dfdet[cat][['fJetPt', 'fPt']])
                 if cat in dfmatch and dfmatch[cat] is not None:
                     df = dfmatch[cat]
-                    fill_hist(h_eff[(cat, 'det')], df[['fJetPt', 'fPt']])
-                    # apply gen-level cuts for standard (Run 2) efficiencies
-                    h_eff[(cat, 'gen')].Print('base')
+                    fill_hist(h_eff[(cat, 'genmatch')], df[['fJetPt_gen', 'fPt_gen']])
+                    fill_hist(h_eff[(cat, 'detmatch')], df[['fJetPt', 'fPt']])
+                    # apply gen-level cuts for Run 2 efficiencies
                     range_ptjet_gen = get_range(h_eff[(cat, 'gen')], 0)
                     range_pthf_gen = get_range(h_eff[(cat, 'gen')], 1)
-                    self.logger.info('ranges: %s, %s', range_ptjet_gen, range_pthf_gen)
                     df = df.loc[(df.fJetPt_gen >= range_ptjet_gen[0]) & (df.fJetPt_gen < range_ptjet_gen[1])]
                     df = df.loc[(df.fPt_gen >= range_pthf_gen[0]) & (df.fPt_gen < range_pthf_gen[1])]
-                    fill_hist(h_eff[(cat, 'det_gencuts')], df[['fJetPt', 'fPt']])
+                    fill_hist(h_eff[(cat, 'detmatch_gencuts')], df[['fJetPt', 'fPt']])
                 else:
                     self.logger.error('No matching, could not fill matched detector-level histograms')
 

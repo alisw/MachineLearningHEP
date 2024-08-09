@@ -158,13 +158,20 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes,too
         with TFile(self.n_fileeff) as rfile:
             h_gen = {cat: rfile.Get(f'h_ptjet-pthf_{cat}_gen') for cat in cats}
             h_det = {cat: rfile.Get(f'h_ptjet-pthf_{cat}_det') for cat in cats}
-            h_det_gencuts = {cat: rfile.Get(f'h_ptjet-pthf_{cat}_det_gencuts') for cat in cats}
+            h_detmatch = {cat: rfile.Get(f'h_ptjet-pthf_{cat}_detmatch') for cat in cats}
+            h_detmatch_gencuts = {cat: rfile.Get(f'h_ptjet-pthf_{cat}_detmatch_gencuts') for cat in cats}
             n_bins_ptjet = get_nbins(h_gen['pr'], 0)
+
+            # matching loss
+            for cat in cats:
+                h_eff_match = h_detmatch[cat].Clone()
+                h_eff_match.Divide(h_det[cat])
+                self._save_hist(h_eff_match, f'eff/h_effmatch_{cat}.png')
 
             # Run 2 efficiencies
             bins_ptjet = (1, n_bins_ptjet)
             h_gen_proj = {cat: project_hist(h_gen[cat], [1], {0: bins_ptjet}) for cat in cats}
-            h_det_proj = {cat: project_hist(h_det_gencuts[cat], [1], {0: bins_ptjet}) for cat in cats}
+            h_det_proj = {cat: project_hist(h_detmatch_gencuts[cat], [1], {0: bins_ptjet}) for cat in cats}
 
             for cat in cats:
                 self._save_hist(h_gen_proj[cat], f'eff/h_pthf_{cat}_gen.png')
