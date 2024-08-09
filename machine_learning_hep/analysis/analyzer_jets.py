@@ -207,7 +207,7 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes
                 h_in = h_gen[cat].Clone()
                 self._save_hist(project_hist(h_in, [1], {}), f'eff/h_pthf_{cat}_gen.png')
                 h_in.Multiply(h_effkine_gen)
-                h_out = h_in.Clone()
+                h_out = h_in.Clone() # should derive this from the response matrix instead
                 h_out = folding(h_in, rm, h_out)
                 h_out.Divide(h_effkine_det)
                 self._save_hist(project_hist(h_out, [1], {}), f'eff/h_pthf_{cat}_gen_folded.png')
@@ -223,11 +223,11 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes
                 hc_eff.SetLineColor(ROOT.kViolet)
                 hc_eff.SetLineWidth(3)
                 amax = hc_eff.GetMaximum()
-                for iptjet in reversed(range(get_nbins(eff, 0) - 1)):
+                for iptjet in reversed(range(1, get_nbins(eff, 0) - 1)):
                     h = project_hist(eff, [1], {0: (iptjet+1, iptjet+1)})
                     h.SetName(h.GetName() + f'_ptjet{iptjet}')
                     h.Draw('same')
-                    h.SetLineColor(iptjet + 1)
+                    h.SetLineColor(iptjet)
                     amax = max(amax, h.GetMaximum())
                 hc_eff.GetYaxis().SetRangeUser(0., 1.1 * amax)
                 self._save_canvas(c, f'eff/h_ptjet-pthf_effnew_{cat}_ptjet.png')
@@ -879,6 +879,9 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes
             n = h_response.GetBinContent(
                 np.asarray([hbin[0][0], hbin[1][0], hbin[2][0], hbin[3][0], hbin[4][0]], 'i'))
             eff = h_eff.GetBinContent(hbin[4][0]) if h_eff else 1.
+            if np.isclose(eff, 0.):
+                self.logger.error('efficiency 0 for %s', hbin[4])
+                continue
             for _ in range(int(n)):
                 rm.Fill(hbin[0][1], hbin[1][1], hbin[2][1], hbin[3][1], 1./eff)
         # rm.Mresponse().Print()

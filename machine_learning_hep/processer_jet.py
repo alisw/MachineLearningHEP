@@ -23,7 +23,7 @@ from ROOT import TH1F, TFile
 
 from machine_learning_hep.processer import Processer
 from machine_learning_hep.utilities import dfquery, read_df
-from machine_learning_hep.utils.hist import bin_array, create_hist, fill_hist, get_axis
+from machine_learning_hep.utils.hist import bin_array, create_hist, fill_hist, get_axis, get_range
 
 
 # pylint: disable=too-many-instance-attributes
@@ -62,6 +62,7 @@ class ProcesserJets(Processer):
         self.binarray_ptjet = np.asarray(self.cfg('bins_ptjet'), 'd')
         self.binarray_pthf = np.asarray(self.cfg('sel_an_binmin', []) + self.cfg('sel_an_binmax', [])[-1:], 'd')
         self.binarrays_obs = {}
+        self.binarrays_ptjet = {}
         for obs in self.cfg('observables'):
             var = obs.split('-')
             for v in var:
@@ -74,8 +75,12 @@ class ProcesserJets(Processer):
                 else:
                     self.logger.error('no binning specified for %s, using defaults', v)
                     self.binarrays_obs[v] = bin_array(10, 0., 1.)
+                if binning := self.cfg(f'observables.{v}.bins_ptjet'):
+                    self.binarrays_ptjet[v] = np.asarray(binning, 'd')
+                else:
+                    self.binarrays_ptjet[v] = self.binarray_ptjet
         self.binarrays_obs['fPt'] = self.binarray_pthf
-        self.binarrays_obs['fPtJet'] = self.binarray_ptjet
+        self.binarrays_ptjet['fPt'] = np.asarray(self.cfg('bins_ptjet_eff'), 'd')
 
 
     # region observables
@@ -237,7 +242,7 @@ class ProcesserJets(Processer):
         observables.update({'fPt': {}})
         h_eff = {(cat, level): create_hist(f'h_ptjet-pthf_{cat}_{level}',
                                            ';p_{T}^{jet} (GeV/#it{c});p_{T}^{HF} (GeV/#it{c})',
-                                           self.binarray_ptjet, self.binarray_pthf)
+                                           self.binarrays_ptjet['fPt'], self.binarray_pthf)
                                            for cat in cats for level in (levels + ['det_gencuts'])}
         # TODO: extend to multi-dimensional observables
         # TODO: allow different binnings for gen and det
@@ -245,8 +250,8 @@ class ProcesserJets(Processer):
             (cat, var): create_hist(
                 f'h_response_{cat}_{var}',
                 f";p_{{T}}^{{jet}} (GeV/#it{{c}});{var};p_{{T}}^{{jet}} (GeV/#it{{c}});{var};p_{{T}} (GeV/#it{{c}})",
-                self.binarray_ptjet, self.binarrays_obs[var],
-                self.binarray_ptjet, self.binarrays_obs[var],
+                self.binarrays_ptjet[var], self.binarrays_obs[var],
+                self.binarrays_ptjet[var], self.binarrays_obs[var],
                 self.binarray_pthf)
             for (cat, var) in itertools.product(cats, observables)
             if not '-' in var}
@@ -254,14 +259,14 @@ class ProcesserJets(Processer):
         h_effkine = {(cat, level, cut, var):
                         create_hist(f'h_effkine_{cat}_{level}_{cut}_{var}',
                                     f";p_{{T}}^{{jet}} (GeV/#it{{c}});{var}",
-                                    self.binarray_ptjet, self.binarrays_obs[var])
+                                    self.binarrays_ptjet[var], self.binarrays_obs[var])
                         for var, level, cat, cut in itertools.product(observables, levels, cats, cuts)
                         if not '-' in var}
         h_mctruth = {
             (cat, var): create_hist(
                 f'h_ptjet-pthf-{var}_{cat}_gen',
                 f";p_{{T}}^{{jet}} (GeV/#it{{c}});p_{{T}}^{{HF}} (GeV/#it{{c}});{var}",
-                self.binarray_ptjet, self.binarray_pthf, self.binarrays_obs[var])
+                self.binarrays_ptjet[var], self.binarray_pthf, self.binarrays_obs[var])
             for (cat, var) in itertools.product(cats, observables)
             if not '-' in var}
 
@@ -309,10 +314,13 @@ class ProcesserJets(Processer):
                 if cat in dfmatch and dfmatch[cat] is not None:
                     df = dfmatch[cat]
                     fill_hist(h_eff[(cat, 'det')], df[['fJetPt', 'fPt']])
-                    df = df.loc[(df.fJetPt_gen >= min(self.binarray_ptjet)) &
-                                (df.fJetPt_gen < max(self.binarray_ptjet))]
-                    df = df.loc[(df.fPt_gen >= min(self.binarray_pthf)) &
-                                (df.fPt_gen < max(self.binarray_pthf))]
+                    # apply gen-level cuts for standard (Run 2) efficiencies
+                    h_eff[(cat, 'gen')].Print('base')
+                    range_ptjet_gen = get_range(h_eff[(cat, 'gen')], 0)
+                    range_pthf_gen = get_range(h_eff[(cat, 'gen')], 1)
+                    self.logger.info('ranges: %s, %s', range_ptjet_gen, range_pthf_gen)
+                    df = df.loc[(df.fJetPt_gen >= range_ptjet_gen[0]) & (df.fJetPt_gen < range_ptjet_gen[1])]
+                    df = df.loc[(df.fPt_gen >= range_pthf_gen[0]) & (df.fPt_gen < range_pthf_gen[1])]
                     fill_hist(h_eff[(cat, 'det_gencuts')], df[['fJetPt', 'fPt']])
                 else:
                     self.logger.error('No matching, could not fill matched detector-level histograms')
