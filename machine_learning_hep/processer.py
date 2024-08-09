@@ -307,7 +307,7 @@ class Processer: # pylint: disable=too-many-instance-attributes
                         dfnew = pd.DataFrame(columns=col, data=data)
                         df = pd.concat([df, dfnew], axis=1)
                     except Exception as e: # pylint: disable=broad-except
-                        tree.show()
+                        tree.show(name_width=50)
                         self.logger.critical('Failed to read data frame from tree %s: %s',
                                              tree.name, str(e))
                         sys.exit()
