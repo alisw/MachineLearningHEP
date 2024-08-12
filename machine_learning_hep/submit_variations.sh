@@ -34,5 +34,3 @@ else
   echo -e "\nCleaning"
   ${CMD_VAR} -c -s "$SCRIPT" || ErrExit
 fi
-
-exit 0
