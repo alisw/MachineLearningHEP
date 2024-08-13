@@ -646,7 +646,7 @@ D0jet_pp:
         extra_cols: ['isd0', 'isd0bar', 'seld0', 'seld0bar']
         filter_det: '(isd0 & seld0) or (isd0bar & seld0bar)'
         index_match: fIndexArrayD0CMCPJETOS_hf
-        # correction_method: run2_2d
+        correction_method: run3
 
       unfolding_iterations: 8
       closure:
@@ -654,7 +654,7 @@ D0jet_pp:
         exclude_feeddown_det: 'ismcsignal==1 & ismcprompt==1'
         exclude_feeddown_gen: 'ismcsignal_gen==1 & ismcprompt_gen==1'
         filter_reflections: '(isd0 & seld0) or (isd0bar & seld0bar)'
-        use_matched: true
+        use_matched: false
 
       frac_mcana: .2
       fd_root: '/data2/vkucera/powheg/trees_powheg_fd_central.root'

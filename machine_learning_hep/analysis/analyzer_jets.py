@@ -73,6 +73,8 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes,too
         self.hcandeff_gen = {}
         self.hcandeff_det = {}
         self.h_eff_ptjet_pthf = {}
+        self.h_effnew_ptjet_pthf = {'pr': None, 'np': None}
+        self.h_effnew_pthf = {'pr': None, 'np': None}
         self.hfeeddown_det = { 'mc': {}, 'data': {}}
         self.n_events = {}
         self.n_colls = {}
@@ -231,12 +233,23 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes,too
                 ensure_sumw2(eff)
                 eff.Divide(h_out)
                 self._save_hist(eff, f'eff/h_ptjet-pthf_effnew_{cat}.png')
+                self.h_effnew_ptjet_pthf[cat] = eff
+
+                proj_range = (2, get_nbins(h_det[cat], 0))
+                eff_avg = project_hist(h_det[cat], [1], {0: proj_range})
+                ensure_sumw2(eff_avg)
+                eff_avg.Divide(project_hist(h_out, [1], {0: proj_range}))
+                self._save_hist(eff, f'eff/h_pthf_effnew_{cat}.png')
+                self.h_effnew_pthf[cat] = eff_avg
 
                 c = TCanvas()
                 c.cd()
                 hc_eff = self.hcandeff[cat].DrawCopy()
                 hc_eff.SetLineColor(ROOT.kViolet)
                 hc_eff.SetLineWidth(3)
+                hc_eff_avg = eff_avg.DrawCopy("same")
+                hc_eff_avg.SetLineColor(ROOT.kGreen)
+                hc_eff_avg.SetLineWidth(10)
                 amax = hc_eff.GetMaximum()
                 for iptjet in reversed(range(1, get_nbins(eff, 0) - 1)):
                     h = project_hist(eff, [1], {0: (iptjet+1, iptjet+1)})
@@ -254,8 +267,12 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes,too
             return
 
         if self.cfg('efficiency.correction_method') == 'run3':
-            raise NotImplementedError
-        if self.cfg('efficiency.correction_method') == 'run2_2d':
+            eff = self.h_effnew_pthf['pr'].GetBinContent(ipt + 1)
+            eff_old = self.hcandeff['pr'].GetBinContent(ipt + 1)
+            self.logger.info('Using Run 3 efficiency %g instead of %g',
+                             eff, eff_old)
+            hist.Scale(1. / eff)
+        elif self.cfg('efficiency.correction_method') == 'run2_2d':
             self.logger.info('using Run 2 efficiencies per jet pt bin')
             if not self.h_eff_ptjet_pthf['pr']:
                 self.logger.error('no efficiency available for %s', hist.GetName())
