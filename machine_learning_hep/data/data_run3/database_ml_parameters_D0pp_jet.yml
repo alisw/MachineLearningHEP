@@ -372,26 +372,33 @@ D0jet_pp:
       # TODO: add separate binnings for MC and data
       observables:
         zg:
-          bins_fix: [6, -.1, .5]
+          bins_gen_fix: [6, -.1, .5]
+          bins_det_fix: [6, -.1, .5]
           label: '#it{z}_{g}'
         nsd:
-          bins_fix: [10, -.5, 9.5]
+          bins_gen_fix: [10, -.5, 9.5]
+          bins_det_fix: [10, -.5, 9.5]
           label: '#it{n}_{SD}'
         rg:
-          bins_fix: [11, -.1, 1.]
+          bins_gen_fix: [11, -.1, 1.]
+          bins_det_fix: [11, -.1, 1.]
           label: '#it{R}_{g}'
         zpar:
-          bins_fix: [10, 0., 1.]
+          bins_gen_fix: [10, 0., 1.]
+          bins_det_fix: [10, 0., 1.]
           label: '#it{z}_{#parallel}'
         dr:
-          bins_fix: [10, 0., 1.]
+          bins_gen_fix: [10, 0., 1.]
+          bins_det_fix: [10, 0., 1.]
           label: '#Delta#it{r}'
         lntheta:
-          bins_fix: [10, 0., 5.]
+          bins_gen_fix: [10, 0., 5.]
+          bins_det_fix: [10, 0., 5.]
           label: '#minusln(#it{#theta})'
           arraycols: [3]
         lnkt:
-          bins_fix: [10, -8., 2.]
+          bins_gen_fix: [10, -8., 2.]
+          bins_det_fix: [10, -8., 2.]
           label: 'ln(#it{k}_{T}/(GeV/#it{c}))'
           arraycols: [3]
         lntheta-lnkt:

@@ -61,26 +61,34 @@ class ProcesserJets(Processer):
         self.binarray_mass = bin_array(nbins_mass, limits_mass[0], limits_mass[1])
         self.binarray_ptjet = np.asarray(self.cfg('bins_ptjet'), 'd')
         self.binarray_pthf = np.asarray(self.cfg('sel_an_binmin', []) + self.cfg('sel_an_binmax', [])[-1:], 'd')
-        self.binarrays_obs = {}
-        self.binarrays_ptjet = {}
+        self.binarrays_obs = {'gen': {}, 'det': {}}
+        self.binarrays_ptjet = {'gen': {}, 'det': {}}
         for obs in self.cfg('observables'):
             var = obs.split('-')
             for v in var:
                 if v in self.binarrays_obs:
                     continue
-                if binning := self.cfg(f'observables.{v}.bins_var'):
-                    self.binarrays_obs[v] = np.asarray(binning, 'd')
-                elif binning := self.cfg(f'observables.{v}.bins_fix'):
-                    self.binarrays_obs[v] = bin_array(*binning)
-                else:
-                    self.logger.error('no binning specified for %s, using defaults', v)
-                    self.binarrays_obs[v] = bin_array(10, 0., 1.)
-                if binning := self.cfg(f'observables.{v}.bins_ptjet'):
-                    self.binarrays_ptjet[v] = np.asarray(binning, 'd')
-                else:
-                    self.binarrays_ptjet[v] = self.binarray_ptjet
-        self.binarrays_obs['fPt'] = self.binarray_pthf
-        self.binarrays_ptjet['fPt'] = np.asarray(self.cfg('bins_ptjet_eff'), 'd')
+                for level in ('gen', 'det'):
+                    if binning := self.cfg(f'observables.{v}.bins_{level}_var'):
+                        self.binarrays_obs[level][v] = np.asarray(binning, 'd')
+                    elif binning := self.cfg(f'observables.{v}.bins_{level}_fix'):
+                        self.binarrays_obs[level][v] = bin_array(*binning)
+                    elif binning := self.cfg(f'observables.{v}.bins_var'):
+                        self.binarrays_obs[level][v] = np.asarray(binning, 'd')
+                    elif binning := self.cfg(f'observables.{v}.bins_fix'):
+                        self.binarrays_obs[level][v] = bin_array(*binning)
+                    else:
+                        self.logger.error('no binning specified for %s, using defaults', v)
+                        self.binarrays_obs[level][v] = bin_array(10, 0., 1.)
+
+                    if binning := self.cfg(f'observables.{v}.bins_ptjet'):
+                        self.binarrays_ptjet[level][v] = np.asarray(binning, 'd')
+                    else:
+                        self.binarrays_ptjet[level][v] = self.binarray_ptjet
+        self.binarrays_obs['gen']['fPt'] = self.binarray_pthf
+        self.binarrays_obs['det']['fPt'] = self.binarray_pthf
+        self.binarrays_ptjet['gen']['fPt'] = np.asarray(self.cfg('bins_ptjet_eff'), 'd')
+        self.binarrays_ptjet['det']['fPt'] = np.asarray(self.cfg('bins_ptjet_eff'), 'd')
 
 
     # region observables
@@ -224,7 +232,7 @@ class ProcesserJets(Processer):
                 h = create_hist(
                     f'h_mass-ptjet-pthf-{obs}',
                     f';M (GeV/#it{{c}}^{{2}});p_{{T}}^{{jet}} (GeV/#it{{c}});p_{{T}}^{{HF}} (GeV/#it{{c}});{obs}',
-                    self.binarray_mass, self.binarray_ptjet, self.binarray_pthf, *[self.binarrays_obs[v] for v in var])
+                    self.binarray_mass, self.binarray_ptjet, self.binarray_pthf, *[self.binarrays_obs['det'][v] for v in var])
                 for i, v in enumerate(var):
                     get_axis(h, 3+i).SetTitle(self.cfg(f'observables.{v}.label', v))
 
@@ -247,16 +255,15 @@ class ProcesserJets(Processer):
         observables.update({'fPt': {'label': 'p_{T}^{HF} (GeV/#it{c})'}})
         h_eff = {(cat, level): create_hist(f'h_ptjet-pthf_{cat}_{level}',
                                            ';p_{T}^{jet} (GeV/#it{c});p_{T}^{HF} (GeV/#it{c})',
-                                           self.binarrays_ptjet['fPt'], self.binarray_pthf)
+                                           self.binarrays_ptjet['det']['fPt'], self.binarray_pthf)
                                            for cat in cats for level in levels_eff}
         # TODO: extend to multi-dimensional observables
-        # TODO: allow different binnings for gen and det
         h_response = {
             (cat, var): create_hist(
                 f'h_response_{cat}_{var}',
                 f";p_{{T}}^{{jet}} (GeV/#it{{c}});{var};p_{{T}}^{{jet}} (GeV/#it{{c}});{var};p_{{T}} (GeV/#it{{c}})",
-                self.binarrays_ptjet[var], self.binarrays_obs[var],
-                self.binarrays_ptjet[var], self.binarrays_obs[var],
+                self.binarrays_ptjet['det'][var], self.binarrays_obs['det'][var],
+                self.binarrays_ptjet['gen'][var], self.binarrays_obs['gen'][var],
                 self.binarray_pthf)
             for (cat, var) in itertools.product(cats, observables)
             if not '-' in var}
@@ -264,7 +271,7 @@ class ProcesserJets(Processer):
         h_effkine = {(cat, level, cut, var):
                         create_hist(f'h_effkine_{cat}_{level}_{cut}_{var}',
                                     f";p_{{T}}^{{jet}} (GeV/#it{{c}});{var_spec['label']}",
-                                    self.binarrays_ptjet[var], self.binarrays_obs[var])
+                                    self.binarrays_ptjet[level][var], self.binarrays_obs[level][var])
                         for (var, var_spec), level, cat, cut
                         in itertools.product(observables.items(), levels_effkine, cats, cuts)
                         if not '-' in var}
@@ -272,7 +279,7 @@ class ProcesserJets(Processer):
             (cat, var): create_hist(
                 f'h_ptjet-pthf-{var}_{cat}_gen',
                 f";p_{{T}}^{{jet}} (GeV/#it{{c}});p_{{T}}^{{HF}} (GeV/#it{{c}});{var}",
-                self.binarrays_ptjet[var], self.binarray_pthf, self.binarrays_obs[var])
+                self.binarrays_ptjet['gen'][var], self.binarray_pthf, self.binarrays_obs['gen'][var])
             for (cat, var) in itertools.product(cats, observables)
             if not '-' in var}
 

@@ -853,7 +853,8 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes,too
 
         for var in self.observables['all']:
             bins_ptjet = np.asarray(self.cfg('bins_ptjet'), 'd')
-            bins_obs = {var: bin_array(*self.cfg(f'observables.{var}.bins_fix')) for var in self.observables['all']}
+            # TODO: generalize or derive from histogram?
+            bins_obs = {var: bin_array(*self.cfg(f'observables.{var}.bins_gen_fix')) for var in self.observables['all']}
 
             colname = col_mapping.get(var, f'{var}_jet')
             if f'{colname}' not in df:
