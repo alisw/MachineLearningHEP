@@ -104,8 +104,8 @@ class Optimiser: # pylint: disable=too-many-public-methods, consider-using-f-str
         self.v_all = data_param["variables"]["var_all"]
         self.v_train = training_var
         self.v_selected = data_param["variables"].get("var_selected", None)
-        if self.v_selected:
-            self.v_selected = self.v_selected[index]
+        #if self.v_selected:
+        #    self.v_selected = self.v_selected[index]
         self.v_bound = data_param["variables"]["var_boundaries"]
         self.v_class = data_param["variables"]["var_class"]
         self.v_invmass = data_param["variables"]["var_inv_mass"]
@@ -378,7 +378,7 @@ class Optimiser: # pylint: disable=too-many-public-methods, consider-using-f-str
 
         for label in self.p_class_labels:
             for var_label, variables in var_set.items():
-                output = make_plot_name(self.dirmlplot, f"{label}_{var_label}_fMfPt", len(variables),
+                output = make_plot_name(self.dirmlplot, f"{label}_{var_label}", len(variables),
                                         self.p_binmin, self.p_binmax)
                 correlationmatrix(self.dfs_train[label], variables, label, output,
                                   self.p_binmin, self.p_binmax, self.p_plot_options)
