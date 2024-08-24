@@ -14,6 +14,7 @@ import glob
 import os
 import shutil
 from pathlib import Path
+from typing import Union
 
 from .logger import get_logger
 
@@ -59,7 +60,7 @@ def create_folder_struc(maindir: str, listpath: list[str]):
                 os.makedirs(folder)
 
 
-def checkdirs(dirs: list[str] | str) -> list[str]:
+def checkdirs(dirs: Union[list[str], str]) -> list[str]:
     """
     Return list of existing directories
     """
