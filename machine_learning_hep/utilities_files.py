@@ -10,16 +10,17 @@
 #    You should have received a copy of the GNU General Public License    #
 #   along with this program. if not, see <https://www.gnu.org/licenses/>. #
 
-import os
 import glob
-from pathlib import Path
+import os
 import shutil
+from pathlib import Path
 
 from .logger import get_logger
 
 logger = get_logger()
 
-def list_folders(main_dir: str, filenameinput: str, maxfiles: int, select=None): # pylint: disable=too-many-branches
+
+def list_folders(main_dir: str, filenameinput: str, maxfiles: int, select=None):  # pylint: disable=too-many-branches
     """
     Return folders under main_dir which contain filenameinput
 
@@ -29,7 +30,7 @@ def list_folders(main_dir: str, filenameinput: str, maxfiles: int, select=None):
     if not os.path.isdir(main_dir):
         logger.error("input directory <%s> does not exist", main_dir)
 
-    files = glob.glob(f'{main_dir}/**/{filenameinput}', recursive=True)
+    files = glob.glob(f"{main_dir}/**/{filenameinput}", recursive=True)
     listfolders = [os.path.relpath(os.path.dirname(file), main_dir) for file in files]
 
     if select:
@@ -42,7 +43,8 @@ def list_folders(main_dir: str, filenameinput: str, maxfiles: int, select=None):
     if maxfiles != -1:
         listfolders = listfolders[:maxfiles]
 
-    return  listfolders
+    return listfolders
+
 
 def create_folder_struc(maindir: str, listpath: list[str]):
     """
@@ -56,7 +58,8 @@ def create_folder_struc(maindir: str, listpath: list[str]):
             if not os.path.exists(folder):
                 os.makedirs(folder)
 
-def checkdirs(dirs: list[str]|str) -> list[str]:
+
+def checkdirs(dirs: list[str] | str) -> list[str]:
     """
     Return list of existing directories
     """
@@ -65,6 +68,7 @@ def checkdirs(dirs: list[str]|str) -> list[str]:
     else:
         exdirs = [d for d in dirs if Path(d).exists()]
     return exdirs
+
 
 def checkmakedir(mydir: str):
     """
@@ -76,12 +80,14 @@ def checkmakedir(mydir: str):
     logger.debug("creating folder %s", mydir)
     os.makedirs(mydir)
 
+
 def checkmakedirlist(dirlist: list[str]):
     """
     Makes directories from list using 'mkdir'
     """
     for mydir in dirlist:
         checkmakedir(mydir)
+
 
 def delete_dir(path: str):
     """
@@ -98,6 +104,7 @@ def delete_dir(path: str):
         return False
     return True
 
+
 def delete_dirlist(dirlist: list[str]):
     """
     Delete directories from list. Return True if success, False otherwise.
@@ -107,17 +114,20 @@ def delete_dirlist(dirlist: list[str]):
             return False
     return True
 
+
 def appendfiletolist(mylist: list[str], namefile: str):
     """
     Append filename to list
     """
     return [os.path.join(path, namefile) for path in mylist]
 
+
 def appendmainfoldertolist(prefolder: str, mylist: list[str]):
     """
     Append base foldername to paths in list
     """
     return [os.path.join(prefolder, path) for path in mylist]
+
 
 def createlist(prefolder: str, mylistfolder: list[str], namefile: str):
     """
