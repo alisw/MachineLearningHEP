@@ -14,14 +14,14 @@ skimming: # pkl_skimmed (pklsk), pkl_evtcounter_all
     activate: true
 merging: # pkl_skimmed_merge_for_ml (pklskml)
   mc:
-    activate: true
+    activate: false
   data:
-    activate: true
+    activate: false
 mergingperiods: # pkl_skimmed_merge_for_ml_all
   mc:
-    activate: true
+    activate: false
   data:
-    activate: true
+    activate: false
 
 ml_study: # mlout, mlplot
   activate: false
@@ -65,12 +65,12 @@ analysis:
     efficiency: true # processer: process_efficiency
   steps:
     init:
+    calculate_efficiencies:
     qa:
     fit:
-    calculate_efficiencies:
     estimate_feeddown:
     analyze_with_sidesub:
-    analyze_with_sigextr:
+    # analyze_with_sigextr:
 
 systematics:
   cutvar:

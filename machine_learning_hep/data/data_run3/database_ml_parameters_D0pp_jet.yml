@@ -44,8 +44,8 @@ D0jet_pp:
     var_ismcrefl: ismcrefl
     isstd : [[1],[]]
     ismcsignal: [[0],[]]
-    ismcprompt: [[0],[]]
-    ismcfd: [[1],[]]
+    ismcprompt: [[0],[1]]
+    ismcfd: [[1],[0]]
     ismcbkg: [[],[1]]
     ismcrefl: [[1],[1]] # probably missing from tree creator
 
@@ -53,34 +53,35 @@ D0jet_pp:
   dfs:
     read:
       evtorig:
-        index: fIndexD0CollBases
+        index: fIndexHfD0McCollBases
         trees:
-          O2hfd0collbase: [fNumContrib]
+          O2hfd0collbase: [fNumContrib, fPosZ]
+        filter: "abs(fPosZ) < 10."
       collcnt:
         trees:
           O2d0collcount: [fReadCounts, fReadSelectedCounts, fWrittenCounts]
 
-      # collgen: # table not filled at the moment
-      #   level: gen
-      #   index: fIndexD0CMCPJetCOs
-      #   trees:
-      #     O2d0cmcpjetco: [fPosZ, fCentrality, fEventSel]
+      collgen: # TODO: check if we can use the HF collision table instead
+        level: gen
+        index: fIndexD0CMCPJETCOS
+        trees:
+          O2d0cmcpjetco: [fPosZ, fCentrality, fEventSel]
+        filter: "abs(fPosZ) < 10."
       jetgen:
         level: gen
         index: fIndexD0CMCPJETOS
         trees:
-          O2hfd0pbase: [fPt, fEta, fPhi, fFlagMcMatchGen, fOriginMcGen]
+          O2hfd0pbase: [fIndexHfD0McCollBases, fPt, fEta, fPhi, fFlagMcMatchGen, fOriginMcGen]
           O2d0cmcpjeto: [fIndexD0CMCPJETCOS, fJetPt, fJetPhi, fJetEta, fJetNConstituents, fJetR]
           O2d0cmcpjetmo: [fIndexArrayD0CMCDJETOS_hf, fIndexArrayD0CMCDJETOS_geo, fIndexArrayD0CMCDJETOS_pt]
           O2d0cmcpjetsso: [fEnergyMother, fPtLeading, fPtSubLeading, fTheta, fNSub2DR, fNSub1, fNSub2]
         extra:
           fY: log((sqrt(1.864**2 + (fPt * cosh(fEta))**2) + fPt * sinh(fEta)) / sqrt(1.864**2 + fPt**2)) #TODO : change mass or make sure Lc mass is updated
         tags:
-          isstd: {var: fFlagMcMatchGen, req: [[1],[]]}
           ismcsignal: {var: fFlagMcMatchGen, req: [[0],[]], abs: true}
           ismcbkg: {var: fFlagMcMatchGen, req: [[],[0]], abs: true}
-          ismcprompt: {var: fOriginMcGen, req: [[0],[]]}
-          ismcfd: {var: fOriginMcGen, req: [[1],[]]}
+          ismcprompt: {var: fOriginMcGen, req: [[0],[1]]}
+          ismcfd: {var: fOriginMcGen, req: [[1],[0]]}
         filter: "fPt >= 1. and abs(fY) <= 0.8 and abs(fJetEta) < (.9 - (fJetR / 100.))" # TODO: check jet eta cut
 
       colldet:
@@ -88,6 +89,7 @@ D0jet_pp:
         index: fIndexD0CMCDJETCOS
         trees:
           O2d0cmcdjetco: [fPosZ, fCentrality, fEventSel]
+        filter: "abs(fPosZ) < 10."
       jetdet:
         level: det
         index: fIndexD0CMCDJETOS
@@ -117,8 +119,8 @@ D0jet_pp:
           ismcbkg: {var: fFlagMcMatchRec, req: [[], [0]], abs: True}
           seld0: {var: fCandidateSelFlag, req: [[0], []]}
           seld0bar: {var: fCandidateSelFlag, req: [[1], []]}
-          ismcprompt: {var: fOriginMcRec, req: [[0],[]]}
-          ismcfd: {var: fOriginMcRec, req: [[1],[]]}
+          ismcprompt: {var: fOriginMcRec, req: [[0],[1]]}
+          ismcfd: {var: fOriginMcRec, req: [[1],[0]]}
         extract_component:
           - {var: fMlScores, newvar: mlBkgScore, component: 0}
         filter: "fPt >= 1. and abs(fY) <= 0.8 and abs(fJetEta) < (.9 - (fJetR / 100.))" # TODO: check jet eta cut
@@ -130,6 +132,7 @@ D0jet_pp:
         index: fIndexD0CJETCOS
         trees:
           O2d0cjetco: [fPosZ, fCentrality, fEventSel]
+        filter: "abs(fPosZ) < 10."
       jetdata:
         level: data
         index: fIndexD0CJETOS
@@ -155,7 +158,7 @@ D0jet_pp:
         filter: "fPt >= 1. and abs(fY) <= 0.8 and abs(fJetEta) < (.9 - (fJetR / 100.))" # TODO: check jet eta cut
 
     merge:
-      # - {base: jetgen, ref: collgen}
+      - {base: jetgen, ref: evtorig}
       - {base: jetdet, ref: colldet}
       - {base: jetdata, ref: colldata}
 
@@ -242,12 +245,15 @@ D0jet_pp:
       maxfiles: [-1] #list of periods
       chunksizeunp:  [100] #list of periods
       chunksizeskim: [100] #list of periods
-      fracmerge: [1.] #list of periods
+      fracmerge: [.1] #list of periods
       seedmerge: [12] #list of periods
       period: [LHC22o] #list of periods
       select_period: [1]
-      # prefix_dir: /data2/MLhep/real/train_235436/
-      prefix_dir: /data2/MLhep/real/train_240309/
+      prefix_dir: /data2/MLhep/real/train_240309/ # Andrea's model
+      # prefix_dir: /data2/MLhep/real/train_245508/ # pass7
+      # prefix_dir: /data2/MLhep/real/train_245509/ # no TOF
+      # prefix_dir: /data2/MLhep/real/train_245510/ # no PID
+      # prefix_dir: /data2/MLhep/real/train_245511/ # full PID
       unmerged_tree_dir: [/alice/] #list of periods
       pkl: ['${USER}/d0jet/pkl'] #list of periods
       pkl_skimmed: ['${USER}/d0jet/pklsk'] #list of periods
@@ -260,12 +266,14 @@ D0jet_pp:
       maxfiles: [-1] #list of periods
       chunksizeunp: [100] #list of periods
       chunksizeskim: [1000] #list of periods
-      fracmerge: [1.0] #list of periods
+      fracmerge: [.1] #list of periods
       seedmerge: [12] #list of periods
       period: [LHC24d3a] #list of periods
       select_period: [1]
-      # prefix_dir: /data2/MLhep/sim/train_235437/
-      prefix_dir: /data2/MLhep/sim/train_239774/
+      prefix_dir: /data2/MLhep/sim/train_239774/ # Andrea's model
+      # prefix_dir: /data2/MLhep/sim/train_244893/ # no TOF
+      # prefix_dir: /data2/MLhep/sim/train_244894/ # no PID
+      # prefix_dir: /data2/MLhep/sim/train_244895/ # full PID
       unmerged_tree_dir: [alice/]
       pkl: ['${USER}/d0jet/pkl'] #list of periods
       pkl_skimmed: ['${USER}/d0jet/pklsk'] #list of periods
@@ -353,36 +361,45 @@ D0jet_pp:
     dir_general_plots: /data2/jklein/data/analysis_plots
 
     jet_obs: &jet_default
-      sel_an_binmin:    [2,3,4,5,6,7,8,10,12,16,24] # hadron pt bins (sel_an_binmin bins)
-      sel_an_binmax:    [3,4,5,6,7,8,10,12,16,24,36] # hadron pt bins (sel_an_binmin bins)
+      sel_an_binmin:    [1,2,3,4,5,6,7,8,10,12,16,24] # hadron pt bins (sel_an_binmin bins)
+      sel_an_binmax:    [2,3,4,5,6,7,8,10,12,16,24,36] # hadron pt bins (sel_an_binmin bins)
       bins_ptjet: [5, 7, 15, 30, 50]
+      bins_ptjet_eff: [2, 5, 7, 15, 30, 50, 70]
 
+      cand_collidx: fIndexHfD0CollBases
       sigmamb: 57.8e-3 #NB: multiplied by 1e12 before giving to HFPtSpectrum!
 
       # TODO: add separate binnings for MC and data
       observables:
         zg:
-          bins_fix: [6, -.1, .5]
-          label: 'z_{g}'
+          bins_gen_fix: [6, -.1, .5]
+          bins_det_fix: [6, -.1, .5]
+          label: '#it{z}_{g}'
         nsd:
-          bins_fix: [10, -.5, 9.5]
-          label: 'N_{sd}'
+          bins_gen_fix: [10, -.5, 9.5]
+          bins_det_fix: [10, -.5, 9.5]
+          label: '#it{n}_{SD}'
         rg:
-          bins_fix: [11, -.1, 1.]
-          label: 'R_{g}'
+          bins_gen_fix: [11, -.1, 1.]
+          bins_det_fix: [11, -.1, 1.]
+          label: '#it{R}_{g}'
         zpar:
-          bins_fix: [10, 0., 1.]
-          label: 'z_{#parallel}'
+          bins_gen_fix: [10, 0., 1.]
+          bins_det_fix: [10, 0., 1.]
+          label: '#it{z}_{#parallel}'
         dr:
-          bins_fix: [10, 0., 1.]
-          label: '#Deltar'
+          bins_gen_fix: [10, 0., 1.]
+          bins_det_fix: [10, 0., 1.]
+          label: '#Delta#it{r}'
         lntheta:
-          bins_fix: [10, 0., 5.]
-          label: '-ln(#theta)'
+          bins_gen_fix: [10, 0., 5.]
+          bins_det_fix: [10, 0., 5.]
+          label: '#minusln(#it{#theta})'
           arraycols: [3]
         lnkt:
-          bins_fix: [10, -8., 2.]
-          label: 'ln k_{T}'
+          bins_gen_fix: [10, -8., 2.]
+          bins_det_fix: [10, -8., 2.]
+          label: 'ln(#it{k}_{T}/(GeV/#it{c}))'
           arraycols: [3]
         lntheta-lnkt:
           arraycols: [3, 4]
@@ -393,55 +410,186 @@ D0jet_pp:
           query: '(isd0 & seld0) or (isd0bar & seld0bar)'
         mcrefl:
           level: mc
-          query: '(isd0 & seld0bar) or (isd0bar & seld0))'
+          query: '(isd0 & seld0bar) or (isd0bar & seld0)'
 
+      corr_refl: true
       fit_levels: ['mcsig', 'mcrefl', 'mc', 'data']
       mass_roofit:
         - level: mcsig
           datasel: mcsig
+          range: [1.69, 2.04]
           components:
+            sig:
+              fn: 'Gaussian::peak(m[1.,5.], mean[1.85,1.89], sigma_g1[.01,.08])'
+            bkg:
+              fn: 'Gaussian::wide(m, mean, sigma_wide[.05,1.])'
             model:
-              fn: 'Gaussian::mcsig(m[1.695,2.04], mean[1.85,1.87], sigma_g1[.01,.08])'
+              fn: 'SUM::sig(frac_wide[0.,.3]*wide, peak)'
         - level: mcrefl
+          ptrange: [1., 3.]
           datasel: mcrefl
+          range: [1.69, 2.04]
           components:
             refl_l:
-              fn: 'Gaussian::refl_l(m[1.695,2.04], mean_l[1.8,1.865], sigma_l[.01,.1])'
+              fn: 'Gaussian::refl_l(m, mean_l[1.7,1.865], sigma_l[.01,.1])'
             refl_r:
-              fn: 'Gaussian::refl_r(m[1.695,2.04], mean_r[1.865,1.9], sigma_r[.01,.1])'
+              fn: 'Gaussian::refl_r(m, mean_r[1.865,2.0], sigma_r[.01,.1])'
             model:
-              fn: 'SUM::mcrefl(frac_l[0.,1.]*refl_l, refl_r)'
+              fn: 'SUM::refl(frac_l[0.1,.9]*refl_l, refl_r)'
+        - level: mcrefl
+          ptrange: [3., 4.]
+          datasel: mcrefl
+          range: [1.68, 2.06]
+          components:
+            refl_l:
+              fn: 'Gaussian::refl_l(m, mean_l[1.7,1.865], sigma_l[.01,.2])'
+            refl_r:
+              fn: 'Gaussian::refl_r(m, mean_r[1.865,2.0], sigma_r[.01,.2])'
+            model:
+              fn: 'SUM::refl(frac_l[0.,1.]*refl_l, refl_r)'
+        - level: mcrefl
+          ptrange: [4., 5.]
+          datasel: mcrefl
+          range: [1.64, 2.08]
+          components:
+            refl_l:
+              fn: 'Gaussian::refl_l(m, mean_l[1.7,1.865], sigma_l[.01,.2])'
+            refl_r:
+              fn: 'Gaussian::refl_r(m, mean_r[1.865,2.0], sigma_r[.01,.2])'
+            model:
+              fn: 'SUM::refl(frac_l[0.,1.]*refl_l, refl_r)'
+        - level: mcrefl
+          ptrange: [5., 6.]
+          datasel: mcrefl
+          range: [1.64, 2.10]
+          components:
+            refl_l:
+              fn: 'Gaussian::refl_l(m, mean_l[1.8,1.865], sigma_l[.01,.2])'
+            refl_r:
+              fn: 'Gaussian::refl_r(m, mean_r[1.865,2.0], sigma_r[.01,.2])'
+            model:
+              fn: 'SUM::refl(frac_l[0.,1.]*refl_l, refl_r)'
+        - level: mcrefl
+          ptrange: [6., 8.]
+          datasel: mcrefl
+          range: [1.60, 2.14]
+          components:
+            refl_l:
+              fn: 'Gaussian::refl_l(m, mean_l[1.7,1.865], sigma_l[.01,.2])'
+            refl_r:
+              fn: 'Gaussian::refl_r(m, mean_r[1.865,2.1], sigma_r[.01,.2])'
+            model:
+              fn: 'SUM::refl(frac_l[0.,1.]*refl_l, refl_r)'
+        - level: mcrefl
+          ptrange: [8., 12.]
+          datasel: mcrefl
+          range: [1.52, 2.30]
+          components:
+            refl_l:
+              fn: 'Gaussian::refl_l(m, mean_l[1.7,1.865], sigma_l[.01,.2])'
+            refl_r:
+              fn: 'Gaussian::refl_r(m, mean_r[1.865,2.1], sigma_r[.01,.2])'
+            model:
+              fn: 'SUM::refl(frac_l[0.,1.]*refl_l, refl_r)'
+        - level: mcrefl
+          ptrange: [12., 36.]
+          datasel: mcrefl
+          range: [1.40, 2.4]
+          components:
+            refl_l:
+              fn: 'Gaussian::refl_l(m, mean_l[1.7,1.865], sigma_l[.01,.2])'
+            refl_r:
+              fn: 'Gaussian::refl_r(m, mean_r[1.865,2.1], sigma_r[.01,.2])'
+            model:
+              fn: 'SUM::refl(frac_l[0.,1.]*refl_l, refl_r)'
         - level: mc
-          fix_params: ['frac_l', 'mean_l', 'mean_r', 'sigma_l', 'sigma_r']
+          ptrange: [1., 3.]
+          range: [1.69, 2.04]
+          fix_params: ['frac_l', 'mean_l', 'mean_r', 'sigma_l', 'sigma_r', 'frac_wide', 'sigma_g1', 'sigma_wide']
           components:
             model:
-              fn: 'SUM::sigrefl(frac_refl[0.,1.]*mcrefl, mcsig)'
+              fn: 'SUM::sigrefl(frac_refl[0.,1.]*refl, sig)'
+        - level: mc
+          ptrange: [3., 4.]
+          range: [1.68, 2.06]
+          fix_params: ['frac_l', 'mean_l', 'mean_r', 'sigma_l', 'sigma_r', 'frac_wide', 'sigma_g1', 'sigma_wide']
+          components:
+            model:
+              fn: 'SUM::sigrefl(frac_refl[0.,1.]*refl, sig)'
+        - level: mc
+          ptrange: [4., 5.]
+          range: [1.64, 2.08]
+          fix_params: ['frac_l', 'mean_l', 'mean_r', 'sigma_l', 'sigma_r', 'frac_wide', 'sigma_g1', 'sigma_wide']
+          components:
+            model:
+              fn: 'SUM::sigrefl(frac_refl[0.,1.]*refl, sig)'
+        - level: mc
+          ptrange: [5., 6.]
+          range: [1.64, 2.10]
+          fix_params: ['frac_l', 'mean_l', 'mean_r', 'sigma_l', 'sigma_r', 'frac_wide', 'sigma_g1', 'sigma_wide']
+          components:
+            model:
+              fn: 'SUM::sigrefl(frac_refl[0.,1.]*refl, sig)'
+        - level: mc
+          ptrange: [6., 8.]
+          range: [1.60, 2.14]
+          fix_params: ['frac_l', 'mean_l', 'mean_r', 'sigma_l', 'sigma_r', 'frac_wide', 'sigma_g1', 'sigma_wide']
+          components:
+            model:
+              fn: 'SUM::sigrefl(frac_refl[0.,1.]*refl, sig)'
+        - level: mc
+          ptrange: [8., 12.]
+          range: [1.52, 2.30]
+          fix_params: ['frac_l', 'mean_l', 'mean_r', 'sigma_l', 'sigma_r', 'frac_wide', 'sigma_g1', 'sigma_wide']
+          components:
+            model:
+              fn: 'SUM::sigrefl(frac_refl[0.,1.]*refl, sig)'
+        - level: mc
+          ptrange: [12., 36.]
+          range: [1.40, 2.40]
+          fix_params: ['frac_l', 'mean_l', 'mean_r', 'sigma_l', 'sigma_r', 'frac_wide', 'sigma_g1', 'sigma_wide']
+          components:
+            model:
+              fn: 'SUM::sigrefl(frac_refl[0.,1.]*refl, sig)'
         - ptrange: [1., 2.]
-          range: [1.710, 2.02]
+          per_ptjet: true
+          range: [1.720, 2.02]
           fix_params: ['frac_refl']
+          free_params: ['sigma_g1']
+          fix_params_ptjet: ['mean', 'sigma_g1']
           components:
             bkg:
               fn: 'Exponential::bkg(m, alpha[-100,0])'
             model:
               fn: 'SUM::sum(frac[0.,1.]*sigrefl, bkg)'
         - ptrange: [2., 3.]
+          per_ptjet: true
           fix_params: ['frac_refl']
-          range: [1.7, 2.04]
+          free_params: ['sigma_g1']
+          fix_params_ptjet: ['mean', 'sigma_g1']
+          range: [1.72, 2.04]
           components:
             bkg:
               fn: 'Exponential::bkg(m, alpha[-100,0])'
             model:
               fn: 'SUM::sum(frac[0.,1.]*sigrefl, bkg)'
         - ptrange: [3., 4.]
+          per_ptjet: true
           fix_params: ['frac_refl']
-          range: [1.7, 2.06]
+          free_params: ['sigma_g1']
+          fix_params_ptjet: ['mean', 'sigma_g1']
+          range: [1.72, 2.06]
           components:
             bkg:
               fn: 'Exponential::bkg(m, alpha[-100,0])'
             model:
               fn: 'SUM::sum(frac[0.,1.]*sigrefl, bkg)'
         - ptrange: [4., 5.]
+          per_ptjet: true
           fix_params: ['frac_refl']
+          free_params: ['sigma_g1']
+          fix_params_ptjet: ['mean', 'sigma_g1']
+          # fix_params: ['mean', 'sigma_g1', 'frac_refl']
           range: [1.72, 2.08]
           components:
             bkg:
@@ -449,7 +597,10 @@ D0jet_pp:
             model:
               fn: 'SUM::sum(frac[0.,1.]*sigrefl, bkg)'
         - ptrange: [5., 6.]
+          per_ptjet: true
           fix_params: ['frac_refl']
+          free_params: ['sigma_g1']
+          fix_params_ptjet: ['mean', 'sigma_g1']
           range: [1.72, 2.10]
           components:
             bkg:
@@ -457,23 +608,35 @@ D0jet_pp:
             model:
               fn: 'SUM::sum(frac[0.,1.]*sigrefl, bkg)'
         - ptrange: [6., 8.]
+          per_ptjet: true
           fix_params: ['frac_refl']
+          free_params: ['sigma_g1']
+          fix_params_ptjet: ['mean', 'sigma_g1']
           range: [1.72, 2.14]
           components:
             bkg:
               fn: 'Exponential::bkg(m, alpha[-100,0])'
             model:
               fn: 'SUM::sum(frac[0.,1.]*sigrefl, bkg)'
-        - range: [1.7, 2.20]
+        - range: [1.72, 2.20]
+          per_ptjet: true
           fix_params: ['frac_refl']
+          free_params: ['sigma_g1']
+          fix_params_ptjet: ['mean', 'sigma_g1']
           components:
             bkg:
               fn: 'Exponential::bkg(m, alpha[-100,0])'
             model:
               fn: 'SUM::sum(frac[0.,1.]*sigrefl, bkg)'
 
+      sidesub_per_ptjet: true
       sidesub:
-        - ptrange: [24., 100.]
+        - level: mc
+          regions:
+            left: [-2., -2.]
+            signal: [-2., 2.]
+            right: [3., 3.]
+        - ptrange: [16., 100.]
           regions:
             left: [-2., -2.]
             signal: [-2., 2.]
@@ -483,26 +646,36 @@ D0jet_pp:
             signal: [-2., 2.]
             right: [3., 5.5]
 
-      mass_fit:
-        func_sig: 'gaus'
-        func_bkg: 'expo'
-        # par_start: {1: 1.86}
-        # par_fix: {1: 1.86}
-        par_constrain: {1: [1.85, 1.87], 2: [.01, .08]}
-        range: [1.695, 2.06]
+      # mass_fit:
+      #   func_sig: 'gaus'
+      #   func_bkg: 'expo'
+      #   # par_start: {1: 1.86}
+      #   # par_fix: {1: 1.86}
+      #   par_constrain: {1: [1.85, 1.87], 2: [.01, .08]}
+      #   range: [1.695, 2.06]
       mass_fit_lim: [1.5, 2.2] # histogram range of the invariant mass distribution [GeV/c^2]
       bin_width: 0.005 # bin width of the invariant mass histogram
       efficiency:
         extra_cols: ['isd0', 'isd0bar', 'seld0', 'seld0bar']
         filter_det: '(isd0 & seld0) or (isd0bar & seld0bar)'
         index_match: fIndexArrayD0CMCPJETOS_hf
-        store_matched: true
+        correction_method: run3
 
       unfolding_iterations: 8
+      closure:
+        pure_signal: false
+        # exclude_feeddown_det: 'ismcsignal==1 & ismcprompt==1'
+        # exclude_feeddown_gen: 'ismcsignal_gen==1 & ismcprompt_gen==1'
+        # filter_reflections: '(isd0 & seld0) or (isd0bar & seld0bar)'
+        use_matched: true
 
       frac_mcana: .2
       fd_root: '/data2/vkucera/powheg/trees_powheg_fd_central.root'
       fd_parquet: '/data2/jklein/powheg/trees_powheg_fd_central.parquet'
+
+      branching_ratio: 3.95e-2
+      xsection_inel: 57.8 # (mb) cross-section of minimum-bias events
+      xsection_inel_mc: .65 # 1.68 # (mb) cross-section of minimum-bias events
 
       # obsolete?
       proc_type: Jets
@@ -585,9 +758,6 @@ D0jet_pp:
 
       niterunfolding: 15
       niterunfoldingchosen: 4
-
-      branching_ratio: 3.95e-2
-      xsection_inel: 57.8 # (mb) cross-section of minimum-bias events
 
       doprior: false
       domodeldep: false

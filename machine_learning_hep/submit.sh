@@ -1,70 +1,44 @@
 #!/bin/bash
 
-# STAGE="pre"
-# STAGE="train"
-# STAGE="apply"
-STAGE="complete"
-# STAGE="analyzer"
+# This directory
+DIR_THIS="$(dirname "$(realpath "$0")")"
+
+# Config file prefix
+# CONFIG="default"
+CONFIG="d0jet"
+# CONFIG="lcjet"
+
+# Config file suffix
+# STAGE="complete"
+STAGE="all"
+# STAGE="ana"
 # STAGE="variations"
-# STAGE="systematics"
 
-# DBDIR="data_prod_20200417"
-# DBDIR="data_prod_20200304"
-DBDIR="data_prod_20210223"
-# DBDIR="data_prod_20220820"
-# DBDIR="pKpi"
-# DBDIR="JetAnalysis"
+# Suffix of the analysis database
+DATABASE="D0Jet_pp"
+# DATABASE="LcJet_pp"
 
-DATABASE="D0pp"
-# DATABASE="Dspp"
-# DATABASE="LcpK0spp"
-# DATABASE="LcpKpi"
+# Name of the analysis section in the analysis database
+ANALYSIS="jet_obs"
 
-# SUFFIX="_0417"
-# SUFFIX="_0304"
-# SUFFIX="_0304_jet" # Lc
-# SUFFIX="010"
-# SUFFIX="3050"
-SUFFIX="_jet"
+DBDIR="data/data_run3"
+DB_DEFAULT="${DIR_THIS}/${DBDIR}/database_ml_parameters_${DATABASE}.yml"
 
-# ANALYSIS="MBvspt"
-# ANALYSIS="MBvspt_perc_v0m"
-# ANALYSIS="MBvspt_ntrkl"
-# ANALYSIS="SPDvspt_ntrkl"
-# ANALYSIS="jet_FF"
-ANALYSIS="jet_zg"
-# ANALYSIS="jet_rg"
-# ANALYSIS="jet_nsd"
-# ANALYSIS="jet_r_shape_2_6"
-# ANALYSIS="jet_r_shape_6_12"
-
-DATABASE_DEFAULT="${DATABASE}${SUFFIX}"
-DATABASE_VARIATION="${DATABASE}_${ANALYSIS}"
-
-CONFIG="submission/default_${STAGE}.yml"
-DB_DEFAULT="data/${DBDIR}/database_ml_parameters_${DATABASE_DEFAULT}.yml"
-DB_VARIATION="data/${DBDIR}/database_variations_${DATABASE_VARIATION}.yml"
-DIR_RESULTS="/data/DerivedResultsJets/D0kAnywithJets/vAN-20200304_ROOT6-1/"
-
-CMD_ANA="python do_entire_analysis.py -a ${ANALYSIS} -r ${CONFIG} -d ${DB_DEFAULT} -c"
-
-if [[ "${STAGE}" == "variations" ]]
-then
-    echo "Running the variation script for the ${ANALYSIS} analysis of ${DATABASE_DEFAULT}"
-    ./submit_variations.sh ${DB_DEFAULT} ${DB_VARIATION} ${ANALYSIS}
+if [[ "${STAGE}" == "variations" ]]; then
+    echo "Running the variation script for the ${ANALYSIS} analysis from ${DATABASE}"
+    DB_VARIATION="${DIR_THIS}/${DBDIR}/database_variations_${DATABASE}_${ANALYSIS}.yml"
+    "${DIR_THIS}/submit_variations.sh" "${DB_DEFAULT}" "${DB_VARIATION}" "${ANALYSIS}"
 else
-    echo "Running the ${STAGE} stage of the ${ANALYSIS} analysis of ${DATABASE_DEFAULT}"
-    \time -f "time: %E\nCPU: %P" ${CMD_ANA}
-fi
-
-# Exit if error.
-if [ ! $? -eq 0 ]; then echo "Error"; exit 1; fi
+    CONFIG_FILE="${DIR_THIS}/submission/${CONFIG}_${STAGE}.yml"
+    CMD_ANA="mlhep -a ${ANALYSIS} -r ${CONFIG_FILE} -d ${DB_DEFAULT} -c --delete"
+    echo "Running the \"${STAGE}\" stage of the \"${CONFIG}\" configuration of the \"${ANALYSIS}\" analysis from ${DATABASE}"
+    ${CMD_ANA}
+fi || { echo "Error"; exit 1; }
 
 echo -e "\n$(date)"
 
-echo -e "\nCleaning ${DIR_RESULTS}"
-./clean_results.sh ${DIR_RESULTS}
+# DIR_RESULTS="/data/DerivedResultsJets/D0kAnywithJets/vAN-20200304_ROOT6-1/"
+# echo -e "\nCleaning ${DIR_RESULTS}"
+# "${DIR_THIS}/clean_results.sh" "${DIR_RESULTS}"
 
 echo -e "\nDone"
-
-exit 0

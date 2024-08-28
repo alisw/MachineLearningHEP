@@ -14,12 +14,12 @@ skimming: # pkl_skimmed (pklsk), pkl_evtcounter_all
     activate: false
 merging: # pkl_skimmed_merge_for_ml (pklskml)
   mc:
-    activate: true
+    activate: false
   data:
     activate: false
 mergingperiods: # pkl_skimmed_merge_for_ml_all
   mc:
-    activate: true
+    activate: false
   data:
     activate: false
 

@@ -1,16 +1,14 @@
-#############################################################################
-##  © Copyright CERN 2024. All rights not expressly granted are reserved.  ##
-##                 Author: Gian.Michele.Innocenti@cern.ch                  ##
-## This program is free software: you can redistribute it and/or modify it ##
-##  under the terms of the GNU General Public License as published by the  ##
-## Free Software Foundation, either version 3 of the License, or (at your  ##
-## option) any later version. This program is distributed in the hope that ##
-##  it will be useful, but WITHOUT ANY WARRANTY; without even the implied  ##
-##     warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.    ##
-##           See the GNU General Public License for more details.          ##
-##    You should have received a copy of the GNU General Public License    ##
-##   along with this program. if not, see <https://www.gnu.org/licenses/>. ##
-#############################################################################
+#  © Copyright CERN 2024. All rights not expressly granted are reserved.  #
+#                 Author: Gian.Michele.Innocenti@cern.ch                  #
+# This program is free software: you can redistribute it and/or modify it #
+#  under the terms of the GNU General Public License as published by the  #
+# Free Software Foundation, either version 3 of the License, or (at your  #
+# option) any later version. This program is distributed in the hope that #
+#  it will be useful, but WITHOUT ANY WARRANTY; without even the implied  #
+#     warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.    #
+#           See the GNU General Public License for more details.          #
+#    You should have received a copy of the GNU General Public License    #
+#   along with this program. if not, see <https://www.gnu.org/licenses/>. #
 
 """
 Script containing all helper functions
@@ -28,19 +26,17 @@ import time
 from array import array
 from datetime import datetime
 
-import lz4
-import numpy as np
-import pandas as pd
-from ROOT import (TH1, TH1F,  # pylint: disable=import-error, no-name-in-module
-                  TCanvas, TGraph, TGraphAsymmErrors, TLatex, TLegend, TObject,
-                  TRandom3, kBlack, kBlue, kCyan, kFullCircle, kFullCross,
-                  kFullCrossX, kFullDiamond, kFullDoubleDiamond,
-                  kFullFourTrianglesPlus, kFullFourTrianglesX, kFullSquare,
-                  kFullStar, kFullThreeTriangles, kGray, kGreen, kMagenta,
-                  kOpenCircle, kOpenCross, kOpenCrossX, kOpenDiamond,
-                  kOpenDoubleDiamond, kOpenFourTrianglesPlus,
-                  kOpenFourTrianglesX, kOpenSquare, kOpenStar,
-                  kOpenThreeTriangles, kOrange, kRed, kYellow)
+import lz4  # pylint: disable=import-error
+import numpy as np  # pylint: disable=import-error
+import pandas as pd  # pylint: disable=import-error
+from ROOT import (TH1, TH1F, TCanvas, TGraph, TGraphAsymmErrors, TLatex, TLegend,
+                  TObject, TRandom3, kBlack, kBlue, kCyan, kFullCircle, kFullCross,
+                  kFullCrossX, kFullDiamond, kFullDoubleDiamond, kFullFourTrianglesPlus,
+                  kFullFourTrianglesX, kFullSquare, kFullStar, kFullThreeTriangles,
+                  kGray, kGreen, kMagenta, kOpenCircle, kOpenCross, kOpenCrossX,
+                  kOpenDiamond, kOpenDoubleDiamond, kOpenFourTrianglesPlus,
+                  kOpenFourTrianglesX, kOpenSquare, kOpenStar, kOpenThreeTriangles,
+                  kOrange, kRed, kYellow,)
 
 from machine_learning_hep.logger import get_logger
 from machine_learning_hep.selectionutils import select_runs
@@ -49,58 +45,65 @@ from machine_learning_hep.selectionutils import select_runs
 
 logger = get_logger()
 
+
 def hist2array(hist):
-    assert hist.GetDimension() == 1, 'can only convert 1-d histogram'
+    assert hist.GetDimension() == 1, "can only convert 1-d histogram"
     return [hist.GetBinContent(x) for x in range(hist.GetNbinsX())]
+
 
 def array2hist(arr, hist):
     assert arr.ndim() == 1 and hist.GetDimension() == arr.ndim()
     for i, x in enumerate(arr):
         hist.SetBinContent(i + 1, x)
 
-def fill_response(response, dfi: pd.DataFrame, dfmissed: pd.DataFrame = None, write = False):
+
+def fill_response(response, dfi: pd.DataFrame, dfmissed: pd.DataFrame = None, write=False):
     dfi.apply(lambda row: response.Fill(row.iloc[0], row.iloc[1], row.iloc[2], row.iloc[3]), axis=1)
     if dfmissed:
         dfmissed.apply(lambda row: response.Miss(row.iloc[0], row.iloc[1]), axis=1)
     if write:
         response.Write()
 
+
 def openfile(filename, attr):
     """
     Open file with different compression types
     """
-    if filename.lower().endswith('.bz2'):
+    if filename.lower().endswith(".bz2"):
         return bz2.BZ2File(filename, attr)
-    if filename.lower().endswith('.xz'):
+    if filename.lower().endswith(".xz"):
         return lzma.open(filename, attr)
-    if filename.lower().endswith('.gz'):
+    if filename.lower().endswith(".gz"):
         return gzip.open(filename, attr)
-    if filename.lower().endswith('.lz4'):
+    if filename.lower().endswith(".lz4"):
         return lz4.frame.open(filename, attr)
-    return open(filename, attr, encoding='utf-8' if 'b' not in attr else None)
+    return open(filename, attr, encoding="utf-8" if "b" not in attr else None)
+
 
 def write_df(dfo, path):
-    logger.debug('writing df to <%s>', path)
-    if path.endswith('.parquet'):
+    logger.debug("writing df to <%s>", path)
+    if path.endswith(".parquet"):
         start = time.time()
         dfo.to_parquet(path)
-        logger.debug('written to parquet in %.2f s', time.time() - start)
+        logger.debug("written to parquet in %.2f s", time.time() - start)
     else:
         start = time.time()
         with openfile(path, "wb") as file:
             pickle.dump(dfo, file, pickle.HIGHEST_PROTOCOL)
-        logger.debug('written to pickle in %.2f s', time.time() - start)
+        logger.debug("written to pickle in %.2f s", time.time() - start)
+
 
 def read_df(path, **kwargs):
     try:
-        if path.endswith('.parquet'):
+        if path.endswith(".parquet"):
             df = pd.read_parquet(path, **kwargs)
         else:
             df = pickle.load(openfile(path, "rb"))
-    except Exception as e: # pylint: disable=broad-except
-        logger.critical('failed to open file <%s>: %s', path, str(e))
+    except Exception as e:  # pylint: disable=broad-except
+        logger.critical("failed to open file <%s>: %s", path, str(e))
         sys.exit()
     return df
+
 
 def mask_df(df_to_mask, mask_config):
     """
@@ -135,8 +138,10 @@ def mask_df(df_to_mask, mask_config):
         # Mask the at the column name with mask value
         df_to_mask.loc[mask_indices, [mc["column"]]] = conv_none(mc["mask_with"])
 
-def dfquery(df, selection, **kwargs): # pylint: disable=invalid-name
+
+def dfquery(df, selection, **kwargs):  # pylint: disable=invalid-name
     return df.query(selection, **kwargs) if selection is not None else df
+
 
 def selectdfrunlist(dfr, runlist, runvar):
     """
@@ -149,18 +154,22 @@ def selectdfrunlist(dfr, runlist, runvar):
         dfr = dfr[issel]
     return dfr
 
+
 def count_df_length_pkl(*pkls):
     """
     Return total number of entries in all pkls
     """
     return sum(len(read_df(pkl)) for pkl in pkls)
 
+
 def merge_method(listfiles, namemerged):
     """
     Merge dataframes from all files and write to single file
     """
-    df_merged = pd.concat(read_df(filename) for filename in listfiles)
-    write_df(df_merged, namemerged)
+    if len(listfiles) > 0:
+        df_merged = pd.concat(read_df(filename) for filename in listfiles)
+        write_df(df_merged, namemerged)
+
 
 def seldf_singlevar(dataframe, var, minval, maxval):
     """
@@ -168,18 +177,20 @@ def seldf_singlevar(dataframe, var, minval, maxval):
     """
     return dataframe.loc[(dataframe[var] >= minval) & (dataframe[var] < maxval)]
 
+
 def seldf_singlevar_inclusive(dataframe, var, minval, maxval):
     """
     Make projection on variable using [X,Y), e.g. pT or multiplicity
     """
     return dataframe.loc[(dataframe[var] >= minval) & (dataframe[var] <= maxval)]
 
+
 def split_df_classes(dataframe_, var_class_, output_labels_):
     """
     Split dataframe into dataframes for different output labels
     """
-    return {label: dataframe_.loc[dataframe_[var_class_] == ind]
-            for ind, label in enumerate(output_labels_)}
+    return {label: dataframe_.loc[dataframe_[var_class_] == ind] for ind, label in enumerate(output_labels_)}
+
 
 def createstringselection(var, low, high):
     """
@@ -188,13 +199,15 @@ def createstringselection(var, low, high):
     """
     return f"dfselection_{var}_{low:.1f}_{high:.1f}"
 
+
 def mergerootfiles(listfiles, mergedfile, tmp_dir):
     """
     Using ROOT's 'hadd' utility, to merge output rootfiles from analyses steps
     """
+
     def divide_chunks(list_to_split, chunk_size):
         for i in range(0, len(list_to_split), chunk_size):
-            yield list_to_split[i:i + chunk_size]
+            yield list_to_split[i : i + chunk_size]
 
     tmp_files = []
     if len(listfiles) > 500:
@@ -208,13 +221,13 @@ def mergerootfiles(listfiles, mergedfile, tmp_dir):
     outstring = " ".join(tmp_files)
     os.system(f"hadd -f -j 30 {mergedfile} {outstring}")
 
+
 def parallelizer(function, argument_list, maxperchunk, max_n_procs=2):
     """
     A centralized version for quickly parallelizing basically identical to what can found in
     the Processer. It could also rely on this one.
     """
-    chunks = [argument_list[x:x+maxperchunk] \
-              for x in range(0, len(argument_list), maxperchunk)]
+    chunks = [argument_list[x : x + maxperchunk] for x in range(0, len(argument_list), maxperchunk)]
     for chunk in chunks:
         print("Processing new chunck size=", maxperchunk)
         with mp.Pool(max_n_procs) as pool:
@@ -222,18 +235,20 @@ def parallelizer(function, argument_list, maxperchunk, max_n_procs=2):
             pool.close()
             pool.join()
 
+
 def get_timestamp_string():
     """
     Get timestamp, used for temporary files (like the 'hadd' ones)
     """
     return datetime.now().strftime("%Y-%m-%d_%H-%M-%S_") + f"{os.getpid()}"
 
+
 def make_latex_table(column_names, row_names, rows, caption=None, save_path="./table.tex"):
     """
     Store information in table format in tex file
     """
     caption = caption if caption is not None else "Caption"
-    with open(save_path, "w", encoding='utf-8') as f:
+    with open(save_path, "w", encoding="utf-8") as f:
         f.write("\\documentclass{article}\n\n")
         f.write("\\usepackage[margin=0.7in]{geometry}\n")
         f.write("\\usepackage[parfill]{parskip}\n")
@@ -260,6 +275,7 @@ def make_latex_table(column_names, row_names, rows, caption=None, save_path="./t
         f.write("\\end{sidewaystable}\n")
         f.write("\\end{document}\n")
 
+
 def make_file_path(directory, filename, extension, prefix=None, suffix=None):
     """
     Construct a common path+filename+suffix from args
@@ -270,6 +286,7 @@ def make_file_path(directory, filename, extension, prefix=None, suffix=None):
         filename = filename + "_" + make_pre_suffix(suffix)
     extension = extension.replace(".", "")
     return os.path.join(directory, filename + "." + extension)
+
 
 def make_pre_suffix(args):
     """
@@ -284,6 +301,7 @@ def make_pre_suffix(args):
             args = [args]
     return "_".join(args)
 
+
 def make_message_notfound(name, location=None):
     """
     Return a formatted error message for not found or not properly loaded objects
@@ -293,7 +311,9 @@ def make_message_notfound(name, location=None):
         return f"Error: Failed to get {name} in {location}"
     return f"Error: Failed to get {name}"
 
+
 # Jet related functions, to comment
+
 
 def z_calc(pt_1, phi_1, eta_1, pt_2, phi_2, eta_2):
     np_pt_1 = pt_1.values
@@ -310,33 +330,37 @@ def z_calc(pt_1, phi_1, eta_1, pt_2, phi_2, eta_2):
     sinh_eta_1 = np.sinh(np_eta_1)
     sinh_eta_2 = np.sinh(np_eta_2)
 
-    px_1 = np_pt_1*cos_phi_1
-    px_2 = np_pt_2*cos_phi_2
-    py_1 = np_pt_1*sin_phi_1
-    py_2 = np_pt_2*sin_phi_2
-    pz_1 = np_pt_1*sinh_eta_1
-    pz_2 = np_pt_2*sinh_eta_2
-    numerator = px_1*px_2+py_1*py_2+pz_1*pz_2
-    denominator = px_1*px_1+py_1*py_1+pz_1*pz_1
-    return numerator/denominator
+    px_1 = np_pt_1 * cos_phi_1
+    px_2 = np_pt_2 * cos_phi_2
+    py_1 = np_pt_1 * sin_phi_1
+    py_2 = np_pt_2 * sin_phi_2
+    pz_1 = np_pt_1 * sinh_eta_1
+    pz_2 = np_pt_2 * sinh_eta_2
+    numerator = px_1 * px_2 + py_1 * py_2 + pz_1 * pz_2
+    denominator = px_1 * px_1 + py_1 * py_1 + pz_1 * pz_1
+    return numerator / denominator
+
 
 def z_gen_calc(pt_1, phi_1, eta_1, pt_2, delta_phi, delta_eta):
     phi_2 = phi_1 + delta_phi
     eta_2 = eta_1 - delta_eta
     return z_calc(pt_1, phi_1, eta_1, pt_2, phi_2, eta_2)
 
+
 def get_bins(axis):
-    """ Get a numpy array containing bin edges of a histogram axis (TAxis). """
+    """Get a numpy array containing bin edges of a histogram axis (TAxis)."""
     return np.array([axis.GetBinLowEdge(i) for i in range(1, axis.GetNbins() + 2)])
 
+
 def equal_axes(axis1, axis2):
-    """ Compare the binning of two histogram axes. """
+    """Compare the binning of two histogram axes."""
     return np.array_equal(get_bins(axis1), get_bins(axis2))
 
+
 def equal_axis_list(axis1, list2, precision=10):
-    """ Compare the binning of axis1 with list2. """
-#    if not np.array_equal(get_bins(axis1), np.array(list2)):
-#        return False
+    """Compare the binning of axis1 with list2."""
+    #    if not np.array_equal(get_bins(axis1), np.array(list2)):
+    #        return False
     bins = get_bins(axis1)
     if len(bins) != len(list2):
         return False
@@ -345,14 +369,18 @@ def equal_axis_list(axis1, list2, precision=10):
             return False
     return True
 
+
 def equal_binning(his1, his2):
-    """ Compare binning of axes of two histograms (derived from TH1). """
-    return (equal_axes(his1.GetXaxis(), his2.GetXaxis()) and
-            equal_axes(his1.GetYaxis(), his2.GetYaxis()) and
-            equal_axes(his1.GetZaxis(), his2.GetZaxis()))
+    """Compare binning of axes of two histograms (derived from TH1)."""
+    return (
+        equal_axes(his1.GetXaxis(), his2.GetXaxis())
+        and equal_axes(his1.GetYaxis(), his2.GetYaxis())
+        and equal_axes(his1.GetZaxis(), his2.GetZaxis())
+    )
+
 
 def equal_binning_lists(his, list_x=None, list_y=None, list_z=None):
-    """ Compare binning of axes of a histogram with the respective lists. """
+    """Compare binning of axes of a histogram with the respective lists."""
     if list_x is not None and not equal_axis_list(his.GetXaxis(), list_x):
         return False
     if list_y is not None and not equal_axis_list(his.GetYaxis(), list_y):
@@ -361,24 +389,26 @@ def equal_binning_lists(his, list_x=None, list_y=None, list_z=None):
         return False
     return True
 
+
 def folding(h_input, response_matrix, h_output):
     for a in range(h_output.GetNbinsX()):
         for b in range(h_output.GetNbinsY()):
             val = 0.0
             err = 0.0
-            index_x_out = a + h_output.GetNbinsX()*b
+            index_x_out = a + h_output.GetNbinsX() * b
             for k in range(h_input.GetNbinsX()):
-                for l in range(h_input.GetNbinsY()):
-                    index_x_in = k + h_input.GetNbinsX()*l
-                    val += h_input.GetBinContent(k+1, l+1) * response_matrix(index_x_out, index_x_in)
-                    err += h_input.GetBinError(k+1, l+1)**2 * response_matrix(index_x_out, index_x_in)**2
-            h_output.SetBinContent(a+1, b+1, val)
-            h_output.SetBinError(a+1, b+1, math.sqrt(err))
+                for m in range(h_input.GetNbinsY()):
+                    index_x_in = k + h_input.GetNbinsX() * m
+                    val += h_input.GetBinContent(k + 1, m + 1) * response_matrix(index_x_out, index_x_in)
+                    err += h_input.GetBinError(k + 1, m + 1) ** 2 * response_matrix(index_x_out, index_x_in) ** 2
+            h_output.SetBinContent(a + 1, b + 1, val)
+            h_output.SetBinError(a + 1, b + 1, math.sqrt(err))
     return h_output
 
+
 def get_plot_range(val_min, val_max, margin_min, margin_max, logscale=False):
-    '''Return the minimum and maximum of the plotting range so that there are margins
-    expressed as fractions of the plotting range.'''
+    """Return the minimum and maximum of the plotting range so that there are margins
+    expressed as fractions of the plotting range."""
     k = 1 - margin_min - margin_max
     if k <= 0:
         return None, None
@@ -397,11 +427,14 @@ def get_plot_range(val_min, val_max, margin_min, margin_max, logscale=False):
         val_max_plot = val_max + k_max * val_range
     return val_min_plot, val_max_plot
 
+
 def get_x_window_gr(l_gr: list, with_errors=True):
-    '''Return the minimum and maximum x value so that all the points of the graphs in the list
-    fit in the range (by default including the error bars).'''
+    """Return the minimum and maximum x value so that all the points of the graphs in the list
+    fit in the range (by default including the error bars)."""
+
     def err_low(graph):
         return graph.GetEXlow if isinstance(graph, TGraphAsymmErrors) else graph.GetEX
+
     def err_high(graph):
         return graph.GetEXhigh if isinstance(graph, TGraphAsymmErrors) else graph.GetEX
 
@@ -415,9 +448,10 @@ def get_x_window_gr(l_gr: list, with_errors=True):
             x_max = max(x_max, (gr.GetX())[i] + ((err_high(gr)())[i] if with_errors else 0))
     return x_min, x_max
 
+
 def get_x_window_his(l_his: list):
-    '''Return the minimum and maximum x value so that all the bins of the histograms in the list
-    fit in the range.'''
+    """Return the minimum and maximum x value so that all the bins of the histograms in the list
+    fit in the range."""
     if not isinstance(l_his, list):
         l_his = [l_his]
     x_min = float("inf")
@@ -427,11 +461,14 @@ def get_x_window_his(l_his: list):
         x_max = max(x_max, his.GetXaxis().GetBinUpEdge(his.GetNbinsX()))
     return x_min, x_max
 
+
 def get_y_window_gr(l_gr: list, with_errors=True):
-    '''Return the minimum and maximum y value so that all the points of the graphs in the list
-    fit in the range (by default including the error bars).'''
+    """Return the minimum and maximum y value so that all the points of the graphs in the list
+    fit in the range (by default including the error bars)."""
+
     def err_low(graph):
         return graph.GetEYlow if isinstance(graph, TGraphAsymmErrors) else graph.GetEY
+
     def err_high(graph):
         return graph.GetEYhigh if isinstance(graph, TGraphAsymmErrors) else graph.GetEY
 
@@ -445,9 +482,10 @@ def get_y_window_gr(l_gr: list, with_errors=True):
             y_max = max(y_max, (gr.GetY())[i] + ((err_high(gr)())[i] if with_errors else 0))
     return y_min, y_max
 
+
 def get_y_window_his(l_his: list, with_errors=True):
-    '''Return the minimum and maximum y value so that all the points of the histograms in the list
-    fit in the range (by default including the error bars).'''
+    """Return the minimum and maximum y value so that all the points of the histograms in the list
+    fit in the range (by default including the error bars)."""
     if not isinstance(l_his, list):
         l_his = [l_his]
     y_min = float("inf")
@@ -460,14 +498,28 @@ def get_y_window_his(l_his: list, with_errors=True):
             y_max = max(y_max, cont + err)
     return y_min, y_max
 
+
 def get_colour(i: int, scheme=1):
-    '''Return a colour from the list.'''
-    colours = [kBlack, kBlue, kRed, kGreen + 1, kOrange + 1, kMagenta, kCyan + 1, kGray + 1, \
-        kBlue + 2, kRed - 3, kGreen + 3, kYellow  + 1, kMagenta + 1, kCyan + 2, kRed + 3]
-    colours_alice_point = [kBlack, kBlue + 1, kRed + 1, kGreen + 3, kMagenta + 2, kOrange + 4, \
-        kCyan + 2, kYellow + 2]
-    colours_alice_syst = [kGray + 1, kBlue - 7, kRed - 7, kGreen - 6, kMagenta - 4, kOrange - 3, \
-        kCyan - 6, kYellow - 7]
+    """Return a colour from the list."""
+    colours = [
+        kBlack,
+        kBlue,
+        kRed,
+        kGreen + 1,
+        kOrange + 1,
+        kMagenta,
+        kCyan + 1,
+        kGray + 1,
+        kBlue + 2,
+        kRed - 3,
+        kGreen + 3,
+        kYellow + 1,
+        kMagenta + 1,
+        kCyan + 2,
+        kRed + 3,
+    ]
+    colours_alice_point = [kBlack, kBlue + 1, kRed + 1, kGreen + 3, kMagenta + 2, kOrange + 4, kCyan + 2, kYellow + 2]
+    colours_alice_syst = [kGray + 1, kBlue - 7, kRed - 7, kGreen - 6, kMagenta - 4, kOrange - 3, kCyan - 6, kYellow - 7]
     if scheme == 1:
         list_col = colours_alice_point
     elif scheme == 2:
@@ -476,14 +528,33 @@ def get_colour(i: int, scheme=1):
         list_col = colours
     return list_col[i % len(list_col)]
 
+
 def get_marker(i: int, option=0):
-    '''Return a marker from the list.'''
-    markers_open = [kOpenCircle, kOpenSquare, kOpenCross, kOpenDiamond, kOpenCrossX,
-                    kOpenFourTrianglesPlus, kOpenStar,
-                    kOpenThreeTriangles, kOpenFourTrianglesX, kOpenDoubleDiamond]
-    markers_full = [kFullCircle, kFullSquare, kFullCross, kFullDiamond, kFullCrossX,
-                    kFullFourTrianglesPlus, kFullStar,
-                    kFullThreeTriangles, kFullFourTrianglesX, kFullDoubleDiamond]
+    """Return a marker from the list."""
+    markers_open = [
+        kOpenCircle,
+        kOpenSquare,
+        kOpenCross,
+        kOpenDiamond,
+        kOpenCrossX,
+        kOpenFourTrianglesPlus,
+        kOpenStar,
+        kOpenThreeTriangles,
+        kOpenFourTrianglesX,
+        kOpenDoubleDiamond,
+    ]
+    markers_full = [
+        kFullCircle,
+        kFullSquare,
+        kFullCross,
+        kFullDiamond,
+        kFullCrossX,
+        kFullFourTrianglesPlus,
+        kFullStar,
+        kFullThreeTriangles,
+        kFullFourTrianglesX,
+        kFullDoubleDiamond,
+    ]
     markers_thick = [88, 72, 75, 74, 76, 80, 82, 83, 84, 85]
     if option == 1:
         list_markers = markers_thick
@@ -493,18 +564,37 @@ def get_marker(i: int, option=0):
         list_markers = markers_open
     return list_markers[i % len(list_markers)]
 
+
 def get_markersize(marker: int, size_def=1.5):
-    '''Return a marker size.'''
-    markers_small = [kOpenCross, kOpenDiamond, kOpenStar, kOpenDoubleDiamond,
-                     kOpenFourTrianglesPlus, kOpenCrossX,
-                     kOpenThreeTriangles, kOpenFourTrianglesX,
-                     kFullCross, kFullDiamond, kFullStar, kFullDoubleDiamond,
-                     kFullFourTrianglesPlus, kFullCrossX,
-                     kFullThreeTriangles, kFullFourTrianglesX,
-                     75, 74, 76, 83, 84, 85]
+    """Return a marker size."""
+    markers_small = [
+        kOpenCross,
+        kOpenDiamond,
+        kOpenStar,
+        kOpenDoubleDiamond,
+        kOpenFourTrianglesPlus,
+        kOpenCrossX,
+        kOpenThreeTriangles,
+        kOpenFourTrianglesX,
+        kFullCross,
+        kFullDiamond,
+        kFullStar,
+        kFullDoubleDiamond,
+        kFullFourTrianglesPlus,
+        kFullCrossX,
+        kFullThreeTriangles,
+        kFullFourTrianglesX,
+        75,
+        74,
+        76,
+        83,
+        84,
+        85,
+    ]
     if marker in markers_small:
         return size_def * 4 / 3
     return size_def
+
 
 def setup_histogram(hist, colour=1, markerstyle=kOpenCircle, size=1.5):
     hist.SetStats(0)
@@ -518,6 +608,7 @@ def setup_histogram(hist, colour=1, markerstyle=kOpenCircle, size=1.5):
     hist.SetMarkerStyle(markerstyle)
     hist.SetMarkerColor(colour)
 
+
 def setup_canvas(can):
     can.SetCanvasSize(1970, 1500)
     can.SetWindowSize(570, 500)
@@ -527,7 +618,8 @@ def setup_canvas(can):
     can.SetLeftMargin(0.12)
     can.SetTopMargin(0.1)
     can.SetRightMargin(0.05)
-    #can.cd()
+    # can.cd()
+
 
 def setup_legend(legend, textsize=0.035):
     legend.SetBorderSize(0)
@@ -536,8 +628,8 @@ def setup_legend(legend, textsize=0.035):
     legend.SetTextSize(textsize)
     legend.SetTextFont(42)
 
-def setup_tgraph(tg_, colour=1, markerstyle=kOpenCircle, size=1.5, alphastyle=0.8,
-                 fillstyle=1001, textsize=0.05):
+
+def setup_tgraph(tg_, colour=1, markerstyle=kOpenCircle, size=1.5, alphastyle=0.8, fillstyle=1001, textsize=0.05):
     tg_.GetXaxis().SetTitleSize(textsize)
     tg_.GetXaxis().SetTitleOffset(1.0)
     tg_.GetYaxis().SetTitleSize(textsize)
@@ -550,6 +642,7 @@ def setup_tgraph(tg_, colour=1, markerstyle=kOpenCircle, size=1.5, alphastyle=0.
     tg_.SetMarkerStyle(markerstyle)
     tg_.SetMarkerColor(colour)
 
+
 def draw_latex(latex, colour=1, textsize=0.03):
     latex.SetNDC()
     latex.SetTextSize(textsize)
@@ -557,12 +650,44 @@ def draw_latex(latex, colour=1, textsize=0.03):
     latex.SetTextFont(42)
     latex.Draw()
 
-def make_plot(name, can=None, pad=0, path=None, suffix="eps", title="", size=None, margins_c=None, # pylint: disable=too-many-arguments, too-many-branches, too-many-statements, too-many-locals
-              list_obj=None, labels_obj=None,
-              leg_pos=None, opt_leg_h="P", opt_leg_g="P",
-              opt_plot_h="", opt_plot_g="P0",
-              offsets_xy=None, maxdigits=3, colours=None, markers=None, sizes=None,
-              range_x=None, range_y=None, margins_y=None, with_errors="xy", logscale=None):
+
+def draw_latex_lines(lines: "list[str]", x_start=0.18, y_start=0.85, y_step=0.05, font_size=0.04):
+    list_latex = []
+    for line in lines:
+        latex = TLatex(x_start, y_start, line)
+        list_latex.append(latex)
+        draw_latex(latex, textsize=font_size, colour=1)
+        y_start -= y_step
+    return list_latex
+
+
+def make_plot(  # pylint: disable=too-many-arguments, too-many-branches, too-many-statements, too-many-locals
+    name,
+    can=None,
+    pad=0,
+    path=None,
+    suffix="eps",
+    title="",
+    size=None,
+    margins_c=None,
+    list_obj=None,
+    labels_obj=None,
+    leg_pos=None,
+    opt_leg_h="P",
+    opt_leg_g="P",
+    opt_plot_h="",
+    opt_plot_g="P0",
+    offsets_xy=None,
+    maxdigits=3,
+    colours=None,
+    markers=None,
+    sizes=None,
+    range_x=None,
+    range_y=None,
+    margins_y=None,
+    with_errors="xy",
+    logscale=None,
+):
     """
     Make a plot with objects from a list (list_obj).
     Returns a TCanvas and a list of other created ROOT objects.
@@ -604,7 +729,7 @@ def make_plot(name, can=None, pad=0, path=None, suffix="eps", title="", size=Non
     # HELPING FUNCTIONS
 
     def min0_gr(graph):
-        """ Get the minimum positive y value in the graph. """
+        """Get the minimum positive y value in the graph."""
         list_pos = [y for y in graph.GetY() if y > 0]
         return min(list_pos) if list_pos else float("inf")
 
@@ -624,8 +749,7 @@ def make_plot(name, can=None, pad=0, path=None, suffix="eps", title="", size=Non
         return get_markersize(get_my_marker(i))
 
     def plot_graph(graph):
-        setup_tgraph(graph, get_my_colour(counter_plot), get_my_marker(counter_plot),
-                     get_my_size(counter_plot))
+        setup_tgraph(graph, get_my_colour(counter_plot), get_my_marker(counter_plot), get_my_size(counter_plot))
         graph.SetTitle(title)
         graph.GetXaxis().SetLimits(x_min_plot, x_max_plot)
         graph.GetYaxis().SetRangeUser(y_min_plot, y_max_plot)
@@ -635,7 +759,7 @@ def make_plot(name, can=None, pad=0, path=None, suffix="eps", title="", size=Non
         if offsets_xy:
             graph.GetXaxis().SetTitleOffset(offsets_xy[0])
             graph.GetYaxis().SetTitleOffset(offsets_xy[1])
-        if leg and n_labels > counter_plot and len(labels_obj[counter_plot]) > 0:
+        if leg and n_labels > counter_plot and isinstance(labels_obj, list) and len(labels_obj[counter_plot]) > 0:
             leg.AddEntry(graph, labels_obj[counter_plot], opt_leg_g)
         if isinstance(opt_plot_g, list):
             opt_plot = opt_plot_g
@@ -662,17 +786,16 @@ def make_plot(name, can=None, pad=0, path=None, suffix="eps", title="", size=Non
                 gr.GetYaxis().SetTitleOffset(offsets_xy[1])
             gr.Draw("AP")
             list_new.append(gr)
-        setup_histogram(histogram, get_my_colour(counter_plot), get_my_marker(counter_plot),
-                        get_my_size(counter_plot))
+        setup_histogram(histogram, get_my_colour(counter_plot), get_my_marker(counter_plot), get_my_size(counter_plot))
         if isinstance(opt_plot_h, list):
             opt_plot = opt_plot_h
         else:
-            opt_plot = [opt_plot_h]*(counter_plot+1)
+            opt_plot = [opt_plot_h] * (counter_plot + 1)
         if isinstance(opt_leg_h, list):
             opt_leg = opt_leg_h
         else:
-            opt_leg = [opt_leg_h]*(counter_plot+1)
-        if leg and n_labels > counter_plot and len(labels_obj[counter_plot]) > 0:
+            opt_leg = [opt_leg_h] * (counter_plot + 1)
+        if leg and n_labels > counter_plot and isinstance(labels_obj, list) and len(labels_obj[counter_plot]) > 0:
             leg.AddEntry(histogram, labels_obj[counter_plot], opt_leg[counter_plot])
         print(f"Plotting {histogram.GetName()} with option {opt_plot[counter_plot]}")
         histogram.Draw(opt_plot[counter_plot])
@@ -695,7 +818,7 @@ def make_plot(name, can=None, pad=0, path=None, suffix="eps", title="", size=Non
         print("Error: Empty list of objects")
         return None, None
 
-    list_new = [] # list of created objects that need to exist outside the function
+    list_new = []  # list of created objects that need to exist outside the function
     if not (isinstance(offsets_xy, list) and len(offsets_xy) == 2):
         offsets_xy = None
     if not isinstance(labels_obj, list):
@@ -716,8 +839,9 @@ def make_plot(name, can=None, pad=0, path=None, suffix="eps", title="", size=Non
         can.SetCanvasSize(*size)
     # set canvas margins
     if isinstance(margins_c, list) and len(margins_c) > 0:
-        for setter, value in zip([can.SetBottomMargin, can.SetLeftMargin,
-                                  can.SetTopMargin, can.SetRightMargin], margins_c):
+        for setter, value in zip(
+            [can.SetBottomMargin, can.SetLeftMargin, can.SetTopMargin, can.SetRightMargin], margins_c
+        ):
             setter(value)
     # set logarithmic scale for selected axes
     log_y = False
@@ -736,8 +860,8 @@ def make_plot(name, can=None, pad=0, path=None, suffix="eps", title="", size=Non
         list_new.append(leg)
 
     # range calculation
-    list_h = [] # list of histograms
-    list_g = [] # list of graphs
+    list_h = []  # list of histograms
+    list_g = []  # list of graphs
     for obj in list_obj:
         if is_histogram(obj):
             list_h.append(obj)
@@ -778,7 +902,7 @@ def make_plot(name, can=None, pad=0, path=None, suffix="eps", title="", size=Non
     # get plotting y range
     y_min_plot, y_max_plot = y_min, y_max
     if isinstance(margins_y, list) and len(margins_y) == 2:
-        y_min_plot, y_max_plot = get_plot_range(y_min, y_max, *margins_y, log_y)
+        y_min_plot, y_max_plot = get_plot_range(y_min, y_max, margins_y[0], margins_y[1], log_y)
     if isinstance(range_y, list) and len(range_y) == 2:
         y_min_plot, y_max_plot = range_y
 
@@ -796,7 +920,7 @@ def make_plot(name, can=None, pad=0, path=None, suffix="eps", title="", size=Non
             opt_plot_h += " same"
 
     # plot objects
-    counter_plot = 0 # counter of plotted histograms and graphs
+    counter_plot = 0  # counter of plotted histograms and graphs
     for obj in list_obj:
         if is_histogram(obj):
             plot_histogram(obj)
@@ -820,9 +944,10 @@ def make_plot(name, can=None, pad=0, path=None, suffix="eps", title="", size=Non
 
     # save canvas if necessary info provided
     if path and name and suffix:
-        can.SaveAs("{path}/{name}.{suffix}")
+        can.SaveAs(f"{path}/{name}.{suffix}")
 
     return can, list_new
+
 
 def tg_sys(central, variations):
     shapebins_centres = []
@@ -833,31 +958,37 @@ def tg_sys(central, variations):
     shapebins_error_down = []
 
     for i in range(central.GetNbinsX()):
-        shapebins_centres.append(central.GetBinCenter(i+1))
-        shapebins_contents.append(central.GetBinContent(i+1))
-        shapebins_widths_up.append(central.GetBinWidth(i+1)*0.5)
-        shapebins_widths_down.append(central.GetBinWidth(i+1)*0.5)
+        shapebins_centres.append(central.GetBinCenter(i + 1))
+        shapebins_contents.append(central.GetBinContent(i + 1))
+        shapebins_widths_up.append(central.GetBinWidth(i + 1) * 0.5)
+        shapebins_widths_down.append(central.GetBinWidth(i + 1) * 0.5)
         error_up = 0
         error_down = 0
         for j, _ in enumerate(variations):
-            error = variations[j].GetBinContent(i+1)-central.GetBinContent(i+1)
+            error = variations[j].GetBinContent(i + 1) - central.GetBinContent(i + 1)
             if error > 0 and error > error_up:
                 error_up = error
             if error < 0 and abs(error) > error_down:
                 error_down = abs(error)
         shapebins_error_up.append(error_up)
         shapebins_error_down.append(error_down)
-    shapebins_centres_array = array('d', shapebins_centres)
-    shapebins_contents_array = array('d', shapebins_contents)
-    shapebins_widths_up_array = array('d', shapebins_widths_up)
-    shapebins_widths_down_array = array('d', shapebins_widths_down)
-    shapebins_error_up_array = array('d', shapebins_error_up)
-    shapebins_error_down_array = array('d', shapebins_error_down)
-    tg = TGraphAsymmErrors(central.GetNbinsX(), shapebins_centres_array,
-                           shapebins_contents_array, shapebins_widths_down_array,
-                           shapebins_widths_up_array, shapebins_error_down_array,
-                           shapebins_error_up_array)
+    shapebins_centres_array = array("d", shapebins_centres)
+    shapebins_contents_array = array("d", shapebins_contents)
+    shapebins_widths_up_array = array("d", shapebins_widths_up)
+    shapebins_widths_down_array = array("d", shapebins_widths_down)
+    shapebins_error_up_array = array("d", shapebins_error_up)
+    shapebins_error_down_array = array("d", shapebins_error_down)
+    tg = TGraphAsymmErrors(
+        central.GetNbinsX(),
+        shapebins_centres_array,
+        shapebins_contents_array,
+        shapebins_widths_down_array,
+        shapebins_widths_up_array,
+        shapebins_error_down_array,
+        shapebins_error_up_array,
+    )
     return tg
+
 
 def divide_graphs(gr_num, gr_den):
     """Divide TGraphAsymmErrors"""
@@ -875,10 +1006,8 @@ def divide_graphs(gr_num, gr_den):
         e_b_minus = gr_den.GetErrorYlow(i)
         r = y_a / y_b
         gr_rat.SetPointY(i, r)
-        gr_rat.SetPointEYhigh(
-            i, math.sqrt(e_a_plus * e_a_plus + r * r * e_b_minus * e_b_minus) / y_b)
-        gr_rat.SetPointEYlow(
-            i, math.sqrt(e_a_minus * e_a_minus + r * r * e_b_plus * e_b_plus) / y_b)
+        gr_rat.SetPointEYhigh(i, math.sqrt(e_a_plus * e_a_plus + r * r * e_b_minus * e_b_minus) / y_b)
+        gr_rat.SetPointEYlow(i, math.sqrt(e_a_minus * e_a_minus + r * r * e_b_plus * e_b_plus) / y_b)
     return gr_rat
 
 
@@ -970,33 +1099,41 @@ def get_mean_uncertainty(his_stat, gr_syst=None, n_var=1000, combine=False):
     rnd = TRandom3()
     # create a histograms for the distribution of means
     hist_means_stat = TH1F(
-        f"{his_stat.GetName()}_means_stat", "hist_means_stat",
-        1000, his_stat.GetXaxis().GetXmin(), his_stat.GetXaxis().GetXmax())
+        f"{his_stat.GetName()}_means_stat",
+        "hist_means_stat",
+        1000,
+        his_stat.GetXaxis().GetXmin(),
+        his_stat.GetXaxis().GetXmax(),
+    )
     hist_means_stat.Sumw2()
     hist_means_syst = TH1F(
-        f"{his_stat.GetName()}_means_syst", "hist_means_syst",
-        1000, his_stat.GetXaxis().GetXmin(), his_stat.GetXaxis().GetXmax())
+        f"{his_stat.GetName()}_means_syst",
+        "hist_means_syst",
+        1000,
+        his_stat.GetXaxis().GetXmin(),
+        his_stat.GetXaxis().GetXmax(),
+    )
     hist_means_syst.Sumw2()
     hist_means_comb = TH1F(
-        f"{his_stat.GetName()}_means_comb", "hist_means_comb",
-        1000, his_stat.GetXaxis().GetXmin(), his_stat.GetXaxis().GetXmax())
+        f"{his_stat.GetName()}_means_comb",
+        "hist_means_comb",
+        1000,
+        his_stat.GetXaxis().GetXmin(),
+        his_stat.GetXaxis().GetXmax(),
+    )
     hist_means_comb.Sumw2()
     for _ in range(n_var):
         for i in range(n_points):
             # vary y with Gaussian of mean = y_central, sigma = err_y_central
-            y_var_stat = rnd.Gaus(
-                gr_stat.GetPointY(i),
-                (gr_stat.GetErrorYhigh(i) + gr_stat.GetErrorYlow(i)) / 2.)
+            y_var_stat = rnd.Gaus(gr_stat.GetPointY(i), (gr_stat.GetErrorYhigh(i) + gr_stat.GetErrorYlow(i)) / 2.0)
             hist_var_stat.SetBinContent(i + 1, y_var_stat)
             if gr_syst:
-                y_var_syst = rnd.Gaus(
-                    gr_syst.GetPointY(i),
-                    (gr_syst.GetErrorYhigh(i) + gr_syst.GetErrorYlow(i)) / 2.)
+                y_var_syst = rnd.Gaus(gr_syst.GetPointY(i), (gr_syst.GetErrorYhigh(i) + gr_syst.GetErrorYlow(i)) / 2.0)
                 hist_var_syst.SetBinContent(i + 1, y_var_syst)
                 if gr_comb:
                     y_var_comb = rnd.Gaus(
-                        gr_comb.GetPointY(i),
-                        (gr_comb.GetErrorYhigh(i) + gr_comb.GetErrorYlow(i)) / 2.)
+                        gr_comb.GetPointY(i), (gr_comb.GetErrorYhigh(i) + gr_comb.GetErrorYlow(i)) / 2.0
+                    )
                     hist_var_comb.SetBinContent(i + 1, y_var_comb)
         # calculate mean of the new histogram
         # fill the mean in a histogram of means
@@ -1013,7 +1150,7 @@ def format_number_prec(num, prec):
     return f"{round(num, prec):.{max(0, prec)}f}"
 
 
-def format_value_with_unc(y, e_stat=None, e_syst_plus=None, e_syst_minus=None, n_sig=2): # pylint: disable=invalid-name
+def format_value_with_unc(y, e_stat=None, e_syst_plus=None, e_syst_minus=None, n_sig=2):  # pylint: disable=invalid-name
     """Format a value with uncertainties so that the main value is reported with a decimal precision
     given by the number of significant figures of the smallest uncertainty."""
     mag_y = math.floor(math.log10(y))

@@ -4,11 +4,14 @@
 
 ErrExit() { echo "Error"; exit 1; }
 
+# This directory
+DIR_THIS="$(dirname "$(realpath "$0")")"
+
 DB_DEFAULT="$1"
 DB_VARIATION="$2"
 ANALYSIS="$3"
 RUN=0
-CMD_VAR="python do_variations.py ${DB_DEFAULT} ${DB_VARIATION}"
+CMD_VAR="python ${DIR_THIS}/do_variations.py ${DB_DEFAULT} ${DB_VARIATION}"
 NJOBS=5 # number of parallel jobs
 SCRIPT="script.sh" # name of the script with the execution lines
 
@@ -31,5 +34,3 @@ else
   echo -e "\nCleaning"
   ${CMD_VAR} -c -s "$SCRIPT" || ErrExit
 fi
-
-exit 0

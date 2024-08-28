@@ -307,7 +307,7 @@ class Processer: # pylint: disable=too-many-instance-attributes
                         dfnew = pd.DataFrame(columns=col, data=data)
                         df = pd.concat([df, dfnew], axis=1)
                     except Exception as e: # pylint: disable=broad-except
-                        tree.show()
+                        tree.show(name_width=50)
                         self.logger.critical('Failed to read data frame from tree %s: %s',
                                              tree.name, str(e))
                         sys.exit()
@@ -394,6 +394,7 @@ class Processer: # pylint: disable=too-many-instance-attributes
                             dfs[df_name][tag] = np.array(
                                 tag_bit_df(dfs[df_name], value['var'], value['req'], value.get('abs', False)),
                                 dtype=int)
+
                 if 'swap' in df_spec:
                     self.logger.debug(' %s -> swap', df_name)
                     spec = df_spec['swap']
@@ -537,7 +538,7 @@ class Processer: # pylint: disable=too-many-instance-attributes
             nfiles = len(self.mptfiles_recosk[ipt])
             if not nfiles:
                 print("There are no files to be merged")
-                sys.exit(1)
+                continue
             self.logger.info("Use merge fraction %g for pT bin %d",
                              self.p_frac_merge[ipt], ipt)
             ntomerge = int(nfiles * self.p_frac_merge[ipt])
