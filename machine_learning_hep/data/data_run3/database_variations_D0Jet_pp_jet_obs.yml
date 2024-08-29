@@ -483,11 +483,11 @@ categories:
                                         fn: 'SUM::sum(frac[0.,1.]*sigrefl, bkg)'
             rebin:
                 activate: [yes, yes, yes]
-                label: ["rebin 2", "rebin 3", "rebin 4"]
+                label: ["rebin 1", "rebin 2", "rebin 7"]
                 diffs:
                     analysis:
                         jet_obs:
-                            n_rebin: [2, 3, 4]
+                            n_rebin: [1, 2, 7]
             reflections:
                 activate: [no]
                 label: ["w/o refl."]
