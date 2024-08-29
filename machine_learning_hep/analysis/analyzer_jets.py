@@ -401,11 +401,11 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes,too
                     self.logger.critical("Histogram %s not found.", name_histo)
                 for iptjet, ipt in itertools.product(itertools.chain((None,), range(0, get_nbins(h, 1))),
                                                      range(get_nbins(h, 2))):
-                    self.logger.debug('fitting %s - %i', level, ipt)
+                    self.logger.debug('fitting %s: %s, %i', level, iptjet, ipt)
                     roows = self.roows.get(ipt)
                     axis_ptjet = get_axis(h, 1)
                     cuts_proj = {2: (ipt+1, ipt+1)}
-                    if iptjet:
+                    if iptjet is not None:
                         cuts_proj.update({1: (iptjet+1, iptjet+1)})
                         jetptlabel = f'_ptjet-{axis_ptjet.GetBinLowEdge(iptjet+1)}-{axis_ptjet.GetBinUpEdge(iptjet+1)}'
                     else:
@@ -417,8 +417,8 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes,too
                     ptrange = (self.bins_candpt[ipt], self.bins_candpt[ipt+1])
                     if self.cfg('mass_fit'):
                         if h_invmass.GetEntries() < 100: # TODO: reconsider criterion
-                            self.logger.error('Not enough entries to fit %s iptjet %d ipt %d',
-                                              level, iptjet or -1, ipt)
+                            self.logger.error('Not enough entries to fit %s iptjet %s ipt %d',
+                                              level, iptjet, ipt)
                             continue
                         fit_res, _, func_bkg = self._fit_mass(
                             h_invmass,
@@ -441,11 +441,11 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes,too
                             break
                         self.logger.debug("Using fit config for %i: %s", ipt, fitcfg)
                         # check
-                        if iptjet and not fitcfg.get('per_ptjet'):
+                        if iptjet is not None and not fitcfg.get('per_ptjet'):
                             continue
                         if h_invmass.GetEntries() < 100: # TODO: reconsider criterion
-                            self.logger.warning('Not enough entries to fit for %s iptjet %d ipt %d',
-                                                level, iptjet or -1, ipt)
+                            self.logger.warning('Not enough entries to fit for %s iptjet %s ipt %d',
+                                                level, iptjet, ipt)
                             continue
                         # TODO: link datasel to fit stage
                         if datasel := fitcfg.get('datasel'):
@@ -459,7 +459,7 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes,too
                         for par in fitcfg.get('free_params', []):
                             if var := roows.var(par):
                                 var.setConstant(False)
-                        if iptjet:
+                        if iptjet is not None:
                             for par in fitcfg.get('fix_params_ptjet', []):
                                 if var := roows.var(par):
                                     var.setConstant(True)
@@ -467,13 +467,13 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes,too
                             h_invmass, ipt, fitcfg, roows,
                             f'roofit/h_mass_fitted{jetptlabel}_pthf-{ptrange[0]}-{ptrange[1]}_{level}.png')
                         if roo_res.status() != 0:
-                            self.logger.error('RooFit failed for %s iptjet %d ipt %d', level, iptjet or -1, ipt)
+                            self.logger.error('RooFit failed for %s iptjet %s ipt %d', level, iptjet, ipt)
                         # if level == 'mc':
                         #     roo_ws.Print()
                         # TODO: save snapshot per level
                         # roo_ws.saveSnapshot(level, None)
                         self.roows[ipt] = roo_ws
-                        if iptjet:
+                        if iptjet is not None:
                             self.roo_ws_ptjet[level][iptjet][ipt] = roo_ws
                         else:
                             self.roo_ws[level][ipt] = roo_ws
