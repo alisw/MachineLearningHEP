@@ -358,7 +358,7 @@ LcJet_pp:
       sel_an_binmax:      [4,5,6,7,8,10,12,16,24,36] # hadron pt bins (sel_an_binmin bins)
       # binning_matching:   [0, 1, 1, 2, 2, 3, 3, 4, 4, 6, 6, 6] # mapping to skimming pt bins (sel_an_binmin bins)
       bins_ptjet: [5, 7, 15, 30, 50]
-      bins_ptjet_eff: [2, 5, 7, 15, 30, 50, 70]
+      bins_ptjet_eff: [5, 7, 15, 30, 50]
       cand_collidx: fIndexHf3PCollBases
 
       observables:
@@ -378,8 +378,10 @@ LcJet_pp:
           label: '#it{R}_{g}'
           label_y: "(1/#it{N}_{jet ch}) d#it{N}/d#it{R}_{g}"
         zpar:
-          bins_gen_fix: [10, 0., 1.]
-          bins_det_fix: [10, 0., 1.]
+          # bins_gen_fix: [10, 0., 1.]
+          # bins_det_fix: [10, 0., 1.]
+          bins_gen_var: [0.4, 0.6, 0.7, 0.8, 0.9, 1.]
+          bins_det_var: [0.4, 0.6, 0.7, 0.8, 0.9, 1.]
           label: '#it{z}_{#parallel}'
           label_y: "(1/#it{N}_{jet ch}) d#it{N}/d#it{z}_{#parallel}"
         dr:
@@ -411,6 +413,7 @@ LcJet_pp:
               fn: 'SUM::mctot(mcfrac[0.,1.]*sig, mcbkg)'
         - ptrange: [1., 5.]
           range: [2.13, 2.44]
+          #per_ptjet: true
           components:
             # sig:
             #   fn: 'Gaussian::sig(m, mean[2.28,2.29], sigma_g1[.005,.01])'
@@ -421,6 +424,7 @@ LcJet_pp:
               fn: 'SUM::sum(frac[0.,1.]*sig, bkg)'
         - ptrange: [5., 8.]
           range: [2.1, 2.48]
+          #per_ptjet: true
           components:
             # sig:
             #   fn: 'Gaussian::sig(m, mean[2.28,2.29], sigma_g1[.005,.03])'
@@ -430,6 +434,7 @@ LcJet_pp:
             model:
               fn: 'SUM::sum(frac[0.,1.]*sig, bkg)'
         - range: [2.05, 2.5]
+          #per_ptjet: true
           components:
             # sig:
             #   fn: 'Gaussian::sig(m, mean[2.28,2.29], sigma_g1[.005,.03])'
@@ -439,6 +444,7 @@ LcJet_pp:
             model:
               fn: 'SUM::sum(frac[0.,1.]*sig, bkg)'
 
+      #sidesub_per_ptjet: true
       sidesub:
         - regions:
             left: [-5.5, -3.]
@@ -459,9 +465,10 @@ LcJet_pp:
         index_match: fIndexArrayLCCMCPJETOS_hf
         store_matched: true
         extra_cols: ['mlPromptScore']
+        correction_method: run3
 
       unfolding_iterations: 8 # used, maximum iteration
-      unfolding_iterations_sel: 4 # used, selected iteration # systematics
+      unfolding_iterations_sel: 5 # used, selected iteration # systematics
 
       fd_root: '/data2/vkucera/powheg/trees_powheg_fd_F05_R05.root'
       fd_parquet: '/data2/jklein/powheg/Lc_powheg_fd_F05_R05.parquet'
