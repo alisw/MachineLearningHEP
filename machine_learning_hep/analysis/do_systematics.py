@@ -23,6 +23,8 @@ import os
 from array import array
 from math import sqrt
 from pathlib import Path
+from functools import reduce
+import numpy as np
 
 import yaml
 from ROOT import TLegend  # , TLine
@@ -53,8 +55,7 @@ from machine_learning_hep.utilities import (  # make_plot,
     setup_legend,
     setup_tgraph,
 )
-from machine_learning_hep.utils.hist import get_axis
-
+from machine_learning_hep.utils.hist import get_axis, bin_array
 
 def shrink_err_x(graph, width=0.1):
     for i in range(graph.GetN()):
@@ -85,6 +86,7 @@ class AnalyzerJetSystematics:
             db_analysis = yaml.safe_load(file_in)
         case = list(db_analysis.keys())[0]
         datap = db_analysis[case]
+        self.datap = datap
 
         # plotting
         # LaTeX string
@@ -117,17 +119,48 @@ class AnalyzerJetSystematics:
 
         # binning of observable (z, shape,...)
         # reconstruction level
-        binning_obs_rec = datap["analysis"][self.typean]["observables"][self.var]["bins_det_fix"]
-        self.n_bins_obs_rec = binning_obs_rec[0]
-        self.obs_rec_min = float(binning_obs_rec[1])
-        self.obs_rec_max = float(binning_obs_rec[2])
+        if binning := self.cfg(f'observables.{var}.bins_det_var'):
+            bins_tmp = np.asarray(binning, 'd')
+        elif binning := self.cfg(f'observables.{var}.bins_det_fix'):
+            bins_tmp = bin_array(*binning)
+        elif binning := self.cfg(f'observables.{var}.bins_var'):
+            bins_tmp = np.asarray(binning, 'd')
+        elif binning := self.cfg(f'observables.{var}.bins_fix'):
+            bins_tmp = bin_array(*binning)
+        else:
+            self.logger.error('no binning specified for %s, using defaults', var)
+            bins_tmp = bin_array(10, 0., 1.)
+        binning_obs_rec = bins_tmp
+        self.n_bins_obs_rec = len(binning_obs_rec) - 1
+        self.obs_rec_min = float(binning_obs_rec[0])
+        self.obs_rec_max = float(binning_obs_rec[-1])
+        # binning_obs_rec = datap["analysis"][self.typean]["observables"][self.var]["bins_det_fix"]
+        # self.n_bins_obs_rec = binning_obs_rec[0]
+        # self.obs_rec_min = float(binning_obs_rec[1])
+        # self.obs_rec_max = float(binning_obs_rec[2])
         step = (self.obs_rec_max - self.obs_rec_min) / self.n_bins_obs_rec
         self.edges_obs_rec = [round(self.obs_rec_min + i * step, 2) for i in range(self.n_bins_obs_rec + 1)]
+
         # generator level
-        binning_obs_gen = datap["analysis"][self.typean]["observables"][self.var]["bins_gen_fix"]
-        self.n_bins_obs_gen = binning_obs_gen[0]
-        self.obs_gen_min = float(binning_obs_gen[1])
-        self.obs_gen_max = float(binning_obs_gen[2])
+        if binning := self.cfg(f'observables.{var}.bins_gen_var'):
+            bins_tmp = np.asarray(binning, 'd')
+        elif binning := self.cfg(f'observables.{var}.bins_gen_fix'):
+            bins_tmp = bin_array(*binning)
+        elif binning := self.cfg(f'observables.{var}.bins_var'):
+            bins_tmp = np.asarray(binning, 'd')
+        elif binning := self.cfg(f'observables.{var}.bins_fix'):
+            bins_tmp = bin_array(*binning)
+        else:
+            self.logger.error('no binning specified for %s, using defaults', var)
+            bins_tmp = bin_array(10, 0., 1.)
+        binning_obs_gen = bins_tmp
+        self.n_bins_obs_gen = len(binning_obs_gen) - 1
+        self.obs_gen_min = float(binning_obs_gen[0])
+        self.obs_gen_max = float(binning_obs_gen[-1])
+        # binning_obs_gen = datap["analysis"][self.typean]["observables"][self.var]["bins_gen_fix"]
+        # self.n_bins_obs_gen = binning_obs_gen[0]
+        # self.obs_gen_min = float(binning_obs_gen[1])
+        # self.obs_gen_max = float(binning_obs_gen[2])
         step = (self.obs_gen_max - self.obs_gen_min) / self.n_bins_obs_gen
         self.edges_obs_gen = [round(self.obs_gen_min + i * step, 2) for i in range(self.n_bins_obs_gen + 1)]
 
@@ -241,6 +274,10 @@ class AnalyzerJetSystematics:
         for fmt in self.fig_formats:
             (self.dir_out_figs / fmt).mkdir(parents=True, exist_ok=True)
 
+    def cfg(self, param, default = None):
+        return reduce(lambda d, key: d.get(key, default) if isinstance(d, dict) else default,
+                      param.split("."), self.datap['analysis'][self.typean])
+
     def save_canvas(self, can, name: str):
         """Save canvas"""
         for fmt in self.fig_formats:
@@ -312,7 +349,8 @@ class AnalyzerJetSystematics:
             self.crop_histogram(input_histograms_default[ibin2])
             print(f"Default histogram ({jetptrange[0]} to {jetptrange[1]})")
             print_histogram(input_histograms_default[ibin2])
-            name_eff = f"h_ptjet-pthf_effnew_pr_ptjet_{ibin2 + 1}"  # efficiency jetpt binning has offset
+            # name_eff = f"h_ptjet-pthf_effnew_pr_ptjet_{ibin2 + 1}"  # efficiency jetpt binning has offset
+            name_eff = f"h_ptjet-pthf_effnew_pr_ptjet_{ibin2}"  # if bins_ptjet_eff == bins_ptjet
             eff_default.append(eff_file_default.Get(name_eff))
             if not eff_default[ibin2]:
                 self.logger.critical(make_message_notfound(name_eff, path_eff))
@@ -347,7 +385,8 @@ class AnalyzerJetSystematics:
         input_histograms_sys = []
         input_histograms_sys_eff = []
         for ibin2 in range(self.n_bins_ptjet_gen):
-            name_eff = f"h_ptjet-pthf_effnew_pr_ptjet_{ibin2 + 1}"  # efficiency jetpt binning has offset
+            # name_eff = f"h_ptjet-pthf_effnew_pr_ptjet_{ibin2 + 1}"  # efficiency jetpt binning has offset
+            name_eff = f"h_ptjet-pthf_effnew_pr_ptjet_{ibin2}"  # if bins_ptjet_eff == bins_ptjet
             input_histograms_syscat = []
             input_histograms_syscat_eff = []
             for sys_cat in range(self.n_sys_cat):
