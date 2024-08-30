@@ -262,7 +262,7 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes,too
                 hc_eff_avg.SetLineColor(ROOT.kGreen)
                 hc_eff_avg.SetLineWidth(10)
                 amax = hc_eff.GetMaximum()
-                for iptjet in reversed(range(1, get_nbins(eff, 0) - 1)):
+                for iptjet in reversed(range(get_nbins(eff, 0))):
                     h = project_hist(eff, [1], {0: (iptjet+1, iptjet+1)})
                     h.SetName(h.GetName() + f'_ptjet{iptjet}')
                     h.Draw('same')
@@ -888,7 +888,19 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes,too
         for var in self.observables['all']:
             bins_ptjet = np.asarray(self.cfg('bins_ptjet'), 'd')
             # TODO: generalize or derive from histogram?
-            bins_obs = {var: bin_array(*self.cfg(f'observables.{var}.bins_gen_fix')) for var in self.observables['all']}
+            bins_obs = {}
+            if binning := self.cfg(f'observables.{var}.bins_gen_var'):
+                bins_tmp = np.asarray(binning, 'd')
+            elif binning := self.cfg(f'observables.{var}.bins_gen_fix'):
+                bins_tmp = bin_array(*binning)
+            elif binning := self.cfg(f'observables.{var}.bins_var'):
+                bins_tmp = np.asarray(binning, 'd')
+            elif binning := self.cfg(f'observables.{var}.bins_fix'):
+                bins_tmp = bin_array(*binning)
+            else:
+                self.logger.error('no binning specified for %s, using defaults', var)
+                bins_tmp = bin_array(10, 0., 1.)
+            bins_obs[var] = bins_tmp
 
             colname = col_mapping.get(var, f'{var}_jet')
             if f'{colname}' not in df:
