@@ -58,7 +58,8 @@ D0jet_pp:
         filter: "abs(fPosZ) < 10."
       collcnt:
         trees:
-          O2d0collcount: [fReadCounts, fReadSelectedCounts, fWrittenCounts]
+          # O2d0collcount: [fReadCounts, fReadSelectedCounts, fWrittenCounts]  # old
+          O2collcount: [fReadCounts, fReadCountsWithTVX, fReadCountsWithTVXAndZVertexAndSel8]  # new
 
       collgen: # TODO: check if we can use the HF collision table instead
         level: gen
@@ -100,8 +101,8 @@ D0jet_pp:
                       fImpactParameter0, fImpactParameter1,
                       fImpactParameterNormalised0, fImpactParameterNormalised1,
                       fPtProng0, fPtProng1,
-                      fNSigTpcPi0, fNSigTpcKa0, fNSigTpcPi1, fNSigTpcKa1,
-                      fNSigTofPi0, fNSigTofKa0, fNSigTofPi1, fNSigTofKa1]
+                      fNSigTpcPi, fNSigTpcKa,
+                      fNSigTofPi, fNSigTofKa]
           O2hfd0pare: [fErrorDecayLength, fErrorDecayLengthXY,
                       fErrorImpactParameter0, fErrorImpactParameter1]
           O2hfd0sel: [fCandidateSelFlag]
@@ -142,8 +143,8 @@ D0jet_pp:
                       fImpactParameter0, fImpactParameter1,
                       fImpactParameterNormalised0, fImpactParameterNormalised1,
                       fPtProng0, fPtProng1,
-                      fNSigTpcPi0, fNSigTpcKa0, fNSigTpcPi1, fNSigTpcKa1,
-                      fNSigTofPi0, fNSigTofKa0, fNSigTofPi1, fNSigTofKa1]
+                      fNSigTpcPi, fNSigTpcKa,
+                      fNSigTofPi, fNSigTofKa]
           O2hfd0pare: [fErrorDecayLength, fErrorDecayLengthXY,
                       fErrorImpactParameter0, fErrorImpactParameter1]
           O2hfd0ml: [fMlScores]
@@ -183,8 +184,8 @@ D0jet_pp:
         file: AnalysisResultsCollCnt.parquet
 
   variables:
-    var_all: [fDecayLength, fDecayLengthXY, fDecayLengthNormalised, fDecayLengthXYNormalised, fCpa, fCpaXY, fImpactParameter0, fImpactParameter1, fErrorImpactParameter0, fErrorImpactParameter1, fNSigTpcPi0, fNSigTpcKa0, fNSigTofPi0, fNSigTofKa0, fNSigTpcPi1, fNSigTpcKa1, fNSigTofPi1, fNSigTofKa1]
-    var_training: [[fDecayLength, fDecayLengthXY, fDecayLengthNormalised, fDecayLengthXYNormalised, fCpa, fCpaXY, fImpactParameter0, fImpactParameter1, fErrorImpactParameter0, fErrorImpactParameter1, fNSigTpcPi0, fNSigTpcKa0, fNSigTofPi0, fNSigTofKa0, fNSigTpcPi1, fNSigTpcKa1, fNSigTofPi1, fNSigTofKa1], [fDecayLength, fDecayLengthXY, fDecayLengthNormalised, fDecayLengthXYNormalised, fCpa, fCpaXY, fImpactParameter0, fImpactParameter1, fErrorImpactParameter0, fErrorImpactParameter1, fNSigTpcPi0, fNSigTpcKa0, fNSigTofPi0, fNSigTofKa0, fNSigTpcPi1, fNSigTpcKa1, fNSigTofPi1, fNSigTofKa1], [fDecayLength, fDecayLengthXY, fDecayLengthNormalised, fDecayLengthXYNormalised, fCpa, fCpaXY, fImpactParameter0, fImpactParameter1, fErrorImpactParameter0, fErrorImpactParameter1, fNSigTpcPi0, fNSigTpcKa0, fNSigTofPi0, fNSigTofKa0, fNSigTpcPi1, fNSigTpcKa1, fNSigTofPi1, fNSigTofKa1], [fDecayLength, fDecayLengthXY, fDecayLengthNormalised, fDecayLengthXYNormalised, fCpa, fCpaXY, fImpactParameter0, fImpactParameter1, fErrorImpactParameter0, fErrorImpactParameter1, fNSigTpcPi0, fNSigTpcKa0, fNSigTofPi0, fNSigTofKa0, fNSigTpcPi1, fNSigTpcKa1, fNSigTofPi1, fNSigTofKa1], [fDecayLength, fDecayLengthXY, fDecayLengthNormalised, fDecayLengthXYNormalised, fCpa, fCpaXY, fImpactParameter0, fImpactParameter1, fErrorImpactParameter0, fErrorImpactParameter1, fNSigTpcPi0, fNSigTpcKa0, fNSigTofPi0, fNSigTofKa0, fNSigTpcPi1, fNSigTpcKa1, fNSigTofPi1, fNSigTofKa1], [fDecayLength, fDecayLengthXY, fDecayLengthNormalised, fDecayLengthXYNormalised, fCpa, fCpaXY, fImpactParameter0, fImpactParameter1, fErrorImpactParameter0, fErrorImpactParameter1, fNSigTpcPi0, fNSigTpcKa0, fNSigTofPi0, fNSigTofKa0, fNSigTpcPi1, fNSigTpcKa1, fNSigTofPi1, fNSigTofKa1], [fDecayLength, fDecayLengthXY, fDecayLengthNormalised, fDecayLengthXYNormalised, fCpa, fCpaXY, fImpactParameter0, fImpactParameter1, fErrorImpactParameter0, fErrorImpactParameter1, fNSigTpcPi0, fNSigTpcKa0, fNSigTofPi0, fNSigTofKa0, fNSigTpcPi1, fNSigTpcKa1, fNSigTofPi1, fNSigTofKa1]]
+    var_all: [fDecayLength, fDecayLengthXY, fDecayLengthNormalised, fDecayLengthXYNormalised, fCpa, fCpaXY, fImpactParameter0, fImpactParameter1, fErrorImpactParameter0, fErrorImpactParameter1, fNSigTpcPi, fNSigTpcKa, fNSigTofPi, fNSigTofKa]
+    var_training: [[fDecayLength, fDecayLengthXY, fDecayLengthNormalised, fDecayLengthXYNormalised, fCpa, fCpaXY, fImpactParameter0, fImpactParameter1, fErrorImpactParameter0, fErrorImpactParameter1, fNSigTpcPi, fNSigTpcKa, fNSigTofPi, fNSigTofKa], [fDecayLength, fDecayLengthXY, fDecayLengthNormalised, fDecayLengthXYNormalised, fCpa, fCpaXY, fImpactParameter0, fImpactParameter1, fErrorImpactParameter0, fErrorImpactParameter1, fNSigTpcPi, fNSigTpcKa, fNSigTofPi, fNSigTofKa], [fDecayLength, fDecayLengthXY, fDecayLengthNormalised, fDecayLengthXYNormalised, fCpa, fCpaXY, fImpactParameter0, fImpactParameter1, fErrorImpactParameter0, fErrorImpactParameter1, fNSigTpcPi, fNSigTpcKa, fNSigTofPi, fNSigTofKa], [fDecayLength, fDecayLengthXY, fDecayLengthNormalised, fDecayLengthXYNormalised, fCpa, fCpaXY, fImpactParameter0, fImpactParameter1, fErrorImpactParameter0, fErrorImpactParameter1, fNSigTpcPi, fNSigTpcKa, fNSigTofPi, fNSigTofKa], [fDecayLength, fDecayLengthXY, fDecayLengthNormalised, fDecayLengthXYNormalised, fCpa, fCpaXY, fImpactParameter0, fImpactParameter1, fErrorImpactParameter0, fErrorImpactParameter1, fNSigTpcPi, fNSigTpcKa, fNSigTofPi, fNSigTofKa], [fDecayLength, fDecayLengthXY, fDecayLengthNormalised, fDecayLengthXYNormalised, fCpa, fCpaXY, fImpactParameter0, fImpactParameter1, fErrorImpactParameter0, fErrorImpactParameter1, fNSigTpcPi, fNSigTpcKa, fNSigTofPi, fNSigTofKa], [fDecayLength, fDecayLengthXY, fDecayLengthNormalised, fDecayLengthXYNormalised, fCpa, fCpaXY, fImpactParameter0, fImpactParameter1, fErrorImpactParameter0, fErrorImpactParameter1, fNSigTpcPi, fNSigTpcKa, fNSigTofPi, fNSigTofKa]]
       #TODO: add new variables for dca, max_norm_d0d0exp
       # sel_skim_binmin bins
     var_boundaries: [fCosThetaStar, fPtProng]
@@ -249,7 +250,8 @@ D0jet_pp:
       seedmerge: [12] #list of periods
       period: [LHC22o] #list of periods
       select_period: [1]
-      prefix_dir: /data2/MLhep/real/train_240309/ # Andrea's model
+      prefix_dir: /data2/MLhep/real/train_257023/ # full stats
+      # prefix_dir: /data2/MLhep/real/train_240309/ # Andrea's model
       # prefix_dir: /data2/MLhep/real/train_245508/ # pass7
       # prefix_dir: /data2/MLhep/real/train_245509/ # no TOF
       # prefix_dir: /data2/MLhep/real/train_245510/ # no PID
@@ -270,7 +272,9 @@ D0jet_pp:
       seedmerge: [12] #list of periods
       period: [LHC24d3a] #list of periods
       select_period: [1]
-      prefix_dir: /data2/MLhep/sim/train_239774/ # Andrea's model
+      prefix_dir: /data2/MLhep/sim/train_257228/ # full stats
+      # prefix_dir: /data2/MLhep/sim/train_257227/ # 97 % tracking eff
+      # prefix_dir: /data2/MLhep/sim/train_239774/ # Andrea's model
       # prefix_dir: /data2/MLhep/sim/train_244893/ # no TOF
       # prefix_dir: /data2/MLhep/sim/train_244894/ # no PID
       # prefix_dir: /data2/MLhep/sim/train_244895/ # full PID
@@ -387,8 +391,10 @@ D0jet_pp:
           label: '#it{R}_{g}'
           label_y: "(1/#it{N}_{jet ch}) d#it{N}/d#it{R}_{g}"
         zpar:
-          bins_gen_fix: [10, 0., 1.]
-          bins_det_fix: [10, 0., 1.]
+          # bins_gen_fix: [10, 0., 1.]
+          # bins_det_fix: [10, 0., 1.]
+          bins_gen_var: [0.4, 0.6, 0.7, 0.8, 0.9, 1.]
+          bins_det_var: [0.4, 0.6, 0.7, 0.8, 0.9, 1.]
           label: '#it{z}_{#parallel}'
           label_y: "(1/#it{N}_{jet ch}) d#it{N}/d#it{z}_{#parallel}"
         dr:
