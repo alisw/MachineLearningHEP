@@ -255,7 +255,7 @@ categories:
                                       model:
                                         fn: 'SUM::sum(frac[0.,1.]*sigrefl, bkg)'
             sigfunc: # TODO: mass_roofit
-                activate: [yes]
+                activate: [no]
                 label: ["sig. func."]
                 diffs:
                     analysis:
@@ -506,7 +506,7 @@ categories:
         rms_both_sides: true
         variations:
             sigma:
-                activate: [yes, yes, yes, yes, yes, yes, yes, yes, yes, yes]
+                activate: [no, yes, yes, yes, yes, yes, yes, yes, yes, yes]
                 label:
                     - "S 1.5 #it{#sigma}"
                     - "S 1.6 #it{#sigma}"
@@ -818,8 +818,8 @@ categories:
                     analysis:
                         jet_obs:
                             xsection_inel: [54.91, 60.69]  # TODO: update values for Run 3
-    tracking:  # TODO
-        activate: no
+    tracking:
+        activate: yes
         processor: true
         label: "JES"
         correlation: "corr"
@@ -833,32 +833,7 @@ categories:
                 diffs:
                   multi:
                     mc:
-                      unmerged_tree_dir: [[/data/TTree/vAN-20220820_ROOT6-1/pp_sim/713_20220822-1048/merged,
-                                          /data/TTree/vAN-20220820_ROOT6-1/pp_sim/713_20220822-1048/merged,
-                                          /data/TTree/vAN-20220820_ROOT6-1/pp_sim/713_20220822-1048/merged]] #list of periods
-                      pkl: [[/data/Derived/LckINT7HighMultCalo_withJets_JetsPaper/vAN-20220820_ROOT6-1/pp_2016_mc_prodD2H/713_20220822-1048/pkl,
-                            /data/Derived/LckINT7HighMultCalo_withJets_JetsPaper/vAN-20220820_ROOT6-1/pp_2017_mc_prodD2H/713_20220822-1048/pkl,
-                            /data/Derived/LckINT7HighMultCalo_withJets_JetsPaper/vAN-20220820_ROOT6-1/pp_2018_mc_prodD2H/713_20220822-1048/pkl]] #list of periods
-                      pkl_skimmed: [[/data/Derived/LckINT7HighMultCalo_withJets_JetsPaper/vAN-20220820_ROOT6-1/pp_2016_mc_prodD2H/713_20220822-1048/pklsk,
-                                    /data/Derived/LckINT7HighMultCalo_withJets_JetsPaper/vAN-20220820_ROOT6-1/pp_2017_mc_prodD2H/713_20220822-1048/pklsk,
-                                    /data/Derived/LckINT7HighMultCalo_withJets_JetsPaper/vAN-20220820_ROOT6-1/pp_2018_mc_prodD2H/713_20220822-1048/pklsk]] #list of periods
-                      pkl_skimmed_merge_for_ml: [[/data/Derived/LckINT7HighMultCalo_withJets_JetsPaper/vAN-20220820_ROOT6-1/pp_2016_mc_prodD2H/713_20220822-1048/pklskml,
-                                                 /data/Derived/LckINT7HighMultCalo_withJets_JetsPaper/vAN-20220820_ROOT6-1/pp_2017_mc_prodD2H/713_20220822-1048/pklskml,
-                                                 /data/Derived/LckINT7HighMultCalo_withJets_JetsPaper/vAN-20220820_ROOT6-1/pp_2018_mc_prodD2H/713_20220822-1048/pklskml]] #list of periods
-                      pkl_skimmed_merge_for_ml_all: [/data/Derived/LckINT7HighMultCalo_withJets_JetsPaper/vAN-20220820_ROOT6-1/pp_mc_prodD2H_mltot_trkeff]
-                      pkl_evtcounter_all: [/data/Derived/LckINT7HighMultCalo_withJets_JetsPaper/vAN-20220820_ROOT6-1/pp_mc_prodD2H_evttot_trkeff]
-
-                  ml:
-                    mlplot: [/data/Derived/LckINT7HighMultCalo_withJets/vAN-20210223_ROOT6-1/mlplot] # to be removed
-                    mlout: [/data/Derived/LckINT7HighMultCalo_withJets/vAN-20210223_ROOT6-1/mlout] # to be removed
-                  mlapplication:
-                    mc:
-                      pkl_skimmed_dec: [[/data/Derived/LckINT7HighMultCalo_withJets_JetsPaper/vAN-20220820_ROOT6-1/pp_2016_mc_prodD2H/713_20220822-1048/pklskdec,
-                                        /data/Derived/LckINT7HighMultCalo_withJets_JetsPaper/vAN-20220820_ROOT6-1/pp_2017_mc_prodD2H/713_20220822-1048/pklskdec,
-                                        /data/Derived/LckINT7HighMultCalo_withJets_JetsPaper/vAN-20220820_ROOT6-1/pp_2018_mc_prodD2H/713_20220822-1048/pklskdec]] #list of periods
-                      pkl_skimmed_decmerged: [[/data/Derived/LckINT7HighMultCalo_withJets_JetsPaper/vAN-20220820_ROOT6-1/pp_2016_mc_prodD2H/713_20220822-1048/pklskdecmerged,
-                                              /data/Derived/LckINT7HighMultCalo_withJets_JetsPaper/vAN-20220820_ROOT6-1/pp_2017_mc_prodD2H/713_20220822-1048/pklskdecmerged,
-                                              /data/Derived/LckINT7HighMultCalo_withJets_JetsPaper/vAN-20220820_ROOT6-1/pp_2018_mc_prodD2H/713_20220822-1048/pklskdecmerged]] #list of periods
+                      prefix_dir: [/data2/MLhep/sim/train_257227/]
     binning:
         activate: yes
         processor: true
@@ -880,7 +855,7 @@ categories:
                             bins_ptjet: [[4, 7, 15, 30, 50]]
                             bins_ptjet_eff: [[2, 4, 7, 15, 30, 50, 70]]
             observable:
-                activate: [yes]
+                activate: [no]
                 label:
                     - "obs. 1"
                 diffs:
