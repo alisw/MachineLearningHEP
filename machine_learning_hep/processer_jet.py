@@ -174,7 +174,8 @@ class ProcesserJets(Processer):
             histonorm.SetBinContent(1, len(dfquery(dfevtorig, self.s_evtsel)))
             dfcollcnt = read_df(self.l_collcnt[index])
             collcnt = functools.reduce(
-                lambda x,y: float(x)+float(y), (ar[0] for ar in dfcollcnt['fReadSelectedCounts']))
+                lambda x,y: float(x)+float(y), (ar[0] for ar in dfcollcnt['fReadCountsWithTVXAndZVertexAndSel8'])) # new
+                # lambda x,y: float(x)+float(y), (ar[0] for ar in dfcollcnt['fReadSelectedCounts']))  # old
             self.logger.info('sampled %g collisions', collcnt)
             histonorm.SetBinContent(2, collcnt)
             get_axis(histonorm, 0).SetBinLabel(1, 'N_{evt}')
