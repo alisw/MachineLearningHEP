@@ -403,49 +403,46 @@ LcJet_pp:
 
       mass_roofit:
         - level: mc
-          per_ptjet: true
-          var_mean: mean_mc
-          var_sigma: sigma_mc
+          # per_ptjet: true
           components:
             sig:
-              fn: 'Gaussian::mcsig(m[1., 5.], mean_mc[2.27,2.29], sigma_mc[.01,.01,.035])'
-            bkg:
-              fn: 'Exponential::mcbkg(m, alpha[0.])'
-              #fn: 'Polynomial::bkg(m[2.1, 2.50], {a0[0.2, -3, 3], a1[0.2 , -3, 3], a2[0.2, -3, 3]})'
+              fn: 'Gaussian::peak(m[1., 5.], mean[2.27,2.29], sigma_g1[.01,.005,.035])'
+            wide:
+              fn: 'Gaussian::wide(m, mean, expr("n*sigma_g1", n[1.,5.], sigma_g1))'
             model:
-              fn: 'SUM::mctot(mcfrac[0.,1.]*mcsig, mcbkg)'
+              fn: 'SUM::sig(f_peak[0.,1.]*peak, wide)'
         - ptrange: [1., 5.]
           range: [2.13, 2.44]
-          per_ptjet: true
+          fix_params: ['n', 'f_peak']
+          # per_ptjet: true
           components:
-            sig:
-              fn: 'Gaussian::sig(m, mean[2.28,2.29], sigma_g1[.005,.005,.015])'
+            # sig:
+            #   fn: 'Gaussian::sig(m, mean[2.28,2.29], sigma_g1[.005,.005,.015])'
             bkg:
-              #fn: 'Exponential::bkg(m, alpha[-100,0])'
               fn: 'Polynomial::bkg(m, {a0[0.2, -3, 3], a1[0.2 , -3, 3], a2[0.2, -3, 3]})'
             model:
-              fn: 'SUM::sum(frac[0.,1.]*sig, bkg)'
+              fn: 'SUM::sum(f_sig[0.,1.]*sig, bkg)'
         - ptrange: [5., 8.]
           range: [2.1, 2.48]
-          per_ptjet: true
+          fix_params: ['n', 'f_peak']
+          # per_ptjet: true
           components:
-            sig:
-              fn: 'Gaussian::sig(m, mean[2.28,2.29], sigma_g1[.005,.03])'
+            # sig:
+            #   fn: 'Gaussian::sig(m, mean[2.28,2.29], sigma_g1[.005,.03])'
             bkg:
-              #fn: 'Exponential::bkg(m, alpha[-100,0])'
               fn: 'Polynomial::bkg(m, {a0[0.2, -3, 3], a1[0.2 , -3, 3], a2[0.2, -3, 3]})'
             model:
-              fn: 'SUM::sum(frac[0.,1.]*sig, bkg)'
+              fn: 'SUM::sum(f_sig[0.,1.]*sig, bkg)'
         - range: [2.05, 2.5]
-          per_ptjet: true
+          fix_params: ['n', 'f_peak']
+          # per_ptjet: true
           components:
-            sig:
-              fn: 'Gaussian::sig(m, mean[2.28,2.29], sigma_g1[.005,.03])'
+            # sig:
+            #   fn: 'Gaussian::sig(m, mean[2.28,2.29], sigma_g1[.005,.03])'
             bkg:
-              #fn: 'Exponential::bkg(m, alpha[-100,0])'
               fn: 'Polynomial::bkg(m, {a0[0.2, -3, 3], a1[0.2 , -3, 3], a2[0.2, -3, 3]})'
             model:
-              fn: 'SUM::sum(frac[0.,1.]*sig, bkg)'
+              fn: 'SUM::sum(f_sig[0.,1.]*sig, bkg)'
 
       #sidesub_per_ptjet: true
       sidesub:
@@ -466,7 +463,6 @@ LcJet_pp:
       n_rebin: 1  # number of mass bins to merge
       efficiency:
         index_match: fIndexArrayLCCMCPJETOS_hf
-        store_matched: true
         extra_cols: ['mlPromptScore']
         correction_method: run3
 
