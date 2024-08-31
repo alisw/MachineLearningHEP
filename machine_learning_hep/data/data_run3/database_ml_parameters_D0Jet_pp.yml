@@ -373,6 +373,7 @@ D0jet_pp:
 
       cand_collidx: fIndexHfD0CollBases
       # sigmamb: 57.8e-3 #NB: multiplied by 1e12 before giving to HFPtSpectrum!
+      cnt_events_read: fReadCountsWithTVXAndZVertexAndSel8
 
       observables:
         zg:
