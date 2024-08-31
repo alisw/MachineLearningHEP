@@ -403,6 +403,7 @@ LcJet_pp:
 
       mass_roofit:
         - level: mc
+          per_ptjet: true
           var_mean: mean_mc
           var_sigma: sigma_mc
           components:
@@ -415,7 +416,7 @@ LcJet_pp:
               fn: 'SUM::mctot(mcfrac[0.,1.]*mcsig, mcbkg)'
         - ptrange: [1., 5.]
           range: [2.13, 2.44]
-          #per_ptjet: true
+          per_ptjet: true
           components:
             sig:
               fn: 'Gaussian::sig(m, mean[2.28,2.29], sigma_g1[.005,.005,.015])'
@@ -426,7 +427,7 @@ LcJet_pp:
               fn: 'SUM::sum(frac[0.,1.]*sig, bkg)'
         - ptrange: [5., 8.]
           range: [2.1, 2.48]
-          #per_ptjet: true
+          per_ptjet: true
           components:
             sig:
               fn: 'Gaussian::sig(m, mean[2.28,2.29], sigma_g1[.005,.03])'
@@ -436,7 +437,7 @@ LcJet_pp:
             model:
               fn: 'SUM::sum(frac[0.,1.]*sig, bkg)'
         - range: [2.05, 2.5]
-          #per_ptjet: true
+          per_ptjet: true
           components:
             sig:
               fn: 'Gaussian::sig(m, mean[2.28,2.29], sigma_g1[.005,.03])'

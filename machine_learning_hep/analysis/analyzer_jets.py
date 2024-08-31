@@ -453,6 +453,10 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes,too
                                                 level, iptjet, ipt)
                             continue
                         roows = self.roows.get(ipt) if iptjet is None else self.roows_ptjet.get((iptjet, ipt))
+                        if roows is None and level != self.fit_levels[0]:
+                            self.logger.warning('missing previous fit result, skipping %s iptjet %s ipt %d',
+                                                level, iptjet, ipt)
+                            continue
                         for par in fitcfg.get('fix_params', []):
                             if var := roows.var(par):
                                 var.setConstant(True)
