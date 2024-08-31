@@ -176,10 +176,12 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes,too
             h_genmatch = {cat: rfile.Get(f'h_ptjet-pthf_{cat}_genmatch') for cat in cats}
             h_detmatch = {cat: rfile.Get(f'h_ptjet-pthf_{cat}_detmatch') for cat in cats}
             h_detmatch_gencuts = {cat: rfile.Get(f'h_ptjet-pthf_{cat}_detmatch_gencuts') for cat in cats}
-            n_bins_ptjet = get_nbins(h_gen['pr'], 0)
 
-            # Run 2 efficiencies
-            bins_ptjet = (1, n_bins_ptjet)
+            # Run 2 efficiencies (only use ptjet bins used for analysis)
+            bins_ptjet_ana = self.cfg('bins_ptjet', [])
+            bins_ptjet = (get_axis(h_gen['pr'], 0).FindBin(min(bins_ptjet_ana)),
+                get_axis(h_gen['pr'], 0).FindBin(max(bins_ptjet_ana) - .001))
+            self.logger.info('derived ptjet bins: %i - %i', bins_ptjet[0], bins_ptjet[1])
             h_gen_proj = {cat: project_hist(h_gen[cat], [1], {0: bins_ptjet}) for cat in cats}
             h_det_proj = {cat: project_hist(h_detmatch_gencuts[cat], [1], {0: bins_ptjet}) for cat in cats}
 
@@ -198,10 +200,10 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes,too
                 self._save_hist(self.h_eff_ptjet_pthf[cat], f'eff/h_ptjet-pthf_eff_{cat}.png')
                 c = TCanvas()
                 c.cd()
-                for iptjet in range(get_nbins(self.h_eff_ptjet_pthf[cat], 0)):
-                    h = project_hist(self.h_eff_ptjet_pthf[cat], [1], {0: (iptjet+1, iptjet+1)})
-                    h.DrawCopy('' if iptjet == 0 else 'same')
-                    h.SetLineColor(iptjet)
+                for i, iptjet in enumerate(range(*bins_ptjet)):
+                    h = project_hist(self.h_eff_ptjet_pthf[cat], [1], {0: (iptjet, iptjet)})
+                    h.DrawCopy('' if i == 0 else 'same')
+                    h.SetLineColor(i)
                 self._save_canvas(c, f'eff/h_ptjet-pthf_eff_{cat}_ptjet.png')
 
             # Run 3 efficiencies
@@ -263,7 +265,7 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes,too
                 hc_eff_avg.SetLineColor(ROOT.kGreen)
                 hc_eff_avg.SetLineWidth(10)
                 amax = hc_eff.GetMaximum()
-                for iptjet in reversed(range(get_nbins(eff, 0))):
+                for iptjet in reversed(range(1, get_nbins(eff, 0) - 1)):
                     h = project_hist(eff, [1], {0: (iptjet+1, iptjet+1)})
                     h.SetName(h.GetName() + f'_ptjet{iptjet}')
                     h.Draw('same')
@@ -494,7 +496,6 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes,too
                             self.fit_range[level][ipt] = (roo_ws.var(varname_m).getMin('fit'),
                                                           roo_ws.var(varname_m).getMax('fit'))
                             self.logger.debug('fit range for %s-%i: %s', level, ipt, self.fit_range[level][ipt])
-
 
     #region sidebands
     # pylint: disable=too-many-branches,too-many-statements,too-many-locals
@@ -743,7 +744,7 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes,too
                             axis_jetpt = get_axis(fh_sum, 0)
                             for iptjet in range(get_nbins(fh_sum, 0)):
                                 c = TCanvas()
-                                h_sig = project_hist(fh_sum, axes[1:], {0: (iptjet, iptjet)})
+                                h_sig = project_hist(fh_sum, axes[1:], {0: (iptjet+1, iptjet+1)})
                                 h_sig.Draw()
                                 jetptrange = (axis_jetpt.GetBinLowEdge(iptjet+1), axis_jetpt.GetBinUpEdge(iptjet+1))
                                 filename = (f'{method}/h_{label[1:]}_{method}_effscaled' +
@@ -762,17 +763,17 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes,too
                             for iptjet in range(get_nbins(fh_sum, 0)):
                                 c = TCanvas()
                                 c.cd()
-                                h_sig = project_hist(fh_sum, axes[1:], {0: (iptjet, iptjet)}).Clone('hsig')
+                                h_sig = project_hist(fh_sum, axes[1:], {0: (iptjet+1,)*2}).Clone('hsig')
                                 h_sig.Draw("same")
                                 h_sig.SetLineColor(ROOT.kRed)
                                 ymax = h_sig.GetMaximum()
                                 if var in self.hfeeddown_det[mcordata]:
                                     h_fd = self.hfeeddown_det[mcordata][var]
-                                    h_fd = project_hist(h_fd, axes[1:], {0: (iptjet, iptjet)})
+                                    h_fd = project_hist(h_fd, axes[1:], {0: (iptjet+1,)*2})
                                     h_fd.DrawCopy('same')
                                     h_fd.SetLineColor(ROOT.kCyan)
                                     ymax = max(ymax, h_fd.GetMaximum())
-                                h_fdsub = project_hist(fh_sum_fdsub, axes[1:], {0: (iptjet, iptjet)}).Clone('hfdsub')
+                                h_fdsub = project_hist(fh_sum_fdsub, axes[1:], {0: (iptjet+1,)*2}).Clone('hfdsub')
                                 h_fdsub.Draw('same')
                                 h_fdsub.SetLineColor(ROOT.kMagenta)
                                 ymax = max(ymax, h_fdsub.GetMaximum())
