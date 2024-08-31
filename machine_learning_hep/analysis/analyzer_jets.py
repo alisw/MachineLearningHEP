@@ -249,11 +249,10 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes,too
                 self._save_hist(eff, f'eff/h_ptjet-pthf_effnew_{cat}.png')
                 self.h_effnew_ptjet_pthf[cat] = eff
 
-                proj_range = (2, get_nbins(h_det[cat], 0))
-                eff_avg = project_hist(h_det[cat], [1], {0: proj_range})
+                eff_avg = project_hist(h_det[cat], [1], {0: bins_ptjet})
                 ensure_sumw2(eff_avg)
-                eff_avg.Divide(project_hist(h_out, [1], {0: proj_range}))
-                self._save_hist(eff, f'eff/h_pthf_effnew_{cat}.png')
+                eff_avg.Divide(project_hist(h_out, [1], {0: bins_ptjet}))
+                self._save_hist(eff_avg, f'eff/h_pthf_effnew_{cat}.png')
                 self.h_effnew_pthf[cat] = eff_avg
 
                 c = TCanvas()
@@ -284,8 +283,7 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes,too
         if self.cfg('efficiency.correction_method') == 'run3':
             eff = self.h_effnew_pthf['pr'].GetBinContent(ipt + 1)
             eff_old = self.hcandeff['pr'].GetBinContent(ipt + 1)
-            self.logger.info('Using Run 3 efficiency %g instead of %g',
-                             eff, eff_old)
+            self.logger.info('Using Run 3 efficiency %g instead of %g', eff, eff_old)
             hist.Scale(1. / eff)
         elif self.cfg('efficiency.correction_method') == 'run2_2d':
             self.logger.info('using Run 2 efficiencies per jet pt bin')
