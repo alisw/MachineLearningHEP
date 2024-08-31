@@ -403,20 +403,22 @@ LcJet_pp:
 
       mass_roofit:
         - level: mc
+          var_mean: mean_mc
+          var_sigma: sigma_mc
           components:
             sig:
-              fn: 'Gaussian::sig(m[1., 5.], mean[2.28,2.29], sigma_g1[.01,.01,.03])'
+              fn: 'Gaussian::mcsig(m[1., 5.], mean_mc[2.27,2.29], sigma_mc[.01,.01,.035])'
             bkg:
               fn: 'Exponential::mcbkg(m, alpha[0.])'
               #fn: 'Polynomial::bkg(m[2.1, 2.50], {a0[0.2, -3, 3], a1[0.2 , -3, 3], a2[0.2, -3, 3]})'
             model:
-              fn: 'SUM::mctot(mcfrac[0.,1.]*sig, mcbkg)'
+              fn: 'SUM::mctot(mcfrac[0.,1.]*mcsig, mcbkg)'
         - ptrange: [1., 5.]
           range: [2.13, 2.44]
           #per_ptjet: true
           components:
-            # sig:
-            #   fn: 'Gaussian::sig(m, mean[2.28,2.29], sigma_g1[.005,.01])'
+            sig:
+              fn: 'Gaussian::sig(m, mean[2.28,2.29], sigma_g1[.005,.005,.015])'
             bkg:
               #fn: 'Exponential::bkg(m, alpha[-100,0])'
               fn: 'Polynomial::bkg(m, {a0[0.2, -3, 3], a1[0.2 , -3, 3], a2[0.2, -3, 3]})'
@@ -426,8 +428,8 @@ LcJet_pp:
           range: [2.1, 2.48]
           #per_ptjet: true
           components:
-            # sig:
-            #   fn: 'Gaussian::sig(m, mean[2.28,2.29], sigma_g1[.005,.03])'
+            sig:
+              fn: 'Gaussian::sig(m, mean[2.28,2.29], sigma_g1[.005,.03])'
             bkg:
               #fn: 'Exponential::bkg(m, alpha[-100,0])'
               fn: 'Polynomial::bkg(m, {a0[0.2, -3, 3], a1[0.2 , -3, 3], a2[0.2, -3, 3]})'
@@ -436,8 +438,8 @@ LcJet_pp:
         - range: [2.05, 2.5]
           #per_ptjet: true
           components:
-            # sig:
-            #   fn: 'Gaussian::sig(m, mean[2.28,2.29], sigma_g1[.005,.03])'
+            sig:
+              fn: 'Gaussian::sig(m, mean[2.28,2.29], sigma_g1[.005,.03])'
             bkg:
               #fn: 'Exponential::bkg(m, alpha[-100,0])'
               fn: 'Polynomial::bkg(m, {a0[0.2, -3, 3], a1[0.2 , -3, 3], a2[0.2, -3, 3]})'
@@ -459,7 +461,7 @@ LcJet_pp:
         par_constrain: {1: [2.28, 2.29], 2: [.005, .03]}
         range: [2.08, 2.48]
       mass_fit_lim: [1.9, 2.6] # histogram range of the invariant mass distribution [GeV/c^2]
-      bin_width: 0.005 # bin width of the invariant mass histogram
+      bin_width: 0.001 # bin width of the invariant mass histogram
       n_rebin: 1  # number of mass bins to merge
       efficiency:
         index_match: fIndexArrayLCCMCPJETOS_hf

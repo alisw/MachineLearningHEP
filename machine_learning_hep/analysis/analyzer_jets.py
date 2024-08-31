@@ -480,13 +480,15 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes,too
                             self.roo_ws[level][ipt] = roo_ws
                             # TODO: take parameter names from DB
                             if level in ('data', 'mc'):
-                                self.fit_mean[level][ipt] = roo_ws.var('mean').getValV()
-                                self.fit_sigma[level][ipt] = roo_ws.var('sigma_g1').getValV()
-                            var_m = fitcfg.get('var', 'm')
+                                varname_mean = fitcfg.get('var_mean', 'mean')
+                                varname_sigma = fitcfg.get('var_sigma', 'sigma_g1')
+                                self.fit_mean[level][ipt] = roo_ws.var(varname_mean).getValV()
+                                self.fit_sigma[level][ipt] = roo_ws.var(varname_sigma).getValV()
+                            varname_m = fitcfg.get('var', 'm')
                             if roo_ws.pdf("bkg"):
-                                self.fit_func_bkg[level][ipt] = roo_ws.pdf("bkg").asTF(roo_ws.var(var_m))
-                            self.fit_range[level][ipt] = (roo_ws.var(var_m).getMin('fit'),
-                                                          roo_ws.var(var_m).getMax('fit'))
+                                self.fit_func_bkg[level][ipt] = roo_ws.pdf("bkg").asTF(roo_ws.var(varname_m))
+                            self.fit_range[level][ipt] = (roo_ws.var(varname_m).getMin('fit'),
+                                                          roo_ws.var(varname_m).getMax('fit'))
                             self.logger.debug('fit range for %s-%i: %s', level, ipt, self.fit_range[level][ipt])
 
 
