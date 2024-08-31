@@ -97,6 +97,7 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes,too
         self.roo_ws = {}
         self.roo_ws_ptjet = {}
         self.roows = {}
+        self.roows_ptjet = {}
 
     #region helpers
     def _save_canvas(self, canvas, filename):
@@ -399,10 +400,9 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes,too
                 self.logger.debug("Opening histogram %s.", name_histo)
                 if not (h := rfile.Get(name_histo)):
                     self.logger.critical("Histogram %s not found.", name_histo)
-                for iptjet, ipt in itertools.product(itertools.chain((None,), range(0, get_nbins(h, 1))),
+                for iptjet, ipt in itertools.product(itertools.chain((None,), range(get_nbins(h, 1))),
                                                      range(get_nbins(h, 2))):
                     self.logger.debug('fitting %s: %s, %i', level, iptjet, ipt)
-                    roows = self.roows.get(ipt)
                     axis_ptjet = get_axis(h, 1)
                     cuts_proj = {2: (ipt+1, ipt+1)}
                     if iptjet is not None:
@@ -415,7 +415,7 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes,too
                     if (n_rebin := self.cfg("n_rebin", 1)) != 1:
                         h_invmass.Rebin(n_rebin)
                     ptrange = (self.bins_candpt[ipt], self.bins_candpt[ipt+1])
-                    if self.cfg('mass_fit'):
+                    if self.cfg('mass_fit') and iptjet is None:
                         if h_invmass.GetEntries() < 100: # TODO: reconsider criterion
                             self.logger.error('Not enough entries to fit %s iptjet %s ipt %d',
                                               level, iptjet, ipt)
@@ -440,12 +440,7 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes,too
                             fitcfg = entry
                             break
                         self.logger.debug("Using fit config for %i: %s", ipt, fitcfg)
-                        # check
                         if iptjet is not None and not fitcfg.get('per_ptjet'):
-                            continue
-                        if h_invmass.GetEntries() < 100: # TODO: reconsider criterion
-                            self.logger.warning('Not enough entries to fit for %s iptjet %s ipt %d',
-                                                level, iptjet, ipt)
                             continue
                         # TODO: link datasel to fit stage
                         if datasel := fitcfg.get('datasel'):
@@ -453,6 +448,11 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes,too
                             if not (hsel := rfile.Get(hist_name)):
                                 self.logger.critical("Failed to get histogram %s", hist_name)
                             h_invmass = project_hist(hsel, [0], cuts_proj)
+                        if h_invmass.GetEntries() < 100: # TODO: reconsider criterion
+                            self.logger.error('Not enough entries to fit %s iptjet %s ipt %d',
+                                                level, iptjet, ipt)
+                            continue
+                        roows = self.roows.get(ipt) if iptjet is None else self.roows_ptjet.get((iptjet, ipt))
                         for par in fitcfg.get('fix_params', []):
                             if var := roows.var(par):
                                 var.setConstant(True)
@@ -472,10 +472,11 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes,too
                         #     roo_ws.Print()
                         # TODO: save snapshot per level
                         # roo_ws.saveSnapshot(level, None)
-                        self.roows[ipt] = roo_ws
                         if iptjet is not None:
+                            self.roows_ptjet[(iptjet, ipt)] = roo_ws
                             self.roo_ws_ptjet[level][iptjet][ipt] = roo_ws
                         else:
+                            self.roows[ipt] = roo_ws
                             self.roo_ws[level][ipt] = roo_ws
                             # TODO: take parameter names from DB
                             if level in ('data', 'mc'):
