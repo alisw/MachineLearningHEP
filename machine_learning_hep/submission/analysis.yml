@@ -1,3 +1,4 @@
+---
 case: XXXX # used to find the database file unless specified explicitly as do_entire_analysis -d database_analysis
 download:
   alice:
@@ -59,25 +60,28 @@ analysis:
   # Do only merged (false)
   doperperiod: false
   data:
-    histomass: false # processer: process_histomass
+    histomass: true # processer: process_histomass
   mc:
-    histomass: false # processer: process_histomass
-    efficiency: false # processer: process_efficiency
-  steps: # list steps (name of method in analyzer) to run
+    histomass: true # processer: process_histomass
+    efficiency: true # processer: process_efficiency
+  steps: # analyzer methods to run (uncomment to activate)
+    ##### Inclusive hadrons
+    # fit:
+    # efficiency:
+    # makenormyields:
+    ##### Jets
+    init:
+    calculate_efficiencies:
+    qa:
     fit:
-    #efficiency:
-    #makenormyields:
-    #init:
-    #qa:
-    #calculate_efficiencies:
-    #estimate_feeddown:
-    #subtract_sidebands:
-    #extract_signals:
+    estimate_feeddown:
+    analyze_with_sidesub:
+    # analyze_with_sigextr:
 
 systematics:
   cutvar:
-      activate: false
-      do_only_analysis: false # This can be done anytime when mass and efficiency histograms have been produced already for a number of trials
-      resume: false # already done mass and efficiency histograms will not be done again, continue with left trials
+    activate: false
+    do_only_analysis: false # This can be done anytime when mass and efficiency histograms have been produced already for a number of trials
+    resume: false # already done mass and efficiency histograms will not be done again, continue with left trials
   mcptshape:
     activate: false

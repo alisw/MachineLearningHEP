@@ -19,4 +19,4 @@ disable=missing-docstring
 notes=FIXME,XXX
 
 [IMPORTS]
-ignored-modules=ROOT
+ignored-modules=ROOT,yaml,pandas,numpy,shap,uproot

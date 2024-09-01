@@ -1,44 +1,55 @@
 #!/bin/bash
 
-# This directory
-DIR_THIS="$(dirname "$(realpath "$0")")"
+##### Configuration
 
-# Config file prefix
-# CONFIG="default"
-CONFIG="d0jet"
-# CONFIG="lcjet"
+# Analysis stage
 
-# Config file suffix
-# STAGE="complete"
-STAGE="all"
-# STAGE="ana"
+STAGE="all_off"
+# STAGE="full_analysis"
+# STAGE="preprocess"
+# STAGE="data"
+# STAGE="mc"
+# STAGE="mltrain"
+# STAGE="mlapp"
+# STAGE="analysis"
+# STAGE="processor"
+# STAGE="analyzer"
 # STAGE="variations"
+# STAGE="systematics"
 
-# Suffix of the analysis database
+# Suffix of the analysis database name
+
 DATABASE="D0Jet_pp"
 # DATABASE="LcJet_pp"
 
 # Name of the analysis section in the analysis database
+
 ANALYSIS="jet_obs"
 
+##### Initialisation
+
+DIR_THIS="$(dirname "$(realpath "$0")")"  # This directory
 DBDIR="data/data_run3"
 DB_DEFAULT="${DIR_THIS}/${DBDIR}/database_ml_parameters_${DATABASE}.yml"
+LOG="log_${STAGE}.log"
 
-if [[ "${STAGE}" == "variations" ]]; then
-    echo "Running the variation script for the ${ANALYSIS} analysis from ${DATABASE}"
+##### Execution
+
+echo "$(date) Start"
+echo "Running the \"${STAGE}\" stage of the \"${ANALYSIS}\" analysis from the \"${DATABASE}\" database"
+
+if [[ "${STAGE}" == "systematics" ]]; then
+    echo "Log file: $LOG"
+    python "${DIR_THIS}/analysis/do_systematics.py" -d "${DB_DEFAULT}" -a "${ANALYSIS}" > "${LOG}" 2>&1
+elif [[ "${STAGE}" == "variations" ]]; then
     DB_VARIATION="${DIR_THIS}/${DBDIR}/database_variations_${DATABASE}_${ANALYSIS}.yml"
-    "${DIR_THIS}/submit_variations.sh" "${DB_DEFAULT}" "${DB_VARIATION}" "${ANALYSIS}"
+    CONFIG_FILE="${DIR_THIS}/submission/analysis.yml"
+    "${DIR_THIS}/submit_variations.sh" "${DB_DEFAULT}" "${DB_VARIATION}" "${ANALYSIS}" "${CONFIG_FILE}"
 else
-    CONFIG_FILE="${DIR_THIS}/submission/${CONFIG}_${STAGE}.yml"
-    CMD_ANA="mlhep -a ${ANALYSIS} -r ${CONFIG_FILE} -d ${DB_DEFAULT} -c --delete"
-    echo "Running the \"${STAGE}\" stage of the \"${CONFIG}\" configuration of the \"${ANALYSIS}\" analysis from ${DATABASE}"
-    ${CMD_ANA}
-fi || { echo "Error"; exit 1; }
+    echo "Log file: $LOG"
+    CONFIG_FILE="${DIR_THIS}/submission/${STAGE}.yml"
+    CMD_ANA="mlhep -a ${ANALYSIS} -r ${CONFIG_FILE} -d ${DB_DEFAULT} -b --delete"
+    ${CMD_ANA} > "${LOG}" 2>&1
+fi || echo "Error"
 
-echo -e "\n$(date)"
-
-# DIR_RESULTS="/data/DerivedResultsJets/D0kAnywithJets/vAN-20200304_ROOT6-1/"
-# echo -e "\nCleaning ${DIR_RESULTS}"
-# "${DIR_THIS}/clean_results.sh" "${DIR_RESULTS}"
-
-echo -e "\nDone"
+echo "$(date) Done"

@@ -1,17 +1,18 @@
+---
 case: XXXX # used to find the database file unless specified explicitly as do_entire_analysis -d database_analysis
 download:
   alice:
     activate: false
 conversion: # pkl
   mc:
-    activate: false
+    activate: true
   data:
-    activate: false
+    activate: true
 skimming: # pkl_skimmed (pklsk), pkl_evtcounter_all
   mc:
-    activate: false
+    activate: true
   data:
-    activate: false
+    activate: true
 merging: # pkl_skimmed_merge_for_ml (pklskml)
   mc:
     activate: false
@@ -25,11 +26,11 @@ mergingperiods: # pkl_skimmed_merge_for_ml_all
 
 ml_study: # mlout, mlplot
   activate: false
-  dotraining: true
-  dotesting: true
-  doplotdistr: true
+  dotraining: false
+  dotesting: false
+  doplotdistr: false
   doroc: false
-  doroctraintest: true
+  doroctraintest: false
   doimportance: false
   doimportanceshap: false
   docorrelation: false
@@ -63,12 +64,24 @@ analysis:
   mc:
     histomass: true # processer: process_histomass
     efficiency: true # processer: process_efficiency
-  steps:
+  steps: # analyzer methods to run (uncomment to activate)
+    ##### Inclusive hadrons
+    # fit:
+    # efficiency:
+    # makenormyields:
+    ##### Jets
+    init:
+    calculate_efficiencies:
+    qa:
+    fit:
+    estimate_feeddown:
+    analyze_with_sidesub:
+    # analyze_with_sigextr:
 
 systematics:
   cutvar:
-      activate: false
-      do_only_analysis: false # This can be done anytime when mass and efficiency histograms have been produced already for a number of trials
-      resume: false # already done mass and efficiency histograms will not be done again, continue with left trials
+    activate: false
+    do_only_analysis: false # This can be done anytime when mass and efficiency histograms have been produced already for a number of trials
+    resume: false # already done mass and efficiency histograms will not be done again, continue with left trials
   mcptshape:
     activate: false

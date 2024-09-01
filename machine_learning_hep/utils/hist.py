@@ -44,10 +44,12 @@ def get_nbins(hist, axis:int):
     return get_axis(hist, axis).GetNbins()
 
 
-# pylint: disable=too-many-branches
+# pylint: disable=too-many-branches, too-many-statements
 def project_hist(hist, axes: list, limits: dict[int, tuple[int]]):
     # TODO: add consistent suffix for projections
     # TODO: add option for uncertainties ???
+    if not hist:
+        raise ValueError
     if len(axes) == 2:
         axes = axes[:] # slice to avoid modifying the list passed as parameter
         axes.reverse() # compensation for ROOT signature using ydim, xdim for 2d projection
@@ -107,7 +109,6 @@ def project_hist(hist, axes: list, limits: dict[int, tuple[int]]):
                 hproj.Reset()
             return hproj
         raise ValueError
-
     raise NotImplementedError
 
 

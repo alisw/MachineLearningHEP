@@ -1,0 +1,440 @@
+---
+#  © Copyright CERN 2018. All rights not expressly granted are reserved.  #
+#                 Author: Gian.Michele.Innocenti@cern.ch                  #
+# This program is free software: you can redistribute it and/or modify it #
+#  under the terms of the GNU General Public License as published by the  #
+# Free Software Foundation, either version 3 of the License, or (at your  #
+# option) any later version. This program is distributed in the hope that #
+#  it will be useful, but WITHOUT ANY WARRANTY; without even the implied  #
+#     warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.    #
+#           See the GNU General Public License for more details.          #
+#    You should have received a copy of the GNU General Public License    #
+#   along with this program. if not, see <https://www.gnu.org/licenses/>. #
+
+categories:
+    default:
+        activate: no
+        processor: false
+        label: "default"
+        correlation: "corr"
+        rms: true
+        symmetrise: true
+        rms_both_sides: true
+        variations:
+            default:
+                activate: [yes]
+                label: ["default"]
+                diffs: {}
+    fitting:
+        activate: yes
+        processor: false
+        label: "fitting"
+        group: "signal extraction"
+        correlation: "corr"
+        rms: true
+        symmetrise: true
+        rms_both_sides: true
+        variations:
+            bkgfunc:
+                activate: [yes]
+                label: ["bkg. func."]
+                diffs:
+                    analysis:
+                        jet_obs:
+                            mass_roofit:
+                                - - level: mc
+                                    components:
+                                      sig:
+                                        fn: 'Gaussian::sig(m[1., 5.], mean[2.28,2.29], sigma_g1[.01,.01,.03])'
+                                      bkg:
+                                        fn: 'Exponential::mcbkg(m, alpha[0.])'
+                                        #fn: 'Polynomial::bkg(m[2.1, 2.50], {a0[0.2, -3, 3], a1[0.2 , -3, 3], a2[0.2, -3, 3]})'
+                                      model:
+                                        fn: 'SUM::mctot(mcfrac[0.,1.]*sig, mcbkg)'
+                                  - ptrange: [1., 5.]
+                                    range: [2.13, 2.44]
+                                    components:
+                                      # sig:
+                                      #   fn: 'Gaussian::sig(m, mean[2.28,2.29], sigma_g1[.005,.01])'
+                                      bkg:
+                                        fn: 'Exponential::bkg(m, alpha[-100,0])'
+                                        # fn: 'Polynomial::bkg(m, {a0[0.2, -3, 3], a1[0.2 , -3, 3], a2[0.2, -3, 3]})'
+                                      model:
+                                        fn: 'SUM::sum(frac[0.,1.]*sig, bkg)'
+                                  - ptrange: [5., 8.]
+                                    range: [2.1, 2.48]
+                                    components:
+                                      # sig:
+                                      #   fn: 'Gaussian::sig(m, mean[2.28,2.29], sigma_g1[.005,.03])'
+                                      bkg:
+                                        fn: 'Exponential::bkg(m, alpha[-100,0])'
+                                        # fn: 'Polynomial::bkg(m, {a0[0.2, -3, 3], a1[0.2 , -3, 3], a2[0.2, -3, 3]})'
+                                      model:
+                                        fn: 'SUM::sum(frac[0.,1.]*sig, bkg)'
+                                  - range: [2.05, 2.5]
+                                    components:
+                                      # sig:
+                                      #   fn: 'Gaussian::sig(m, mean[2.28,2.29], sigma_g1[.005,.03])'
+                                      bkg:
+                                        fn: 'Exponential::bkg(m, alpha[-100,0])'
+                                        # fn: 'Polynomial::bkg(m, {a0[0.2, -3, 3], a1[0.2 , -3, 3], a2[0.2, -3, 3]})'
+                                      model:
+                                        fn: 'SUM::sum(frac[0.,1.]*sig, bkg)'
+            sigfunc: # TODO: mass_roofit
+                activate: [no]
+                label: ["sig. func."]
+                diffs:
+                    analysis:
+                        jet_obs:
+                            todo: [0]
+            massmin: # TODO?
+                activate: [no]
+                label:
+                    - "#it{m} min. ?"
+                diffs:
+                    analysis:
+                        jet_obs:
+                            mass_roofit:
+                                - - level: mc
+                                    components:
+                                      sig:
+                                        fn: 'Gaussian::sig(m[1., 5.], mean[2.28,2.29], sigma_g1[.01,.01,.03])'
+                                      bkg:
+                                        fn: 'Exponential::mcbkg(m, alpha[0.])'
+                                        #fn: 'Polynomial::bkg(m[2.1, 2.50], {a0[0.2, -3, 3], a1[0.2 , -3, 3], a2[0.2, -3, 3]})'
+                                      model:
+                                        fn: 'SUM::mctot(mcfrac[0.,1.]*sig, mcbkg)'
+                                  - ptrange: [1., 5.]
+                                    range: [2.13, 2.44]
+                                    components:
+                                      # sig:
+                                      #   fn: 'Gaussian::sig(m, mean[2.28,2.29], sigma_g1[.005,.01])'
+                                      bkg:
+                                        #fn: 'Exponential::bkg(m, alpha[-100,0])'
+                                        fn: 'Polynomial::bkg(m, {a0[0.2, -3, 3], a1[0.2 , -3, 3], a2[0.2, -3, 3]})'
+                                      model:
+                                        fn: 'SUM::sum(frac[0.,1.]*sig, bkg)'
+                                  - ptrange: [5., 8.]
+                                    range: [2.1, 2.48]
+                                    components:
+                                      # sig:
+                                      #   fn: 'Gaussian::sig(m, mean[2.28,2.29], sigma_g1[.005,.03])'
+                                      bkg:
+                                        #fn: 'Exponential::bkg(m, alpha[-100,0])'
+                                        fn: 'Polynomial::bkg(m, {a0[0.2, -3, 3], a1[0.2 , -3, 3], a2[0.2, -3, 3]})'
+                                      model:
+                                        fn: 'SUM::sum(frac[0.,1.]*sig, bkg)'
+                                  - range: [2.05, 2.5]
+                                    components:
+                                      # sig:
+                                      #   fn: 'Gaussian::sig(m, mean[2.28,2.29], sigma_g1[.005,.03])'
+                                      bkg:
+                                        #fn: 'Exponential::bkg(m, alpha[-100,0])'
+                                        fn: 'Polynomial::bkg(m, {a0[0.2, -3, 3], a1[0.2 , -3, 3], a2[0.2, -3, 3]})'
+                                      model:
+                                        fn: 'SUM::sum(frac[0.,1.]*sig, bkg)'
+            rebin:
+                activate: [yes, no, yes]
+                label: ["rebin 2", "rebin 3", "rebin 4"]
+                diffs:
+                    analysis:
+                        jet_obs:
+                            n_rebin: [2, 3, 4]
+            # reflections:
+            #     activate: [no]
+            #     label: ["w/o refl."]
+            #     diffs:
+            #         analysis:
+            #             jet_obs:
+            #                 corr_refl: [false]
+    sideband:
+        activate: yes
+        processor: false
+        label: "sideband sub."
+        group: "signal extraction"
+        correlation: "corr"
+        rms: true
+        symmetrise: true
+        rms_both_sides: true
+        variations:
+            sigma:
+                activate: [yes, yes, yes, yes, yes, yes, yes, yes, yes, yes]
+                label:
+                    - "S 1.5 #it{#sigma}"
+                    - "S 1.6 #it{#sigma}"
+                    - "S 1.7 #it{#sigma}"
+                    - "S 1.8 #it{#sigma}"
+                    - "S 1.9 #it{#sigma}"
+                    - "S 2.1 #it{#sigma}"
+                    - "S 2.2 #it{#sigma}"
+                    - "S 2.3 #it{#sigma}"
+                    - "S 2.4 #it{#sigma}"
+                    - "S 2.5 #it{#sigma}"
+                diffs:
+                    analysis:
+                        jet_obs:
+                            sidesub:
+                                - - regions:
+                                        left: [-5.5, -3.]
+                                        signal: [-1.5, 1.5]  # variation
+                                        right: [3., 5.5]
+                                - - regions:
+                                        left: [-5.5, -3.]
+                                        signal: [-1.6, 1.6]  # variation
+                                        right: [3., 5.5]
+                                - - regions:
+                                        left: [-5.5, -3.]
+                                        signal: [-1.7, 1.7]  # variation
+                                        right: [3., 5.5]
+                                - - regions:
+                                        left: [-5.5, -3.]
+                                        signal: [-1.8, 1.8]  # variation
+                                        right: [3., 5.5]
+                                - - regions:
+                                        left: [-5.5, -3.]
+                                        signal: [-1.9, 1.9]  # variation
+                                        right: [3., 5.5]
+                                - - regions:
+                                        left: [-5.5, -3.]
+                                        signal: [-2.1, 2.1]  # variation
+                                        right: [3., 5.5]
+                                - - regions:
+                                        left: [-5.5, -3.]
+                                        signal: [-2.2, 2.2]  # variation
+                                        right: [3., 5.5]
+                                - - regions:
+                                        left: [-5.5, -3.]
+                                        signal: [-2.3, 2.3]  # variation
+                                        right: [3., 5.5]
+                                - - regions:
+                                        left: [-5.5, -3.]
+                                        signal: [-2.4, 2.4]  # variation
+                                        right: [3., 5.5]
+                                - - regions:
+                                        left: [-5.5, -3.]
+                                        signal: [-2.5, 2.5]  # variation
+                                        right: [3., 5.5]
+            ranges:
+                activate: [yes, yes]
+                label:
+                    - "SB 3#minus6#it{#sigma}"
+                    - "SB 3#minus5#it{#sigma}"
+                diffs:
+                    analysis:
+                        jet_obs:
+                            sidesub:
+                                - - regions:
+                                        left: [-6., -3.]  # variation
+                                        signal: [-2., 2.]
+                                        right: [3., 6.]  # variation
+                                - - regions:
+                                        left: [-5., -3.]  # variation
+                                        signal: [-2., 2.]
+                                        right: [3., 5.]  # variation
+            sb_left:  # TODO?
+                activate: [no]
+                label: ["left sb only"]
+                diffs:
+                    analysis:
+                        jet_obs:
+                            sidebandleftonly: [true]
+    feeddown:
+        activate: yes
+        processor: false
+        label: "feed-down"
+        correlation: "corr"
+        rms: false
+        symmetrise: false
+        rms_both_sides: false
+        variations:
+            tune:
+                activate: [yes, yes, yes, yes, yes, yes, yes, yes, yes]
+                label:
+                    - "#it{f}_{F} = 1, #it{f}_{R} = 0.5"
+                    - "#it{f}_{F} = 0.5, #it{f}_{R} = 1"
+                    - "#it{f}_{F} = 2, #it{f}_{R} = 1"
+                    - "#it{f}_{F} = 1, #it{f}_{R} = 2"
+                    - "#it{f}_{F} = 2, #it{f}_{R} = 2"
+                    - "#it{f}_{F} = 0.5, #it{f}_{R} = 0.5"
+                    - "#it{m}_{b} high"
+                    - "#it{m}_{b} low"
+                    - "no EvtGen"
+                diffs:
+                    analysis:
+                        jet_obs:
+                            fd_root:
+                                - /data2/vkucera/powheg/trees_powheg_fd_F1_R05.root
+                                - /data2/vkucera/powheg/trees_powheg_fd_F05_R1.root
+                                - /data2/vkucera/powheg/trees_powheg_fd_F2_R1.root
+                                - /data2/vkucera/powheg/trees_powheg_fd_F1_R2.root
+                                - /data2/vkucera/powheg/trees_powheg_fd_F2_R2.root
+                                - /data2/vkucera/powheg/trees_powheg_fd_F05_R05.root
+                                - /data2/vkucera/powheg/trees_powheg_fd_Mhigh.root
+                                - /data2/vkucera/powheg/trees_powheg_fd_Mlow.root
+                                - /data2/vkucera/powheg/trees_powheg_fd_NoEvtGen.root
+                            fd_parquet:
+                                - /data2/vkucera/powheg/Lc/trees_powheg_fd_F1_R05.parquet
+                                - /data2/vkucera/powheg/Lc/trees_powheg_fd_F05_R1.parquet
+                                - /data2/vkucera/powheg/Lc/trees_powheg_fd_F2_R1.parquet
+                                - /data2/vkucera/powheg/Lc/trees_powheg_fd_F1_R2.parquet
+                                - /data2/vkucera/powheg/Lc/trees_powheg_fd_F2_R2.parquet
+                                - /data2/vkucera/powheg/Lc/trees_powheg_fd_F05_R05.parquet
+                                - /data2/vkucera/powheg/Lc/trees_powheg_fd_Mhigh.parquet
+                                - /data2/vkucera/powheg/Lc/trees_powheg_fd_Mlow.parquet
+                                - /data2/vkucera/powheg/Lc/trees_powheg_fd_NoEvtGen.parquet
+    prior:  # TODO
+        activate: no
+        processor: true
+        label: "prior"
+        group: "unfolding"
+        correlation: "corr"
+        rms: true
+        symmetrise: true
+        rms_both_sides: true
+        variations:
+            flat:
+                activate: [yes]
+                label: ["flat"]
+                diffs:
+                    analysis:
+                        jet_obs:
+                            doprior: [true]
+                            unfolding_iterations_sel: [5]
+    modeldep:  # TODO
+        activate: no
+        processor: true
+        label: "model dep."
+        group: "unfolding"
+        correlation: "corr"
+        rms: true
+        symmetrise: true
+        rms_both_sides: true
+        variations:
+            inclusive:
+                activate: [yes]
+                label: ["inclusive"]
+                diffs:
+                    analysis:
+                        jet_nsd:
+                            domodeldep: [true]
+    regularisation:
+        activate: yes
+        processor: false
+        label: "regularisation"
+        group: "unfolding"
+        correlation: "corr"
+        rms: true
+        symmetrise: true
+        rms_both_sides: true
+        variations:
+            iter:
+                activate: [yes, yes]
+                label: ["down (4)", "up (7)"]
+                diffs:
+                    analysis:
+                        jet_obs:
+                            unfolding_iterations_sel: [4, 7]
+    normalisation:
+        activate: yes
+        processor: false
+        label: "#it{#sigma}_{MB}"
+        correlation: "corr"
+        rms: true
+        symmetrise: true
+        rms_both_sides: true
+        variations:
+            crosssection:
+                activate: [yes, yes]
+                label: ["#it{#sigma}_{MB} down", "#it{#sigma}_{MB} up"]
+                diffs:
+                    analysis:
+                        jet_obs:
+                            xsection_inel: [54.91, 60.69]  # TODO: update values for Run 3
+    tracking:  # TODO
+        activate: no
+        processor: true
+        label: "JES"
+        correlation: "corr"
+        rms: true
+        symmetrise: true
+        rms_both_sides: true
+        variations:
+            efficiency:
+                activate: [yes]
+                label: ["eff. down"]
+                diffs:
+                  multi:
+                    mc:
+                      prefix_dir: [/data2/MLhep/sim/train_257382/]
+    binning:
+        activate: yes
+        processor: true
+        label: "binning"
+        group: "unfolding"
+        correlation: "corr"
+        rms: true
+        symmetrise: true
+        rms_both_sides: true
+        variations:
+            # pt_cand:  # TODO
+            pt_jet:
+                activate: [yes]
+                label:
+                    - "#it{p}_{T}^{jet} 5#rightarrow4"
+                diffs:
+                    analysis:
+                        jet_obs:
+                            bins_ptjet: [[4, 7, 15, 30, 50]]
+                            bins_ptjet_eff: [[4, 7, 15, 30, 50]]
+            observable:
+                activate: [no]
+                label:
+                    - "obs. 1"
+                diffs:
+                    analysis:
+                        jet_obs:
+                            observables:
+                              zpar:
+                                bins_det_fix: [[20, 0., 1.]]
+            run2:
+                activate: [no]
+                label:
+                    - "Run 2"
+                diffs:
+                    analysis:
+                        jet_obs:
+                            observables:
+                              zpar:
+                                bins_gen_var: [[0.4, 0.6, 0.7, 0.8, 0.9, 1.]]
+                                bins_det_var: [[0.4, 0.6, 0.7, 0.8, 0.9, 1.]]
+    cand_sel:
+        activate: yes
+        processor: true
+        label: "BDT cut"
+        correlation: "corr"
+        rms: true
+        symmetrise: true
+        rms_both_sides: true
+        variations:
+            ml:
+                activate: [no, no, no, yes, no, no, yes]
+                label:
+                    - "default"  # working point (for tests, should be same as the default result)
+                    - "null"  # no cuts (for tests, whatever was applied on Hyperloop)
+                    - "loosest"  # same cuts as Hyperloop (for tests, should be same as null)
+                    - "loose"  # to increase efficiency by 20 %
+                    - "tight 2"
+                    - "tight 4"
+                    - "tight"  # to decrease efficiency by 20 %
+                diffs:
+                    analysis:
+                        jet_obs:
+                            use_cuts: [True, True, True, True, True, True, True]
+                            cuts:
+                                    - ["mlPromptScore > 0.97", "mlPromptScore > 0.9", "mlPromptScore > 0.9", "mlPromptScore > 0.85", "mlPromptScore > 0.85", "mlPromptScore > 0.8", "mlPromptScore > 0.8", "mlPromptScore > 0.6", "mlPromptScore > 0.6", null]  # default
+                                    - [null,null,null,null,null,null,null,null,null,null]
+                                    - ["mlPromptScore > 0.85", "mlPromptScore > 0.6", "mlPromptScore > 0.6", "mlPromptScore > 0.4", "mlPromptScore > 0.4", "mlPromptScore > 0.4", "mlPromptScore > 0.4", "mlPromptScore > 0.15", "mlPromptScore > 0.15", null]  # loosest
+                                    - ["mlPromptScore > 0.9", "mlPromptScore > 0.7", "mlPromptScore > 0.7", "mlPromptScore > 0.6", "mlPromptScore > 0.6", "mlPromptScore > 0.6", "mlPromptScore > 0.6", "mlPromptScore > 0.3", "mlPromptScore > 0.3", null]  # loose
+                                    - ["mlPromptScore > 0.98", "mlPromptScore > 0.9", "mlPromptScore > 0.9", "mlPromptScore > 0.85", "mlPromptScore > 0.85", "mlPromptScore > 0.8", "mlPromptScore > 0.8", "mlPromptScore > 0.6", "mlPromptScore > 0.6", null]  # tight 2
+                                    - ["mlPromptScore > 0.97", "mlPromptScore > 0.9", "mlPromptScore > 0.9", "mlPromptScore > 0.85", "mlPromptScore > 0.85", "mlPromptScore > 0.8", "mlPromptScore > 0.8", "mlPromptScore > 0.6", "mlPromptScore > 0.6", null]  # tight 4
+                                    - ["mlPromptScore > 0.98", "mlPromptScore > 0.95", "mlPromptScore > 0.95", "mlPromptScore > 0.9", "mlPromptScore > 0.9", "mlPromptScore > 0.9", "mlPromptScore > 0.9", "mlPromptScore > 0.7", "mlPromptScore > 0.7", null]  # tight

@@ -1,27 +1,28 @@
+---
 case: XXXX # used to find the database file unless specified explicitly as do_entire_analysis -d database_analysis
 download:
   alice:
     activate: false
 conversion: # pkl
   mc:
-    activate: false
-  data:
     activate: true
+  data:
+    activate: false
 skimming: # pkl_skimmed (pklsk), pkl_evtcounter_all
   mc:
-    activate: false
-  data:
     activate: true
+  data:
+    activate: false
 merging: # pkl_skimmed_merge_for_ml (pklskml)
   mc:
     activate: false
   data:
-    activate: true
+    activate: false
 mergingperiods: # pkl_skimmed_merge_for_ml_all
   mc:
     activate: false
   data:
-    activate: true
+    activate: false
 
 ml_study: # mlout, mlplot
   activate: false
@@ -67,8 +68,8 @@ analysis:
 
 systematics:
   cutvar:
-      activate: false
-      do_only_analysis: false # This can be done anytime when mass and efficiency histograms have been produced already for a number of trials
-      resume: false # already done mass and efficiency histograms will not be done again, continue with left trials
+    activate: false
+    do_only_analysis: false # This can be done anytime when mass and efficiency histograms have been produced already for a number of trials
+    resume: false # already done mass and efficiency histograms will not be done again, continue with left trials
   mcptshape:
     activate: false

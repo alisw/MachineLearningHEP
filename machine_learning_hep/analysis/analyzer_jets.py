@@ -1,16 +1,14 @@
-#############################################################################
-##  © Copyright CERN 2024. All rights not expressly granted are reserved.  ##
-##                                                                         ##
-## This program is free software: you can redistribute it and/or modify it ##
-##  under the terms of the GNU General Public License as published by the  ##
-## Free Software Foundation, either version 3 of the License, or (at your  ##
-## option) any later version. This program is distributed in the hope that ##
-##  it will be useful, but WITHOUT ANY WARRANTY; without even the implied  ##
-##     warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.    ##
-##           See the GNU General Public License for more details.          ##
-##    You should have received a copy of the GNU General Public License    ##
-##   along with this program. if not, see <https://www.gnu.org/licenses/>. ##
-#############################################################################
+#  © Copyright CERN 2024. All rights not expressly granted are reserved.  #
+#                                                                         #
+# This program is free software: you can redistribute it and/or modify it #
+#  under the terms of the GNU General Public License as published by the  #
+# Free Software Foundation, either version 3 of the License, or (at your  #
+# option) any later version. This program is distributed in the hope that #
+#  it will be useful, but WITHOUT ANY WARRANTY; without even the implied  #
+#     warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.    #
+#           See the GNU General Public License for more details.          #
+#    You should have received a copy of the GNU General Public License    #
+#   along with this program. if not, see <https://www.gnu.org/licenses/>. #
 
 import itertools
 import os
@@ -23,7 +21,7 @@ from ROOT import TF1, TCanvas, TFile, gStyle
 
 from machine_learning_hep.analysis.analyzer import Analyzer
 from machine_learning_hep.fitting.roofitter import RooFitter
-from machine_learning_hep.utilities import folding
+from machine_learning_hep.utilities import folding, make_message_notfound
 from machine_learning_hep.utils.hist import (bin_array, create_hist,
                                              fill_hist_fast, get_axis, get_dim,
                                              get_nbins, project_hist,
@@ -37,14 +35,21 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes,too
         super().__init__(datap, case, typean, period)
 
         # output directories
-        self.d_resultsallpmc = (datap["analysis"][typean]["mc"]["results"][period]
-                                if period is not None else datap["analysis"][typean]["mc"]["resultsallp"])
-        self.d_resultsallpdata = (datap["analysis"][typean]["data"]["results"][period]
-                                  if period is not None else datap["analysis"][typean]["data"]["resultsallp"])
+        self.d_resultsallpmc = (self.cfg(f"mc.results.{period}")
+                                if period is not None else self.cfg("mc.resultsallp"))
+        self.d_resultsallpdata = (self.cfg(f"data.results.{period}")
+                                  if period is not None else self.cfg("data.resultsallp"))
 
         # input directories (processor output)
         self.d_resultsallpmc_proc = self.d_resultsallpmc
         self.d_resultsallpdata_proc = self.d_resultsallpdata
+        # use a different processor output
+        if "data_proc" in datap["analysis"][typean]:
+            self.d_resultsallpdata_proc = self.cfg(f"data_proc.results.{period}") \
+                if period is not None else self.cfg("data_proc.resultsallp")
+        if "mc_proc" in datap["analysis"][typean]:
+            self.d_resultsallpmc_proc = self.cfg(f"mc_proc.results.{period}") \
+                if period is not None else self.cfg("mc_proc.resultsallp")
 
         # input files
         n_filemass_name = datap["files_names"]["histofilename"]
@@ -54,6 +59,8 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes,too
         self.n_fileeff = os.path.join(self.d_resultsallpmc_proc, self.n_fileeff)
         self.n_fileresp = datap["files_names"]["respfilename"]
         self.n_fileresp = os.path.join(self.d_resultsallpmc_proc, self.n_fileresp)
+        file_result_name = datap["files_names"]["resultfilename"]
+        self.n_fileresult = os.path.join(self.d_resultsallpdata, file_result_name)
 
         self.observables = {
             'qa': ['zg', 'rg', 'nsd', 'zpar', 'dr', 'lntheta', 'lnkt', 'lntheta-lnkt'],
@@ -75,27 +82,25 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes,too
         self.h_eff_ptjet_pthf = {}
         self.h_effnew_ptjet_pthf = {'pr': None, 'np': None}
         self.h_effnew_pthf = {'pr': None, 'np': None}
-        self.hfeeddown_det = { 'mc': {}, 'data': {}}
+        self.hfeeddown_det = {'mc': {}, 'data': {}}
         self.h_reflcorr = create_hist('h_reflcorr', ';p_{T}^{HF} (GeV/#it{c})', self.bins_candpt)
         self.n_events = {}
         self.n_colls = {}
 
-        self.path_fig = Path(f'fig/{self.case}/{self.typean}')
+        self.path_fig = Path(f'{os.path.expandvars(self.d_resultsallpdata)}/fig')
         for folder in ['qa', 'fit', 'roofit', 'sideband', 'signalextr', 'sidesub', 'sigextr', 'fd', 'uf', 'eff']:
             (self.path_fig / folder).mkdir(parents=True, exist_ok=True)
 
-        self.rfigfile = TFile(str(self.path_fig / 'output.root'), 'recreate')
+        self.file_out_histo = TFile(self.n_fileresult, 'recreate')
 
         self.fitter = RooFitter()
         self.roo_ws = {}
         self.roo_ws_ptjet = {}
         self.roows = {}
 
-
     #region helpers
     def _save_canvas(self, canvas, filename):
-        # folder = self.d_resultsallpmc if mcordata == 'mc' else self.d_resultsallpdata
-        canvas.SaveAs(f'fig/{self.case}/{self.typean}/{filename}')
+        canvas.SaveAs(f'{self.path_fig}/{filename}')
 
 
     def _save_hist(self, hist, filename, option = '', logy = False):
@@ -111,7 +116,7 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes,too
         self._save_canvas(c, filename)
         rfilename = filename.split('/')[-1]
         rfilename = rfilename.removesuffix('.png')
-        self.rfigfile.WriteObject(hist, rfilename)
+        self.file_out_histo.WriteObject(hist, rfilename)
 
 
     #region fundamentals
@@ -211,7 +216,8 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes,too
                 h_eff_match.Divide(h_det[cat])
                 self._save_hist(h_eff_match, f'eff/h_effmatch_{cat}.png')
 
-                h_response = rfile.Get(f'h_response_{cat}_fPt')
+                if not (h_response := rfile.Get(f'h_response_{cat}_fPt')):
+                    self.logger.critical(make_message_notfound(f'h_response_{cat}_fPt', self.n_fileeff))
                 h_response_ptjet = project_hist(h_response, [0, 2], {})
                 h_response_pthf = project_hist(h_response, [1, 3], {})
                 self._save_hist(h_response_ptjet, f'eff/h_ptjet-pthf_responsematrix-ptjet_{cat}.png', 'colz')
@@ -256,11 +262,12 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes,too
                 hc_eff_avg.SetLineColor(ROOT.kGreen)
                 hc_eff_avg.SetLineWidth(10)
                 amax = hc_eff.GetMaximum()
-                for iptjet in reversed(range(1, get_nbins(eff, 0) - 1)):
+                for iptjet in reversed(range(get_nbins(eff, 0))):
                     h = project_hist(eff, [1], {0: (iptjet+1, iptjet+1)})
                     h.SetName(h.GetName() + f'_ptjet{iptjet}')
                     h.Draw('same')
                     h.SetLineColor(iptjet)
+                    self._save_hist(h, f'h_ptjet-pthf_effnew_{cat}_ptjet_{iptjet}.png')
                     amax = max(amax, h.GetMaximum())
                 hc_eff.GetYaxis().SetRangeUser(0., 1.1 * amax)
                 self._save_canvas(c, f'eff/h_ptjet-pthf_effnew_{cat}_ptjet.png')
@@ -384,25 +391,34 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes,too
             self.roo_ws_ptjet[level] = [[None] * self.nbins] * 10
             rfilename = self.n_filemass_mc if "mc" in level else self.n_filemass
             fitcfg = None
+            self.logger.debug("Opening file %s.", rfilename)
             with TFile(rfilename) as rfile:
-                h = rfile.Get('h_mass-ptjet-pthf')
+                if not rfile:
+                    self.logger.critical("File %s not found.", rfilename)
+                name_histo = "h_mass-ptjet-pthf"
+                self.logger.debug("Opening histogram %s.", name_histo)
+                if not (h := rfile.Get(name_histo)):
+                    self.logger.critical("Histogram %s not found.", name_histo)
                 for iptjet, ipt in itertools.product(itertools.chain((None,), range(0, get_nbins(h, 1))),
                                                      range(get_nbins(h, 2))):
-                    self.logger.debug('fitting %s - %i', level, ipt)
+                    self.logger.debug('fitting %s: %s, %i', level, iptjet, ipt)
                     roows = self.roows.get(ipt)
                     axis_ptjet = get_axis(h, 1)
                     cuts_proj = {2: (ipt+1, ipt+1)}
-                    if iptjet:
+                    if iptjet is not None:
                         cuts_proj.update({1: (iptjet+1, iptjet+1)})
                         jetptlabel = f'_ptjet-{axis_ptjet.GetBinLowEdge(iptjet+1)}-{axis_ptjet.GetBinUpEdge(iptjet+1)}'
                     else:
                         jetptlabel = ''
                     h_invmass = project_hist(h, [0], cuts_proj)
+                    # Rebin
+                    if (n_rebin := self.cfg("n_rebin", 1)) != 1:
+                        h_invmass.Rebin(n_rebin)
                     ptrange = (self.bins_candpt[ipt], self.bins_candpt[ipt+1])
                     if self.cfg('mass_fit'):
                         if h_invmass.GetEntries() < 100: # TODO: reconsider criterion
-                            self.logger.error('Not enough entries to fit %s iptjet %d ipt %d',
-                                              level, iptjet or -1, ipt)
+                            self.logger.error('Not enough entries to fit %s iptjet %s ipt %d',
+                                              level, iptjet, ipt)
                             continue
                         fit_res, _, func_bkg = self._fit_mass(
                             h_invmass,
@@ -425,15 +441,17 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes,too
                             break
                         self.logger.debug("Using fit config for %i: %s", ipt, fitcfg)
                         # check
-                        if iptjet and not fitcfg.get('per_ptjet'):
+                        if iptjet is not None and not fitcfg.get('per_ptjet'):
                             continue
                         if h_invmass.GetEntries() < 100: # TODO: reconsider criterion
-                            self.logger.warning('Not enough entries to fit for %s iptjet %d ipt %d',
-                                                level, iptjet or -1, ipt)
+                            self.logger.warning('Not enough entries to fit for %s iptjet %s ipt %d',
+                                                level, iptjet, ipt)
                             continue
                         # TODO: link datasel to fit stage
                         if datasel := fitcfg.get('datasel'):
-                            hsel = rfile.Get(f'h_mass-ptjet-pthf_{datasel}')
+                            hist_name = f'h_mass-ptjet-pthf_{datasel}'
+                            if not (hsel := rfile.Get(hist_name)):
+                                self.logger.critical("Failed to get histogram %s", hist_name)
                             h_invmass = project_hist(hsel, [0], cuts_proj)
                         for par in fitcfg.get('fix_params', []):
                             if var := roows.var(par):
@@ -441,7 +459,7 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes,too
                         for par in fitcfg.get('free_params', []):
                             if var := roows.var(par):
                                 var.setConstant(False)
-                        if iptjet:
+                        if iptjet is not None:
                             for par in fitcfg.get('fix_params_ptjet', []):
                                 if var := roows.var(par):
                                     var.setConstant(True)
@@ -449,13 +467,13 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes,too
                             h_invmass, ipt, fitcfg, roows,
                             f'roofit/h_mass_fitted{jetptlabel}_pthf-{ptrange[0]}-{ptrange[1]}_{level}.png')
                         if roo_res.status() != 0:
-                            self.logger.error('RooFit failed for %s iptjet %d ipt %d', level, iptjet or -1, ipt)
+                            self.logger.error('RooFit failed for %s iptjet %s ipt %d', level, iptjet, ipt)
                         # if level == 'mc':
                         #     roo_ws.Print()
                         # TODO: save snapshot per level
                         # roo_ws.saveSnapshot(level, None)
                         self.roows[ipt] = roo_ws
-                        if iptjet:
+                        if iptjet is not None:
                             self.roo_ws_ptjet[level][iptjet][ipt] = roo_ws
                         else:
                             self.roo_ws[level][ipt] = roo_ws
@@ -668,6 +686,7 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes,too
 
     # region analysis
     def _analyze(self, method = 'sidesub'):
+        self.logger.info("Running analysis")
         for mcordata in ['mc', 'data']:
             rfilename = self.n_filemass_mc if mcordata == "mc" else self.n_filemass
             with TFile(rfilename) as rfile:
@@ -675,7 +694,7 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes,too
                     self.logger.info('Running analysis for %s using %s', var, method)
                     label = f'-{var}' if var else ''
                     self.logger.debug('looking for %s', f'h_mass-ptjet-pthf{label}')
-                    if fh := rfile.Get(f'h_mass-ptjet-pthf{label}'):
+                    if fh := rfile.Get(f'h_mass-ptjet-pthf{label}'):  # TODO: add sanity check
                         axes_proj = list(range(get_dim(fh)))
                         axes_proj.remove(2)
                         fh_sub = []
@@ -683,6 +702,7 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes,too
                         for ipt in range(self.nbins):
                             h_in = project_hist(fh, axes_proj, {2: (ipt+1, ipt+1)})
                             ensure_sumw2(h_in)
+                            # Signal extraction
                             if method == 'sidesub':
                                 h = self._subtract_sideband(h_in, var, mcordata, ipt)
                             elif method == 'sigextr':
@@ -702,6 +722,7 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes,too
                                 if self.cfg('closure.pure_signal'):
                                     self.logger.debug('assuming pure signal, using projection')
                                     h = h_proj
+                            # Efficiency correction
                             if mcordata == 'data' or not self.cfg('closure.use_matched'):
                                 self.logger.info('correcting efficiency')
                                 self._correct_efficiency(h, ipt)
@@ -723,6 +744,7 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes,too
                                 self._save_canvas(c, filename)
 
                         fh_sum_fdsub = fh_sum.Clone()
+                        # Feed-down subtraction
                         if mcordata == 'data' or not self.cfg('closure.exclude_feeddown_det'):
                             self._subtract_feeddown(fh_sum_fdsub, var, mcordata)
                         self._save_hist(fh_sum_fdsub, f'h_ptjet{label}_{method}_{mcordata}.png')
@@ -755,13 +777,14 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes,too
 
                         if not var:
                             continue
-                        axis_jetpt = get_axis(fh_sum, 0)
-                        for j in range(get_nbins(fh_sum, 0)):
+                        axis_jetpt = get_axis(fh_sum_fdsub, 0)
+                        for j in range(get_nbins(fh_sum_fdsub, 0)):
                             # TODO: generalize to higher dimensions
-                            hproj = project_hist(fh_sum, [1], {0: [j+1, j+1]})
+                            hproj = project_hist(fh_sum_fdsub, [1], {0: [j+1, j+1]})
                             jetptrange = (axis_jetpt.GetBinLowEdge(j+1), axis_jetpt.GetBinUpEdge(j+1))
                             self._save_hist(
                                 hproj, f'uf/h_{var}_{method}_{mcordata}_jetpt-{jetptrange[0]}-{jetptrange[1]}.png')
+                        # Unfolding
                         fh_unfolded = self._unfold(fh_sum_fdsub, var, mcordata)
                         for i, h in enumerate(fh_unfolded):
                             self._save_hist(h, f'h_ptjet-{var}_{method}_unfolded_{mcordata}_{i}.png')
@@ -774,6 +797,17 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes,too
                                     hproj,
                                     f'uf/h_{var}_{method}_unfolded_{mcordata}_' +
                                     f'jetpt-{jetptrange[0]}-{jetptrange[1]}_{i}.png')
+                                # Save the default unfolding iteration separately.
+                                if i == self.cfg("unfolding_iterations_sel") - 1:
+                                    hproj_sel = hproj.Clone(f"{hproj.GetName()}_sel")
+                                    hproj_sel.Scale(1. / hproj_sel.Integral(), "width")
+                                    self.logger.debug("Final histogram: %s, jet pT %g to %g",
+                                                      var, jetptrange[0], jetptrange[1])
+                                    # self.logger.debug(print_histogram(hproj_sel))
+                                    self._save_hist(
+                                        hproj_sel,
+                                        f'uf/h_{var}_{method}_unfolded_{mcordata}_' +
+                                        f'jetpt-{jetptrange[0]}-{jetptrange[1]}_sel.png')
                                 c.cd()
                                 hcopy = hproj.DrawCopy('same' if i > 0 else '')
                                 hcopy.SetLineColor(i+1)
@@ -854,7 +888,19 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes,too
         for var in self.observables['all']:
             bins_ptjet = np.asarray(self.cfg('bins_ptjet'), 'd')
             # TODO: generalize or derive from histogram?
-            bins_obs = {var: bin_array(*self.cfg(f'observables.{var}.bins_gen_fix')) for var in self.observables['all']}
+            bins_obs = {}
+            if binning := self.cfg(f'observables.{var}.bins_gen_var'):
+                bins_tmp = np.asarray(binning, 'd')
+            elif binning := self.cfg(f'observables.{var}.bins_gen_fix'):
+                bins_tmp = bin_array(*binning)
+            elif binning := self.cfg(f'observables.{var}.bins_var'):
+                bins_tmp = np.asarray(binning, 'd')
+            elif binning := self.cfg(f'observables.{var}.bins_fix'):
+                bins_tmp = bin_array(*binning)
+            else:
+                self.logger.error('no binning specified for %s, using defaults', var)
+                bins_tmp = bin_array(10, 0., 1.)
+            bins_obs[var] = bins_tmp
 
             colname = col_mapping.get(var, f'{var}_jet')
             if f'{colname}' not in df:

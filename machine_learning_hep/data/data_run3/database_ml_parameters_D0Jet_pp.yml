@@ -1,16 +1,15 @@
-#############################################################################
-##  © Copyright CERN 2018. All rights not expressly granted are reserved.  ##
-##                 Author: Gian.Michele.Innocenti@cern.ch                  ##
-## This program is free software: you can redistribute it and/or modify it ##
-##  under the terms of the GNU General Public License as published by the  ##
-## Free Software Foundation, either version 3 of the License, or (at your  ##
-## option) any later version. This program is distributed in the hope that ##
-##  it will be useful, but WITHOUT ANY WARRANTY; without even the implied  ##
-##     warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.    ##
-##           See the GNU General Public License for more details.          ##
-##    You should have received a copy of the GNU General Public License    ##
-##   along with this program. if not, see <https://www.gnu.org/licenses/>. ##
-#############################################################################
+---
+#  © Copyright CERN 2018. All rights not expressly granted are reserved.  #
+#                 Author: Gian.Michele.Innocenti@cern.ch                  #
+# This program is free software: you can redistribute it and/or modify it #
+#  under the terms of the GNU General Public License as published by the  #
+# Free Software Foundation, either version 3 of the License, or (at your  #
+# option) any later version. This program is distributed in the hope that #
+#  it will be useful, but WITHOUT ANY WARRANTY; without even the implied  #
+#     warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.    #
+#           See the GNU General Public License for more details.          #
+#    You should have received a copy of the GNU General Public License    #
+#   along with this program. if not, see <https://www.gnu.org/licenses/>. #
 
 D0jet_pp:
   doml: true
@@ -20,17 +19,17 @@ D0jet_pp:
   sel_gen_unp: "fPt > 1. and fPt < 10."
   sel_cen_unp: null
   sel_good_evt_unp: null
-  sel_reco_skim: ["mlBkgScore < 0.02", "mlBkgScore < 0.04", "mlBkgScore < 0.06", "mlBkgScore < .08", "mlBkgScore < 0.14", "mlBkgScore < 0.26", "mlBkgScore < 0.46", "mlBkgScore < 0.52"]
-  # sel_reco_skim: [null,null,null,null,null,null,null] # sel_skim_binmin bins
-  sel_gen_skim: [null,null,null,null,null,null,null,null] # sel_skim_binmin bins
-  sel_skim_binmin: [1,3,4,5,6,8,12,16] # skimming pt bins (sel_skim_binmin bins)
-  sel_skim_binmax:   [3,4,5,6,8,12,16,48] # skimming pt bins (sel_skim_binmin bins)
+  # sel_reco_skim: ["mlBkgScore < 0.02", "mlBkgScore < 0.04", "mlBkgScore < 0.06", "mlBkgScore < .08", "mlBkgScore < 0.14", "mlBkgScore < 0.26", "mlBkgScore < 0.46", "mlBkgScore < 0.52"] # (sel_skim_binmin bins) FIXME: Update for new model.
+  sel_reco_skim: [null,null,null,null,null,null,null,null] # (sel_skim_binmin bins) FIXME: Update for new model.
+  sel_gen_skim: [null,null,null,null,null,null,null,null] # (sel_skim_binmin bins) FIXME: Update for new model.
+  sel_skim_binmin: [1,3,4,5,6,8,12,16] # skimming pt bins (sel_skim_binmin bins) FIXME: Update for new model.
+  sel_skim_binmax:   [3,4,5,6,8,12,16,48] # skimming pt bins (sel_skim_binmin bins) FIXME: Update for new model.
   var_binning: fPt
   dofullevtmerge: false
 
   # obsolete, to be removed
-  var_cand: fCandidateSelFlag
-  # var_swap: fIsCandidateSwapped
+  # var_cand: fCandidateSelFlag
+  # # var_swap: fIsCandidateSwapped
   bitmap_sel:
     var_name: fFlagMcMatchRec
     var_name_gen: fFlagMcMatchGen
@@ -59,7 +58,8 @@ D0jet_pp:
         filter: "abs(fPosZ) < 10."
       collcnt:
         trees:
-          O2d0collcount: [fReadCounts, fReadSelectedCounts, fWrittenCounts]
+          # O2d0collcount: [fReadCounts, fReadSelectedCounts, fWrittenCounts]  # old
+          O2collcount: [fReadCounts, fReadCountsWithTVX, fReadCountsWithTVXAndZVertexAndSel8]  # new
 
       collgen: # TODO: check if we can use the HF collision table instead
         level: gen
@@ -101,8 +101,8 @@ D0jet_pp:
                       fImpactParameter0, fImpactParameter1,
                       fImpactParameterNormalised0, fImpactParameterNormalised1,
                       fPtProng0, fPtProng1,
-                      fNSigTpcPi0, fNSigTpcKa0, fNSigTpcPi1, fNSigTpcKa1,
-                      fNSigTofPi0, fNSigTofKa0, fNSigTofPi1, fNSigTofKa1]
+                      fNSigTpcPi, fNSigTpcKa,
+                      fNSigTofPi, fNSigTofKa]
           O2hfd0pare: [fErrorDecayLength, fErrorDecayLengthXY,
                       fErrorImpactParameter0, fErrorImpactParameter1]
           O2hfd0sel: [fCandidateSelFlag]
@@ -132,7 +132,7 @@ D0jet_pp:
         index: fIndexD0CJETCOS
         trees:
           O2d0cjetco: [fPosZ, fCentrality, fEventSel]
-        filter: "abs(fPosZ) < 10."
+        filter: "abs(fPosZ) < 10." # systematics?
       jetdata:
         level: data
         index: fIndexD0CJETOS
@@ -143,8 +143,8 @@ D0jet_pp:
                       fImpactParameter0, fImpactParameter1,
                       fImpactParameterNormalised0, fImpactParameterNormalised1,
                       fPtProng0, fPtProng1,
-                      fNSigTpcPi0, fNSigTpcKa0, fNSigTpcPi1, fNSigTpcKa1,
-                      fNSigTofPi0, fNSigTofKa0, fNSigTofPi1, fNSigTofKa1]
+                      fNSigTpcPi, fNSigTpcKa,
+                      fNSigTofPi, fNSigTofKa]
           O2hfd0pare: [fErrorDecayLength, fErrorDecayLengthXY,
                       fErrorImpactParameter0, fErrorImpactParameter1]
           O2hfd0ml: [fMlScores]
@@ -184,8 +184,8 @@ D0jet_pp:
         file: AnalysisResultsCollCnt.parquet
 
   variables:
-    var_all: [fDecayLength, fDecayLengthXY, fDecayLengthNormalised, fDecayLengthXYNormalised, fCpa, fCpaXY, fImpactParameter0, fImpactParameter1, fErrorImpactParameter0, fErrorImpactParameter1, fNSigTpcPi0, fNSigTpcKa0, fNSigTofPi0, fNSigTofKa0, fNSigTpcPi1, fNSigTpcKa1, fNSigTofPi1, fNSigTofKa1]
-    var_training: [[fDecayLength, fDecayLengthXY, fDecayLengthNormalised, fDecayLengthXYNormalised, fCpa, fCpaXY, fImpactParameter0, fImpactParameter1, fErrorImpactParameter0, fErrorImpactParameter1, fNSigTpcPi0, fNSigTpcKa0, fNSigTofPi0, fNSigTofKa0, fNSigTpcPi1, fNSigTpcKa1, fNSigTofPi1, fNSigTofKa1], [fDecayLength, fDecayLengthXY, fDecayLengthNormalised, fDecayLengthXYNormalised, fCpa, fCpaXY, fImpactParameter0, fImpactParameter1, fErrorImpactParameter0, fErrorImpactParameter1, fNSigTpcPi0, fNSigTpcKa0, fNSigTofPi0, fNSigTofKa0, fNSigTpcPi1, fNSigTpcKa1, fNSigTofPi1, fNSigTofKa1], [fDecayLength, fDecayLengthXY, fDecayLengthNormalised, fDecayLengthXYNormalised, fCpa, fCpaXY, fImpactParameter0, fImpactParameter1, fErrorImpactParameter0, fErrorImpactParameter1, fNSigTpcPi0, fNSigTpcKa0, fNSigTofPi0, fNSigTofKa0, fNSigTpcPi1, fNSigTpcKa1, fNSigTofPi1, fNSigTofKa1], [fDecayLength, fDecayLengthXY, fDecayLengthNormalised, fDecayLengthXYNormalised, fCpa, fCpaXY, fImpactParameter0, fImpactParameter1, fErrorImpactParameter0, fErrorImpactParameter1, fNSigTpcPi0, fNSigTpcKa0, fNSigTofPi0, fNSigTofKa0, fNSigTpcPi1, fNSigTpcKa1, fNSigTofPi1, fNSigTofKa1], [fDecayLength, fDecayLengthXY, fDecayLengthNormalised, fDecayLengthXYNormalised, fCpa, fCpaXY, fImpactParameter0, fImpactParameter1, fErrorImpactParameter0, fErrorImpactParameter1, fNSigTpcPi0, fNSigTpcKa0, fNSigTofPi0, fNSigTofKa0, fNSigTpcPi1, fNSigTpcKa1, fNSigTofPi1, fNSigTofKa1], [fDecayLength, fDecayLengthXY, fDecayLengthNormalised, fDecayLengthXYNormalised, fCpa, fCpaXY, fImpactParameter0, fImpactParameter1, fErrorImpactParameter0, fErrorImpactParameter1, fNSigTpcPi0, fNSigTpcKa0, fNSigTofPi0, fNSigTofKa0, fNSigTpcPi1, fNSigTpcKa1, fNSigTofPi1, fNSigTofKa1], [fDecayLength, fDecayLengthXY, fDecayLengthNormalised, fDecayLengthXYNormalised, fCpa, fCpaXY, fImpactParameter0, fImpactParameter1, fErrorImpactParameter0, fErrorImpactParameter1, fNSigTpcPi0, fNSigTpcKa0, fNSigTofPi0, fNSigTofKa0, fNSigTpcPi1, fNSigTpcKa1, fNSigTofPi1, fNSigTofKa1]]
+    var_all: [fDecayLength, fDecayLengthXY, fDecayLengthNormalised, fDecayLengthXYNormalised, fCpa, fCpaXY, fImpactParameter0, fImpactParameter1, fErrorImpactParameter0, fErrorImpactParameter1, fNSigTpcPi, fNSigTpcKa, fNSigTofPi, fNSigTofKa]
+    var_training: [[fDecayLength, fDecayLengthXY, fDecayLengthNormalised, fDecayLengthXYNormalised, fCpa, fCpaXY, fImpactParameter0, fImpactParameter1, fErrorImpactParameter0, fErrorImpactParameter1, fNSigTpcPi, fNSigTpcKa, fNSigTofPi, fNSigTofKa], [fDecayLength, fDecayLengthXY, fDecayLengthNormalised, fDecayLengthXYNormalised, fCpa, fCpaXY, fImpactParameter0, fImpactParameter1, fErrorImpactParameter0, fErrorImpactParameter1, fNSigTpcPi, fNSigTpcKa, fNSigTofPi, fNSigTofKa], [fDecayLength, fDecayLengthXY, fDecayLengthNormalised, fDecayLengthXYNormalised, fCpa, fCpaXY, fImpactParameter0, fImpactParameter1, fErrorImpactParameter0, fErrorImpactParameter1, fNSigTpcPi, fNSigTpcKa, fNSigTofPi, fNSigTofKa], [fDecayLength, fDecayLengthXY, fDecayLengthNormalised, fDecayLengthXYNormalised, fCpa, fCpaXY, fImpactParameter0, fImpactParameter1, fErrorImpactParameter0, fErrorImpactParameter1, fNSigTpcPi, fNSigTpcKa, fNSigTofPi, fNSigTofKa], [fDecayLength, fDecayLengthXY, fDecayLengthNormalised, fDecayLengthXYNormalised, fCpa, fCpaXY, fImpactParameter0, fImpactParameter1, fErrorImpactParameter0, fErrorImpactParameter1, fNSigTpcPi, fNSigTpcKa, fNSigTofPi, fNSigTofKa], [fDecayLength, fDecayLengthXY, fDecayLengthNormalised, fDecayLengthXYNormalised, fCpa, fCpaXY, fImpactParameter0, fImpactParameter1, fErrorImpactParameter0, fErrorImpactParameter1, fNSigTpcPi, fNSigTpcKa, fNSigTofPi, fNSigTofKa], [fDecayLength, fDecayLengthXY, fDecayLengthNormalised, fDecayLengthXYNormalised, fCpa, fCpaXY, fImpactParameter0, fImpactParameter1, fErrorImpactParameter0, fErrorImpactParameter1, fNSigTpcPi, fNSigTpcKa, fNSigTofPi, fNSigTofKa]]
       #TODO: add new variables for dca, max_norm_d0d0exp
       # sel_skim_binmin bins
     var_boundaries: [fCosThetaStar, fPtProng]
@@ -237,6 +237,7 @@ D0jet_pp:
     efffilename: "effhisto.root"
     respfilename: "resphisto.root"
     crossfilename: "cross_section_tot.root"
+    resultfilename: "results.root"
 
   #region multi
   multi:
@@ -249,7 +250,8 @@ D0jet_pp:
       seedmerge: [12] #list of periods
       period: [LHC22o] #list of periods
       select_period: [1]
-      prefix_dir: /data2/MLhep/real/train_240309/ # Andrea's model
+      prefix_dir: /data2/MLhep/real/train_257023/ # full stats
+      # prefix_dir: /data2/MLhep/real/train_240309/ # Andrea's model
       # prefix_dir: /data2/MLhep/real/train_245508/ # pass7
       # prefix_dir: /data2/MLhep/real/train_245509/ # no TOF
       # prefix_dir: /data2/MLhep/real/train_245510/ # no PID
@@ -270,7 +272,9 @@ D0jet_pp:
       seedmerge: [12] #list of periods
       period: [LHC24d3a] #list of periods
       select_period: [1]
-      prefix_dir: /data2/MLhep/sim/train_239774/ # Andrea's model
+      prefix_dir: /data2/MLhep/sim/train_257228/ # full stats
+      # prefix_dir: /data2/MLhep/sim/train_257227/ # 97 % tracking eff
+      # prefix_dir: /data2/MLhep/sim/train_239774/ # Andrea's model
       # prefix_dir: /data2/MLhep/sim/train_244893/ # no TOF
       # prefix_dir: /data2/MLhep/sim/train_244894/ # no PID
       # prefix_dir: /data2/MLhep/sim/train_244895/ # full PID
@@ -354,39 +358,45 @@ D0jet_pp:
 
   #region analysis
   analysis:
-    anahptspectrum: "D0Kpi" #D0Kpi, DplusKpipi, DstarD0pi, DsKKpi, LctopKpi, LcK0Sp
+    anahptspectrum: "D0Kpi" #D0Kpi, DplusKpipi, DstarD0pi, DsKKpi, LctopKpi, LcK0Sp # used in analysis/analyzerdhadrons_mult.py
     fd_method: "Nb" #fc, Nb
     cctype: "pp"
-    inputfonllpred: data/fonll/D0DplusDstarPredictions_13TeV_y05_all_300416_BDShapeCorrected.root
+    inputfonllpred: data/fonll/D0DplusDstarPredictions_13TeV_y05_all_300416_BDShapeCorrected.root # used in machine_learning_hep/hf_pt_spectrum.py
     dir_general_plots: /data2/jklein/data/analysis_plots
 
     jet_obs: &jet_default
       sel_an_binmin:    [1,2,3,4,5,6,7,8,10,12,16,24] # hadron pt bins (sel_an_binmin bins)
-      sel_an_binmax:    [2,3,4,5,6,7,8,10,12,16,24,36] # hadron pt bins (sel_an_binmin bins)
-      bins_ptjet: [5, 7, 15, 30, 50]
+      sel_an_binmax:    [2,3,4,5,6,7,8,10,12,16,24,36] # hadron pt bins (sel_an_binmin bins) # FIXME: move the last edge in sel_an_binmin
+      bins_ptjet: [5, 7, 15, 30, 50] # systematics
+      # TODO: split rec and gen binning
       bins_ptjet_eff: [2, 5, 7, 15, 30, 50, 70]
 
       cand_collidx: fIndexHfD0CollBases
-      sigmamb: 57.8e-3 #NB: multiplied by 1e12 before giving to HFPtSpectrum!
+      # sigmamb: 57.8e-3 #NB: multiplied by 1e12 before giving to HFPtSpectrum!
 
-      # TODO: add separate binnings for MC and data
       observables:
         zg:
           bins_gen_fix: [6, -.1, .5]
           bins_det_fix: [6, -.1, .5]
           label: '#it{z}_{g}'
+          label_y: "(1/#it{N}_{jet ch}) d#it{N}/d#it{z}_{g}"
         nsd:
           bins_gen_fix: [10, -.5, 9.5]
           bins_det_fix: [10, -.5, 9.5]
           label: '#it{n}_{SD}'
+          label_y: "(1/#it{N}_{jet ch}) d#it{N}/d#it{n}_{SD}"
         rg:
           bins_gen_fix: [11, -.1, 1.]
           bins_det_fix: [11, -.1, 1.]
           label: '#it{R}_{g}'
+          label_y: "(1/#it{N}_{jet ch}) d#it{N}/d#it{R}_{g}"
         zpar:
-          bins_gen_fix: [10, 0., 1.]
-          bins_det_fix: [10, 0., 1.]
+          # bins_gen_fix: [10, 0., 1.]
+          # bins_det_fix: [10, 0., 1.]
+          bins_gen_var: [0.4, 0.6, 0.7, 0.8, 0.9, 1.]
+          bins_det_var: [0.4, 0.6, 0.7, 0.8, 0.9, 1.]
           label: '#it{z}_{#parallel}'
+          label_y: "(1/#it{N}_{jet ch}) d#it{N}/d#it{z}_{#parallel}"
         dr:
           bins_gen_fix: [10, 0., 1.]
           bins_det_fix: [10, 0., 1.]
@@ -412,12 +422,12 @@ D0jet_pp:
           level: mc
           query: '(isd0 & seld0bar) or (isd0bar & seld0)'
 
-      corr_refl: true
+      corr_refl: true  # systematics
       fit_levels: ['mcsig', 'mcrefl', 'mc', 'data']
       mass_roofit:
         - level: mcsig
           datasel: mcsig
-          range: [1.69, 2.04]
+          range: [1.69, 2.04] # systematics? or propagate bg fit uncertainty directly?
           components:
             sig:
               fn: 'Gaussian::peak(m[1.,5.], mean[1.85,1.89], sigma_g1[.01,.08])'
@@ -553,7 +563,7 @@ D0jet_pp:
               fn: 'SUM::sigrefl(frac_refl[0.,1.]*refl, sig)'
         - ptrange: [1., 2.]
           per_ptjet: true
-          range: [1.720, 2.02]
+          range: [1.72, 2.02]
           fix_params: ['frac_refl']
           free_params: ['sigma_g1']
           fix_params_ptjet: ['mean', 'sigma_g1']
@@ -639,12 +649,12 @@ D0jet_pp:
         - ptrange: [16., 100.]
           regions:
             left: [-2., -2.]
-            signal: [-2., 2.]
-            right: [3., 5.]
+            signal: [-2., 2.] # systematics?
+            right: [3., 5.] # systematics?
         - regions:
-            left: [-5.5, -3.]
-            signal: [-2., 2.]
-            right: [3., 5.5]
+            left: [-5.5, -3.] # systematics?
+            signal: [-2., 2.] # systematics?
+            right: [3., 5.5] # systematics?
 
       # mass_fit:
       #   func_sig: 'gaus'
@@ -653,15 +663,17 @@ D0jet_pp:
       #   # par_fix: {1: 1.86}
       #   par_constrain: {1: [1.85, 1.87], 2: [.01, .08]}
       #   range: [1.695, 2.06]
-      mass_fit_lim: [1.5, 2.2] # histogram range of the invariant mass distribution [GeV/c^2]
-      bin_width: 0.005 # bin width of the invariant mass histogram
+      mass_fit_lim: [1.5, 2.2] # histogram range of the invariant mass distribution [GeV/c^2]; used in processer for binarray_mass  (not used for fit range!)
+      bin_width: 0.001 # bin width of the invariant mass histogram # systematics?
+      n_rebin: 1 # number of mass bins to merge
       efficiency:
-        extra_cols: ['isd0', 'isd0bar', 'seld0', 'seld0bar']
+        extra_cols: ['isd0', 'isd0bar', 'seld0', 'seld0bar', 'mlBkgScore']
         filter_det: '(isd0 & seld0) or (isd0bar & seld0bar)'
         index_match: fIndexArrayD0CMCPJETOS_hf
         correction_method: run3
 
-      unfolding_iterations: 8
+      unfolding_iterations: 8 # used, maximum iteration
+      unfolding_iterations_sel: 4 # used, selected iteration # systematics
       closure:
         pure_signal: false
         # exclude_feeddown_det: 'ismcsignal==1 & ismcprompt==1'
@@ -669,320 +681,119 @@ D0jet_pp:
         # filter_reflections: '(isd0 & seld0) or (isd0bar & seld0bar)'
         use_matched: true
 
-      frac_mcana: .2
-      fd_root: '/data2/vkucera/powheg/trees_powheg_fd_central.root'
-      fd_parquet: '/data2/jklein/powheg/trees_powheg_fd_central.parquet'
+      frac_mcana: .2 # fraction of MC sample for the closure
+      fd_root: '/data2/vkucera/powheg/trees_powheg_fd_central.root' # systematics
+      fd_parquet: '/data2/jklein/powheg/trees_powheg_fd_central.parquet' # systematics
 
-      branching_ratio: 3.95e-2
-      xsection_inel: 57.8 # (mb) cross-section of minimum-bias events
-      xsection_inel_mc: .65 # 1.68 # (mb) cross-section of minimum-bias events
+      branching_ratio: 3.95e-2 # used
+      xsection_inel: 57.8 # (mb) cross-section of minimum-bias events # used # systematics
+      xsection_inel_mc: .65 # 1.68 # (mb) cross-section of minimum-bias events # used
 
       # obsolete?
-      proc_type: Jets
-      useperiod: [1] #list of periods
-      usejetptbinned_deff: false
-      doeff_resp: true #efficiency correction for the response matrix
-      unmatched_gen: true
+      proc_type: Jets # used
+      useperiod: [1] #list of periods # used
+      # usejetptbinned_deff: false
+      # doeff_resp: true #efficiency correction for the response matrix
+      # unmatched_gen: true
       latexnamehadron: "D^{0}"
-      latexnamedecay: "K^{#minus} #pi^{#plus}"
+      # latexnamedecay: "K^{#minus} #pi^{#plus}"
       var_binning2: pt_jet
-      var_binning2_gen: pt_gen_jet
+      # var_binning2_gen: pt_gen_jet
       latexbin2var: "#it{p}_{T}^{jet ch}"
-      sel_binmin2_reco: [7.0,15.0,30.0] # rec jet pt bins (sel_binmin2_reco bins)
-      sel_binmax2_reco:     [15.0,30.0,50.0] # rec jet pt bins (sel_binmin2_reco bins)
-      sel_binmin2_gen:  [7.0,15.0,30.0] # gen jet pt bins (sel_binmin2_gen bins)
-      sel_binmax2_gen:      [15.0,30.0,50.0] # gen jet pt bins (sel_binmin2_gen bins)
-      var_binningshape: zg_jet
-      var_binningshape_gen: zg_gen_jet
-      var_shape_latex: "#it{z}_{g}"
-      sel_binminshape_reco: [-0.1,0.1,0.2,0.3,0.4]
-      sel_binmaxshape_reco:      [0.1,0.2,0.3,0.4,0.5]
-      sel_binminshape_gen:  [-0.1,0.1,0.2,0.3,0.4]
-      sel_binmaxshape_gen:       [0.1,0.2,0.3,0.4,0.5]
-      sel_closure_frac: 0.2
-      triggerbit: INT7
+      # sel_binmin2_reco: [5, 7, 15, 30] # rec jet pt bins (sel_binmin2_reco bins)
+      # sel_binmax2_reco:     [7, 15, 30, 50] # rec jet pt bins (sel_binmin2_reco bins)
+      # sel_binmin2_gen: [5, 7, 15, 30] # rec jet pt bins (sel_binmin2_reco bins)
+      # sel_binmax2_gen:     [7, 15, 30, 50] # rec jet pt bins (sel_binmin2_reco bins)
+      # var_binningshape: zg_jet
+      # var_binningshape_gen: zg_gen_jet
+      # var_shape_latex: "shape"
+      # sel_binminshape_reco: [-0.1,0.1,0.2,0.3,0.4]
+      # sel_binmaxshape_reco:      [0.1,0.2,0.3,0.4,0.5]
+      # sel_binminshape_gen:  [-0.1,0.1,0.2,0.3,0.4]
+      # sel_binmaxshape_gen:       [0.1,0.2,0.3,0.4,0.5]
+      # sel_closure_frac: 0.2
+      # triggerbit: INT7
       #jetsel_gen: "abs(y_cand) < 0.8 and abs(z_vtx_gen) < 10 and abs(eta_jet) < 0.5"
       #jetsel_sim: "abs(y_cand) < 0.8 and abs(eta_jet) < 0.5" # jet selection in simulations
       #jetsel_reco: "abs(y_cand) < 0.8 and abs(z_vtx_reco) < 10 and abs(eta_jet) < 0.5"
       #jetsel_gen_matched_reco: "abs(eta_gen_jet) < 5.0"
-      jetsel_gen: "abs(y_cand) < 0.5 and abs(z_vtx_gen) < 10 and abs(eta_jet) < 0.5"
-      jetsel_sim: "abs(y_cand) < 0.5 and abs(eta_jet) < 0.5" # jet selection in simulations
-      jetsel_reco: "abs(y_cand) < 0.5 and abs(z_vtx_reco) < 10 and abs(eta_jet) < 0.5"
-      jetsel_gen_matched_reco: "abs(y_cand) < 0.5 and abs(z_vtx_gen) < 10 and abs(eta_gen_jet) < 0.5"
+      # jetsel_gen: "abs(y_cand) < 0.5 and abs(z_vtx_gen) < 10 and abs(eta_jet) < 0.5"
+      # jetsel_sim: "abs(y_cand) < 0.5 and abs(eta_jet) < 0.5" # jet selection in simulations
+      # jetsel_reco: "abs(y_cand) < 0.5 and abs(z_vtx_reco) < 10 and abs(eta_jet) < 0.5"
+      # jetsel_gen_matched_reco: "abs(y_cand) < 0.5 and abs(z_vtx_gen) < 10 and abs(eta_gen_jet) < 0.5"
       evtsel: null # fIsEventReject==0
       triggersel:
         data: "trigger_hasbit_INT7==1"
         mc: null
       data: &data_out_default
-        runselection: [null] #FIXME
-        results: ['/home/${USER}/mlhep/data/test/d0jet/resultsMBjetvspt'] #list of periods
-        resultsallp: '/home/${USER}/mlhep/data/test/d0jet/resultsMBjetvspt_all'
+        runselection: [null] #FIXME # used but useless
+        results: ['/home/${USER}/mlhep/d0jet/jet_obs/default/default/data/results'] #list of periods
+        resultsallp: '/home/${USER}/mlhep/d0jet/jet_obs/default/default/data/results_all'
       mc: &mc_out_default
-        runselection: [null] #FIXME
-        results: ['/home/${USER}/mlhep/data/mctest/d0jet/resultsMBjetvspt'] #list of periods
-        resultsallp: '/home/${USER}/mlhep/data/mctest/d0jet/resultsMBjetvspt_all'
+        runselection: [null] #FIXME # used but useless
+        results: ['/home/${USER}/mlhep/d0jet/jet_obs/default/default/mc/results'] #list of periods
+        resultsallp: '/home/${USER}/mlhep/d0jet/jet_obs/default/default/mc/results_all'
       data_proc: # alternative processor output used as the analyzer input
         <<: *data_out_default
       mc_proc: # alternative processor output used as the analyzer input
         <<: *mc_out_default
 
-      # simple fitter START
-      sgnfunc: [0,0,0,0,0,0,0,0,0,0,0,0] # kGaus=0, k2Gaus=1, k2GausSigmaRatioPar=2 (sel_an_binmin bins)
-      bkgfunc: [0,0,0,0,0,0,0,0,0,0,0,0] # kExpo=0, kLin=1, kPol2=2, kNoBk=3, kPow=4, kPowEx=5 (sel_an_binmin bins)
-      masspeak: 1.864
-      massmin: [1.66,1.66,1.66,1.66,1.66,1.66,1.66,1.66,1.66,1.66,1.66,1.66] # sel_an_binmin bins, fit region of the invariant mass distribution [GeV/c^2]
-      massmax: [2.06,2.06,2.06,2.06,2.06,2.06,2.06,2.06,2.06,2.06,2.06,2.06] # sel_an_binmin bins, fit region of the invariant mass distribution [GeV/c^2]
-      rebin: [6,6,6,6,6,6,6,6,6,6,6,6] # sel_an_binmin bins
-      fix_mean: [false, false, false, false, false, false, false, false, false, false, false, false] # sel_an_binmin bins
-      masspeaksec: 1.864
+      # simple fitter START # used in cplusutilities/mass_fitter.C
+      # sgnfunc: [0,0,0,0,0,0,0,0,0,0,0,0] # kGaus=0, k2Gaus=1, k2GausSigmaRatioPar=2 (sel_an_binmin bins)
+      # bkgfunc: [0,0,0,0,0,0,0,0,0,0,0,0] # kExpo=0, kLin=1, kPol2=2, kNoBk=3, kPow=4, kPowEx=5 (sel_an_binmin bins)
+      # masspeak: 1.864
+      # massmin: [1.66,1.66,1.66,1.66,1.66,1.66,1.66,1.66,1.66,1.66,1.66,1.66] # sel_an_binmin bins, fit region of the invariant mass distribution [GeV/c^2]
+      # massmax: [2.06,2.06,2.06,2.06,2.06,2.06,2.06,2.06,2.06,2.06,2.06,2.06] # sel_an_binmin bins, fit region of the invariant mass distribution [GeV/c^2]
+      # rebin: [6,6,6,6,6,6,6,6,6,6,6,6] # sel_an_binmin bins
+      # fix_mean: [false, false, false, false, false, false, false, false, false, false, false, false] # sel_an_binmin bins
+      # masspeaksec: 1.864
 
+      # obsolete (uses Ali... fitter)
       # If SetArraySigma true: sigma_initial is taken from sigmaarray; false: sigma_initial is taken from MC
       # If SetFixGaussianSigma true: sigma fixed to sigma_initial
       # SetFixGaussianSigma: [false, false, false, false, false, false, false, false, false, false, false, false] # sel_an_binmin bins
-      SetFixGaussianSigma: [true, true, true, true, true, true, true, true, true, true, true, true] # sel_an_binmin bins
-      SetArraySigma: [false, false, false, false, false, false, false, false, false, false, false, false] # sel_an_binmin bins
-      sigmaarray: [0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01] # initial sigma (sel_an_binmin bins)
+      # SetFixGaussianSigma: [true, true, true, true, true, true, true, true, true, true, true, true] # sel_an_binmin bins
+      # SetArraySigma: [false, false, false, false, false, false, false, false, false, false, false, false] # sel_an_binmin bins
+      # sigmaarray: [0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01] # initial sigma (sel_an_binmin bins)
 
-      fix_sigmasec: [true, true, true, true, true, true, true, true, true, true, true, true] # sel_an_binmin bins
-      sigmaarraysec: [0.007497,0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01] # sel_an_binmin bins
-      use_reflections: true
+      # fix_sigmasec: [true, true, true, true, true, true, true, true, true, true, true, true] # sel_an_binmin bins
+      # sigmaarraysec: [0.007497,0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01] # sel_an_binmin bins
+      # use_reflections: true
       # simple fitter END
 
-      signal_sigma: 2.0
-      sigma_scale: 0.9545
-      sideband_sigma_1_left: 4
-      sideband_sigma_2_left: 9
-      sideband_sigma_1_right: 4
-      sideband_sigma_2_right: 9
-      sidebandleftonly: false
+      # signal_sigma: 2.0
+      # sigma_scale: 0.9545
+      # sideband_sigma_1_left: 4
+      # sideband_sigma_2_left: 9
+      # sideband_sigma_1_right: 4
+      # sideband_sigma_2_right: 9
+      # sidebandleftonly: false
 
-      niterunfolding: 15
-      niterunfoldingchosen: 4
+      # niterunfolding: 15
+      # niterunfoldingchosen: 4
 
-      doprior: false
-      domodeldep: false
-      path_modeldep: /home/nzardosh/PYTHIA_Sim/PYTHIA8_Simulations/Plots/D0_Substructure_Simulations_Output.root
+      # doprior: false
+      # domodeldep: false
+      # path_modeldep: /home/nzardosh/PYTHIA_Sim/PYTHIA8_Simulations/Plots/D0_Substructure_Simulations_Output.root
 
-      powheg_path_nonprompt: /data/POWHEG/trees_powheg_fd_central.root
 
-      powheg_path_prompt: /data/POWHEG/trees_powheg_pr_central.root
-      powheg_prompt_variations_path: /data/POWHEG/trees_powheg_pr_
-      powheg_prompt_variations: ["F1_R05","F05_R1","F2_R1","F1_R2","F2_R2","F05_R05","Mhigh","Mlow"]
+      # replace with fd_root...
+      # powheg_path_nonprompt: /data/POWHEG/trees_powheg_fd_central.root
+      # powheg_path_prompt: /data/POWHEG/trees_powheg_pr_central.root
+      # powheg_prompt_variations_path: /data/POWHEG/trees_powheg_pr_
+      # powheg_prompt_variations: ["F1_R05","F05_R1","F2_R1","F1_R2","F2_R2","F05_R05","Mhigh","Mlow"]
 
-      pythia8_prompt_variations_path: /data/PYTHIA8/trees_pythia8_pr_
-      pythia8_prompt_variations: ["default", "charm_lo"] #["default","colour0soft"]
-      pythia8_prompt_variations_legend: ["PYTHIA 8 (Monash)", "PYTHIA 8 charm LO"] # ["PYTHIA 8 (Monash)","PYTHIA 8 SoftQCD, mode 0"]
+      # pythia8_prompt_variations_path: /data/PYTHIA8/trees_pythia8_pr_
+      # pythia8_prompt_variations: ["default", "charm_lo"] #["default","colour0soft"]
+      # pythia8_prompt_variations_legend: ["PYTHIA 8 (Monash)", "PYTHIA 8 charm LO"] # ["PYTHIA 8 (Monash)","PYTHIA 8 SoftQCD, mode 0"]
 
-      variations_db: ./data/data_prod_20210223/database_variations_D0pp_jet_zg.yml
+      variations_db: database_variations_D0Jet_pp_jet_obs.yml
 
       # Additional cuts applied before mass histogram is filled
-      use_cuts: False
-      # cuts: # (sel_an_binmin bins)
-      # - Null
-      # - Null
-      # - Null
-      # - Null
-      # - Null
-      # - Null
-      # - Null
-      # - Null
+      use_cuts: True  # systematics
+      cuts: ["mlBkgScore < 0.02", "mlBkgScore < 0.02", "mlBkgScore < 0.04", "mlBkgScore < 0.06", "mlBkgScore < .08", "mlBkgScore < 0.14", "mlBkgScore < 0.14", "mlBkgScore < 0.26", "mlBkgScore < 0.26", "mlBkgScore < 0.46", "mlBkgScore < 0.52", "mlBkgScore < 0.52"]  # (sel_an_binmin bins) systematics FIXME: Update for new model.
 
-    jet_qa:
-      <<: *jet_default
-
-    jet_rg:
-      <<: *jet_default
-      var_binningshape: rg_jet
-      var_binningshape_gen: rg_gen_jet
-      var_shape_latex: "#it{R}_{g}"
-      sel_binminshape_reco: [-0.1,0.0,0.1,0.2,0.3]
-      sel_binmaxshape_reco:      [0.0,0.1,0.2,0.3,0.4]
-      sel_binminshape_gen:  [-0.1,0.0,0.1,0.2,0.3]
-      sel_binmaxshape_gen:       [0.0,0.1,0.2,0.3,0.4]
-      data: &data_out_rg
-        <<: *data_out_default
-        results: [/data/DerivedResultsJets/D0kAnywithJets_Vit/vAN-20210223_ROOT6-1/rg/default/default/pp_2016_data/593_20210223-2051/resultsMBjetvspt,
-                  /data/DerivedResultsJets/D0kAnywithJets_Vit/vAN-20210223_ROOT6-1/rg/default/default/pp_2017_data/593_20210223-2051/resultsMBjetvspt,
-                  /data/DerivedResultsJets/D0kAnywithJets_Vit/vAN-20210223_ROOT6-1/rg/default/default/pp_2018_data/593_20210223-2051/resultsMBjetvspt] #list of periods
-        resultsallp: /data/DerivedResultsJets/D0kAnywithJets_Vit/vAN-20210223_ROOT6-1/rg/default/default/pp_data/resultsMBjetvspt
-      mc: &mc_out_rg
-        <<: *mc_out_default
-        results: [/data/DerivedResultsJets/D0kAnywithJets_Vit/vAN-20210223_ROOT6-1/rg/default/default/pp_2016_mc_prodD2H/594_20210301-1015/resultsMBjetvspt,
-                  /data/DerivedResultsJets/D0kAnywithJets_Vit/vAN-20210223_ROOT6-1/rg/default/default/pp_2017_mc_prodD2H/594_20210301-1015/resultsMBjetvspt,
-                  /data/DerivedResultsJets/D0kAnywithJets_Vit/vAN-20210223_ROOT6-1/rg/default/default/pp_2018_mc_prodD2H/594_20210301-1015/resultsMBjetvspt] #list of periods
-        resultsallp: /data/DerivedResultsJets/D0kAnywithJets_Vit/vAN-20210223_ROOT6-1/rg/default/default/pp_mc_prodD2H/resultsMBjetvspt
-      data_proc: # alternative processor output used as the analyzer input
-        <<: *data_out_rg
-      mc_proc: # alternative processor output used as the analyzer input
-        <<: *mc_out_rg
-      variations_db: ./data/data_prod_20210223/database_variations_D0pp_jet_rg.yml
-
-    jet_nsd:
-      <<: *jet_default
-      var_binningshape: nsd_jet
-      var_binningshape_gen: nsd_gen_jet
-      var_shape_latex: "#it{n}_{SD}"
-      sel_binminshape_reco: [-0.5, 0.5, 1.5, 2.5, 3.5]
-      sel_binmaxshape_reco:       [0.5, 1.5, 2.5, 3.5, 4.5]
-      sel_binminshape_gen:  [-0.5, 0.5, 1.5, 2.5, 3.5]
-      sel_binmaxshape_gen:        [0.5, 1.5, 2.5, 3.5, 4.5]
-      data: &data_out_nsd
-        <<: *data_out_default
-        results: [/data/DerivedResultsJets/D0kAnywithJets_Vit/vAN-20210223_ROOT6-1/nsd/default/default/pp_2016_data/593_20210223-2051/resultsMBjetvspt,
-                  /data/DerivedResultsJets/D0kAnywithJets_Vit/vAN-20210223_ROOT6-1/nsd/default/default/pp_2017_data/593_20210223-2051/resultsMBjetvspt,
-                  /data/DerivedResultsJets/D0kAnywithJets_Vit/vAN-20210223_ROOT6-1/nsd/default/default/pp_2018_data/593_20210223-2051/resultsMBjetvspt] #list of periods
-        resultsallp: /data/DerivedResultsJets/D0kAnywithJets_Vit/vAN-20210223_ROOT6-1/nsd/default/default/pp_data/resultsMBjetvspt
-      mc: &mc_out_nsd
-        <<: *mc_out_default
-        results: [/data/DerivedResultsJets/D0kAnywithJets_Vit/vAN-20210223_ROOT6-1/nsd/default/default/pp_2016_mc_prodD2H/594_20210301-1015/resultsMBjetvspt,
-                  /data/DerivedResultsJets/D0kAnywithJets_Vit/vAN-20210223_ROOT6-1/nsd/default/default/pp_2017_mc_prodD2H/594_20210301-1015/resultsMBjetvspt,
-                  /data/DerivedResultsJets/D0kAnywithJets_Vit/vAN-20210223_ROOT6-1/nsd/default/default/pp_2018_mc_prodD2H/594_20210301-1015/resultsMBjetvspt] #list of periods
-        resultsallp: /data/DerivedResultsJets/D0kAnywithJets_Vit/vAN-20210223_ROOT6-1/nsd/default/default/pp_mc_prodD2H/resultsMBjetvspt
-      data_proc: # alternative processor output used as the analyzer input
-        <<: *data_out_nsd
-      mc_proc: # alternative processor output used as the analyzer input
-        <<: *mc_out_nsd
-      variations_db: ./data/data_prod_20210223/database_variations_D0pp_jet_nsd.yml
-
-    jet_FF:
-      <<: *jet_default
-
-      pythia8_prompt_variations: ["default","colour2soft"]
-      pythia8_prompt_variations_legend:  ["PYTHIA 8 (Monash)","PYTHIA 8 SoftQCD, mode 2"]
-
-      sel_binmin2_reco: [5.0,7.0,10.0,15.0] # rec jet pt bins (sel_binmin2_reco bins)
-      sel_binmax2_reco:     [7.0,10.0,15.0,50.0] # rec jet pt bins (sel_binmin2_reco bins)
-      sel_binmin2_gen:  [5.0,7.0,10.0,15.0] # gen jet pt bins (sel_binmin2_gen bins)
-      sel_binmax2_gen:      [7.0,10.0,15.0,50.0] # gen jet pt bins (sel_binmin2_gen bins)
-      var_binningshape: z
-      var_binningshape_gen: z_gen
-      var_shape_latex: "#it{z}_{#parallel}^{ch}"
-      sel_binminshape_reco: [0.2001,0.4001,0.5001,0.6001,0.7001,0.8001,0.9001]
-      sel_binmaxshape_reco:        [0.4001,0.5001,0.6001,0.7001,0.8001,0.9001,1.0001]
-      sel_binminshape_gen:  [0.2001,0.4001,0.5001,0.6001,0.7001,0.8001,0.9001]
-      sel_binmaxshape_gen:         [0.4001,0.5001,0.6001,0.7001,0.8001,0.9001,1.0001]
-      data: &data_out_ff
-        <<: *data_out_default
-        results: [/data/DerivedResultsJets/D0kAnywithJets_Vit/vAN-20210223_ROOT6-1/ff/default/default/pp_2016_data/593_20210223-2051/resultsMBjetvspt,
-                  /data/DerivedResultsJets/D0kAnywithJets_Vit/vAN-20210223_ROOT6-1/ff/default/default/pp_2017_data/593_20210223-2051/resultsMBjetvspt,
-                  /data/DerivedResultsJets/D0kAnywithJets_Vit/vAN-20210223_ROOT6-1/ff/default/default/pp_2018_data/593_20210223-2051/resultsMBjetvspt] #list of periods
-        resultsallp: /data/DerivedResultsJets/D0kAnywithJets_Vit/vAN-20210223_ROOT6-1/ff/default/default/pp_data/resultsMBjetvspt
-      mc: &mc_out_ff
-        <<: *mc_out_default
-        results: [/data/DerivedResultsJets/D0kAnywithJets_Vit/vAN-20210223_ROOT6-1/ff/default/default/pp_2016_mc_prodD2H/594_20210301-1015/resultsMBjetvspt,
-                  /data/DerivedResultsJets/D0kAnywithJets_Vit/vAN-20210223_ROOT6-1/ff/default/default/pp_2017_mc_prodD2H/594_20210301-1015/resultsMBjetvspt,
-                  /data/DerivedResultsJets/D0kAnywithJets_Vit/vAN-20210223_ROOT6-1/ff/default/default/pp_2018_mc_prodD2H/594_20210301-1015/resultsMBjetvspt] #list of periods
-        resultsallp: /data/DerivedResultsJets/D0kAnywithJets_Vit/vAN-20210223_ROOT6-1/ff/default/default/pp_mc_prodD2H/resultsMBjetvspt
-      data_proc: # alternative processor output used as the analyzer input
-        <<: *data_out_ff
-      mc_proc: # alternative processor output used as the analyzer input
-        <<: *mc_out_ff
-      variations_db: ./data/data_prod_20210223/database_variations_D0pp_jet_FF.yml
-
-    jet_r_shape_2_6:
-      <<: *jet_default
-      lc_d0_ratio: true #make ratio of D0 and corresponding Lc analysis
-      xsec: false
-      use_inclusive_systematics: true
-
-      pythia8_prompt_variations: ["default","colour2soft"]
-      pythia8_prompt_variations_legend:  ["PYTHIA 8 (Monash)","PYTHIA 8 SoftQCD, mode 2"]
-
-      var_binningshape: delta_r_jet
-      var_binningshape_gen: delta_r_gen_jet
-      var_shape_latex: "#it{r}"
-      sel_binminshape_reco: [0., 0.05, 0.1]
-      sel_binmaxshape_reco:     [0.05, 0.1, 0.2]
-      sel_binminshape_gen:  [0., 0.05, 0.1]
-      sel_binmaxshape_gen:      [0.05, 0.1, 0.2]
-      sel_an_binmin:    [2,3,4,5] # hadron pt bins (sel_an_binmin bins)
-      sel_an_binmax:      [3,4,5,6] # hadron pt bins (sel_an_binmin bins)
-      binning_matching:   [1,1,2,2] # mapping to skimming pt bins (sel_an_binmin bins)
-      sel_binmin2_reco: [3.0, 5.0, 7.0, 15.0] # rec jet pt bins (sel_binmin2_reco bins)
-      sel_binmax2_reco:      [5.0, 7.0, 15.0, 30.0] # rec jet pt bins (sel_binmin2_reco bins)
-      sel_binmin2_gen:  [3.0, 5.0, 7.0, 15.0] # gen jet pt bins (sel_binmin2_gen bins)
-      sel_binmax2_gen:       [5.0, 7.0, 15.0, 30.0] # gen jet pt bins (sel_binmin2_gen bins)
-      cuts:
-      - Null
-      - Null
-      - Null
-      - Null
-      data: &data_out_r_shape_2_6
-        <<: *data_out_default
-        results: [/data/Derived_testResults/Jets/D0kAnywithJets_Vit/2_6/vAN-20210223_ROOT6-1/r_shape/default/default/pp_2016_data/593_20210223-2051/resultsMBjetvspt,
-                  /data/Derived_testResults/Jets/D0kAnywithJets_Vit/2_6/vAN-20210223_ROOT6-1/r_shape/default/default/pp_2017_data/593_20210223-2051/resultsMBjetvspt,
-                  /data/Derived_testResults/Jets/D0kAnywithJets_Vit/2_6/vAN-20210223_ROOT6-1/r_shape/default/default/pp_2018_data/593_20210223-2051/resultsMBjetvspt] #list of periods
-        resultsallp: /data/Derived_testResults/Jets/D0kAnywithJets_Vit/2_6/vAN-20210223_ROOT6-1/r_shape/default/default/pp_data/resultsMBjetvspt
-
-        resultslc: /data/Derived_testResults/Jets/Lc/2_6/vAN-20210223_ROOT6-1/r_shape/default/default/pp_data/resultsMBjetvspt
-
-      mc: &mc_out_r_shape_2_6
-        <<: *mc_out_default
-        results: [/data/Derived_testResults/Jets/D0kAnywithJets_Vit/2_6/vAN-20210223_ROOT6-1/r_shape/default/default/pp_2016_mc_prodD2H/594_20210301-1015/resultsMBjetvspt,
-                  /data/Derived_testResults/Jets/D0kAnywithJets_Vit/2_6/vAN-20210223_ROOT6-1/r_shape/default/default/pp_2017_mc_prodD2H/594_20210301-1015/resultsMBjetvspt,
-                  /data/Derived_testResults/Jets/D0kAnywithJets_Vit/2_6/vAN-20210223_ROOT6-1/r_shape/default/default/pp_2018_mc_prodD2H/594_20210301-1015/resultsMBjetvspt] #list of periods
-        resultsallp: /data/Derived_testResults/Jets/D0kAnywithJets_Vit/2_6/vAN-20210223_ROOT6-1/r_shape/default/default/pp_mc_prodD2H/resultsMBjetvspt
-        resultsinclusive: /data/Derived_testResults/Jets/D0kAnywithJets_Vit/vAN-20210223_ROOT6-1/r_shape_fullpt/default/default/pp_mc_prodD2H/resultsMBjetvspt
-      data_proc: # alternative processor output used as the analyzer input
-        <<: *data_out_r_shape_2_6
-      mc_proc: # alternative processor output used as the analyzer input
-        <<: *mc_out_r_shape_2_6
-      variations_db: ./data/data_prod_20210223/database_variations_D0pp_jet_r_shape_2_6.yml
-
-    jet_r_shape_6_12:
-      <<: *jet_default
-      lc_d0_ratio: true
-      xsec: false
-      use_inclusive_systematics: true
-
-      pythia8_prompt_variations: ["default","colour2soft"]
-      pythia8_prompt_variations_legend:  ["PYTHIA 8 (Monash)","PYTHIA 8 SoftQCD, mode 2"]
-
-      var_binningshape: delta_r_jet
-      var_binningshape_gen: delta_r_gen_jet
-      var_shape_latex: "#it{r}"
-      sel_binminshape_reco: [0., 0.05, 0.1]
-      sel_binmaxshape_reco:     [0.05, 0.1, 0.2]
-      sel_binminshape_gen:  [0., 0.05, 0.1]
-      sel_binmaxshape_gen:      [0.05, 0.1, 0.2]
-
-      sel_an_binmin:    [6,7,8,10] # hadron pt bins (sel_an_binmin bins)
-      sel_an_binmax:      [7,8,10,12] # hadron pt bins (sel_an_binmin bins)
-      binning_matching:   [3,3,4, 4] # mapping to skimming pt bins (sel_an_binmin bins)
-      sel_binmin2_reco: [5.0, 7.0, 15.0] # rec jet pt bins (sel_binmin2_reco bins)
-      sel_binmax2_reco:      [7.0, 15.0, 30.0] # rec jet pt bins (sel_binmin2_reco bins)
-      sel_binmin2_gen:  [5.0, 7.0, 15.0] # gen jet pt bins (sel_binmin2_gen bins)
-      sel_binmax2_gen:       [7.0, 15.0, 30.0] # gen jet pt bins (sel_binmin2_gen bins)
-      cuts:
-      - Null
-      - Null
-      - Null
-      - Null
-
-      data: &data_out_r_shape_6_12
-        <<: *data_out_default
-        results: [/data/Derived_testResults/Jets/D0kAnywithJets_Vit/6_12/vAN-20210223_ROOT6-1/r_shape/default/default/pp_2016_data/593_20210223-2051/resultsMBjetvspt,
-                  /data/Derived_testResults/Jets/D0kAnywithJets_Vit/6_12/vAN-20210223_ROOT6-1/r_shape/default/default/pp_2017_data/593_20210223-2051/resultsMBjetvspt,
-                  /data/Derived_testResults/Jets/D0kAnywithJets_Vit/6_12/vAN-20210223_ROOT6-1/r_shape/default/default/pp_2018_data/593_20210223-2051/resultsMBjetvspt] #list of periods
-        resultsallp: /data/Derived_testResults/Jets/D0kAnywithJets_Vit/6_12/vAN-20210223_ROOT6-1/r_shape/default/default/pp_data/resultsMBjetvspt
-
-        resultslc: /data/Derived_testResults/Jets/Lc/6_12/vAN-20210223_ROOT6-1/r_shape/default/default/pp_data/resultsMBjetvspt
-
-      mc: &mc_out_r_shape_6_12
-        <<: *mc_out_default
-        results: [/data/Derived_testResults/Jets/D0kAnywithJets_Vit/6_12/vAN-20210223_ROOT6-1/r_shape/default/default/pp_2016_mc_prodD2H/594_20210301-1015/resultsMBjetvspt,
-                  /data/Derived_testResults/Jets/D0kAnywithJets_Vit/6_12/vAN-20210223_ROOT6-1/r_shape/default/default/pp_2017_mc_prodD2H/594_20210301-1015/resultsMBjetvspt,
-                  /data/Derived_testResults/Jets/D0kAnywithJets_Vit/6_12/vAN-20210223_ROOT6-1/r_shape/default/default/pp_2018_mc_prodD2H/594_20210301-1015/resultsMBjetvspt] #list of periods
-        resultsallp: /data/Derived_testResults/Jets/D0kAnywithJets_Vit/6_12/vAN-20210223_ROOT6-1/r_shape/default/default/pp_mc_prodD2H/resultsMBjetvspt
-        resultsinclusive: /data/Derived_testResults/Jets/D0kAnywithJets_Vit/vAN-20210223_ROOT6-1/r_shape_fullpt/default/default/pp_mc_prodD2H/resultsMBjetvspt
-      data_proc: # alternative processor output used as the analyzer input
-        <<: *data_out_r_shape_6_12
-      mc_proc: # alternative processor output used as the analyzer input
-        <<: *mc_out_r_shape_6_12
-      variations_db: ./data/data_prod_20210223/database_variations_D0pp_jet_r_shape_6_12.yml
-
-
-  systematics:
+  systematics:  # used in machine_learning_hep/analysis/systematics.py
     probvariation:
       useperiod: [0,0,1] #period from where to define prob cuts
       ncutvar: 10 #number of looser and tighter variations

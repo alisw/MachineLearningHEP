@@ -1,16 +1,15 @@
-#############################################################################
-##  © Copyright CERN 2018. All rights not expressly granted are reserved.  ##
-##                 Author: Gian.Michele.Innocenti@cern.ch                  ##
-## This program is free software: you can redistribute it and/or modify it ##
-##  under the terms of the GNU General Public License as published by the  ##
-## Free Software Foundation, either version 3 of the License, or (at your  ##
-## option) any later version. This program is distributed in the hope that ##
-##  it will be useful, but WITHOUT ANY WARRANTY; without even the implied  ##
-##     warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.    ##
-##           See the GNU General Public License for more details.          ##
-##    You should have received a copy of the GNU General Public License    ##
-##   along with this program. if not, see <https://www.gnu.org/licenses/>. ##
-#############################################################################
+---
+#  © Copyright CERN 2018. All rights not expressly granted are reserved.  #
+#                 Author: Gian.Michele.Innocenti@cern.ch                  #
+# This program is free software: you can redistribute it and/or modify it #
+#  under the terms of the GNU General Public License as published by the  #
+# Free Software Foundation, either version 3 of the License, or (at your  #
+# option) any later version. This program is distributed in the hope that #
+#  it will be useful, but WITHOUT ANY WARRANTY; without even the implied  #
+#     warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.    #
+#           See the GNU General Public License for more details.          #
+#    You should have received a copy of the GNU General Public License    #
+#   along with this program. if not, see <https://www.gnu.org/licenses/>. #
 
 LcJet_pp:
   doml: true
@@ -19,8 +18,9 @@ LcJet_pp:
   sel_gen_unp: "fPt>0"
   sel_cen_unp: null
   sel_good_evt_unp: null # "fIsEventReject == 0"
-  sel_reco_skim: ["mlPromptScore > 0.96", "mlPromptScore > 0.97", "mlPromptScore > 0.9", "mlPromptScore > 0.85", "mlPromptScore > 0.8", "mlPromptScore > 0.6", null]
-  sel_gen_skim: [null,null,null,null,null,null,null]
+  # sel_reco_skim: ["mlPromptScore > 0.96", "mlPromptScore > 0.97", "mlPromptScore > 0.9", "mlPromptScore > 0.85", "mlPromptScore > 0.8", "mlPromptScore > 0.6", null]  # (sel_skim_binmin bins)
+  sel_reco_skim: [null,null,null,null,null,null,null]  # (sel_skim_binmin bins)
+  sel_gen_skim: [null,null,null,null,null,null,null]  # (sel_skim_binmin bins)
   sel_skim_binmin: [1,2,4,6,8,12,24] # skimming pt bins (sel_skim_binmin bins)
   sel_skim_binmax:   [2,4,6,8,12,24,48] # skimming pt bins (sel_skim_binmin bins)
   var_binning: fPt
@@ -230,6 +230,7 @@ LcJet_pp:
     efffilename: "effhisto.root"
     respfilename: "resphisto.root"
     crossfilename: "cross_section_tot.root"
+    resultfilename: "results.root"
 
   #region multi
   multi:
@@ -357,30 +358,44 @@ LcJet_pp:
       sel_an_binmax:      [4,5,6,7,8,10,12,16,24,36] # hadron pt bins (sel_an_binmin bins)
       # binning_matching:   [0, 1, 1, 2, 2, 3, 3, 4, 4, 6, 6, 6] # mapping to skimming pt bins (sel_an_binmin bins)
       bins_ptjet: [5, 7, 15, 30, 50]
-      bins_ptjet_eff: [2, 5, 7, 15, 30, 50, 70]
+      bins_ptjet_eff: [5, 7, 15, 30, 50]
+      cand_collidx: fIndexHf3PCollBases
 
       observables:
         zg:
-          bins_fix: [6, -.1, .5]
+          bins_gen_fix: [6, -.1, .5]
+          bins_det_fix: [6, -.1, .5]
           label: '#it{z}_{g}'
+          label_y: "(1/#it{N}_{jet ch}) d#it{N}/d#it{z}_{g}"
         nsd:
-          bins_fix: [10, -.5, 9.5]
+          bins_gen_fix: [10, -.5, 9.5]
+          bins_det_fix: [10, -.5, 9.5]
           label: '#it{n}_{SD}'
+          label_y: "(1/#it{N}_{jet ch}) d#it{N}/d#it{n}_{SD}"
         rg:
-          bins_fix: [11, -.1, 1.]
+          bins_gen_fix: [11, -.1, 1.]
+          bins_det_fix: [11, -.1, 1.]
           label: '#it{R}_{g}'
+          label_y: "(1/#it{N}_{jet ch}) d#it{N}/d#it{R}_{g}"
         zpar:
-          bins_fix: [10, 0., 1.]
+          # bins_gen_fix: [10, 0., 1.]
+          # bins_det_fix: [10, 0., 1.]
+          bins_gen_var: [0.4, 0.6, 0.7, 0.8, 0.9, 1.]
+          bins_det_var: [0.4, 0.6, 0.7, 0.8, 0.9, 1.]
           label: '#it{z}_{#parallel}'
+          label_y: "(1/#it{N}_{jet ch}) d#it{N}/d#it{z}_{#parallel}"
         dr:
-          bins_fix: [10, 0., 1.]
+          bins_gen_fix: [10, 0., 1.]
+          bins_det_fix: [10, 0., 1.]
           label: '#Delta#it{r}'
         lntheta:
-          bins_fix: [10, 0., 5.]
+          bins_gen_fix: [10, 0., 5.]
+          bins_det_fix: [10, 0., 5.]
           label: '#minusln(#it{#theta})'
           arraycols: [3]
         lnkt:
-          bins_fix: [10, -8., 2.]
+          bins_gen_fix: [10, -8., 2.]
+          bins_det_fix: [10, -8., 2.]
           label: 'ln(#it{k}_{T}/(GeV/#it{c}))'
           arraycols: [3]
         lntheta-lnkt:
@@ -398,6 +413,7 @@ LcJet_pp:
               fn: 'SUM::mctot(mcfrac[0.,1.]*sig, mcbkg)'
         - ptrange: [1., 5.]
           range: [2.13, 2.44]
+          #per_ptjet: true
           components:
             # sig:
             #   fn: 'Gaussian::sig(m, mean[2.28,2.29], sigma_g1[.005,.01])'
@@ -408,6 +424,7 @@ LcJet_pp:
               fn: 'SUM::sum(frac[0.,1.]*sig, bkg)'
         - ptrange: [5., 8.]
           range: [2.1, 2.48]
+          #per_ptjet: true
           components:
             # sig:
             #   fn: 'Gaussian::sig(m, mean[2.28,2.29], sigma_g1[.005,.03])'
@@ -417,6 +434,7 @@ LcJet_pp:
             model:
               fn: 'SUM::sum(frac[0.,1.]*sig, bkg)'
         - range: [2.05, 2.5]
+          #per_ptjet: true
           components:
             # sig:
             #   fn: 'Gaussian::sig(m, mean[2.28,2.29], sigma_g1[.005,.03])'
@@ -426,6 +444,7 @@ LcJet_pp:
             model:
               fn: 'SUM::sum(frac[0.,1.]*sig, bkg)'
 
+      #sidesub_per_ptjet: true
       sidesub:
         - regions:
             left: [-5.5, -3.]
@@ -441,11 +460,15 @@ LcJet_pp:
         range: [2.08, 2.48]
       mass_fit_lim: [1.9, 2.6] # histogram range of the invariant mass distribution [GeV/c^2]
       bin_width: 0.005 # bin width of the invariant mass histogram
+      n_rebin: 1  # number of mass bins to merge
       efficiency:
         index_match: fIndexArrayLCCMCPJETOS_hf
         store_matched: true
+        extra_cols: ['mlPromptScore']
+        correction_method: run3
 
-      unfolding_iterations: 8
+      unfolding_iterations: 8 # used, maximum iteration
+      unfolding_iterations_sel: 5 # used, selected iteration # systematics
 
       fd_root: '/data2/vkucera/powheg/trees_powheg_fd_F05_R05.root'
       fd_parquet: '/data2/jklein/powheg/Lc_powheg_fd_F05_R05.parquet'
@@ -487,13 +510,13 @@ LcJet_pp:
         mc: null
       data: &data_out_default
         runselection: [null] #FIXME
-        results: ['/home/${USER}/mlhep/data/test/lcjet/resultsMBjetvspt'] #list of periods
-        resultsallp: '/home/${USER}/mlhep/data/test/lcjet/resultsMBjetvspt_all'
+        results: ['/home/${USER}/mlhep/lcjet/jet_obs/default/default/data/results'] #list of periods
+        resultsallp: '/home/${USER}/mlhep/lcjet/jet_obs/default/default/data/results_all'
       mc: &mc_out_default
         runselection: [null,null] #FIXME
-        results: ['/home/${USER}/mlhep/data/mctest/lcjet/prod_LHC24d3a/resultsMBjetvspt',
-                  '/home/${USER}/mlhep/data/mctest/lcjet/prod_LHC24d3b/resultsMBjetvspt'] #list of periods
-        resultsallp: '/home/${USER}/mlhep/data/mctest/lcjet/resultsMBjetvspt_all'
+        results: ['/home/${USER}/mlhep/lcjet/jet_obs/prod_LHC24d3a/default/default/mc/results',
+                  '/home/${USER}/mlhep/lcjet/jet_obs/prod_LHC24d3b/default/default/mc/results'] #list of periods
+        resultsallp: '/home/${USER}/mlhep/lcjet/jet_obs/default/default/mc/results_all'
       data_proc: # alternative processor output used as the analyzer input
         <<: *data_out_default
       mc_proc: # alternative processor output used as the analyzer input
@@ -550,220 +573,13 @@ LcJet_pp:
       pythia8_prompt_variations: ["default", "charm_lo"] #["default","colour0soft"]
       pythia8_prompt_variations_legend: ["PYTHIA 8 (Monash)", "PYTHIA 8 charm LO"] # ["PYTHIA 8 (Monash)","PYTHIA 8 SoftQCD, mode 0"]
 
-      variations_db: ./data/data_prod_20210223/database_variations_D0pp_jet_zg.yml
+      variations_db: database_variations_LcJet_pp_jet_obs.yml
 
       # Additional cuts applied before mass histogram is filled
-      use_cuts: False
-      cuts: # (sel_an_binmin bins)
-      - Null
-      - Null
-      - Null
-      - Null
-      - Null
-      - Null
-      - Null
-      - Null
-      - Null
-      - Null
-      # - Null
-      # - Null
+      use_cuts: True
+      cuts: ["mlPromptScore > 0.97", "mlPromptScore > 0.9", "mlPromptScore > 0.9", "mlPromptScore > 0.85", "mlPromptScore > 0.85", "mlPromptScore > 0.8", "mlPromptScore > 0.8", "mlPromptScore > 0.6", "mlPromptScore > 0.6", null]  # (sel_an_binmin bins) systematics FIXME: Update for new model.
 
-    jet_qa:
-      <<: *jet_default
-
-    jet_rg:
-      <<: *jet_default
-      var_binningshape: rg_jet
-      var_binningshape_gen: rg_gen_jet
-      var_shape_latex: "#it{R}_{g}"
-      sel_binminshape_reco: [-0.1,0.0,0.1,0.2,0.3]
-      sel_binmaxshape_reco:      [0.0,0.1,0.2,0.3,0.4]
-      sel_binminshape_gen:  [-0.1,0.0,0.1,0.2,0.3]
-      sel_binmaxshape_gen:       [0.0,0.1,0.2,0.3,0.4]
-      data: &data_out_rg
-        <<: *data_out_default
-        results: [/data/DerivedResultsJets/D0kAnywithJets_Vit/vAN-20210223_ROOT6-1/rg/default/default/pp_2016_data/593_20210223-2051/resultsMBjetvspt,
-                  /data/DerivedResultsJets/D0kAnywithJets_Vit/vAN-20210223_ROOT6-1/rg/default/default/pp_2017_data/593_20210223-2051/resultsMBjetvspt,
-                  /data/DerivedResultsJets/D0kAnywithJets_Vit/vAN-20210223_ROOT6-1/rg/default/default/pp_2018_data/593_20210223-2051/resultsMBjetvspt] #list of periods
-        resultsallp: /data/DerivedResultsJets/D0kAnywithJets_Vit/vAN-20210223_ROOT6-1/rg/default/default/pp_data/resultsMBjetvspt
-      mc: &mc_out_rg
-        <<: *mc_out_default
-        results: [/data/DerivedResultsJets/D0kAnywithJets_Vit/vAN-20210223_ROOT6-1/rg/default/default/pp_2016_mc_prodD2H/594_20210301-1015/resultsMBjetvspt,
-                  /data/DerivedResultsJets/D0kAnywithJets_Vit/vAN-20210223_ROOT6-1/rg/default/default/pp_2017_mc_prodD2H/594_20210301-1015/resultsMBjetvspt,
-                  /data/DerivedResultsJets/D0kAnywithJets_Vit/vAN-20210223_ROOT6-1/rg/default/default/pp_2018_mc_prodD2H/594_20210301-1015/resultsMBjetvspt] #list of periods
-        resultsallp: /data/DerivedResultsJets/D0kAnywithJets_Vit/vAN-20210223_ROOT6-1/rg/default/default/pp_mc_prodD2H/resultsMBjetvspt
-      data_proc: # alternative processor output used as the analyzer input
-        <<: *data_out_rg
-      mc_proc: # alternative processor output used as the analyzer input
-        <<: *mc_out_rg
-      variations_db: ./data/data_prod_20210223/database_variations_D0pp_jet_rg.yml
-
-    jet_nsd:
-      <<: *jet_default
-      var_binningshape: nsd_jet
-      var_binningshape_gen: nsd_gen_jet
-      var_shape_latex: "#it{n}_{SD}"
-      sel_binminshape_reco: [-0.5, 0.5, 1.5, 2.5, 3.5]
-      sel_binmaxshape_reco:       [0.5, 1.5, 2.5, 3.5, 4.5]
-      sel_binminshape_gen:  [-0.5, 0.5, 1.5, 2.5, 3.5]
-      sel_binmaxshape_gen:        [0.5, 1.5, 2.5, 3.5, 4.5]
-      data: &data_out_nsd
-        <<: *data_out_default
-        results: [/data/DerivedResultsJets/D0kAnywithJets_Vit/vAN-20210223_ROOT6-1/nsd/default/default/pp_2016_data/593_20210223-2051/resultsMBjetvspt,
-                  /data/DerivedResultsJets/D0kAnywithJets_Vit/vAN-20210223_ROOT6-1/nsd/default/default/pp_2017_data/593_20210223-2051/resultsMBjetvspt,
-                  /data/DerivedResultsJets/D0kAnywithJets_Vit/vAN-20210223_ROOT6-1/nsd/default/default/pp_2018_data/593_20210223-2051/resultsMBjetvspt] #list of periods
-        resultsallp: /data/DerivedResultsJets/D0kAnywithJets_Vit/vAN-20210223_ROOT6-1/nsd/default/default/pp_data/resultsMBjetvspt
-      mc: &mc_out_nsd
-        <<: *mc_out_default
-        results: [/data/DerivedResultsJets/D0kAnywithJets_Vit/vAN-20210223_ROOT6-1/nsd/default/default/pp_2016_mc_prodD2H/594_20210301-1015/resultsMBjetvspt,
-                  /data/DerivedResultsJets/D0kAnywithJets_Vit/vAN-20210223_ROOT6-1/nsd/default/default/pp_2017_mc_prodD2H/594_20210301-1015/resultsMBjetvspt,
-                  /data/DerivedResultsJets/D0kAnywithJets_Vit/vAN-20210223_ROOT6-1/nsd/default/default/pp_2018_mc_prodD2H/594_20210301-1015/resultsMBjetvspt] #list of periods
-        resultsallp: /data/DerivedResultsJets/D0kAnywithJets_Vit/vAN-20210223_ROOT6-1/nsd/default/default/pp_mc_prodD2H/resultsMBjetvspt
-      data_proc: # alternative processor output used as the analyzer input
-        <<: *data_out_nsd
-      mc_proc: # alternative processor output used as the analyzer input
-        <<: *mc_out_nsd
-      variations_db: ./data/data_prod_20210223/database_variations_D0pp_jet_nsd.yml
-
-    jet_FF:
-      <<: *jet_default
-
-      pythia8_prompt_variations: ["default","colour2soft"]
-      pythia8_prompt_variations_legend:  ["PYTHIA 8 (Monash)","PYTHIA 8 SoftQCD, mode 2"]
-
-      sel_binmin2_reco: [5.0,7.0,10.0,15.0] # rec jet pt bins (sel_binmin2_reco bins)
-      sel_binmax2_reco:     [7.0,10.0,15.0,50.0] # rec jet pt bins (sel_binmin2_reco bins)
-      sel_binmin2_gen:  [5.0,7.0,10.0,15.0] # gen jet pt bins (sel_binmin2_gen bins)
-      sel_binmax2_gen:      [7.0,10.0,15.0,50.0] # gen jet pt bins (sel_binmin2_gen bins)
-      var_binningshape: z
-      var_binningshape_gen: z_gen
-      var_shape_latex: "#it{z}_{#parallel}^{ch}"
-      sel_binminshape_reco: [0.2001,0.4001,0.5001,0.6001,0.7001,0.8001,0.9001]
-      sel_binmaxshape_reco:        [0.4001,0.5001,0.6001,0.7001,0.8001,0.9001,1.0001]
-      sel_binminshape_gen:  [0.2001,0.4001,0.5001,0.6001,0.7001,0.8001,0.9001]
-      sel_binmaxshape_gen:         [0.4001,0.5001,0.6001,0.7001,0.8001,0.9001,1.0001]
-      data: &data_out_ff
-        <<: *data_out_default
-        results: [/data/DerivedResultsJets/D0kAnywithJets_Vit/vAN-20210223_ROOT6-1/ff/default/default/pp_2016_data/593_20210223-2051/resultsMBjetvspt,
-                  /data/DerivedResultsJets/D0kAnywithJets_Vit/vAN-20210223_ROOT6-1/ff/default/default/pp_2017_data/593_20210223-2051/resultsMBjetvspt,
-                  /data/DerivedResultsJets/D0kAnywithJets_Vit/vAN-20210223_ROOT6-1/ff/default/default/pp_2018_data/593_20210223-2051/resultsMBjetvspt] #list of periods
-        resultsallp: /data/DerivedResultsJets/D0kAnywithJets_Vit/vAN-20210223_ROOT6-1/ff/default/default/pp_data/resultsMBjetvspt
-      mc: &mc_out_ff
-        <<: *mc_out_default
-        results: [/data/DerivedResultsJets/D0kAnywithJets_Vit/vAN-20210223_ROOT6-1/ff/default/default/pp_2016_mc_prodD2H/594_20210301-1015/resultsMBjetvspt,
-                  /data/DerivedResultsJets/D0kAnywithJets_Vit/vAN-20210223_ROOT6-1/ff/default/default/pp_2017_mc_prodD2H/594_20210301-1015/resultsMBjetvspt,
-                  /data/DerivedResultsJets/D0kAnywithJets_Vit/vAN-20210223_ROOT6-1/ff/default/default/pp_2018_mc_prodD2H/594_20210301-1015/resultsMBjetvspt] #list of periods
-        resultsallp: /data/DerivedResultsJets/D0kAnywithJets_Vit/vAN-20210223_ROOT6-1/ff/default/default/pp_mc_prodD2H/resultsMBjetvspt
-      data_proc: # alternative processor output used as the analyzer input
-        <<: *data_out_ff
-      mc_proc: # alternative processor output used as the analyzer input
-        <<: *mc_out_ff
-      variations_db: ./data/data_prod_20210223/database_variations_D0pp_jet_FF.yml
-
-    jet_r_shape_2_6:
-      <<: *jet_default
-      lc_d0_ratio: true #make ratio of D0 and corresponding Lc analysis
-      xsec: false
-      use_inclusive_systematics: true
-
-      pythia8_prompt_variations: ["default","colour2soft"]
-      pythia8_prompt_variations_legend:  ["PYTHIA 8 (Monash)","PYTHIA 8 SoftQCD, mode 2"]
-
-      var_binningshape: delta_r_jet
-      var_binningshape_gen: delta_r_gen_jet
-      var_shape_latex: "#it{r}"
-      sel_binminshape_reco: [0., 0.05, 0.1]
-      sel_binmaxshape_reco:     [0.05, 0.1, 0.2]
-      sel_binminshape_gen:  [0., 0.05, 0.1]
-      sel_binmaxshape_gen:      [0.05, 0.1, 0.2]
-      sel_an_binmin:    [2,3,4,5] # hadron pt bins (sel_an_binmin bins)
-      sel_an_binmax:      [3,4,5,6] # hadron pt bins (sel_an_binmin bins)
-      binning_matching:   [1,1,2,2] # mapping to skimming pt bins (sel_an_binmin bins)
-      sel_binmin2_reco: [3.0, 5.0, 7.0, 15.0] # rec jet pt bins (sel_binmin2_reco bins)
-      sel_binmax2_reco:      [5.0, 7.0, 15.0, 30.0] # rec jet pt bins (sel_binmin2_reco bins)
-      sel_binmin2_gen:  [3.0, 5.0, 7.0, 15.0] # gen jet pt bins (sel_binmin2_gen bins)
-      sel_binmax2_gen:       [5.0, 7.0, 15.0, 30.0] # gen jet pt bins (sel_binmin2_gen bins)
-      cuts:
-      - Null
-      - Null
-      - Null
-      - Null
-      data: &data_out_r_shape_2_6
-        <<: *data_out_default
-        results: [/data/Derived_testResults/Jets/D0kAnywithJets_Vit/2_6/vAN-20210223_ROOT6-1/r_shape/default/default/pp_2016_data/593_20210223-2051/resultsMBjetvspt,
-                  /data/Derived_testResults/Jets/D0kAnywithJets_Vit/2_6/vAN-20210223_ROOT6-1/r_shape/default/default/pp_2017_data/593_20210223-2051/resultsMBjetvspt,
-                  /data/Derived_testResults/Jets/D0kAnywithJets_Vit/2_6/vAN-20210223_ROOT6-1/r_shape/default/default/pp_2018_data/593_20210223-2051/resultsMBjetvspt] #list of periods
-        resultsallp: /data/Derived_testResults/Jets/D0kAnywithJets_Vit/2_6/vAN-20210223_ROOT6-1/r_shape/default/default/pp_data/resultsMBjetvspt
-
-        resultslc: /data/Derived_testResults/Jets/Lc/2_6/vAN-20210223_ROOT6-1/r_shape/default/default/pp_data/resultsMBjetvspt
-
-      mc: &mc_out_r_shape_2_6
-        <<: *mc_out_default
-        results: [/data/Derived_testResults/Jets/D0kAnywithJets_Vit/2_6/vAN-20210223_ROOT6-1/r_shape/default/default/pp_2016_mc_prodD2H/594_20210301-1015/resultsMBjetvspt,
-                  /data/Derived_testResults/Jets/D0kAnywithJets_Vit/2_6/vAN-20210223_ROOT6-1/r_shape/default/default/pp_2017_mc_prodD2H/594_20210301-1015/resultsMBjetvspt,
-                  /data/Derived_testResults/Jets/D0kAnywithJets_Vit/2_6/vAN-20210223_ROOT6-1/r_shape/default/default/pp_2018_mc_prodD2H/594_20210301-1015/resultsMBjetvspt] #list of periods
-        resultsallp: /data/Derived_testResults/Jets/D0kAnywithJets_Vit/2_6/vAN-20210223_ROOT6-1/r_shape/default/default/pp_mc_prodD2H/resultsMBjetvspt
-        resultsinclusive: /data/Derived_testResults/Jets/D0kAnywithJets_Vit/vAN-20210223_ROOT6-1/r_shape_fullpt/default/default/pp_mc_prodD2H/resultsMBjetvspt
-      data_proc: # alternative processor output used as the analyzer input
-        <<: *data_out_r_shape_2_6
-      mc_proc: # alternative processor output used as the analyzer input
-        <<: *mc_out_r_shape_2_6
-      variations_db: ./data/data_prod_20210223/database_variations_D0pp_jet_r_shape_2_6.yml
-
-    jet_r_shape_6_12:
-      <<: *jet_default
-      lc_d0_ratio: true
-      xsec: false
-      use_inclusive_systematics: true
-
-      pythia8_prompt_variations: ["default","colour2soft"]
-      pythia8_prompt_variations_legend:  ["PYTHIA 8 (Monash)","PYTHIA 8 SoftQCD, mode 2"]
-
-      var_binningshape: delta_r_jet
-      var_binningshape_gen: delta_r_gen_jet
-      var_shape_latex: "#it{r}"
-      sel_binminshape_reco: [0., 0.05, 0.1]
-      sel_binmaxshape_reco:     [0.05, 0.1, 0.2]
-      sel_binminshape_gen:  [0., 0.05, 0.1]
-      sel_binmaxshape_gen:      [0.05, 0.1, 0.2]
-
-      sel_an_binmin:    [6,7,8,10] # hadron pt bins (sel_an_binmin bins)
-      sel_an_binmax:      [7,8,10,12] # hadron pt bins (sel_an_binmin bins)
-      binning_matching:   [3,3,4, 4] # mapping to skimming pt bins (sel_an_binmin bins)
-      sel_binmin2_reco: [5.0, 7.0, 15.0] # rec jet pt bins (sel_binmin2_reco bins)
-      sel_binmax2_reco:      [7.0, 15.0, 30.0] # rec jet pt bins (sel_binmin2_reco bins)
-      sel_binmin2_gen:  [5.0, 7.0, 15.0] # gen jet pt bins (sel_binmin2_gen bins)
-      sel_binmax2_gen:       [7.0, 15.0, 30.0] # gen jet pt bins (sel_binmin2_gen bins)
-      cuts:
-      - Null
-      - Null
-      - Null
-      - Null
-
-      data: &data_out_r_shape_6_12
-        <<: *data_out_default
-        results: [/data/Derived_testResults/Jets/D0kAnywithJets_Vit/6_12/vAN-20210223_ROOT6-1/r_shape/default/default/pp_2016_data/593_20210223-2051/resultsMBjetvspt,
-                  /data/Derived_testResults/Jets/D0kAnywithJets_Vit/6_12/vAN-20210223_ROOT6-1/r_shape/default/default/pp_2017_data/593_20210223-2051/resultsMBjetvspt,
-                  /data/Derived_testResults/Jets/D0kAnywithJets_Vit/6_12/vAN-20210223_ROOT6-1/r_shape/default/default/pp_2018_data/593_20210223-2051/resultsMBjetvspt] #list of periods
-        resultsallp: /data/Derived_testResults/Jets/D0kAnywithJets_Vit/6_12/vAN-20210223_ROOT6-1/r_shape/default/default/pp_data/resultsMBjetvspt
-
-        resultslc: /data/Derived_testResults/Jets/Lc/6_12/vAN-20210223_ROOT6-1/r_shape/default/default/pp_data/resultsMBjetvspt
-
-      mc: &mc_out_r_shape_6_12
-        <<: *mc_out_default
-        results: [/data/Derived_testResults/Jets/D0kAnywithJets_Vit/6_12/vAN-20210223_ROOT6-1/r_shape/default/default/pp_2016_mc_prodD2H/594_20210301-1015/resultsMBjetvspt,
-                  /data/Derived_testResults/Jets/D0kAnywithJets_Vit/6_12/vAN-20210223_ROOT6-1/r_shape/default/default/pp_2017_mc_prodD2H/594_20210301-1015/resultsMBjetvspt,
-                  /data/Derived_testResults/Jets/D0kAnywithJets_Vit/6_12/vAN-20210223_ROOT6-1/r_shape/default/default/pp_2018_mc_prodD2H/594_20210301-1015/resultsMBjetvspt] #list of periods
-        resultsallp: /data/Derived_testResults/Jets/D0kAnywithJets_Vit/6_12/vAN-20210223_ROOT6-1/r_shape/default/default/pp_mc_prodD2H/resultsMBjetvspt
-        resultsinclusive: /data/Derived_testResults/Jets/D0kAnywithJets_Vit/vAN-20210223_ROOT6-1/r_shape_fullpt/default/default/pp_mc_prodD2H/resultsMBjetvspt
-      data_proc: # alternative processor output used as the analyzer input
-        <<: *data_out_r_shape_6_12
-      mc_proc: # alternative processor output used as the analyzer input
-        <<: *mc_out_r_shape_6_12
-      variations_db: ./data/data_prod_20210223/database_variations_D0pp_jet_r_shape_6_12.yml
-
-
-  systematics:
+  systematics:  # used in machine_learning_hep/analysis/systematics.py
     probvariation:
       useperiod: [0,0,1] #period from where to define prob cuts
       ncutvar: 10 #number of looser and tighter variations

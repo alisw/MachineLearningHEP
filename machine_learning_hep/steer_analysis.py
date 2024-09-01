@@ -1,16 +1,14 @@
-#############################################################################
-##  © Copyright CERN 2024. All rights not expressly granted are reserved.  ##
-##                 Author: Gian.Michele.Innocenti@cern.ch                  ##
-## This program is free software: you can redistribute it and/or modify it ##
-##  under the terms of the GNU General Public License as published by the  ##
-## Free Software Foundation, either version 3 of the License, or (at your  ##
-## option) any later version. This program is distributed in the hope that ##
-##  it will be useful, but WITHOUT ANY WARRANTY; without even the implied  ##
-##     warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.    ##
-##           See the GNU General Public License for more details.          ##
-##    You should have received a copy of the GNU General Public License    ##
-##   along with this program. if not, see <https://www.gnu.org/licenses/>. ##
-#############################################################################
+#  © Copyright CERN 2024. All rights not expressly granted are reserved.  #
+#                 Author: Gian.Michele.Innocenti@cern.ch                  #
+# This program is free software: you can redistribute it and/or modify it #
+#  under the terms of the GNU General Public License as published by the  #
+# Free Software Foundation, either version 3 of the License, or (at your  #
+# option) any later version. This program is distributed in the hope that #
+#  it will be useful, but WITHOUT ANY WARRANTY; without even the implied  #
+#     warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.    #
+#           See the GNU General Public License for more details.          #
+#    You should have received a copy of the GNU General Public License    #
+#   along with this program. if not, see <https://www.gnu.org/licenses/>. #
 
 """
 main script for doing data processing, machine learning and analysis
@@ -192,11 +190,16 @@ def do_entire_analysis(data_config: dict, data_param: dict, data_param_overwrite
         logger.info('existing directories must be deleted')
         for d in exdirs:
             print(f'rm -rf {d}')
+        delete = False
         if args.delete:
             ok = input('Do you want to delete these directories now (y/n)? ')
-            if ok.lower() == 'y':
-                while len(exdirs) > 0:
-                    shutil.rmtree(exdirs.pop())
+            delete = ok.lower() == 'y'
+        if args.delete_force:
+            delete = True
+        if delete:
+            logger.info("Deleting output directories")
+            while len(exdirs) > 0:
+                shutil.rmtree(exdirs.pop())
         if len(exdirs) > 0:
             sys.exit()
 
@@ -245,13 +248,11 @@ def do_entire_analysis(data_config: dict, data_param: dict, data_param_overwrite
         if domergeapplydata:
             checkmakedirlist(dirpklskdec_mergeddata)
 
-    if dohistomassmc:
-        checkmakedirlist(dirresultsmc)
-        checkmakedir(dirresultsmctot)
-
-    if dohistomassdata:
-        checkmakedirlist(dirresultsdata)
-        checkmakedir(dirresultsdatatot)
+    # Always create result directories. (produces "double free or corruption (!prev)")
+    checkmakedirlist(dirresultsmc)
+    checkmakedir(dirresultsmctot)
+    checkmakedirlist(dirresultsdata)
+    checkmakedir(dirresultsdatatot)
 
     def mlhepmod(name):
         return importlib.import_module(f"..{name}", __name__)
@@ -472,6 +473,8 @@ def main(args=None):
                         help="delete per-period results at the end")
     parser.add_argument("--delete", action="store_true",
                         help="delete existing directories")
+    parser.add_argument("--delete-force", action="store_true",
+                        help="delete existing directories without asking")
     parser.add_argument("--batch", "-b", action="store_true", help="enable ROOT batch mode")
 
     args = parser.parse_args(args)
