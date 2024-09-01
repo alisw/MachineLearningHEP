@@ -57,7 +57,7 @@ LcJet_pp:
           fIsEventReject: 0
       collcnt:
         trees:
-          O2lccollcount: [fReadCounts, fReadSelectedCounts, fWrittenCounts]
+          O2collcount: [fReadCounts, fReadCountsWithTVX, fReadCountsWithTVXAndZVertexAndSel8]
 
       # collgen:
       #   level: gen
@@ -244,34 +244,30 @@ LcJet_pp:
       period: [LHC22o] #list of periods
       select_period: [1]
       prefix_dir: /data2/MLhep/real/
-      unmerged_tree_dir: [train_240310/alice/] #list of periods
-      pkl: ['${USER}/train_240310/lcjet/pkl'] #list of periods
-      pkl_skimmed: ['${USER}/train_240310/lcjet/pklsk'] #list of periods
-      pkl_skimmed_merge_for_ml: ['${USER}/train_240310/lcjet/pklskml'] #list of periods
-      pkl_skimmed_merge_for_ml_all: '${USER}/train_240310/lcjet/pp_data_mltot'
-      pkl_evtcounter_all: '${USER}/train_240310/lcjet/pp_data_evttot'
+      unmerged_tree_dir: [train_257594/alice/] #list of periods
+      pkl: ['${USER}/train_257594/lcjet/pkl'] #list of periods
+      pkl_skimmed: ['${USER}/train_257594/lcjet/pklsk'] #list of periods
+      pkl_skimmed_merge_for_ml: ['${USER}/train_257594/lcjet/pklskml'] #list of periods
+      pkl_skimmed_merge_for_ml_all: '${USER}/train_257594/lcjet/pp_data_mltot'
+      pkl_evtcounter_all: '${USER}/train_257594/lcjet/pp_data_evttot'
       mcreweights: [../Analyses] #list of periods
     mc:
       nprocessesparallel: 20
-      maxfiles: [-1, -1] #list of periods
-      chunksizeunp: [100, 100] #list of periods
-      chunksizeskim: [1000, 1000] #list of periods
-      fracmerge: [1.0, 1.0] #list of periods
-      seedmerge: [12, 12] #list of periods
-      period: [LHC24d3a, LHC24d3b] #list of periods
-      select_period: [1, 1]
+      maxfiles: [-1] #list of periods
+      chunksizeunp: [100] #list of periods
+      chunksizeskim: [1000] #list of periods
+      fracmerge: [1.0] #list of periods
+      seedmerge: [12] #list of periods
+      period: [LHC24d3b] #list of periods
+      select_period: [1]
       prefix_dir: /data2/MLhep/sim/
-      unmerged_tree_dir: [train_239679/alice,
-                          train_239694/alice]
-      pkl: ['${USER}/train_239679/lcjet/pkl',
-            '${USER}/train_239694/lcjet/pkl'] #list of periods
-      pkl_skimmed: ['${USER}/train_239679/lcjet/pklsk',
-                    '${USER}/train_239694/lcjet/pklsk'] #list of periods
-      pkl_skimmed_merge_for_ml: ['${USER}/train_239679/lcjet/pklskml',
-                                 '${USER}/train_239694/lcjet/pklskml'] #list of periods
+      unmerged_tree_dir: [train_257383/alice]
+      pkl: ['${USER}/train_257383/lcjet/pkl'] #list of periods
+      pkl_skimmed: ['${USER}/train_257383/lcjet/pklsk'] #list of periods
+      pkl_skimmed_merge_for_ml: ['${USER}/train_257383/lcjet/pklskml'] #list of periods
       pkl_skimmed_merge_for_ml_all: '${USER}/lcjet/pp_mc_prod_mltot'
       pkl_evtcounter_all: '${USER}/lcjet/pp_mc_prod_evttot'
-      mcreweights: [../Analyses, ../Analyses] #list of periods
+      mcreweights: [../Analyses] #list of periods
 
   ml:
     evtsel: fIsEventReject == 0
@@ -327,10 +323,8 @@ LcJet_pp:
       pkl_skimmed_decmerged: [LHC22pp/MLapplication/prod_LHC22o/skpkldecdatamerged] #list of periods
     mc:
       prefix_dir_app: '/data2/${USER}/'
-      pkl_skimmed_dec: [LHC22pp_mc/MLapplication/prod_LHC24d3a/skpkldecmc,
-                        LHC22pp_mc/MLapplication/prod_LHC24d3b/skpkldecmc] #list of periods
-      pkl_skimmed_decmerged: [LHC22pp_mc/MLapplication/prod_LHC24d3a/skpkldecmcmerged,
-                              LHC22pp_mc/MLapplication/prod_LHC24d3b/skpkldecmcmerged] #list of periods
+      pkl_skimmed_dec: [LHC22pp_mc/MLapplication/prod_LHC24d3b/skpkldecmc] #list of periods
+      pkl_skimmed_decmerged: [LHC22pp_mc/MLapplication/prod_LHC24d3b/skpkldecmcmerged] #list of periods
     modelname: xgboost
     modelsperptbin: [xgboost_classifierLcpKpi_dfselection_fPt_1.0_2.0.sav,
                      xgboost_classifierLcpKpi_dfselection_fPt_2.0_4.0.sav,
@@ -360,6 +354,7 @@ LcJet_pp:
       bins_ptjet: [5, 7, 15, 30, 50]
       bins_ptjet_eff: [2, 5, 7, 15, 30, 50, 70]
       cand_collidx: fIndexHf3PCollBases
+      cnt_events_read: fReadCountsWithTVXAndZVertexAndSel8
 
       observables:
         zg:
@@ -513,8 +508,7 @@ LcJet_pp:
         resultsallp: '/home/${USER}/mlhep/lcjet/jet_obs/default/default/data/results_all'
       mc: &mc_out_default
         runselection: [null,null] #FIXME
-        results: ['/home/${USER}/mlhep/lcjet/jet_obs/prod_LHC24d3a/default/default/mc/results',
-                  '/home/${USER}/mlhep/lcjet/jet_obs/prod_LHC24d3b/default/default/mc/results'] #list of periods
+        results: ['/home/${USER}/mlhep/lcjet/jet_obs/prod_LHC24d3b/default/default/mc/results'] #list of periods
         resultsallp: '/home/${USER}/mlhep/lcjet/jet_obs/default/default/mc/results_all'
       data_proc: # alternative processor output used as the analyzer input
         <<: *data_out_default
