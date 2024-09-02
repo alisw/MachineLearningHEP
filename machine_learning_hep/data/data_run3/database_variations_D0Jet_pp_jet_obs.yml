@@ -482,12 +482,12 @@ categories:
                                       model:
                                         fn: 'SUM::sum(frac[0.,1.]*sigrefl, bkg)'
             rebin:
-                activate: [yes, yes, yes]
-                label: ["rebin 1", "rebin 2", "rebin 7"]
+                activate: [yes, yes, yes, yes]
+                label: ["rebin 1", "rebin 2", "rebin 4", "rebin 5"]
                 diffs:
                     analysis:
                         jet_obs:
-                            n_rebin: [1, 2, 7]
+                            n_rebin: [1, 2, 4, 5]
             reflections:
                 activate: [no]
                 label: ["w/o refl."]
