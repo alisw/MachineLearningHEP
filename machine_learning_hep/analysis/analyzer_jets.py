@@ -120,6 +120,12 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes,too
         self.file_out_histo.WriteObject(hist, rfilename)
 
 
+    def _clip_neg(self, hist):
+        for ibin in range(hist.GetNcells()):
+            if hist.GetBinContent(ibin) < 0:
+                hist.SetBinContent(ibin, 0.)
+                hist.SetBinError(ibin, 0.)
+
     #region fundamentals
     def init(self):
         for mcordata in ['mc', 'data']:
@@ -601,11 +607,7 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes,too
                             f'sideband/h_ptjet{label}_sideband_pthf-{ptrange[0]}-{ptrange[1]}_{mcordata}.png')
             fh_subtracted.Add(fh_sideband, -1.)
 
-        # clip negative values to 0
-        for ibin in range(fh_subtracted.GetNcells()):
-            if fh_subtracted.GetBinContent(ibin) < 0:
-                fh_subtracted.SetBinContent(ibin, 0.)
-                fh_subtracted.SetBinError(ibin, 0.)
+        self._clip_neg(fh_subtracted)
 
         # plot subtraction before applying multiplicative corrections
         if get_dim(hist) == 2:
@@ -753,6 +755,7 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes,too
                         # Feed-down subtraction
                         if mcordata == 'data' or not self.cfg('closure.exclude_feeddown_det'):
                             self._subtract_feeddown(fh_sum_fdsub, var, mcordata)
+                        self._clip_neg(fh_sum_fdsub)
                         self._save_hist(fh_sum_fdsub, f'h_ptjet{label}_{method}_{mcordata}.png')
 
                         if get_dim(fh_sum) > 1:
