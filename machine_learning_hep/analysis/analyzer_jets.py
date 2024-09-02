@@ -195,7 +195,7 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes,too
 
                 # extract efficiencies in bins of jet pt
                 ensure_sumw2(h_det[cat])
-                self.h_eff_ptjet_pthf[cat] = h_det[cat].Clone()
+                self.h_eff_ptjet_pthf[cat] = h_detmatch_gencuts[cat].Clone()
                 self.h_eff_ptjet_pthf[cat].Divide(h_gen[cat])
                 self._save_hist(self.h_eff_ptjet_pthf[cat], f'eff/h_ptjet-pthf_eff_{cat}.png')
                 c = TCanvas()
