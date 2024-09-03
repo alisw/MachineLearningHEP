@@ -85,32 +85,32 @@ class AnalyzerJetSystematics:
         with open(path_database_analysis, "r", encoding="utf-8") as file_in:
             db_analysis = yaml.safe_load(file_in)
         case = list(db_analysis.keys())[0]
-        datap = db_analysis[case]
-        self.datap = datap
+        self.datap = db_analysis[case]
+        self.db_typean = self.datap["analysis"][self.typean]
 
         # plotting
         # LaTeX string
-        self.latex_hadron = datap["analysis"][self.typean]["latexnamehadron"]
+        self.latex_hadron = self.db_typean["latexnamehadron"]
         self.latex_ptjet = "#it{p}_{T}^{jet ch}"
-        self.latex_obs = datap["analysis"][self.typean]["observables"][self.var]["label"]
-        self.latex_y = datap["analysis"][self.typean]["observables"][self.var]["label_y"]
+        self.latex_obs = self.db_typean["observables"][self.var]["label"]
+        self.latex_y = self.db_typean["observables"][self.var]["label_y"]
 
         # binning of hadron pt
-        self.edges_pthf_min = datap["analysis"][self.typean]["sel_an_binmin"]
-        self.edges_pthf_max = datap["analysis"][self.typean]["sel_an_binmax"]
+        self.edges_pthf_min = self.db_typean["sel_an_binmin"]
+        self.edges_pthf_max = self.db_typean["sel_an_binmax"]
         # self.n_bins_pthf = len(self.edges_pthf_min)
 
         # binning of jet pt
         self.ptjet_name = "ptjet"  # name
         # reconstruction level
-        self.edges_ptjet_rec = datap["analysis"][self.typean]["bins_ptjet"]
+        self.edges_ptjet_rec = self.db_typean["bins_ptjet"]
         self.n_bins_ptjet_rec = len(self.edges_ptjet_rec) - 1
         self.ptjet_rec_min = self.edges_ptjet_rec[0]
         self.ptjet_rec_max = self.edges_ptjet_rec[-1]
         self.edges_ptjet_rec_min = self.edges_ptjet_rec[:-1]
         self.edges_ptjet_rec_max = self.edges_ptjet_rec[1:]
         # generator level
-        self.edges_ptjet_gen = datap["analysis"][self.typean]["bins_ptjet"]
+        self.edges_ptjet_gen = self.db_typean["bins_ptjet"]
         self.n_bins_ptjet_gen = len(self.edges_ptjet_gen) - 1
         self.ptjet_gen_min = self.edges_ptjet_gen[0]
         self.ptjet_gen_max = self.edges_ptjet_gen[-1]
@@ -135,12 +135,6 @@ class AnalyzerJetSystematics:
         self.obs_rec_min = float(binning_obs_rec[0])
         self.obs_rec_max = float(binning_obs_rec[-1])
         self.edges_obs_rec = binning_obs_rec
-        # binning_obs_rec = datap["analysis"][self.typean]["observables"][self.var]["bins_det_fix"]
-        # self.n_bins_obs_rec = binning_obs_rec[0]
-        # self.obs_rec_min = float(binning_obs_rec[1])
-        # self.obs_rec_max = float(binning_obs_rec[2])
-        # step = (self.obs_rec_max - self.obs_rec_min) / self.n_bins_obs_rec
-        # self.edges_obs_rec = [round(self.obs_rec_min + i * step, 2) for i in range(self.n_bins_obs_rec + 1)]
 
         # generator level
         if binning := self.cfg(f'observables.{var}.bins_gen_var'):
@@ -159,23 +153,17 @@ class AnalyzerJetSystematics:
         self.obs_gen_min = float(binning_obs_gen[0])
         self.obs_gen_max = float(binning_obs_gen[-1])
         self.edges_obs_gen = binning_obs_gen
-        # binning_obs_gen = datap["analysis"][self.typean]["observables"][self.var]["bins_gen_fix"]
-        # self.n_bins_obs_gen = binning_obs_gen[0]
-        # self.obs_gen_min = float(binning_obs_gen[1])
-        # self.obs_gen_max = float(binning_obs_gen[2])
-        # step = (self.obs_gen_max - self.obs_gen_min) / self.n_bins_obs_gen
-        # self.edges_obs_gen = [round(self.obs_gen_min + i * step, 2) for i in range(self.n_bins_obs_gen + 1)]
 
         print("Rec obs edges:", self.edges_obs_rec, "Gen obs edges:", self.edges_obs_gen)
         print("Rec ptjet edges:", self.edges_ptjet_rec, "Gen ptjet edges:", self.edges_ptjet_gen)
 
         # unfolding
-        self.niter_unfolding = datap["analysis"][self.typean]["unfolding_iterations"]
-        self.choice_iter_unfolding = datap["analysis"][self.typean]["unfolding_iterations_sel"]
+        self.niter_unfolding = self.db_typean["unfolding_iterations"]
+        self.choice_iter_unfolding = self.db_typean["unfolding_iterations_sel"]
 
         # import parameters of variations from the variation database
 
-        path_database_variations = datap["analysis"][self.typean]["variations_db"]
+        path_database_variations = self.db_typean["variations_db"]
         if not path_database_variations:
             self.logger.critical(make_message_notfound("the variation database"))
         if "/" not in path_database_variations:
@@ -227,21 +215,15 @@ class AnalyzerJetSystematics:
             self.systematic_rms_both_sides[c] = db_variations[catname]["rms_both_sides"]
         self.systematic_catgroups_list = list(dict.fromkeys(self.systematic_catgroups))
         self.n_sys_gr = len(self.systematic_catgroups_list)
-        # self.inclusive_unc = datap["analysis"][self.typean]["inclusive_unc"]
-        # self.use_inclusive_systematics = datap["analysis"][self.typean]["use_inclusive_systematics"]
-        # print("Use inclusive systematics:", self.use_inclusive_systematics)
-        # self.do_check_signif = datap["analysis"][self.typean]["signif_check"]
-        # self.signif_threshold = datap["analysis"][self.typean]["signif_thresh"]
-        # print("Check if significance >", self.signif_threshold, "for systematic fits:", self.do_check_signif)
 
         # output directories with results
-        self.dir_result_mc = datap["analysis"][typean]["mc"]["resultsallp"]
-        self.dir_result_data = datap["analysis"][typean]["data"]["resultsallp"]
+        self.dir_result_mc = self.db_typean["mc"]["resultsallp"]
+        self.dir_result_data = self.db_typean["data"]["resultsallp"]
 
         # input files
-        file_result_name = datap["files_names"]["resultfilename"]
+        file_result_name = self.datap["files_names"]["resultfilename"]
         self.file_unfold = os.path.join(self.dir_result_data, file_result_name)
-        # file_eff_name = datap["files_names"]["efffilename"]
+        # file_eff_name = self.datap["files_names"]["efffilename"]
         # self.file_efficiency = os.path.join(self.dir_result_mc, file_eff_name)
         self.file_efficiency = self.file_unfold
 
@@ -276,9 +258,9 @@ class AnalyzerJetSystematics:
         for fmt in self.fig_formats:
             (self.dir_out_figs / fmt).mkdir(parents=True, exist_ok=True)
 
-    def cfg(self, param, default = None):
+    def cfg(self, param, default=None):
         return reduce(lambda d, key: d.get(key, default) if isinstance(d, dict) else default,
-                      param.split("."), self.datap['analysis'][self.typean])
+                      param.split("."), self.db_typean)
 
     def save_canvas(self, can, name: str):
         """Save canvas"""
@@ -351,8 +333,8 @@ class AnalyzerJetSystematics:
             self.crop_histogram(input_histograms_default[ibin2])
             print(f"Default histogram ({jetptrange[0]} to {jetptrange[1]})")
             print_histogram(input_histograms_default[ibin2])
-            # name_eff = f"h_ptjet-pthf_effnew_pr_ptjet_{ibin2 + 1}"  # efficiency jetpt binning has offset
-            name_eff = f"h_ptjet-pthf_effnew_pr_ptjet_{ibin2}"  # if bins_ptjet_eff == bins_ptjet
+            name_eff = f"h_ptjet-pthf_effnew_pr_ptjet_{ibin2 + 1}"  # efficiency jetpt binning has offset
+            # name_eff = f"h_ptjet-pthf_effnew_pr_ptjet_{ibin2}"  # if bins_ptjet_eff == bins_ptjet
             eff_default.append(eff_file_default.Get(name_eff))
             if not eff_default[ibin2]:
                 self.logger.critical(make_message_notfound(name_eff, path_eff))
@@ -387,8 +369,8 @@ class AnalyzerJetSystematics:
         input_histograms_sys = []
         input_histograms_sys_eff = []
         for ibin2 in range(self.n_bins_ptjet_gen):
-            # name_eff = f"h_ptjet-pthf_effnew_pr_ptjet_{ibin2 + 1}"  # efficiency jetpt binning has offset
-            name_eff = f"h_ptjet-pthf_effnew_pr_ptjet_{ibin2}"  # if bins_ptjet_eff == bins_ptjet
+            name_eff = f"h_ptjet-pthf_effnew_pr_ptjet_{ibin2 + 1}"  # efficiency jetpt binning has offset
+            # name_eff = f"h_ptjet-pthf_effnew_pr_ptjet_{ibin2}"  # if bins_ptjet_eff == bins_ptjet
             input_histograms_syscat = []
             input_histograms_syscat_eff = []
             for sys_cat in range(self.n_sys_cat):
@@ -405,11 +387,7 @@ class AnalyzerJetSystematics:
                             make_message_notfound(name_hist_unfold_2d, path_input_files_sys[sys_cat][sys_var])
                         )
                     axis_jetpt = get_axis(hist_unfold, 0)
-                    # signif_check = True
                     string_catvar = self.systematic_catnames[sys_cat] + "/" + self.systematic_varnames[sys_cat][sys_var]
-                    # if self.do_check_signif:  # TODO: signifcance check
-                    #     for ipt in range(self.p_nptfinbins):
-                    #         pass
                     jetptrange = (axis_jetpt.GetBinLowEdge(ibin2 + 1), axis_jetpt.GetBinUpEdge(ibin2 + 1))
                     name_his = f"h_{self.var}_{self.method}_unfolded_data_jetpt-{jetptrange[0]}-{jetptrange[1]}_sel_selfnorm"
                     sys_var_histo = input_files_sys[sys_cat][sys_var].Get(name_his)
@@ -421,13 +399,6 @@ class AnalyzerJetSystematics:
                     if not sys_var_histo_eff:
                         self.logger.critical(make_message_notfound(name_eff, path_eff_file))
                     self.crop_histogram(sys_var_histo)
-
-                    # if not signif_check:
-                    # print("BAD FIT in Variation: %s, %s" % (self.systematic_catnames[sys_cat],
-                    #                                         self.systematic_varnames[sys_cat][sys_var]))
-                    #     for idr in range(self.n_bins_obs_gen):
-                    #         sys_var_histo.SetBinContent(idr+1, 0)
-                    #         sys_var_histo_eff.SetBinContent(idr+1, 0)
                     input_histograms_syscatvar.append(sys_var_histo)
                     input_histograms_eff.append(sys_var_histo_eff)
                     print_histogram(sys_var_histo_eff)
