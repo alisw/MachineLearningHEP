@@ -333,8 +333,7 @@ class AnalyzerJetSystematics:
             self.crop_histogram(input_histograms_default[ibin2])
             print(f"Default histogram ({jetptrange[0]} to {jetptrange[1]})")
             print_histogram(input_histograms_default[ibin2])
-            name_eff = f"h_ptjet-pthf_effnew_pr_ptjet_{ibin2 + 1}"  # efficiency jetpt binning has offset
-            # name_eff = f"h_ptjet-pthf_effnew_pr_ptjet_{ibin2}"  # if bins_ptjet_eff == bins_ptjet
+            name_eff = f"h_ptjet-pthf_effnew_pr_ptjet-{jetptrange[0]}-{jetptrange[1]}"
             eff_default.append(eff_file_default.Get(name_eff))
             if not eff_default[ibin2]:
                 self.logger.critical(make_message_notfound(name_eff, path_eff))
@@ -369,8 +368,6 @@ class AnalyzerJetSystematics:
         input_histograms_sys = []
         input_histograms_sys_eff = []
         for ibin2 in range(self.n_bins_ptjet_gen):
-            name_eff = f"h_ptjet-pthf_effnew_pr_ptjet_{ibin2 + 1}"  # efficiency jetpt binning has offset
-            # name_eff = f"h_ptjet-pthf_effnew_pr_ptjet_{ibin2}"  # if bins_ptjet_eff == bins_ptjet
             input_histograms_syscat = []
             input_histograms_syscat_eff = []
             for sys_cat in range(self.n_sys_cat):
@@ -394,6 +391,7 @@ class AnalyzerJetSystematics:
                     path_file = path_def.replace(string_default, string_catvar)
                     if not sys_var_histo:
                         self.logger.critical(make_message_notfound(name_his, path_file))
+                    name_eff = f"h_ptjet-pthf_effnew_pr_ptjet-{jetptrange[0]}-{jetptrange[1]}"
                     sys_var_histo_eff = input_files_eff[sys_cat][sys_var].Get(name_eff)
                     path_eff_file = path_eff.replace(string_default, string_catvar)
                     if not sys_var_histo_eff:
