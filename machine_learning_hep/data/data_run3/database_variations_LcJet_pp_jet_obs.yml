@@ -134,12 +134,12 @@ categories:
                                       model:
                                         fn: 'SUM::sum(frac[0.,1.]*sig, bkg)'
             rebin:
-                activate: [yes, no, yes]
-                label: ["rebin 2", "rebin 3", "rebin 4"]
+                activate: [yes, yes, yes, yes]
+                label: ["rebin 1", "rebin 2", "rebin 4", "rebin 5"]
                 diffs:
                     analysis:
                         jet_obs:
-                            n_rebin: [2, 3, 4]
+                            n_rebin: [1, 2, 4, 5]
             # reflections:
             #     activate: [no]
             #     label: ["w/o refl."]
@@ -160,16 +160,16 @@ categories:
             sigma:
                 activate: [yes, yes, yes, yes, yes, yes, yes, yes, yes, yes]
                 label:
-                    - "S 1.5 #it{#sigma}"
-                    - "S 1.6 #it{#sigma}"
-                    - "S 1.7 #it{#sigma}"
-                    - "S 1.8 #it{#sigma}"
-                    - "S 1.9 #it{#sigma}"
-                    - "S 2.1 #it{#sigma}"
-                    - "S 2.2 #it{#sigma}"
-                    - "S 2.3 #it{#sigma}"
-                    - "S 2.4 #it{#sigma}"
-                    - "S 2.5 #it{#sigma}"
+                    - "S 1.5#it{#sigma}"
+                    - "S 1.6#it{#sigma}"
+                    - "S 1.7#it{#sigma}"
+                    - "S 1.8#it{#sigma}"
+                    - "S 1.9#it{#sigma}"
+                    - "S 2.1#it{#sigma}"
+                    - "S 2.2#it{#sigma}"
+                    - "S 2.3#it{#sigma}"
+                    - "S 2.4#it{#sigma}"
+                    - "S 2.5#it{#sigma}"
                 diffs:
                     analysis:
                         jet_obs:
@@ -378,14 +378,15 @@ categories:
         variations:
             # pt_cand:  # TODO
             pt_jet:
-                activate: [yes]
+                activate: [yes, yes]
                 label:
                     - "#it{p}_{T}^{jet} 5#rightarrow4"
+                    - "#it{p}_{T}^{jet} 50#rightarrow55"
                 diffs:
                     analysis:
                         jet_obs:
-                            bins_ptjet: [[4, 7, 15, 30, 50]]
-                            bins_ptjet_eff: [[4, 7, 15, 30, 50]]
+                            bins_ptjet: [[4, 7, 15, 30, 50], [5, 7, 15, 30, 55]]
+                            bins_ptjet_eff: [[2, 4, 7, 15, 30, 50, 70], [2, 5, 7, 15, 30, 55, 70]]
             observable:
                 activate: [no]
                 label:

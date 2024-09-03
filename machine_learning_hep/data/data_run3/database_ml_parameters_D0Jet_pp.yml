@@ -373,6 +373,7 @@ D0jet_pp:
 
       cand_collidx: fIndexHfD0CollBases
       # sigmamb: 57.8e-3 #NB: multiplied by 1e12 before giving to HFPtSpectrum!
+      cnt_events_read: fReadCountsWithTVXAndZVertexAndSel8
 
       observables:
         zg:
@@ -663,9 +664,9 @@ D0jet_pp:
       #   # par_fix: {1: 1.86}
       #   par_constrain: {1: [1.85, 1.87], 2: [.01, .08]}
       #   range: [1.695, 2.06]
-      mass_fit_lim: [1.5, 2.2] # histogram range of the invariant mass distribution [GeV/c^2]; used in processer for binarray_mass  (not used for fit range!)
+      mass_fit_lim: [1.5, 2.22] # histogram range of the invariant mass distribution [GeV/c^2]; used in processer for binarray_mass  (not used for fit range!)
       bin_width: 0.001 # bin width of the invariant mass histogram # systematics?
-      n_rebin: 1 # number of mass bins to merge
+      n_rebin: 3 # number of mass bins to merge
       efficiency:
         extra_cols: ['isd0', 'isd0bar', 'seld0', 'seld0bar', 'mlBkgScore']
         filter_det: '(isd0 & seld0) or (isd0bar & seld0bar)'
