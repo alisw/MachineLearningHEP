@@ -79,6 +79,7 @@ class AnalyzerJetSystematics:
         self.var = var
         self.method = "sidesub"
         self.logger.setLevel(logging.INFO)
+        self.verbose = False
 
         # self.logger.info("Processing observable %s", self.var)
 
@@ -332,13 +333,13 @@ class AnalyzerJetSystematics:
                 self.logger.critical(make_message_notfound(name_his, path_def))
             self.crop_histogram(input_histograms_default[ibin2])
             print(f"Default histogram ({jetptrange[0]} to {jetptrange[1]})")
-            print_histogram(input_histograms_default[ibin2])
+            print_histogram(input_histograms_default[ibin2], self.verbose)
             name_eff = f"h_ptjet-pthf_effnew_pr_ptjet-{jetptrange[0]}-{jetptrange[1]}"
             eff_default.append(eff_file_default.Get(name_eff))
             if not eff_default[ibin2]:
                 self.logger.critical(make_message_notfound(name_eff, path_eff))
             print(f"Default efficiency ({jetptrange[0]} to {jetptrange[1]})")
-            print_histogram(eff_default[ibin2])
+            print_histogram(eff_default[ibin2], self.verbose)
 
         # get the files containing result variations
 
@@ -399,8 +400,8 @@ class AnalyzerJetSystematics:
                     self.crop_histogram(sys_var_histo)
                     input_histograms_syscatvar.append(sys_var_histo)
                     input_histograms_eff.append(sys_var_histo_eff)
-                    print_histogram(sys_var_histo_eff)
-                    print_histogram(sys_var_histo)
+                    print_histogram(sys_var_histo_eff, self.verbose)
+                    print_histogram(sys_var_histo, self.verbose)
                     if debug:
                         print(
                             "Variation: %s, %s: got histogram %s from file %s"
@@ -456,7 +457,7 @@ class AnalyzerJetSystematics:
             input_histograms_default[ibin2].SetXTitle(self.latex_obs)
             input_histograms_default[ibin2].SetYTitle(self.latex_y)
             input_histograms_default[ibin2].Draw()
-            print_histogram(input_histograms_default[ibin2])
+            print_histogram(input_histograms_default[ibin2], self.verbose)
 
             self.logger.info("Categories: %d", self.n_sys_cat)
             print("Categories: %d" % self.n_sys_cat)
