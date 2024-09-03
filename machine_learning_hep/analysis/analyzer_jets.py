@@ -609,6 +609,8 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes,too
 
         self._clip_neg(fh_subtracted)
 
+        self._save_hist(fh_subtracted, f'sideband/h_ptjet{label}_subtracted_notscaled_pthf-{ptrange[0]}-{ptrange[1]}_{mcordata}.png')
+
         # plot subtraction before applying multiplicative corrections
         if get_dim(hist) == 2:
             c = TCanvas()
@@ -619,7 +621,7 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes,too
             fh_subtracted.Draw("same")
             fh_subtracted.GetYaxis().SetRangeUser(
                 0., max(fh_subtracted.GetMaximum(), fh['signal'].GetMaximum(), fh_sideband.GetMaximum()))
-            self._save_canvas(c, f'sideband/h_ptjet{label}_overview_{ptrange[0]}-{ptrange[1]}_{mcordata}.png')
+            self._save_canvas(c, f'sideband/h_ptjet{label}_overview_pthf-{ptrange[0]}-{ptrange[1]}_{mcordata}.png')
         else:
             axis_jetpt = get_axis(hist, 1)
             hists = [fh['signal'], fh_sideband, fh_subtracted]
@@ -632,7 +634,7 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes,too
                     hcs[-1].SetLineColor(cmap[i])
                 hcs[0].GetYaxis().SetRangeUser(0., 1.1 * max(map(lambda h: h.GetMaximum(), hcs)))
                 jetptrange = (axis_jetpt.GetBinLowEdge(iptjet+1), axis_jetpt.GetBinUpEdge(iptjet+1))
-                filename = (f'sideband/h_{label[1:]}_overview_ptjet-{jetptrange[0]}-{jetptrange[1]}' +
+                filename = (f'sideband/h_{label[1:]}_overview_ptjet-pthf-{jetptrange[0]}-{jetptrange[1]}' +
                             f'_{ptrange[0]}-{ptrange[1]}_{mcordata}.png')
                 self._save_canvas(c, filename)
 
@@ -687,7 +689,7 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes,too
                              mcordata, ipt, frac_sig, frac_peak)
 
         fh_subtracted.Scale(1. / frac_sig)
-        self._save_hist(fh_subtracted, f'sideband/h_ptjet{label}_subtracted_{ptrange[0]}-{ptrange[1]}_{mcordata}.png')
+        self._save_hist(fh_subtracted, f'sideband/h_ptjet{label}_subtracted_pthf-{ptrange[0]}-{ptrange[1]}_{mcordata}.png')
 
         return fh_subtracted
 
