@@ -344,7 +344,7 @@ class AnalyzerJetSystematics:
                 self.logger.critical(make_message_notfound(name_hist_unfold_2d, path_def))
             axis_jetpt = get_axis(hist_unfold, 0)
             jetptrange = (axis_jetpt.GetBinLowEdge(ibin2 + 1), axis_jetpt.GetBinUpEdge(ibin2 + 1))
-            name_his = f"h_{self.var}_{self.method}_unfolded_data_jetpt-{jetptrange[0]}-{jetptrange[1]}_sel"
+            name_his = f"h_{self.var}_{self.method}_unfolded_data_jetpt-{jetptrange[0]}-{jetptrange[1]}_sel_selfnorm"
             input_histograms_default.append(input_file_default.Get(name_his))
             if not input_histograms_default[ibin2]:
                 self.logger.critical(make_message_notfound(name_his, path_def))
@@ -411,7 +411,7 @@ class AnalyzerJetSystematics:
                     #     for ipt in range(self.p_nptfinbins):
                     #         pass
                     jetptrange = (axis_jetpt.GetBinLowEdge(ibin2 + 1), axis_jetpt.GetBinUpEdge(ibin2 + 1))
-                    name_his = f"h_{self.var}_{self.method}_unfolded_data_jetpt-{jetptrange[0]}-{jetptrange[1]}_sel"
+                    name_his = f"h_{self.var}_{self.method}_unfolded_data_jetpt-{jetptrange[0]}-{jetptrange[1]}_sel_selfnorm"
                     sys_var_histo = input_files_sys[sys_cat][sys_var].Get(name_his)
                     path_file = path_def.replace(string_default, string_catvar)
                     if not sys_var_histo:

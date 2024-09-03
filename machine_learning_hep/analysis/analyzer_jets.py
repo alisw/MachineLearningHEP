@@ -810,7 +810,12 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes,too
                                     f'jetpt-{jetptrange[0]}-{jetptrange[1]}_{i}.png')
                                 # Save the default unfolding iteration separately.
                                 if i == self.cfg("unfolding_iterations_sel") - 1:
-                                    hproj_sel = hproj.Clone(f"{hproj.GetName()}_sel")
+                                    self._save_hist(
+                                        hproj,
+                                        f'uf/h_{var}_{method}_unfolded_{mcordata}_' +
+                                        f'jetpt-{jetptrange[0]}-{jetptrange[1]}_sel.png')
+                                    # Save also the self-normalised version.
+                                    hproj_sel = hproj.Clone(f"{hproj.GetName()}_selfnorm")
                                     hproj_sel.Scale(1. / hproj_sel.Integral(), "width")
                                     self.logger.debug("Final histogram: %s, jet pT %g to %g",
                                                       var, jetptrange[0], jetptrange[1])
@@ -818,7 +823,7 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes,too
                                     self._save_hist(
                                         hproj_sel,
                                         f'uf/h_{var}_{method}_unfolded_{mcordata}_' +
-                                        f'jetpt-{jetptrange[0]}-{jetptrange[1]}_sel.png')
+                                        f'jetpt-{jetptrange[0]}-{jetptrange[1]}_sel_selfnorm.png')
                                 c.cd()
                                 hcopy = hproj.DrawCopy('same' if i > 0 else '')
                                 hcopy.SetLineColor(i+1)
