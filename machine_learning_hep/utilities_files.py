@@ -29,7 +29,7 @@ def list_folders(main_dir: str, filenameinput: str, maxfiles: int, select=None):
     :param select: iterable of substrings that must be contained in folders
     """
     if not os.path.isdir(main_dir):
-        logger.error("input directory <%s> does not exist", main_dir)
+        logger.error("Input directory <%s> does not exist", main_dir)
 
     files = glob.glob(f"{main_dir}/**/{filenameinput}", recursive=True)
     listfolders = [os.path.relpath(os.path.dirname(file), main_dir) for file in files]
@@ -75,11 +75,8 @@ def checkmakedir(mydir: str):
     """
     Makes directory using 'mkdir'
     """
-    if os.path.exists(mydir):
-        logger.warning("Using existing folder %s", mydir)
-        return
-    logger.debug("creating folder %s", mydir)
-    os.makedirs(mydir)
+    logger.debug("Creating folder %s", mydir)
+    os.makedirs(mydir, exist_ok=True)
 
 
 def checkmakedirlist(dirlist: list[str]):
@@ -101,7 +98,7 @@ def delete_dir(path: str):
     try:
         shutil.rmtree(path)
     except OSError:
-        logger.error("Error: Failed to delete directory %s", path)
+        logger.error("Failed to delete directory %s", path)
         return False
     return True
 
