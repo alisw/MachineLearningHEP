@@ -36,6 +36,7 @@ from machine_learning_hep.do_variations import (
     healthy_structure,
 )
 from machine_learning_hep.logger import get_logger
+from machine_learning_hep.analysis.analyzer_jets import string_range_ptjet
 
 # HF specific imports
 from machine_learning_hep.utilities import (  # make_plot,
@@ -55,7 +56,7 @@ from machine_learning_hep.utilities import (  # make_plot,
     setup_legend,
     setup_tgraph,
 )
-from machine_learning_hep.utils.hist import get_axis, bin_array
+from machine_learning_hep.utils.hist import get_axis, bin_array, get_bin_limits
 
 def shrink_err_x(graph, width=0.1):
     for i in range(graph.GetN()):
@@ -325,20 +326,20 @@ class AnalyzerJetSystematics:
             name_hist_unfold_2d = f"h_ptjet-{self.var}_{self.method}_unfolded_data_0"
             if not (hist_unfold := input_file_default.Get(name_hist_unfold_2d)):
                 self.logger.critical(make_message_notfound(name_hist_unfold_2d, path_def))
-            axis_jetpt = get_axis(hist_unfold, 0)
-            jetptrange = (axis_jetpt.GetBinLowEdge(ibin2 + 1), axis_jetpt.GetBinUpEdge(ibin2 + 1))
-            name_his = f"h_{self.var}_{self.method}_unfolded_data_jetpt-{jetptrange[0]}-{jetptrange[1]}_sel_selfnorm"
+            axis_ptjet = get_axis(hist_unfold, 0)
+            range_ptjet = get_bin_limits(axis_ptjet, ibin2 + 1)
+            name_his = f"h_{self.var}_{self.method}_unfolded_data_{string_range_ptjet(range_ptjet)}_sel_selfnorm"
             input_histograms_default.append(input_file_default.Get(name_his))
             if not input_histograms_default[ibin2]:
                 self.logger.critical(make_message_notfound(name_his, path_def))
             self.crop_histogram(input_histograms_default[ibin2])
-            print(f"Default histogram ({jetptrange[0]} to {jetptrange[1]})")
+            print(f"Default histogram ({range_ptjet[0]} to {range_ptjet[1]})")
             print_histogram(input_histograms_default[ibin2], self.verbose)
-            name_eff = f"h_ptjet-pthf_effnew_pr_ptjet-{jetptrange[0]}-{jetptrange[1]}"
+            name_eff = f"h_ptjet-pthf_effnew_pr_{string_range_ptjet(range_ptjet)}"
             eff_default.append(eff_file_default.Get(name_eff))
             if not eff_default[ibin2]:
                 self.logger.critical(make_message_notfound(name_eff, path_eff))
-            print(f"Default efficiency ({jetptrange[0]} to {jetptrange[1]})")
+            print(f"Default efficiency ({range_ptjet[0]} to {range_ptjet[1]})")
             print_histogram(eff_default[ibin2], self.verbose)
 
         # get the files containing result variations
@@ -384,15 +385,15 @@ class AnalyzerJetSystematics:
                         self.logger.critical(
                             make_message_notfound(name_hist_unfold_2d, path_input_files_sys[sys_cat][sys_var])
                         )
-                    axis_jetpt = get_axis(hist_unfold, 0)
+                    axis_ptjet = get_axis(hist_unfold, 0)
                     string_catvar = self.systematic_catnames[sys_cat] + "/" + self.systematic_varnames[sys_cat][sys_var]
-                    jetptrange = (axis_jetpt.GetBinLowEdge(ibin2 + 1), axis_jetpt.GetBinUpEdge(ibin2 + 1))
-                    name_his = f"h_{self.var}_{self.method}_unfolded_data_jetpt-{jetptrange[0]}-{jetptrange[1]}_sel_selfnorm"
+                    range_ptjet = get_bin_limits(axis_ptjet, ibin2 + 1)
+                    name_his = f"h_{self.var}_{self.method}_unfolded_data_{string_range_ptjet(range_ptjet)}_sel_selfnorm"
                     sys_var_histo = input_files_sys[sys_cat][sys_var].Get(name_his)
                     path_file = path_def.replace(string_default, string_catvar)
                     if not sys_var_histo:
                         self.logger.critical(make_message_notfound(name_his, path_file))
-                    name_eff = f"h_ptjet-pthf_effnew_pr_ptjet-{jetptrange[0]}-{jetptrange[1]}"
+                    name_eff = f"h_ptjet-pthf_effnew_pr_{string_range_ptjet(range_ptjet)}"
                     sys_var_histo_eff = input_files_eff[sys_cat][sys_var].Get(name_eff)
                     path_eff_file = path_eff.replace(string_default, string_catvar)
                     if not sys_var_histo_eff:

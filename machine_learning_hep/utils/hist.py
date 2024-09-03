@@ -44,8 +44,12 @@ def get_nbins(hist, axis:int):
     return get_axis(hist, axis).GetNbins()
 
 
+def get_bin_limits(axis, i_bin: int):
+    return (axis.GetBinLowEdge(i_bin), axis.GetBinUpEdge(i_bin))
+
+
 # pylint: disable=too-many-branches, too-many-statements
-def project_hist(hist, axes: list, limits: dict[int, tuple[int]]):
+def project_hist(hist, axes: list, limits: dict[int, tuple[int, int]]):
     # TODO: add consistent suffix for projections
     # TODO: add option for uncertainties ???
     if not hist:
