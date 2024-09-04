@@ -16,6 +16,7 @@ STAGE="all_off"
 # STAGE="analyzer"
 # STAGE="variations"
 # STAGE="systematics"
+# STAGE="plotting"
 
 # Suffix of the analysis database name
 
@@ -38,7 +39,10 @@ LOG="log_${STAGE}.log"
 echo "$(date) Start"
 echo "Running the \"${STAGE}\" stage of the \"${ANALYSIS}\" analysis from the \"${DATABASE}\" database"
 
-if [[ "${STAGE}" == "systematics" ]]; then
+if [[ "${STAGE}" == "plotting" ]]; then
+    echo "Log file: $LOG"
+    python "${DIR_THIS}/plotting/plot_jetsubstructure_run3.py" -d "${DB_DEFAULT}" -a "${ANALYSIS}" > "${LOG}" 2>&1
+elif [[ "${STAGE}" == "systematics" ]]; then
     echo "Log file: $LOG"
     python "${DIR_THIS}/analysis/do_systematics.py" -d "${DB_DEFAULT}" -a "${ANALYSIS}" > "${LOG}" 2>&1
 elif [[ "${STAGE}" == "variations" ]]; then
