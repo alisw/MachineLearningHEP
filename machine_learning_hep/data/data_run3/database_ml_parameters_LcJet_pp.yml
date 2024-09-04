@@ -235,7 +235,7 @@ LcJet_pp:
   #region multi
   multi:
     data:
-      nprocessesparallel: 20
+      nprocessesparallel: 80
       maxfiles: [-1] #list of periods
       chunksizeunp:  [100] #list of periods
       chunksizeskim: [100] #list of periods
@@ -252,7 +252,7 @@ LcJet_pp:
       pkl_evtcounter_all: '${USER}/train_257594/lcjet/pp_data_evttot'
       mcreweights: [../Analyses] #list of periods
     mc:
-      nprocessesparallel: 20
+      nprocessesparallel: 80
       maxfiles: [-1] #list of periods
       chunksizeunp: [100] #list of periods
       chunksizeskim: [1000] #list of periods
@@ -468,7 +468,7 @@ LcJet_pp:
       fd_parquet: '/data2/jklein/powheg/Lc_powheg_fd_F05_R05.parquet'
 
       proc_type: Jets
-      useperiod: [1,1] #list of periods
+      useperiod: [1] #list of periods
       usejetptbinned_deff: false
       doeff_resp: true #efficiency correction for the response matrix
       unmatched_gen: true
@@ -508,7 +508,7 @@ LcJet_pp:
         resultsallp: '/home/${USER}/mlhep/lcjet/jet_obs/default/default/data/results_all'
       mc: &mc_out_default
         runselection: [null,null] #FIXME
-        results: ['/home/${USER}/mlhep/lcjet/jet_obs/prod_LHC24d3b/default/default/mc/results'] #list of periods
+        results: ['/home/${USER}/mlhep/lcjet/jet_obs/default/default/mc/results'] #list of periods
         resultsallp: '/home/${USER}/mlhep/lcjet/jet_obs/default/default/mc/results_all'
       data_proc: # alternative processor output used as the analyzer input
         <<: *data_out_default

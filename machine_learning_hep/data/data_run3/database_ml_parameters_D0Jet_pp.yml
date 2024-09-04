@@ -11,7 +11,7 @@
 #    You should have received a copy of the GNU General Public License    #
 #   along with this program. if not, see <https://www.gnu.org/licenses/>. #
 
-D0jet_pp:
+D0Jet_pp:
   doml: true
   mass: 1.864
   sel_reco_unp: "fPt > 1."
@@ -242,7 +242,7 @@ D0jet_pp:
   #region multi
   multi:
     data:
-      nprocessesparallel: 20
+      nprocessesparallel: 80
       maxfiles: [-1] #list of periods
       chunksizeunp:  [100] #list of periods
       chunksizeskim: [100] #list of periods
@@ -264,7 +264,7 @@ D0jet_pp:
       pkl_evtcounter_all: '${USER}/d0jet/pp_data_evttot'
       mcreweights: [../Analyses] #list of periods
     mc:
-      nprocessesparallel: 20
+      nprocessesparallel: 80
       maxfiles: [-1] #list of periods
       chunksizeunp: [100] #list of periods
       chunksizeskim: [1000] #list of periods
