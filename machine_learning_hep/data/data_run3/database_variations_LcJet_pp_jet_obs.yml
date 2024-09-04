@@ -36,8 +36,8 @@ categories:
         rms_both_sides: true
         variations:
             bkgfunc:
-                activate: [yes]
-                label: ["bkg. func."]
+                activate: [no, yes, no]
+                label: ["bkg_exp", "bkg_pol3", "bkg_argus"]
                 diffs:
                     analysis:
                         jet_obs:
@@ -45,20 +45,19 @@ categories:
                                 - - level: mc
                                     components:
                                       sig:
-                                        fn: 'Gaussian::sig(m[1., 5.], mean[2.28,2.29], sigma_g1[.01,.01,.03])'
-                                      bkg:
-                                        fn: 'Exponential::mcbkg(m, alpha[0.])'
-                                        #fn: 'Polynomial::bkg(m[2.1, 2.50], {a0[0.2, -3, 3], a1[0.2 , -3, 3], a2[0.2, -3, 3]})'
+                                        fn: 'Gaussian::peak(m[1., 5.], mean[2.27,2.29], sigma_g1[.01,.005,.035])'
+                                      wide:
+                                        fn: 'Gaussian::wide(m, mean, expr("n*sigma_g1", n[1.,5.], sigma_g1))'
                                       model:
-                                        fn: 'SUM::mctot(mcfrac[0.,1.]*sig, mcbkg)'
+                                        fn: 'SUM::sig(f_peak[0.,1.]*peak, wide)'
                                   - ptrange: [1., 5.]
-                                    range: [2.13, 2.44]
+                                    range: [2.16, 2.40]
                                     components:
                                       # sig:
                                       #   fn: 'Gaussian::sig(m, mean[2.28,2.29], sigma_g1[.005,.01])'
                                       bkg:
                                         fn: 'Exponential::bkg(m, alpha[-100,0])'
-                                        # fn: 'Polynomial::bkg(m, {a0[0.2, -3, 3], a1[0.2 , -3, 3], a2[0.2, -3, 3]})'
+                                        # fn: 'Polynomial::bkg(m, {a0[-0.2, -3, 3], a1[0.2 , -3, 3], a2[0.2, -3, 3]})'
                                       model:
                                         fn: 'SUM::sum(frac[0.,1.]*sig, bkg)'
                                   - ptrange: [5., 8.]
@@ -80,13 +79,125 @@ categories:
                                         # fn: 'Polynomial::bkg(m, {a0[0.2, -3, 3], a1[0.2 , -3, 3], a2[0.2, -3, 3]})'
                                       model:
                                         fn: 'SUM::sum(frac[0.,1.]*sig, bkg)'
+                                - - level: mc
+                                    components:
+                                      sig:
+                                        fn: 'Gaussian::peak(m[1., 5.], mean[2.27,2.29], sigma_g1[.01,.005,.035])'
+                                      wide:
+                                        fn: 'Gaussian::wide(m, mean, expr("n*sigma_g1", n[1.,5.], sigma_g1))'
+                                      model:
+                                        fn: 'SUM::sig(f_peak[0.,1.]*peak, wide)'
+                                  - ptrange: [1., 5.]
+                                    range: [2.16, 2.40]
+                                    components:
+                                      # sig:
+                                      #   fn: 'Gaussian::sig(m, mean[2.28,2.29], sigma_g1[.005,.01])'
+                                      bkg:
+                                        # fn: 'Exponential::bkg(m, alpha[-100,0])'
+                                        fn: 'Polynomial::bkg(m, {a0[0.2, -3, 3], a1[0.2 , -3, 3], a2[0.2, -3, 3], a3[-0.8, -3, 3]})'
+                                      model:
+                                        fn: 'SUM::sum(frac[0.,1.]*sig, bkg)'
+                                  - ptrange: [5., 8.]
+                                    range: [2.1, 2.48]
+                                    components:
+                                      # sig:
+                                      #   fn: 'Gaussian::sig(m, mean[2.28,2.29], sigma_g1[.005,.03])'
+                                      bkg:
+                                        # fn: 'Exponential::bkg(m, alpha[-100,0])'
+                                        fn: 'Polynomial::bkg(m, {a0[0.2, -3, 3], a1[0.2 , -3, 3], a2[0.2, -3, 3], a3[0.2, -3, 3]})'
+                                      model:
+                                        fn: 'SUM::sum(frac[0.,1.]*sig, bkg)'
+                                  - range: [2.05, 2.5]
+                                    components:
+                                      # sig:
+                                      #   fn: 'Gaussian::sig(m, mean[2.28,2.29], sigma_g1[.005,.03])'
+                                      bkg:
+                                        # fn: 'Exponential::bkg(m, alpha[-100,0])'
+                                        fn: 'Polynomial::bkg(m, {a0[0.2, -3, 3], a1[0.2 , -3, 3], a2[0.2, -3, 3], a3[0.2, -3, 3]})'
+                                      model:
+                                        fn: 'SUM::sum(frac[0.,1.]*sig, bkg)'
+                                - - level: mc
+                                    components:
+                                      sig:
+                                        fn: 'Gaussian::peak(m[1., 5.], mean[2.27,2.29], sigma_g1[.01,.005,.035])'
+                                      wide:
+                                        fn: 'Gaussian::wide(m, mean, expr("n*sigma_g1", n[1.,5.], sigma_g1))'
+                                      model:
+                                        fn: 'SUM::sig(f_peak[0.,1.]*peak, wide)'
+                                  - ptrange: [1., 5.]
+                                    range: [2.16, 2.40]
+                                    fix_params: ['alpha_l', 'alpha_r', 'n_l', 'n_r']
+                                    components:
+                                      # sig:
+                                      #   fn: 'Gaussian::sig(m, mean[2.28,2.29], sigma_g1[.005,.01])'
+                                      bkg:
+                                        fn: 'ArgusBG::bkg(m, m0[1., 10.], c[0., 10.], p[1., .5, 2.])'
+                                      model:
+                                        fn: 'SUM::sum(frac[0.,1.]*sig, bkg)'
+                                  - ptrange: [5., 8.]
+                                    range: [2.1, 2.48]
+                                    fix_params: ['alpha_l', 'alpha_r', 'n_l', 'n_r']
+                                    components:
+                                      # sig:
+                                      #   fn: 'Gaussian::sig(m, mean[2.28,2.29], sigma_g1[.005,.03])'
+                                      bkg:
+                                        fn: 'ArgusBG::bkg(m, m0[1., 10.], c[0., 10.], p[1., .5, 2.])'
+                                      model:
+                                        fn: 'SUM::sum(frac[0.,1.]*sig, bkg)'
+                                  - range: [2.05, 2.5]
+                                    fix_params: ['alpha_l', 'alpha_r', 'n_l', 'n_r']
+                                    components:
+                                      # sig:
+                                      #   fn: 'Gaussian::sig(m, mean[2.28,2.29], sigma_g1[.005,.03])'
+                                      bkg:
+                                        fn: 'ArgusBG::bkg(m, m0[1., 10.], c[0., 10.], p[1., .5, 2.])'
+                                      model:
+                                        fn: 'SUM::sum(frac[0.,1.]*sig, bkg)'
             sigfunc: # TODO: mass_roofit
-                activate: [no]
+                activate: [yes]
                 label: ["sig. func."]
                 diffs:
                     analysis:
                         jet_obs:
-                            todo: [0]
+                            mass_roofit:
+                                - - level: mc
+                                    components:
+                                      sig:
+                                        fn: 'Gaussian::sig(m[1., 5.], mean[2.27,2.29], sigma_g1[.01,.01,.03])'
+                                      bkg:
+                                        fn: 'Exponential::mcbkg(m, mcalpha[0.])'
+                                        #fn: 'Polynomial::bkg(m[2.1, 2.50], {a0[0.2, -3, 3], a1[-0.1, -3, 3], a2[0.1, 0.01, 3]})'
+                                      model:
+                                        fn: 'SUM::mctot(mcfrac[0.,1.]*sig, mcbkg)'
+                                  - ptrange: [1., 5.]
+                                    range: [2.16, 2.40]
+                                    components:
+                                      # sig:
+                                      #   fn: 'Gaussian::sig(m, mean[2.28,2.29], sigma_g1[.005,.01])'
+                                      bkg:
+                                        #fn: 'Exponential::bkg(m, alpha[-100,0])'
+                                        fn: 'Polynomial::bkg(m, {a0[0.2, -3, 3], a1[0.2 , -3, 3], a2[0.2, -3, 3]})'
+                                      model:
+                                        fn: 'SUM::sum(frac[0.,1.]*sig, bkg)'
+                                  - ptrange: [5., 8.]
+                                    range: [2.1, 2.48]
+                                    components:
+                                      # sig:
+                                      #   fn: 'Gaussian::sig(m, mean[2.28,2.29], sigma_g1[.005,.03])'
+                                      bkg:
+                                        #fn: 'Exponential::bkg(m, alpha[-100,0])'
+                                        fn: 'Polynomial::bkg(m, {a0[0.2, -3, 3], a1[0.2 , -3, 3], a2[0.2, -3, 3]})'
+                                      model:
+                                        fn: 'SUM::sum(frac[0.,1.]*sig, bkg)'
+                                  - range: [2.05, 2.5]
+                                    components:
+                                      # sig:
+                                      #   fn: 'Gaussian::sig(m, mean[2.28,2.29], sigma_g1[.005,.03])'
+                                      bkg:
+                                        #fn: 'Exponential::bkg(m, alpha[-100,0])'
+                                        fn: 'Polynomial::bkg(m, {a0[0.2, -3, 3], a1[0.2 , -3, 3], a2[0.2, -3, 3]})'
+                                      model:
+                                        fn: 'SUM::sum(frac[0.,1.]*sig, bkg)'
             massmin: # TODO?
                 activate: [no]
                 label:
@@ -105,7 +216,7 @@ categories:
                                       model:
                                         fn: 'SUM::mctot(mcfrac[0.,1.]*sig, mcbkg)'
                                   - ptrange: [1., 5.]
-                                    range: [2.13, 2.44]
+                                    range: [2.18, 2.40]
                                     components:
                                       # sig:
                                       #   fn: 'Gaussian::sig(m, mean[2.28,2.29], sigma_g1[.005,.01])'
@@ -432,10 +543,10 @@ categories:
                         jet_obs:
                             use_cuts: [True, True, True, True, True, True, True]
                             cuts:
-                                    - ["mlPromptScore > 0.97", "mlPromptScore > 0.9", "mlPromptScore > 0.9", "mlPromptScore > 0.85", "mlPromptScore > 0.85", "mlPromptScore > 0.8", "mlPromptScore > 0.8", "mlPromptScore > 0.6", "mlPromptScore > 0.6", null]  # default
-                                    - [null,null,null,null,null,null,null,null,null,null]
-                                    - ["mlPromptScore > 0.85", "mlPromptScore > 0.6", "mlPromptScore > 0.6", "mlPromptScore > 0.4", "mlPromptScore > 0.4", "mlPromptScore > 0.4", "mlPromptScore > 0.4", "mlPromptScore > 0.15", "mlPromptScore > 0.15", null]  # loosest
-                                    - ["mlPromptScore > 0.9", "mlPromptScore > 0.7", "mlPromptScore > 0.7", "mlPromptScore > 0.6", "mlPromptScore > 0.6", "mlPromptScore > 0.6", "mlPromptScore > 0.6", "mlPromptScore > 0.3", "mlPromptScore > 0.3", null]  # loose
-                                    - ["mlPromptScore > 0.98", "mlPromptScore > 0.9", "mlPromptScore > 0.9", "mlPromptScore > 0.85", "mlPromptScore > 0.85", "mlPromptScore > 0.8", "mlPromptScore > 0.8", "mlPromptScore > 0.6", "mlPromptScore > 0.6", null]  # tight 2
-                                    - ["mlPromptScore > 0.97", "mlPromptScore > 0.9", "mlPromptScore > 0.9", "mlPromptScore > 0.85", "mlPromptScore > 0.85", "mlPromptScore > 0.8", "mlPromptScore > 0.8", "mlPromptScore > 0.6", "mlPromptScore > 0.6", null]  # tight 4
-                                    - ["mlPromptScore > 0.98", "mlPromptScore > 0.95", "mlPromptScore > 0.95", "mlPromptScore > 0.9", "mlPromptScore > 0.9", "mlPromptScore > 0.9", "mlPromptScore > 0.9", "mlPromptScore > 0.7", "mlPromptScore > 0.7", null]  # tight
+                                    - ["mlPromptScore > 0.97", "mlPromptScore > 0.9", "mlPromptScore > 0.9", "mlPromptScore > 0.85", "mlPromptScore > 0.85", "mlPromptScore > 0.8", "mlPromptScore > 0.8", "mlPromptScore > 0.6", "mlPromptScore > 0.6"]  # default
+                                    - [null,null,null,null,null,null,null,null,null]
+                                    - ["mlPromptScore > 0.85", "mlPromptScore > 0.6", "mlPromptScore > 0.6", "mlPromptScore > 0.4", "mlPromptScore > 0.4", "mlPromptScore > 0.4", "mlPromptScore > 0.4", "mlPromptScore > 0.15", "mlPromptScore > 0.15"]  # loosest
+                                    - ["mlPromptScore > 0.9", "mlPromptScore > 0.7", "mlPromptScore > 0.7", "mlPromptScore > 0.6", "mlPromptScore > 0.6", "mlPromptScore > 0.6", "mlPromptScore > 0.6", "mlPromptScore > 0.3", "mlPromptScore > 0.3"]  # loose
+                                    - ["mlPromptScore > 0.98", "mlPromptScore > 0.9", "mlPromptScore > 0.9", "mlPromptScore > 0.85", "mlPromptScore > 0.85", "mlPromptScore > 0.8", "mlPromptScore > 0.8", "mlPromptScore > 0.6", "mlPromptScore > 0.6"]  # tight 2
+                                    - ["mlPromptScore > 0.97", "mlPromptScore > 0.9", "mlPromptScore > 0.9", "mlPromptScore > 0.85", "mlPromptScore > 0.85", "mlPromptScore > 0.8", "mlPromptScore > 0.8", "mlPromptScore > 0.6", "mlPromptScore > 0.6"]  # tight 4
+                                    - ["mlPromptScore > 0.98", "mlPromptScore > 0.95", "mlPromptScore > 0.95", "mlPromptScore > 0.9", "mlPromptScore > 0.9", "mlPromptScore > 0.9", "mlPromptScore > 0.9", "mlPromptScore > 0.7", "mlPromptScore > 0.7"]  # tight
