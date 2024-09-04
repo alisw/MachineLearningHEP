@@ -285,6 +285,9 @@ class AnalyzerJetSystematics:
         graph.GetXaxis().SetLimits(round(x_range[self.var][0], 2), round(x_range[self.var][1], 2))
         reset_graph_outside_range(graph, *x_range[self.var])
 
+    def get_suffix_ptjet(self, iptjet: int):
+        return string_range_ptjet((self.edges_ptjet_gen[iptjet], self.edges_ptjet_gen[iptjet + 1]))
+
     def jetsystematics(self):
         string_default = "default/default"
         if string_default not in self.dir_result_data:
@@ -335,7 +338,8 @@ class AnalyzerJetSystematics:
             self.crop_histogram(input_histograms_default[iptjet])
             print(f"Default histogram ({range_ptjet[0]} to {range_ptjet[1]})")
             print_histogram(input_histograms_default[iptjet], self.verbose)
-            name_eff = f"h_ptjet-pthf_effnew_pr_{string_range_ptjet(range_ptjet)}"
+            # name_eff = f"h_ptjet-pthf_effnew_pr_{string_range_ptjet(range_ptjet)}"
+            name_eff = "h_pthf_effnew_pr"
             eff_default.append(eff_file_default.Get(name_eff))
             if not eff_default[iptjet]:
                 self.logger.critical(make_message_notfound(name_eff, path_eff))
@@ -393,7 +397,8 @@ class AnalyzerJetSystematics:
                     path_file = path_def.replace(string_default, string_catvar)
                     if not sys_var_histo:
                         self.logger.critical(make_message_notfound(name_his, path_file))
-                    name_eff = f"h_ptjet-pthf_effnew_pr_{string_range_ptjet(range_ptjet)}"
+                    # name_eff = f"h_ptjet-pthf_effnew_pr_{string_range_ptjet(range_ptjet)}"
+                    name_eff = "h_pthf_effnew_pr"
                     sys_var_histo_eff = input_files_eff[sys_cat][sys_var].Get(name_eff)
                     path_eff_file = path_eff.replace(string_default, string_catvar)
                     if not sys_var_histo_eff:
@@ -434,7 +439,7 @@ class AnalyzerJetSystematics:
 
         for iptjet in range(self.n_bins_ptjet_gen):
             # plot all the variations together
-            suffix = "%s_%g_%g" % (self.ptjet_name, self.edges_ptjet_gen_min[iptjet], self.edges_ptjet_gen_max[iptjet])
+            suffix = self.get_suffix_ptjet(iptjet)
             nsys = 0
             csysvar = TCanvas("csysvar_%s" % suffix, "systematic variations" + suffix)
             setup_canvas(csysvar)
@@ -968,13 +973,9 @@ class AnalyzerJetSystematics:
 
         # write the combined systematic uncertainties in a file
         for iptjet in range(self.n_bins_ptjet_gen):
-            suffix = "%s_%.2f_%.2f" % (
-                self.ptjet_name,
-                self.edges_ptjet_gen_min[iptjet],
-                self.edges_ptjet_gen_max[iptjet],
-            )
+            suffix = self.get_suffix_ptjet(iptjet)
             file_sys_out.cd()
-            tgsys[iptjet].Write("tgsys_%s" % suffix)
+            tgsys[iptjet].Write(f"sys_{self.var}_{suffix}")
             unc_hist_up = TH1F(
                 "unc_hist_up_%s" % suffix,
                 "",
@@ -992,17 +993,13 @@ class AnalyzerJetSystematics:
             for ibinshape in range(self.n_bins_obs_gen):
                 unc_hist_up.SetBinContent(ibinshape + 1, full_unc_up[iptjet][ibinshape])
                 unc_hist_down.SetBinContent(ibinshape + 1, full_unc_down[iptjet][ibinshape])
-            unc_hist_up.Write()
-            unc_hist_down.Write()
+            unc_hist_up.Write(f"sys_{self.var}_{suffix}_rel_up")
+            unc_hist_down.Write(f"sys_{self.var}_{suffix}_rel_down")
 
         # relative statistical uncertainty of the central values
         h_default_stat_err = []
         for iptjet in range(self.n_bins_ptjet_gen):
-            suffix = "%s_%.2f_%.2f" % (
-                self.ptjet_name,
-                self.edges_ptjet_gen_min[iptjet],
-                self.edges_ptjet_gen_max[iptjet],
-            )
+            suffix = self.get_suffix_ptjet(iptjet)
             h_default_stat_err.append(input_histograms_default[iptjet].Clone("h_default_stat_err" + suffix))
             for i in range(h_default_stat_err[iptjet].GetNbinsX()):
                 if abs(input_histograms_default[iptjet].GetBinContent(i + 1)) < 1.0e-7:
@@ -1019,8 +1016,7 @@ class AnalyzerJetSystematics:
 
         for iptjet in range(self.n_bins_ptjet_gen):
             # plot the results with systematic uncertainties
-
-            suffix = "%s_%g_%g" % (self.ptjet_name, self.edges_ptjet_gen_min[iptjet], self.edges_ptjet_gen_max[iptjet])
+            suffix = self.get_suffix_ptjet(iptjet)
             cfinalwsys = TCanvas("cfinalwsys " + suffix, "final result with systematic uncertainties" + suffix)
             setup_canvas(cfinalwsys)
             leg_finalwsys = TLegend(0.7, 0.78, 0.85, 0.88)
