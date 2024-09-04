@@ -74,15 +74,13 @@ x_range = {
 
 
 class AnalyzerJetSystematics:
-    def __init__(self, path_database_analysis: str, typean: str, var: str):
+    def __init__(self, path_database_analysis: str, typean: str):
         self.logger = get_logger()
         self.typean = typean
-        self.var = var
+        self.var = ""
         self.method = "sidesub"
         self.logger.setLevel(logging.INFO)
         self.verbose = False
-
-        # self.logger.info("Processing observable %s", self.var)
 
         with open(path_database_analysis, "r", encoding="utf-8") as file_in:
             db_analysis = yaml.safe_load(file_in)
@@ -94,8 +92,8 @@ class AnalyzerJetSystematics:
         # LaTeX string
         self.latex_hadron = self.db_typean["latexnamehadron"]
         self.latex_ptjet = "#it{p}_{T}^{jet ch}"
-        self.latex_obs = self.db_typean["observables"][self.var]["label"]
-        self.latex_y = self.db_typean["observables"][self.var]["label_y"]
+        self.latex_obs = ""
+        self.latex_y = ""
 
         # binning of hadron pt
         self.edges_pthf_min = self.db_typean["sel_an_binmin"]
@@ -118,46 +116,6 @@ class AnalyzerJetSystematics:
         self.ptjet_gen_max = self.edges_ptjet_gen[-1]
         self.edges_ptjet_gen_min = self.edges_ptjet_gen[:-1]
         self.edges_ptjet_gen_max = self.edges_ptjet_gen[1:]
-
-        # binning of observable (z, shape,...)
-        # reconstruction level
-        if binning := self.cfg(f'observables.{var}.bins_det_var'):
-            bins_tmp = np.asarray(binning, 'd')
-        elif binning := self.cfg(f'observables.{var}.bins_det_fix'):
-            bins_tmp = bin_array(*binning)
-        elif binning := self.cfg(f'observables.{var}.bins_var'):
-            bins_tmp = np.asarray(binning, 'd')
-        elif binning := self.cfg(f'observables.{var}.bins_fix'):
-            bins_tmp = bin_array(*binning)
-        else:
-            self.logger.error('no binning specified for %s, using defaults', var)
-            bins_tmp = bin_array(10, 0., 1.)
-        binning_obs_rec = bins_tmp
-        self.n_bins_obs_rec = len(binning_obs_rec) - 1
-        self.obs_rec_min = float(binning_obs_rec[0])
-        self.obs_rec_max = float(binning_obs_rec[-1])
-        self.edges_obs_rec = binning_obs_rec
-
-        # generator level
-        if binning := self.cfg(f'observables.{var}.bins_gen_var'):
-            bins_tmp = np.asarray(binning, 'd')
-        elif binning := self.cfg(f'observables.{var}.bins_gen_fix'):
-            bins_tmp = bin_array(*binning)
-        elif binning := self.cfg(f'observables.{var}.bins_var'):
-            bins_tmp = np.asarray(binning, 'd')
-        elif binning := self.cfg(f'observables.{var}.bins_fix'):
-            bins_tmp = bin_array(*binning)
-        else:
-            self.logger.error('no binning specified for %s, using defaults', var)
-            bins_tmp = bin_array(10, 0., 1.)
-        binning_obs_gen = bins_tmp
-        self.n_bins_obs_gen = len(binning_obs_gen) - 1
-        self.obs_gen_min = float(binning_obs_gen[0])
-        self.obs_gen_max = float(binning_obs_gen[-1])
-        self.edges_obs_gen = binning_obs_gen
-
-        print("Rec obs edges:", self.edges_obs_rec, "Gen obs edges:", self.edges_obs_gen)
-        print("Rec ptjet edges:", self.edges_ptjet_rec, "Gen ptjet edges:", self.edges_ptjet_gen)
 
         # unfolding
         self.niter_unfolding = self.db_typean["unfolding_iterations"]
@@ -222,6 +180,10 @@ class AnalyzerJetSystematics:
         self.dir_result_mc = self.db_typean["mc"]["resultsallp"]
         self.dir_result_data = self.db_typean["data"]["resultsallp"]
 
+        self.string_default = "default/default"
+        if self.string_default not in self.dir_result_data:
+            self.logger.critical("Not a default database! Cannot run systematics.")
+
         # input files
         file_result_name = self.datap["files_names"]["resultfilename"]
         self.file_unfold = os.path.join(self.dir_result_data, file_result_name)
@@ -240,11 +202,6 @@ class AnalyzerJetSystematics:
         self.x_latex = 0.18
         self.y_latex_top = 0.88
         self.y_step = 0.05
-        # axes titles
-        self.title_x = self.latex_obs
-        self.title_y = self.latex_y
-        self.title_full = ";%s;%s" % (self.title_x, self.title_y)
-        self.title_full_ratio = ";%s;data/MC: ratio of %s" % (self.title_x, self.title_y)
         # text
         self.text_alice = "ALICE Preliminary, pp, #sqrt{#it{s}} = 13.6 TeV"
         # self.text_alice = "#bf{ALICE}, pp, #sqrt{#it{s}} = 13.6 TeV"
@@ -259,6 +216,26 @@ class AnalyzerJetSystematics:
         self.dir_out_figs = Path(f"{os.path.expandvars(self.dir_result_data)}/fig/sys")
         for fmt in self.fig_formats:
             (self.dir_out_figs / fmt).mkdir(parents=True, exist_ok=True)
+
+        # output file for histograms
+        self.file_sys_out = TFile.Open(f"{self.dir_result_data}/systematics.root", "recreate")
+
+        self.debug = True
+        if self.debug:
+            print("Categories: ", self.systematic_catnames)
+            print("Category labels: ", self.systematic_catlabels)
+            print("Category Groups: ", self.systematic_catgroups)
+            print("Category Groups unique: ", self.systematic_catgroups_list, self.n_sys_gr)
+            print("Numbers of variations: ", self.systematic_variations)
+            print("Variations: ", self.systematic_varnames)
+            print("Variation labels: ", self.systematic_varlabels)
+            print("Correlation: ", self.systematic_correlation)
+            print("RMS: ", self.systematic_rms)
+            print("Symmetrisation: ", self.systematic_symmetrise)
+            print("RMS both sides: ", self.systematic_rms_both_sides)
+            print("Feed-down variations: ", self.powheg_nonprompt_varnames)
+            print("Jet pT rec variations: ", self.edges_ptjet_rec_sys)
+            print("Jet pT gen variations: ", self.edges_ptjet_gen_sys)
 
     def cfg(self, param, default=None):
         return reduce(lambda d, key: d.get(key, default) if isinstance(d, dict) else default,
@@ -288,30 +265,64 @@ class AnalyzerJetSystematics:
     def get_suffix_ptjet(self, iptjet: int):
         return string_range_ptjet((self.edges_ptjet_gen[iptjet], self.edges_ptjet_gen[iptjet + 1]))
 
-    def jetsystematics(self):
-        string_default = "default/default"
-        if string_default not in self.dir_result_data:
-            self.logger.critical("Not a default database! Cannot run systematics.")
+    def process(self, list_vars: "list[str]"):
+        """Do systematics for all variables"""
+        for var in list_vars:
+            # self.logger.info("Processing observable %s", var)
+            print("Processing observable %s" % var)
+            self.do_jet_systematics(var)
 
-        debug = True
-        if debug:
-            print("Categories: ", self.systematic_catnames)
-            print("Category labels: ", self.systematic_catlabels)
-            print("Category Groups: ", self.systematic_catgroups)
-            print("Category Groups unique: ", self.systematic_catgroups_list, self.n_sys_gr)
-            print("Numbers of variations: ", self.systematic_variations)
-            print("Variations: ", self.systematic_varnames)
-            print("Variation labels: ", self.systematic_varlabels)
-            print("Correlation: ", self.systematic_correlation)
-            print("RMS: ", self.systematic_rms)
-            print("Symmetrisation: ", self.systematic_symmetrise)
-            print("RMS both sides: ", self.systematic_rms_both_sides)
-            print("Feed-down variations: ", self.powheg_nonprompt_varnames)
-            print("Jet pT rec variations: ", self.edges_ptjet_rec_sys)
-            print("Jet pT gen variations: ", self.edges_ptjet_gen_sys)
+    def do_jet_systematics(self, var: str):
+        """Do systematics for one variable"""
+        self.var = var
 
-        # output file for histograms
-        file_sys_out = TFile.Open(f"{self.dir_result_data}/systematics.root", "recreate")
+        self.latex_obs = self.db_typean["observables"][self.var]["label"]
+        self.latex_y = self.db_typean["observables"][self.var]["label_y"]
+        # axis titles
+        self.title_x = self.latex_obs
+        self.title_y = self.latex_y
+        self.title_full = ";%s;%s" % (self.title_x, self.title_y)
+        self.title_full_ratio = ";%s;data/MC: ratio of %s" % (self.title_x, self.title_y)
+
+        # binning of observable (z, shape,...)
+        # reconstruction level
+        if binning := self.cfg(f'observables.{self.var}.bins_det_var'):
+            bins_tmp = np.asarray(binning, 'd')
+        elif binning := self.cfg(f'observables.{self.var}.bins_det_fix'):
+            bins_tmp = bin_array(*binning)
+        elif binning := self.cfg(f'observables.{self.var}.bins_var'):
+            bins_tmp = np.asarray(binning, 'd')
+        elif binning := self.cfg(f'observables.{self.var}.bins_fix'):
+            bins_tmp = bin_array(*binning)
+        else:
+            self.logger.error('No binning specified for %s, using defaults', self.var)
+            bins_tmp = bin_array(10, 0., 1.)
+        binning_obs_rec = bins_tmp
+        self.n_bins_obs_rec = len(binning_obs_rec) - 1
+        self.obs_rec_min = float(binning_obs_rec[0])
+        self.obs_rec_max = float(binning_obs_rec[-1])
+        self.edges_obs_rec = binning_obs_rec
+
+        # generator level
+        if binning := self.cfg(f'observables.{self.var}.bins_gen_var'):
+            bins_tmp = np.asarray(binning, 'd')
+        elif binning := self.cfg(f'observables.{self.var}.bins_gen_fix'):
+            bins_tmp = bin_array(*binning)
+        elif binning := self.cfg(f'observables.{self.var}.bins_var'):
+            bins_tmp = np.asarray(binning, 'd')
+        elif binning := self.cfg(f'observables.{self.var}.bins_fix'):
+            bins_tmp = bin_array(*binning)
+        else:
+            self.logger.error('No binning specified for %s, using defaults', self.var)
+            bins_tmp = bin_array(10, 0., 1.)
+        binning_obs_gen = bins_tmp
+        self.n_bins_obs_gen = len(binning_obs_gen) - 1
+        self.obs_gen_min = float(binning_obs_gen[0])
+        self.obs_gen_max = float(binning_obs_gen[-1])
+        self.edges_obs_gen = binning_obs_gen
+
+        print("Rec obs edges:", self.edges_obs_rec, "Gen obs edges:", self.edges_obs_gen)
+        print("Rec ptjet edges:", self.edges_ptjet_rec, "Gen ptjet edges:", self.edges_ptjet_gen)
 
         # Open input files for default results.
         path_def = self.file_unfold
@@ -356,10 +367,10 @@ class AnalyzerJetSystematics:
             input_files_sysvar = []
             input_files_sysvar_eff = []
             for sys_var, varname in enumerate(self.systematic_varnames[sys_cat]):
-                path = path_def.replace(string_default, self.systematic_catnames[sys_cat] + "/" + varname)
+                path = path_def.replace(self.string_default, self.systematic_catnames[sys_cat] + "/" + varname)
                 path_input_files_sysvar.append(path)
                 input_files_sysvar.append(TFile.Open(path))
-                eff_file = path_eff.replace(string_default, self.systematic_catnames[sys_cat] + "/" + varname)
+                eff_file = path_eff.replace(self.string_default, self.systematic_catnames[sys_cat] + "/" + varname)
                 input_files_sysvar_eff.append(TFile.Open(eff_file))
                 if not input_files_sysvar[sys_var]:
                     self.logger.critical(make_message_notfound(path))
@@ -394,13 +405,13 @@ class AnalyzerJetSystematics:
                     range_ptjet = get_bin_limits(axis_ptjet, iptjet + 1)
                     name_his = f"h_{self.var}_{self.method}_unfolded_data_{string_range_ptjet(range_ptjet)}_sel_selfnorm"
                     sys_var_histo = input_files_sys[sys_cat][sys_var].Get(name_his)
-                    path_file = path_def.replace(string_default, string_catvar)
+                    path_file = path_def.replace(self.string_default, string_catvar)
                     if not sys_var_histo:
                         self.logger.critical(make_message_notfound(name_his, path_file))
                     # name_eff = f"h_ptjet-pthf_effnew_pr_{string_range_ptjet(range_ptjet)}"
                     name_eff = "h_pthf_effnew_pr"
                     sys_var_histo_eff = input_files_eff[sys_cat][sys_var].Get(name_eff)
-                    path_eff_file = path_eff.replace(string_default, string_catvar)
+                    path_eff_file = path_eff.replace(self.string_default, string_catvar)
                     if not sys_var_histo_eff:
                         self.logger.critical(make_message_notfound(name_eff, path_eff_file))
                     self.crop_histogram(sys_var_histo)
@@ -408,7 +419,7 @@ class AnalyzerJetSystematics:
                     input_histograms_eff.append(sys_var_histo_eff)
                     print_histogram(sys_var_histo_eff, self.verbose)
                     print_histogram(sys_var_histo, self.verbose)
-                    if debug:
+                    if self.debug:
                         print(
                             "Variation: %s, %s: got histogram %s from file %s"
                             % (
@@ -974,8 +985,7 @@ class AnalyzerJetSystematics:
         # write the combined systematic uncertainties in a file
         for iptjet in range(self.n_bins_ptjet_gen):
             suffix = self.get_suffix_ptjet(iptjet)
-            file_sys_out.cd()
-            tgsys[iptjet].Write(f"sys_{self.var}_{suffix}")
+            self.file_sys_out.WriteObject(tgsys[iptjet], f"sys_{self.var}_{suffix}")
             unc_hist_up = TH1F(
                 "unc_hist_up_%s" % suffix,
                 "",
@@ -993,8 +1003,8 @@ class AnalyzerJetSystematics:
             for ibinshape in range(self.n_bins_obs_gen):
                 unc_hist_up.SetBinContent(ibinshape + 1, full_unc_up[iptjet][ibinshape])
                 unc_hist_down.SetBinContent(ibinshape + 1, full_unc_down[iptjet][ibinshape])
-            unc_hist_up.Write(f"sys_{self.var}_{suffix}_rel_up")
-            unc_hist_down.Write(f"sys_{self.var}_{suffix}_rel_down")
+            self.file_sys_out.WriteObject(unc_hist_up, f"sys_{self.var}_{suffix}_rel_up")
+            self.file_sys_out.WriteObject(unc_hist_down, f"sys_{self.var}_{suffix}_rel_down")
 
         # relative statistical uncertainty of the central values
         h_default_stat_err = []
@@ -1293,10 +1303,8 @@ def main(args=None):
     gROOT.SetBatch(True)
     list_vars = ["zg", "nsd", "rg", "zpar"]
     # list_vars = ["zpar"]
-    for var in list_vars:
-        print(f"Processing observable {var}")
-        analyser = AnalyzerJetSystematics(args.database_analysis, args.type_ana, var)
-        analyser.jetsystematics()
+    analyser = AnalyzerJetSystematics(args.database_analysis, args.type_ana)
+    analyser.process(list_vars)
 
 
 if __name__ == "__main__":
