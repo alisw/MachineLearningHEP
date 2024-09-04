@@ -76,7 +76,7 @@ D0Jet_pp:
           O2hfd0pbase: [fIndexHfD0McCollBases, fPt, fEta, fPhi, fFlagMcMatchGen, fOriginMcGen]
           O2d0cmcpjeto: [fIndexD0CMCPJETCOS, fJetPt, fJetPhi, fJetEta, fJetNConstituents, fJetR]
           O2d0cmcpjetmo: [fIndexArrayD0CMCDJETOS_hf, fIndexArrayD0CMCDJETOS_geo, fIndexArrayD0CMCDJETOS_pt]
-          O2d0cmcpjetsso: [fEnergyMother, fPtLeading, fPtSubLeading, fTheta, fNSub2DR, fNSub1, fNSub2]
+          O2d0cmcpjetsso: [fEnergyMother, fPtLeading, fPtSubLeading, fTheta, fNSub2DR, fNSub1, fNSub2, fAngularity, fPairPt, fPairEnergy, fPairTheta]
         extra:
           fY: log((sqrt(1.864**2 + (fPt * cosh(fEta))**2) + fPt * sinh(fEta)) / sqrt(1.864**2 + fPt**2)) #TODO : change mass or make sure Lc mass is updated
         tags:
@@ -110,7 +110,7 @@ D0Jet_pp:
           O2hfd0ml: [fMlScores]
           O2d0cmcdjeto: [fIndexD0CMCDJETCOS, fJetPt, fJetPhi, fJetEta, fJetNConstituents, fJetR]
           O2d0cmcdjetmo: [fIndexArrayD0CMCPJETOS_hf, fIndexArrayD0CMCPJETOS_geo, fIndexArrayD0CMCPJETOS_pt]
-          O2d0cmcdjetsso: [fEnergyMother, fPtLeading, fPtSubLeading, fTheta, fNSub2DR, fNSub1, fNSub2]
+          O2d0cmcdjetsso: [fEnergyMother, fPtLeading, fPtSubLeading, fTheta, fNSub2DR, fNSub1, fNSub2, fAngularity, fPairPt, fPairEnergy, fPairTheta]
         extra:
           fY: log((sqrt(1.864**2 + (fPt * cosh(fEta))**2) + fPt * sinh(fEta)) / sqrt(1.864**2 + fPt**2)) #TODO : change mass or make sure Lc mass is updated
           isd0: fFlagMcMatchRec == 1
@@ -150,7 +150,7 @@ D0Jet_pp:
           O2hfd0ml: [fMlScores]
           O2hfd0sel: [fCandidateSelFlag]
           O2d0cjeto: [fIndexD0CJETCOS, fJetPt, fJetPhi, fJetEta, fJetNConstituents, fJetR]
-          O2d0cjetsso: [fEnergyMother, fPtLeading, fPtSubLeading, fTheta, fNSub2DR, fNSub1, fNSub2]
+          O2d0cjetsso: [fEnergyMother, fPtLeading, fPtSubLeading, fTheta, fNSub2DR, fNSub1, fNSub2, fAngularity, fPairPt, fPairEnergy, fPairTheta]
         extra:
           fY: log((sqrt(1.864**2 + (fPt * cosh(fEta))**2) + fPt * sinh(fEta)) / sqrt(1.864**2 + fPt**2)) #TODO : change mass or make sure Lc mass is updated
         extract_component:
