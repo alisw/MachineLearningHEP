@@ -13,7 +13,7 @@
 
 D0Jet_pp:
   doml: true
-  mass: 1.864
+  mass: 1.86484
   sel_reco_unp: "fPt > 1."
   sel_reco_singletrac_unp: null
   sel_gen_unp: "fPt > 1. and fPt < 10."
@@ -387,7 +387,7 @@ D0Jet_pp:
       counter_tvx: fReadCountsWithTVX
       xsection_inel: 59.4 # (mb) cross-section of minimum-bias events # used # systematics
       xsection_inel_mc: .65 # 1.68 # (mb) cross-section of minimum-bias events # used
-      branching_ratio: 3.95e-2 # used # FIXME
+      branching_ratio: 3.947e-2 # used
 
       observables:
         zg:

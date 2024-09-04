@@ -13,7 +13,7 @@
 
 LcJet_pp:
   doml: true
-  mass: 2.286
+  mass: 2.28646
   sel_reco_unp: "fPt>0"
   sel_gen_unp: "fPt>0"
   sel_cen_unp: null
@@ -314,7 +314,7 @@ LcJet_pp:
       FF: 0.204 # fragmentation fraction
       sigma_MB: 57.8e-3  # Minimum Bias cross section (pp) 50.87e-3 [b], 1 for Pb-Pb
       Taa: 1 # 23260 [b^-1] in 0-10% Pb-Pb, 3917 [b^-1] in 30-50% Pb-Pb, 1 for pp
-      BR: 6.23e-2 # branching ratio of the decay Lc -> p K- pi+
+      BR: 6.24e-2 # branching ratio of the decay Lc -> p K- pi+
       f_prompt: 0.9 # estimated fraction of prompt candidates
       bkg_data_fraction: 0.05 # fraction of real data used in the estimation
       num_steps: 111 # number of steps used in efficiency and signif. estimation
@@ -365,7 +365,7 @@ LcJet_pp:
       counter_tvx: fReadCountsWithTVX
       xsection_inel: 59.4 # (mb) cross-section of minimum-bias events # used # systematics
       xsection_inel_mc: .65 # 1.68 # (mb) cross-section of minimum-bias events # used
-      branching_ratio: 3.95e-2 # used # FIXME
+      branching_ratio: 6.24e-2 # used
 
       observables:
         zg:
