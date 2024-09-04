@@ -350,8 +350,8 @@ categories:
                     analysis:
                         jet_obs:
                             xsection_inel: [54.91, 60.69]  # TODO: update values for Run 3
-    tracking:  # TODO
-        activate: no
+    tracking:
+        activate: yes
         processor: true
         label: "JES"
         correlation: "corr"
