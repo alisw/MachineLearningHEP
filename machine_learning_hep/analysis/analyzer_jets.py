@@ -95,7 +95,9 @@ class AnalyzerJets(Analyzer):
         self.hfeeddown_det = {'mc': {}, 'data': {}}
         self.h_reflcorr = create_hist('h_reflcorr', ';p_{T}^{HF} (GeV/#it{c})', self.bins_candpt)
         self.n_events = {}
-        self.n_colls = {}
+        self.n_colls_read = {}
+        self.n_colls_tvx = {}
+        self.n_bcs_tvx = {}
 
         self.path_fig = Path(f'{os.path.expandvars(self.d_resultsallpdata)}/fig')
         for folder in ['qa', 'fit', 'roofit', 'sideband', 'signalextr', 'sidesub', 'sigextr', 'fd', 'uf', 'eff']:
@@ -145,9 +147,13 @@ class AnalyzerJets(Analyzer):
                 if not histonorm:
                     self.logger.critical('histonorm not found')
                 self.n_events[mcordata] = histonorm.GetBinContent(1)
-                self.n_colls[mcordata] = histonorm.GetBinContent(2)
-                self.logger.info('Number of sampled collisions for %s: %g', mcordata, self.n_colls[mcordata])
+                self.n_colls_read[mcordata] = histonorm.GetBinContent(2)
+                self.n_colls_tvx[mcordata] = histonorm.GetBinContent(3)
+                self.n_bcs_tvx[mcordata] = histonorm.GetBinContent(4)
                 self.logger.debug('Number of selected events for %s: %d', mcordata, self.n_events[mcordata])
+                self.logger.info('Number of sampled collisions for %s: %g', mcordata, self.n_colls_read[mcordata])
+                self.logger.info('Number of TVX collisions for %s: %g', mcordata, self.n_colls_tvx[mcordata])
+                self.logger.info('Number of TVX BCs for %s: %g', mcordata, self.n_bcs_tvx[mcordata])
 
     def qa(self): # pylint: disable=invalid-name
         self.logger.info("Producing basic QA histograms")
@@ -916,9 +922,7 @@ class AnalyzerJets(Analyzer):
         with TFile(self.cfg('fd_root')) as rfile:
             powheg_xsection = rfile.Get('fHistXsection')
             powheg_xsection_scale_factor = powheg_xsection.GetBinContent(1) / powheg_xsection.GetEntries()
-        self.logger.info('powheg scale factor %g', powheg_xsection_scale_factor)
-        self.logger.info('number of collisions in data: %g', self.n_colls['data'])
-        self.logger.info('number of collisions in MC: %g', self.n_colls['mc'])
+        self.logger.info('POWHEG luminosity (mb^{-1}): %g', 1. / powheg_xsection_scale_factor)
 
         df = pd.read_parquet(self.cfg('fd_parquet'))
         col_mapping = {'dr': 'delta_r_jet', 'zpar': 'z'} # TODO: check mapping
@@ -1047,8 +1051,14 @@ class AnalyzerJets(Analyzer):
             hfeeddown_det.Scale(powheg_xsection_scale_factor * self.cfg('branching_ratio'))
             hfeeddown_det_mc = hfeeddown_det.Clone()
             hfeeddown_det_mc.SetName(hfeeddown_det_mc.GetName() + '_mc')
-            hfeeddown_det.Scale(self.n_colls['data'] / self.cfg('xsection_inel'))
-            hfeeddown_det_mc.Scale(self.n_colls['mc'] / self.cfg('xsection_inel_mc'))
+            luminosity_data = (self.n_colls_read['data'] / self.n_colls_tvx['data'] *
+                               self.n_bcs_tvx['data'] / self.cfg('xsection_inel'))
+            self.logger.info("Scaling feed-down with data luminosity (mb^{-1}): %g", luminosity_data)
+            hfeeddown_det.Scale(luminosity_data)
+            luminosity_mc = (self.n_colls_read['mc'] / self.n_colls_tvx['mc'] *
+                               self.n_bcs_tvx['mc'] / self.cfg('xsection_inel_mc'))
+            self.logger.info("Scaling feed-down with MC luminosity (mb^{-1}): %g", luminosity_mc)
+            hfeeddown_det_mc.Scale(luminosity_mc)
 
             self._save_hist(hfeeddown_det, f'fd/h_ptjet-{var}_feeddown_det_final.png')
             self._save_hist(hfeeddown_det, f'fd/h_ptjet-{var}_feeddown_det_final_mc.png')

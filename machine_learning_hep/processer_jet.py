@@ -24,7 +24,7 @@ from machine_learning_hep.utilities import dfquery, read_df
 from machine_learning_hep.utils.hist import bin_array, create_hist, fill_hist, get_axis, get_range
 
 
-# pylint: disable=too-many-instance-attributes
+# pylint: disable=too-many-instance-attributes, too-many-statements
 class ProcesserJets(Processer):
     species = "processer"
 
@@ -170,15 +170,24 @@ class ProcesserJets(Processer):
 
         with TFile.Open(self.l_histomass[index], "recreate") as _:
             dfevtorig = read_df(self.l_evtorig[index])
-            histonorm = TH1F("histonorm", "histonorm", 2, 0, 2)
+            histonorm = TH1F("histonorm", "histonorm", 4, 0, 4)
             histonorm.SetBinContent(1, len(dfquery(dfevtorig, self.s_evtsel)))
             dfcollcnt = read_df(self.l_collcnt[index])
-            ser_collcnt = dfcollcnt[self.cfg('cnt_events_read', 'fReadSelectedCounts')]
-            collcnt = functools.reduce(lambda x,y: float(x)+float(y), (ar[0] for ar in ser_collcnt))
-            self.logger.info('sampled %g collisions', collcnt)
-            histonorm.SetBinContent(2, collcnt)
+            ser_collcnt = dfcollcnt[self.cfg(f'counter_read_{self.mcordata}')]
+            collcnt_read = functools.reduce(lambda x,y: float(x)+float(y), (ar[0] for ar in ser_collcnt))
+            ser_collcnt = dfcollcnt[self.cfg('counter_tvx')]
+            collcnt_tvx = functools.reduce(lambda x,y: float(x)+float(y), (ar[0] for ar in ser_collcnt))
+            dfbccnt = read_df(self.l_bccnt[index])
+            ser_bccnt = dfbccnt[self.cfg('counter_tvx')]
+            bccnt_tvx = functools.reduce(lambda x,y: float(x)+float(y), (ar[0] for ar in ser_bccnt))
+            self.logger.info('sampled %g collisions', collcnt_read)
+            histonorm.SetBinContent(2, collcnt_read)
+            histonorm.SetBinContent(3, collcnt_tvx)
+            histonorm.SetBinContent(4, bccnt_tvx)
             get_axis(histonorm, 0).SetBinLabel(1, 'N_{evt}')
             get_axis(histonorm, 0).SetBinLabel(2, 'N_{coll}')
+            get_axis(histonorm, 0).SetBinLabel(3, 'N_{coll}^{TVX}')
+            get_axis(histonorm, 0).SetBinLabel(4, 'N_{BC}^{TVX}')
             histonorm.Write()
 
             df = pd.concat(read_df(self.mptfiles_recosk[bin][index]) for bin in self.active_bins_skim)

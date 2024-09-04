@@ -182,6 +182,9 @@ D0Jet_pp:
       collcnt:
         level: all
         file: AnalysisResultsCollCnt.parquet
+      bccnt:
+        level: all
+        file: AnalysisResultsBcCnt.parquet
 
   variables:
     var_all: [fDecayLength, fDecayLengthXY, fDecayLengthNormalised, fDecayLengthXYNormalised, fCpa, fCpaXY, fImpactParameter0, fImpactParameter1, fErrorImpactParameter0, fErrorImpactParameter1, fNSigTpcPiExpPi, fNSigTpcKaExpPi, fNSigTpcPiExpKa, fNSigTpcKaExpKa]
@@ -232,6 +235,7 @@ D0Jet_pp:
     namefile_reco: AnalysisResultsReco.parquet
     namefile_evt: AnalysisResultsEvt.parquet
     namefile_collcnt: AnalysisResultsCollCnt.parquet
+    namefile_bccnt: AnalysisResultsBcCnt.parquet
     namefile_evtvalroot: AnalysisResultsROOTEvtVal.root
     namefile_evtorig: AnalysisResultsEvtOrig.parquet
     namefile_gen: AnalysisResultsGen.parquet
@@ -375,13 +379,15 @@ D0Jet_pp:
     jet_obs: &jet_default
       sel_an_binmin:    [1,2,3,4,5,6,7,8,10,12,16,24] # hadron pt bins (sel_an_binmin bins)
       sel_an_binmax:    [2,3,4,5,6,7,8,10,12,16,24,36] # hadron pt bins (sel_an_binmin bins) # FIXME: move the last edge in sel_an_binmin
-      bins_ptjet: [5, 7, 15, 30, 50] # systematics
-      # TODO: split rec and gen binning
-      bins_ptjet_eff: [2, 5, 7, 15, 30, 50, 70]
-
+      bins_ptjet: [5, 7, 15, 30, 50] # systematics, TODO: split rec and gen binning
+      bins_ptjet_eff: [2, 5, 7, 15, 30, 50, 70] # systematics, TODO: split rec and gen binning
       cand_collidx: fIndexHfD0CollBases
-      # sigmamb: 57.8e-3 #NB: multiplied by 1e12 before giving to HFPtSpectrum!
-      cnt_events_read: fReadCountsWithTVXAndZVertexAndSel8
+      counter_read_data: fReadCountsWithTVXAndZVertexAndSel8
+      counter_read_mc: fReadCountsWithTVXAndZVertexAndSelMC
+      counter_tvx: fReadCountsWithTVX
+      xsection_inel: 59.4 # (mb) cross-section of minimum-bias events # used # systematics
+      xsection_inel_mc: .65 # 1.68 # (mb) cross-section of minimum-bias events # used
+      branching_ratio: 3.95e-2 # used # FIXME
 
       observables:
         zg:
@@ -696,10 +702,6 @@ D0Jet_pp:
       fd_root: '/data2/vkucera/powheg/trees_powheg_fd_central.root' # systematics
       fd_parquet: '/data2/jklein/powheg/trees_powheg_fd_central.parquet' # systematics
 
-      branching_ratio: 3.95e-2 # used
-      xsection_inel: 57.8 # (mb) cross-section of minimum-bias events # used # systematics
-      xsection_inel_mc: .65 # 1.68 # (mb) cross-section of minimum-bias events # used
-
       # obsolete?
       proc_type: Jets # used
       useperiod: [1] #list of periods # used
@@ -786,7 +788,6 @@ D0Jet_pp:
       # doprior: false
       # domodeldep: false
       # path_modeldep: /home/nzardosh/PYTHIA_Sim/PYTHIA8_Simulations/Plots/D0_Substructure_Simulations_Output.root
-
 
       # replace with fd_root...
       # powheg_path_nonprompt: /data/POWHEG/trees_powheg_fd_central.root

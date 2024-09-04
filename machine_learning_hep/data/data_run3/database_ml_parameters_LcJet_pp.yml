@@ -169,6 +169,9 @@ LcJet_pp:
       collcnt:
         level: all
         file: AnalysisResultsCollCnt.parquet
+      bccnt:
+        level: all
+        file: AnalysisResultsBcCnt.parquet
 
   variables:
     var_all: [fIndexCollisions, fFlagMcMatchRec, fCandidateSelFlag, fOriginMcRec, fIsCandidateSwapped, fNProngsContributorsPV,
@@ -222,6 +225,7 @@ LcJet_pp:
     namefile_reco: AnalysisResultsReco.parquet
     namefile_evt: AnalysisResultsEvt.parquet
     namefile_collcnt: AnalysisResultsCollCnt.parquet
+    namefile_bccnt: AnalysisResultsBcCnt.parquet
     namefile_evtvalroot: AnalysisResultsROOTEvtVal.root
     namefile_evtorig: AnalysisResultsEvtOrig.parquet
     namefile_gen: AnalysisResultsGen.parquet
@@ -353,11 +357,15 @@ LcJet_pp:
     jet_obs: &jet_default
       sel_an_binmin:    [3,4,5,6,7,8,10,12,16] # hadron pt bins (sel_an_binmin bins)
       sel_an_binmax:      [4,5,6,7,8,10,12,16,24] # hadron pt bins (sel_an_binmin bins)
-      # binning_matching:   [0, 1, 1, 2, 2, 3, 3, 4, 4, 6, 6] # mapping to skimming pt bins (sel_an_binmin bins)
-      bins_ptjet: [5, 7, 15, 30, 50]
-      bins_ptjet_eff: [2, 5, 7, 15, 30, 50, 70]
+      bins_ptjet: [5, 7, 15, 30, 50] # systematics, TODO: split rec and gen binning
+      bins_ptjet_eff: [2, 5, 7, 15, 30, 50, 70] # systematics, TODO: split rec and gen binning
       cand_collidx: fIndexHf3PCollBases
-      cnt_events_read: fReadCountsWithTVXAndZVertexAndSel8
+      counter_read_data: fReadCountsWithTVXAndZVertexAndSel8
+      counter_read_mc: fReadCountsWithTVXAndZVertexAndSelMC
+      counter_tvx: fReadCountsWithTVX
+      xsection_inel: 59.4 # (mb) cross-section of minimum-bias events # used # systematics
+      xsection_inel_mc: .65 # 1.68 # (mb) cross-section of minimum-bias events # used
+      branching_ratio: 3.95e-2 # used # FIXME
 
       observables:
         zg:
@@ -552,10 +560,6 @@ LcJet_pp:
 
       niterunfolding: 15
       niterunfoldingchosen: 4
-
-      branching_ratio: 3.95e-2
-      xsection_inel: 57.8 # (mb) cross-section of minimum-bias events
-      xsection_inel_mc: 57.8 # (mb) cross-section of minimum-bias events
 
       doprior: false
       domodeldep: false
