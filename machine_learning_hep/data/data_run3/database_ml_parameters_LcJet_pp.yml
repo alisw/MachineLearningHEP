@@ -57,7 +57,10 @@ LcJet_pp:
           fIsEventReject: 0
       collcnt:
         trees:
-          O2collcount: [fReadCounts, fReadCountsWithTVX, fReadCountsWithTVXAndZVertexAndSel8]
+          O2collcount: [fReadCounts, fReadCountsWithTVX, fReadCountsWithTVXAndZVertexAndSel8, fReadCountsWithTVXAndZVertexAndSelMC]
+      bccnt:
+        trees:
+          O2bccount: [fReadCountsWithTVX, fReadCountsWithTVXAndNoTFB, fReadCountsWithTVXAndNoTFBAndNoITSROFB]
 
       # collgen:
       #   level: gen
@@ -235,7 +238,7 @@ LcJet_pp:
   #region multi
   multi:
     data:
-      nprocessesparallel: 20
+      nprocessesparallel: 80
       maxfiles: [-1] #list of periods
       chunksizeunp:  [100] #list of periods
       chunksizeskim: [100] #list of periods
@@ -245,25 +248,25 @@ LcJet_pp:
       select_period: [1]
       prefix_dir: /data2/MLhep/real/
       unmerged_tree_dir: [train_257594/alice/] #list of periods
-      pkl: ['${USER}/train_257594/lcjet/pkl'] #list of periods
-      pkl_skimmed: ['${USER}/train_257594/lcjet/pklsk'] #list of periods
+      pkl: [ldellost/train_257594/lcjet/pkl] #list of periods
+      pkl_skimmed: [ldellost/train_257594/lcjet/pklsk] #list of periods
       pkl_skimmed_merge_for_ml: ['${USER}/train_257594/lcjet/pklskml'] #list of periods
       pkl_skimmed_merge_for_ml_all: '${USER}/train_257594/lcjet/pp_data_mltot'
       pkl_evtcounter_all: '${USER}/train_257594/lcjet/pp_data_evttot'
       mcreweights: [../Analyses] #list of periods
     mc:
-      nprocessesparallel: 20
+      nprocessesparallel: 80
       maxfiles: [-1] #list of periods
       chunksizeunp: [100] #list of periods
       chunksizeskim: [1000] #list of periods
-      fracmerge: [1.0] #list of periods
+      fracmerge: [1.] #list of periods
       seedmerge: [12] #list of periods
       period: [LHC24d3b] #list of periods
       select_period: [1]
       prefix_dir: /data2/MLhep/sim/
       unmerged_tree_dir: [train_257383/alice]
-      pkl: ['${USER}/train_257383/lcjet/pkl'] #list of periods
-      pkl_skimmed: ['${USER}/train_257383/lcjet/pklsk'] #list of periods
+      pkl: [ldellost/train_257383/lcjet/pkl] #list of periods
+      pkl_skimmed: [ldellost/train_257383/lcjet/pklsk] #list of periods
       pkl_skimmed_merge_for_ml: ['${USER}/train_257383/lcjet/pklskml'] #list of periods
       pkl_skimmed_merge_for_ml_all: '${USER}/lcjet/pp_mc_prod_mltot'
       pkl_evtcounter_all: '${USER}/lcjet/pp_mc_prod_evttot'
@@ -348,9 +351,9 @@ LcJet_pp:
     dir_general_plots: '/data2/${USER}/data/analysis_plots'
 
     jet_obs: &jet_default
-      sel_an_binmin:    [3,4,5,6,7,8,10,12,16,24] # hadron pt bins (sel_an_binmin bins)
-      sel_an_binmax:      [4,5,6,7,8,10,12,16,24,36] # hadron pt bins (sel_an_binmin bins)
-      # binning_matching:   [0, 1, 1, 2, 2, 3, 3, 4, 4, 6, 6, 6] # mapping to skimming pt bins (sel_an_binmin bins)
+      sel_an_binmin:    [3,4,5,6,7,8,10,12,16] # hadron pt bins (sel_an_binmin bins)
+      sel_an_binmax:      [4,5,6,7,8,10,12,16,24] # hadron pt bins (sel_an_binmin bins)
+      # binning_matching:   [0, 1, 1, 2, 2, 3, 3, 4, 4, 6, 6] # mapping to skimming pt bins (sel_an_binmin bins)
       bins_ptjet: [5, 7, 15, 30, 50]
       bins_ptjet_eff: [2, 5, 7, 15, 30, 50, 70]
       cand_collidx: fIndexHf3PCollBases
@@ -407,7 +410,7 @@ LcJet_pp:
             model:
               fn: 'SUM::sig(f_peak[0.,1.]*peak, wide)'
         - ptrange: [1., 5.]
-          range: [2.13, 2.44]
+          range: [2.16, 2.40]
           fix_params: ['n', 'f_peak']
           # per_ptjet: true
           components:
@@ -464,6 +467,7 @@ LcJet_pp:
       unfolding_iterations: 8 # used, maximum iteration
       unfolding_iterations_sel: 5 # used, selected iteration # systematics
 
+      fd_method: new
       fd_root: '/data2/vkucera/powheg/trees_powheg_fd_F05_R05.root'
       fd_parquet: '/data2/jklein/powheg/Lc_powheg_fd_F05_R05.parquet'
 
@@ -516,24 +520,24 @@ LcJet_pp:
         <<: *mc_out_default
 
       # simple fitter START
-      sgnfunc: [0,0,0,0,0,0,0,0,0,0,0,0] # kGaus=0, k2Gaus=1, k2GausSigmaRatioPar=2 (sel_an_binmin bins)
-      bkgfunc: [0,0,0,0,0,0,0,0,0,0,0,0] # kExpo=0, kLin=1, kPol2=2, kNoBk=3, kPow=4, kPowEx=5 (sel_an_binmin bins)
+      sgnfunc: [0,0,0,0,0,0,0,0,0,0,0] # kGaus=0, k2Gaus=1, k2GausSigmaRatioPar=2 (sel_an_binmin bins)
+      bkgfunc: [0,0,0,0,0,0,0,0,0,0,0] # kExpo=0, kLin=1, kPol2=2, kNoBk=3, kPow=4, kPowEx=5 (sel_an_binmin bins)
       masspeak: 2.286
-      massmin: [1.66,1.66,1.66,1.66,1.66,1.66,1.66,1.66,1.66,1.66,1.66,1.66] # sel_an_binmin bins, fit region of the invariant mass distribution [GeV/c^2]
-      massmax: [2.06,2.06,2.06,2.06,2.06,2.06,2.06,2.06,2.06,2.06,2.06,2.06] # sel_an_binmin bins, fit region of the invariant mass distribution [GeV/c^2]
+      massmin: [1.66,1.66,1.66,1.66,1.66,1.66,1.66,1.66,1.66,1.66,1.66,] # sel_an_binmin bins, fit region of the invariant mass distribution [GeV/c^2]
+      massmax: [2.06,2.06,2.06,2.06,2.06,2.06,2.06,2.06,2.06,2.06,2.06] # sel_an_binmin bins, fit region of the invariant mass distribution [GeV/c^2]
       rebin: [6,6,6,6,6,6,6,6,6,6,6,6] # sel_an_binmin bins
-      fix_mean: [false, false, false, false, false, false, false, false, false, false, false, false] # sel_an_binmin bins
+      fix_mean: [false, false, false, false, false, false, false, false, false, false, false] # sel_an_binmin bins
       masspeaksec: 2.286
 
       # If SetArraySigma true: sigma_initial is taken from sigmaarray; false: sigma_initial is taken from MC
       # If SetFixGaussianSigma true: sigma fixed to sigma_initial
-      # SetFixGaussianSigma: [false, false, false, false, false, false, false, false, false, false, false, false] # sel_an_binmin bins
-      SetFixGaussianSigma: [true, true, true, true, true, true, true, true, true, true, true, true] # sel_an_binmin bins
-      SetArraySigma: [false, false, false, false, false, false, false, false, false, false, false, false] # sel_an_binmin bins
-      sigmaarray: [0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01] # initial sigma (sel_an_binmin bins)
+      # SetFixGaussianSigma: [false, false, false, false, false, false, false, false, false, false, false] # sel_an_binmin bins
+      SetFixGaussianSigma: [true, true, true, true, true, true, true, true, true, true] # sel_an_binmin bins
+      SetArraySigma: [false, false, false, false, false, false, false, false, false, false, false] # sel_an_binmin bins
+      sigmaarray: [0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01] # initial sigma (sel_an_binmin bins)
 
-      fix_sigmasec: [true, true, true, true, true, true, true, true, true, true, true, true] # sel_an_binmin bins
-      sigmaarraysec: [0.007497,0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01] # sel_an_binmin bins
+      fix_sigmasec: [true, true, true, true, true, true, true, true, true] # sel_an_binmin bins
+      sigmaarraysec: [0.007497,0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01] # sel_an_binmin bins
       use_reflections: true
       # simple fitter END
 
@@ -570,7 +574,7 @@ LcJet_pp:
 
       # Additional cuts applied before mass histogram is filled
       use_cuts: True
-      cuts: ["mlPromptScore > 0.97", "mlPromptScore > 0.9", "mlPromptScore > 0.9", "mlPromptScore > 0.85", "mlPromptScore > 0.85", "mlPromptScore > 0.8", "mlPromptScore > 0.8", "mlPromptScore > 0.6", "mlPromptScore > 0.6", null]  # (sel_an_binmin bins) systematics FIXME: Update for new model.
+      cuts: ["mlPromptScore > 0.97", "mlPromptScore > 0.9", "mlPromptScore > 0.9", "mlPromptScore > 0.85", "mlPromptScore > 0.85", "mlPromptScore > 0.8", "mlPromptScore > 0.8", "mlPromptScore > 0.6", "mlPromptScore > 0.6"]  # (sel_an_binmin bins) systematics FIXME: Update for new model.
 
   systematics:  # used in machine_learning_hep/analysis/systematics.py
     probvariation:

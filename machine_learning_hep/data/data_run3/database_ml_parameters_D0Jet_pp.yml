@@ -58,8 +58,10 @@ D0jet_pp:
         filter: "abs(fPosZ) < 10."
       collcnt:
         trees:
-          # O2d0collcount: [fReadCounts, fReadSelectedCounts, fWrittenCounts]  # old
-          O2collcount: [fReadCounts, fReadCountsWithTVX, fReadCountsWithTVXAndZVertexAndSel8]  # new
+          O2collcount: [fReadCounts, fReadCountsWithTVX, fReadCountsWithTVXAndZVertexAndSel8, fReadCountsWithTVXAndZVertexAndSelMC]
+      bccnt:
+        trees:
+          O2bccount: [fReadCountsWithTVX, fReadCountsWithTVXAndNoTFB, fReadCountsWithTVXAndNoTFBAndNoITSROFB]
 
       collgen: # TODO: check if we can use the HF collision table instead
         level: gen
@@ -101,8 +103,7 @@ D0jet_pp:
                       fImpactParameter0, fImpactParameter1,
                       fImpactParameterNormalised0, fImpactParameterNormalised1,
                       fPtProng0, fPtProng1,
-                      fNSigTpcPi, fNSigTpcKa,
-                      fNSigTofPi, fNSigTofKa]
+                      fNSigTpcPiExpPi, fNSigTpcKaExpPi, fNSigTpcPiExpKa, fNSigTpcKaExpKa]
           O2hfd0pare: [fErrorDecayLength, fErrorDecayLengthXY,
                       fErrorImpactParameter0, fErrorImpactParameter1]
           O2hfd0sel: [fCandidateSelFlag]
@@ -143,8 +144,7 @@ D0jet_pp:
                       fImpactParameter0, fImpactParameter1,
                       fImpactParameterNormalised0, fImpactParameterNormalised1,
                       fPtProng0, fPtProng1,
-                      fNSigTpcPi, fNSigTpcKa,
-                      fNSigTofPi, fNSigTofKa]
+                      fNSigTpcPiExpPi, fNSigTpcKaExpPi, fNSigTpcPiExpKa, fNSigTpcKaExpKa]
           O2hfd0pare: [fErrorDecayLength, fErrorDecayLengthXY,
                       fErrorImpactParameter0, fErrorImpactParameter1]
           O2hfd0ml: [fMlScores]
@@ -184,8 +184,14 @@ D0jet_pp:
         file: AnalysisResultsCollCnt.parquet
 
   variables:
-    var_all: [fDecayLength, fDecayLengthXY, fDecayLengthNormalised, fDecayLengthXYNormalised, fCpa, fCpaXY, fImpactParameter0, fImpactParameter1, fErrorImpactParameter0, fErrorImpactParameter1, fNSigTpcPi, fNSigTpcKa, fNSigTofPi, fNSigTofKa]
-    var_training: [[fDecayLength, fDecayLengthXY, fDecayLengthNormalised, fDecayLengthXYNormalised, fCpa, fCpaXY, fImpactParameter0, fImpactParameter1, fErrorImpactParameter0, fErrorImpactParameter1, fNSigTpcPi, fNSigTpcKa, fNSigTofPi, fNSigTofKa], [fDecayLength, fDecayLengthXY, fDecayLengthNormalised, fDecayLengthXYNormalised, fCpa, fCpaXY, fImpactParameter0, fImpactParameter1, fErrorImpactParameter0, fErrorImpactParameter1, fNSigTpcPi, fNSigTpcKa, fNSigTofPi, fNSigTofKa], [fDecayLength, fDecayLengthXY, fDecayLengthNormalised, fDecayLengthXYNormalised, fCpa, fCpaXY, fImpactParameter0, fImpactParameter1, fErrorImpactParameter0, fErrorImpactParameter1, fNSigTpcPi, fNSigTpcKa, fNSigTofPi, fNSigTofKa], [fDecayLength, fDecayLengthXY, fDecayLengthNormalised, fDecayLengthXYNormalised, fCpa, fCpaXY, fImpactParameter0, fImpactParameter1, fErrorImpactParameter0, fErrorImpactParameter1, fNSigTpcPi, fNSigTpcKa, fNSigTofPi, fNSigTofKa], [fDecayLength, fDecayLengthXY, fDecayLengthNormalised, fDecayLengthXYNormalised, fCpa, fCpaXY, fImpactParameter0, fImpactParameter1, fErrorImpactParameter0, fErrorImpactParameter1, fNSigTpcPi, fNSigTpcKa, fNSigTofPi, fNSigTofKa], [fDecayLength, fDecayLengthXY, fDecayLengthNormalised, fDecayLengthXYNormalised, fCpa, fCpaXY, fImpactParameter0, fImpactParameter1, fErrorImpactParameter0, fErrorImpactParameter1, fNSigTpcPi, fNSigTpcKa, fNSigTofPi, fNSigTofKa], [fDecayLength, fDecayLengthXY, fDecayLengthNormalised, fDecayLengthXYNormalised, fCpa, fCpaXY, fImpactParameter0, fImpactParameter1, fErrorImpactParameter0, fErrorImpactParameter1, fNSigTpcPi, fNSigTpcKa, fNSigTofPi, fNSigTofKa]]
+    var_all: [fDecayLength, fDecayLengthXY, fDecayLengthNormalised, fDecayLengthXYNormalised, fCpa, fCpaXY, fImpactParameter0, fImpactParameter1, fErrorImpactParameter0, fErrorImpactParameter1, fNSigTpcPiExpPi, fNSigTpcKaExpPi, fNSigTpcPiExpKa, fNSigTpcKaExpKa]
+    var_training: [[fDecayLength, fDecayLengthXY, fDecayLengthNormalised, fDecayLengthXYNormalised, fCpa, fCpaXY, fImpactParameter0, fImpactParameter1, fErrorImpactParameter0, fErrorImpactParameter1, fNSigTpcPiExpPi, fNSigTpcKaExpPi, fNSigTpcPiExpKa, fNSigTpcKaExpKa],
+                   [fDecayLength, fDecayLengthXY, fDecayLengthNormalised, fDecayLengthXYNormalised, fCpa, fCpaXY, fImpactParameter0, fImpactParameter1, fErrorImpactParameter0, fErrorImpactParameter1, fNSigTpcPiExpPi, fNSigTpcKaExpPi, fNSigTpcPiExpKa, fNSigTpcKaExpKa],
+                   [fDecayLength, fDecayLengthXY, fDecayLengthNormalised, fDecayLengthXYNormalised, fCpa, fCpaXY, fImpactParameter0, fImpactParameter1, fErrorImpactParameter0, fErrorImpactParameter1, fNSigTpcPiExpPi, fNSigTpcKaExpPi, fNSigTpcPiExpKa, fNSigTpcKaExpKa],
+                   [fDecayLength, fDecayLengthXY, fDecayLengthNormalised, fDecayLengthXYNormalised, fCpa, fCpaXY, fImpactParameter0, fImpactParameter1, fErrorImpactParameter0, fErrorImpactParameter1, fNSigTpcPiExpPi, fNSigTpcKaExpPi, fNSigTpcPiExpKa, fNSigTpcKaExpKa],
+                   [fDecayLength, fDecayLengthXY, fDecayLengthNormalised, fDecayLengthXYNormalised, fCpa, fCpaXY, fImpactParameter0, fImpactParameter1, fErrorImpactParameter0, fErrorImpactParameter1, fNSigTpcPiExpPi, fNSigTpcKaExpPi, fNSigTpcPiExpKa, fNSigTpcKaExpKa],
+                   [fDecayLength, fDecayLengthXY, fDecayLengthNormalised, fDecayLengthXYNormalised, fCpa, fCpaXY, fImpactParameter0, fImpactParameter1, fErrorImpactParameter0, fErrorImpactParameter1, fNSigTpcPiExpPi, fNSigTpcKaExpPi, fNSigTpcPiExpKa, fNSigTpcKaExpKa],
+                   [fDecayLength, fDecayLengthXY, fDecayLengthNormalised, fDecayLengthXYNormalised, fCpa, fCpaXY, fImpactParameter0, fImpactParameter1, fErrorImpactParameter0, fErrorImpactParameter1, fNSigTpcPiExpPi, fNSigTpcKaExpPi, fNSigTpcPiExpKa, fNSigTpcKaExpKa]]
       #TODO: add new variables for dca, max_norm_d0d0exp
       # sel_skim_binmin bins
     var_boundaries: [fCosThetaStar, fPtProng]
@@ -250,7 +256,8 @@ D0jet_pp:
       seedmerge: [12] #list of periods
       period: [LHC22o] #list of periods
       select_period: [1]
-      prefix_dir: /data2/MLhep/real/train_257023/ # full stats
+      prefix_dir: /data2/MLhep/real/train_260031/ # full stats new
+      # prefix_dir: /data2/MLhep/real/train_257023/ # full stats
       # prefix_dir: /data2/MLhep/real/train_240309/ # Andrea's model
       # prefix_dir: /data2/MLhep/real/train_245508/ # pass7
       # prefix_dir: /data2/MLhep/real/train_245509/ # no TOF
@@ -268,11 +275,12 @@ D0jet_pp:
       maxfiles: [-1] #list of periods
       chunksizeunp: [100] #list of periods
       chunksizeskim: [1000] #list of periods
-      fracmerge: [.1] #list of periods
+      fracmerge: [1.] #list of periods
       seedmerge: [12] #list of periods
-      period: [LHC24d3a] #list of periods
+      period: [LHC24d3b] #list of periods
       select_period: [1]
-      prefix_dir: /data2/MLhep/sim/train_257228/ # full stats
+      prefix_dir: /data2/MLhep/sim/train_259456/ # full stats new
+      # prefix_dir: /data2/MLhep/sim/train_257228/ # full stats
       # prefix_dir: /data2/MLhep/sim/train_257227/ # 97 % tracking eff
       # prefix_dir: /data2/MLhep/sim/train_239774/ # Andrea's model
       # prefix_dir: /data2/MLhep/sim/train_244893/ # no TOF
@@ -792,7 +800,7 @@ D0jet_pp:
 
       # Additional cuts applied before mass histogram is filled
       use_cuts: True  # systematics
-      cuts: ["mlBkgScore < 0.02", "mlBkgScore < 0.02", "mlBkgScore < 0.04", "mlBkgScore < 0.06", "mlBkgScore < .08", "mlBkgScore < 0.14", "mlBkgScore < 0.14", "mlBkgScore < 0.26", "mlBkgScore < 0.26", "mlBkgScore < 0.46", "mlBkgScore < 0.52", "mlBkgScore < 0.52"]  # (sel_an_binmin bins) systematics FIXME: Update for new model.
+      cuts: ["mlBkgScore < 0.02", "mlBkgScore < 0.02", "mlBkgScore < 0.02", "mlBkgScore < 0.05", "mlBkgScore < 0.06", "mlBkgScore < 0.08", "mlBkgScore < 0.08", "mlBkgScore < 0.10", "mlBkgScore < 0.10", "mlBkgScore < 0.20", "mlBkgScore < 0.25", "mlBkgScore < 0.30"]  # (sel_an_binmin bins) systematics FIXME: Update for new model.
 
   systematics:  # used in machine_learning_hep/analysis/systematics.py
     probvariation:
