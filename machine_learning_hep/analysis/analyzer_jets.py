@@ -623,9 +623,9 @@ class AnalyzerJets(Analyzer):
                 areaNormFactor = area['signal'] / (area['sideband_left'] + area['sideband_right'])
                 fh_sideband.Scale(areaNormFactor)
 
+        self._save_hist(fh_sideband,
+                        f'sideband/h_ptjet{label}_sideband_{string_range_pthf(range_pthf)}_{mcordata}.png')
         if subtract_sidebands:
-            self._save_hist(fh_sideband,
-                            f'sideband/h_ptjet{label}_sideband_{string_range_pthf(range_pthf)}_{mcordata}.png')
             fh_subtracted.Add(fh_sideband, -1.)
 
         self._clip_neg(fh_subtracted)
