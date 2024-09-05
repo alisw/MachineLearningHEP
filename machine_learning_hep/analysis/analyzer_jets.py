@@ -226,7 +226,7 @@ class AnalyzerJets(Analyzer):
                 # gen-level efficiency for feeddown estimation
                 h_eff_gen = h_genmatch[cat].Clone()
                 h_eff_gen.Divide(h_gen[cat])
-                self._save_hist(h_eff_gen, f'eff/h_effgen_{cat}.png')
+                self._save_hist(h_eff_gen, f'eff/h_effgen_{cat}.png', 'text')
                 self.hcandeff_gen[cat] = h_eff_gen
 
                 # matching loss
@@ -947,7 +947,6 @@ class AnalyzerJets(Analyzer):
                                          f';p_{{T}}^{{jet}} (GeV/#it{{c}});p_{{T}}^{{HF}} (GeV/#it{{c}});{var}',
                                          bins_ptjet, self.bins_candpt, bins_obs[var])
             fill_hist_fast(h3_fd_gen_orig, df[['pt_jet', 'pt_cand', f'{colname}']])
-            self._save_hist(project_hist(h3_fd_gen_orig, [0, 2], {}), f'fd/h_ptjet-{var}_feeddown_gen_noeffscaling.png')
 
             # new method
             h3_fd_gen = h3_fd_gen_orig.Clone()
@@ -955,10 +954,11 @@ class AnalyzerJets(Analyzer):
             self._save_hist(project_hist(h3_fd_gen, [0, 2], {}), f'fd/h_ptjet-{var}_fdnew_gen.png')
             # apply np efficiency
             for ipt in range(get_nbins(h3_fd_gen, 1)):
-                eff_np = self.hcandeff_gen['np'].GetBinContent(ipt+1)
-                for iptjet, ishape in itertools.product(
-                        range(get_nbins(h3_fd_gen, 0)), range(get_nbins(h3_fd_gen, 2))):
-                    scale_bin(h3_fd_gen, eff_np, iptjet+1, ipt+1, ishape+1)
+                for iptjet in range(get_nbins(h3_fd_gen, 0)):
+                    eff_np = self.hcandeff_gen['np'].GetBinContent(iptjet + 1, ipt + 1)
+                    print(f'scaling with {eff_np=} for {iptjet=}, {ipt=}', flush=True)
+                    for ishape in range(get_nbins(h3_fd_gen, 2)):
+                        scale_bin(h3_fd_gen, eff_np, iptjet+1, ipt+1, ishape+1)
             self._save_hist(project_hist(h3_fd_gen, [0, 2], {}), f'fd/h_ptjet-{var}_fdnew_gen_geneff.png')
 
             # 3d folding incl. kinematic efficiencies
@@ -970,6 +970,8 @@ class AnalyzerJets(Analyzer):
                     rfile.Get(f'h_effkine_fd_det_nocuts_{var}'),
                     rfile.Get(f'h_effkine_fd_det_cut_{var}'))
                 h_response = rfile.Get(f'h_response_fd_{var}')
+                h_response.Print('v')
+                print(f'fd folding for {var=}')
                 h_response_norm = norm_response(h_response, 3)
                 h3_fd_gen.Multiply(h_effkine_gen)
                 self._save_hist(project_hist(h3_fd_gen, [0, 2], {}), f'fd/h_ptjet-{var}_fdnew_gen_genkine.png')
@@ -987,14 +989,15 @@ class AnalyzerJets(Analyzer):
                 for iptjet, ishape in itertools.product(
                         range(get_nbins(h3_fd_det, 0)), range(get_nbins(h3_fd_det, 2))):
                     scale_bin(h3_fd_det, 1./eff_pr, iptjet+1, ipt+1, ishape+1)
-            self._save_hist(project_hist(h3_fd_det, [0, 2], {}), f'fd/h_ptjet-{var}_fdnew_det_deteff.png')
 
             # project to 2d (ptjet-shape)
             h_fd_det = project_hist(h3_fd_det, [0, 2], {})
+            self._save_hist(h_fd_det, f'fd/h_ptjet-{var}_fdnew_det_deteff.png')
 
             # old method
             h3_fd_gen = h3_fd_gen_orig.Clone()
             ensure_sumw2(h3_fd_gen)
+            self._save_hist(project_hist(h3_fd_gen, [0, 2], {}), f'fd/h_ptjet-{var}_feeddown_gen_noeffscaling.png')
             for ipt in range(get_nbins(h3_fd_gen, 1)):
                 eff_pr = self.hcandeff['pr'].GetBinContent(ipt+1)
                 eff_np = self.hcandeff['np'].GetBinContent(ipt+1)

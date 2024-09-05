@@ -429,7 +429,7 @@ class ProcesserJets(Processer):
                     (df[f'{var}_gen'] >= axis_var_gen.GetXmin()) & (df[f'{var}_gen'] < axis_var_gen.GetXmax())]
         fill_hist(h_effkine[('det', 'cut', var)], df[['fJetPt', 'fPt', var]])
 
-        fill_hist(h_response[var], df[['fJetPt', 'fPt', f'{var}', 'fJetPt_gen', 'fPt_gen', f'{var}_gen']])
+        fill_hist(h_response[var], df[['fJetPt_gen', 'fPt_gen', f'{var}_gen', 'fJetPt_gen', 'fPt_gen', f'{var}_gen']])
 
         df = dfi
         df = df.loc[(df.fJetPt_gen >= axis_ptjet_gen.GetXmin()) & (df.fJetPt_gen < axis_ptjet_gen.GetXmax()) &
