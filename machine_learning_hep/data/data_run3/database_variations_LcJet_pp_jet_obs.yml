@@ -216,7 +216,7 @@ categories:
                                       model:
                                         fn: 'SUM::mctot(mcfrac[0.,1.]*sig, mcbkg)'
                                   - ptrange: [1., 5.]
-                                    range: [2.18, 2.40]
+                                    range: [2.16, 2.40]
                                     components:
                                       # sig:
                                       #   fn: 'Gaussian::sig(m, mean[2.28,2.29], sigma_g1[.005,.01])'
@@ -544,9 +544,9 @@ categories:
                             use_cuts: [True, True, True, True, True, True, True]
                             cuts:
                                     - ["mlPromptScore > 0.97", "mlPromptScore > 0.9", "mlPromptScore > 0.9", "mlPromptScore > 0.85", "mlPromptScore > 0.85", "mlPromptScore > 0.8", "mlPromptScore > 0.8", "mlPromptScore > 0.6", "mlPromptScore > 0.6"]  # default
-                                    - [null,null,null,null,null,null,null,null,null]
+                                    - [null,null,null,null,null,null,null,null,null,null]
                                     - ["mlPromptScore > 0.85", "mlPromptScore > 0.6", "mlPromptScore > 0.6", "mlPromptScore > 0.4", "mlPromptScore > 0.4", "mlPromptScore > 0.4", "mlPromptScore > 0.4", "mlPromptScore > 0.15", "mlPromptScore > 0.15"]  # loosest
-                                    - ["mlPromptScore > 0.9", "mlPromptScore > 0.7", "mlPromptScore > 0.7", "mlPromptScore > 0.6", "mlPromptScore > 0.6", "mlPromptScore > 0.6", "mlPromptScore > 0.6", "mlPromptScore > 0.3", "mlPromptScore > 0.3"]  # loose
+                                    - ["mlPromptScore > 0.961", "mlPromptScore > 0.83", "mlPromptScore > 0.84", "mlPromptScore > 0.74", "mlPromptScore > 0.74", "mlPromptScore > 0.62", "mlPromptScore > 0.63", "mlPromptScore > 0.15", "mlPromptScore > 0.15"]  # loose
                                     - ["mlPromptScore > 0.98", "mlPromptScore > 0.9", "mlPromptScore > 0.9", "mlPromptScore > 0.85", "mlPromptScore > 0.85", "mlPromptScore > 0.8", "mlPromptScore > 0.8", "mlPromptScore > 0.6", "mlPromptScore > 0.6"]  # tight 2
                                     - ["mlPromptScore > 0.97", "mlPromptScore > 0.9", "mlPromptScore > 0.9", "mlPromptScore > 0.85", "mlPromptScore > 0.85", "mlPromptScore > 0.8", "mlPromptScore > 0.8", "mlPromptScore > 0.6", "mlPromptScore > 0.6"]  # tight 4
-                                    - ["mlPromptScore > 0.98", "mlPromptScore > 0.95", "mlPromptScore > 0.95", "mlPromptScore > 0.9", "mlPromptScore > 0.9", "mlPromptScore > 0.9", "mlPromptScore > 0.9", "mlPromptScore > 0.7", "mlPromptScore > 0.7"]  # tight
+                                    - ["mlPromptScore > 0.978", "mlPromptScore > 0.94", "mlPromptScore > 0.937", "mlPromptScore > 0.915", "mlPromptScore > 0.91", "mlPromptScore > 0.89", "mlPromptScore > 0.88", "mlPromptScore > 0.85", "mlPromptScore > 0.85"]  # tight
