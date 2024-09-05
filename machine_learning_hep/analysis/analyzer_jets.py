@@ -619,7 +619,7 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes,too
         self._clip_neg(fh_subtracted)
 
         self._save_hist(fh_subtracted, f'sideband/h_ptjet{label}_subtracted_notscaled_'
-                        '{string_range_pthf(range_pthf)}_{mcordata}.png')
+                        f'{string_range_pthf(range_pthf)}_{mcordata}.png')
 
         # plot subtraction before applying multiplicative corrections
         if get_dim(hist) == 2:
@@ -700,7 +700,7 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes,too
 
         fh_subtracted.Scale(1. / frac_sig)
         self._save_hist(fh_subtracted, f'sideband/h_ptjet{label}_subtracted_'
-                        '{string_range_pthf(range_pthf)}_{mcordata}.png')
+                        f'{string_range_pthf(range_pthf)}_{mcordata}.png')
 
         return fh_subtracted
 
