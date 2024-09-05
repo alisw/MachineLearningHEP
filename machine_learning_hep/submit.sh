@@ -32,7 +32,7 @@ ANALYSIS="jet_obs"
 DIR_THIS="$(dirname "$(realpath "$0")")"  # This directory
 DBDIR="data/data_run3"
 DB_DEFAULT="${DIR_THIS}/${DBDIR}/database_ml_parameters_${DATABASE}.yml"
-LOG="log_${STAGE}.log"
+LOG="log_${STAGE}_${DATABASE}_${ANALYSIS}.log"
 
 ##### Execution
 
@@ -54,6 +54,11 @@ else
     CONFIG_FILE="${DIR_THIS}/submission/${STAGE}.yml"
     CMD_ANA="mlhep -a ${ANALYSIS} -r ${CONFIG_FILE} -d ${DB_DEFAULT} -b --delete"
     ${CMD_ANA} > "${LOG}" 2>&1
-fi || echo "Error"
+fi || {
+    echo "Error"
+    LOG_ERR="${LOG/.log/_err.log}"
+    echo "Grepping issues into ${LOG_ERR}"
+    grep -A 1 -e WARN -e ERROR -e FATAL -e CRITICAL "${LOG}" > "${LOG_ERR}"
+}
 
 echo "$(date) Done"
