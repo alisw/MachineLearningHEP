@@ -829,7 +829,7 @@ class AnalyzerJets(Analyzer):
                                 hproj = project_hist(h, [1], {0: (j+1, j+1)})
                                 empty = hproj.Integral() < 1.e-7
                                 if empty and i == 0:
-                                    self.logger.error("Projection %s %s is empty.", mcordata,
+                                    self.logger.error("Projection %s %s %s is empty.", var, mcordata,
                                                       string_range_ptjet(range_ptjet))
                                 self._save_hist(
                                     hproj,
