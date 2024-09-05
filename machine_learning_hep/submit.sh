@@ -4,19 +4,19 @@
 
 # Analysis stage
 
-STAGE="all_off"
-# STAGE="full_analysis"
-# STAGE="preprocess"
-# STAGE="data"
-# STAGE="mc"
-# STAGE="mltrain"
-# STAGE="mlapp"
-# STAGE="analysis"
-# STAGE="processor"
-# STAGE="analyzer"
-# STAGE="variations"
-# STAGE="systematics"
-# STAGE="plotting"
+# STAGE="all_off"        # all steps disabled
+STAGE="full_analysis"    # stage preprocess + stage analysis (requires train output in "(data|mc)/prefix_dir")
+# STAGE="preprocess"     # conversion, skimming (requires train output in "(data|mc)/prefix_dir")
+# STAGE="data"           # stage preprocess: data (requires train output in "data/prefix_dir")
+# STAGE="mc"             # stage preprocess: mc (requires train output in "mc/prefix_dir")
+# STAGE="mltrain"        # ml_study
+# STAGE="mlapp"          # mlapplication
+# STAGE="analysis"       # stage processor + stage analyzer (requires stage preprocess done)
+# STAGE="processor"      # analysis/(data|mc)/(histomass|efficiency) (requires stage preprocess done)
+# STAGE="analyzer"       # analysis/steps (requires stage processor done)
+# STAGE="variations"     # run analysis variations (requires stage analyzer done)
+# STAGE="systematics"    # calculate and plot systematics (requires stage variations done)
+# STAGE="plotting"       # make analysis plots (requires stage systematics done)
 
 # Suffix of the analysis database name
 
@@ -58,6 +58,7 @@ fi || echo "Error"
 
 LOG_ERR="${LOG/.log/_err.log}"
 echo "Grepping issues into ${LOG_ERR}"
-grep -A 1 -e WARN -e ERROR -e FATAL -e CRITICAL "${LOG}" > "${LOG_ERR}"
+grep -e "Error in " -e "Failed " "${LOG}" > "${LOG_ERR}"
+grep -A 1 -e WARN -e ERROR -e FATAL -e CRITICAL "${LOG}" >> "${LOG_ERR}"
 
 echo "$(date) Done"
