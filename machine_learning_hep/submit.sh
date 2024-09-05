@@ -54,11 +54,10 @@ else
     CONFIG_FILE="${DIR_THIS}/submission/${STAGE}.yml"
     CMD_ANA="mlhep -a ${ANALYSIS} -r ${CONFIG_FILE} -d ${DB_DEFAULT} -b --delete"
     ${CMD_ANA} > "${LOG}" 2>&1
-fi || {
-    echo "Error"
-    LOG_ERR="${LOG/.log/_err.log}"
-    echo "Grepping issues into ${LOG_ERR}"
-    grep -A 1 -e WARN -e ERROR -e FATAL -e CRITICAL "${LOG}" > "${LOG_ERR}"
-}
+fi || echo "Error"
+
+LOG_ERR="${LOG/.log/_err.log}"
+echo "Grepping issues into ${LOG_ERR}"
+grep -A 1 -e WARN -e ERROR -e FATAL -e CRITICAL "${LOG}" > "${LOG_ERR}"
 
 echo "$(date) Done"
