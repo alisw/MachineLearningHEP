@@ -393,8 +393,8 @@ categories:
                                 - /data2/vkucera/powheg/Lc/trees_powheg_fd_Mhigh.parquet
                                 - /data2/vkucera/powheg/Lc/trees_powheg_fd_Mlow.parquet
                                 - /data2/vkucera/powheg/Lc/trees_powheg_fd_NoEvtGen.parquet
-    prior:  # TODO
-        activate: no
+    prior:
+        activate: yes
         processor: true
         label: "prior"
         group: "unfolding"
@@ -403,14 +403,14 @@ categories:
         symmetrise: true
         rms_both_sides: true
         variations:
-            flat:
-                activate: [yes]
-                label: ["flat"]
+            flatness:
+                activate: [yes, yes, yes, yes, yes, yes, yes, yes, yes, yes]
+                label: ["flat 0.1", "flat 0.2", "flat 0.3", "flat 0.4", "flat 0.5", "flat 0.6", "flat 0.7", "flat 0.8", "flat 0.9", "flat 1.0"]
                 diffs:
                     analysis:
                         jet_obs:
-                            doprior: [true]
-                            unfolding_iterations_sel: [5]
+                            unfolding_prior_flatness: [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0]
+                            unfolding_iterations_sel: [5, 5, 6, 6, 7, 7, 7, 7, 8, 8]
     modeldep:  # TODO
         activate: no
         processor: true

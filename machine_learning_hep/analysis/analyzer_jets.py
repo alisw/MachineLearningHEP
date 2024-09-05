@@ -1131,7 +1131,7 @@ class AnalyzerJets(Analyzer):
                 return []
             response_matrix_pr = self._build_response_matrix(
                 h_response, self.hcandeff['pr'] if mcordata == 'data' else None,
-                self.cfg('unfolding_frac_flat', 0.))
+                self.cfg('unfolding_prior_flatness', 0.))
             self._save_hist(response_matrix_pr.Hresponse(),
                             f'uf/h_ptjet-{var}-responsematrix_pr_lin_{mcordata}.png', 'colz')
 

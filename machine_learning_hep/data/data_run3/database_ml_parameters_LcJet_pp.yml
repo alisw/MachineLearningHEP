@@ -474,7 +474,7 @@ LcJet_pp:
 
       unfolding_iterations: 8 # used, maximum iteration
       unfolding_iterations_sel: 5 # used, selected iteration # systematics
-      # unfolding_frac_flat: .1
+      unfolding_prior_flatness: 0.  # ranges from 0. (no flatness) to 1. (flat)
 
       fd_folding_method: 3d
       fd_root: '/data2/vkucera/powheg/trees_powheg_fd_F05_R05.root'

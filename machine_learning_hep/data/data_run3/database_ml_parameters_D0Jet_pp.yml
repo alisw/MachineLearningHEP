@@ -689,7 +689,7 @@ D0Jet_pp:
 
       unfolding_iterations: 8 # used, maximum iteration
       unfolding_iterations_sel: 5 # used, selected iteration # systematics
-      unfolding_frac_flat: 0.0
+      unfolding_prior_flatness: 0.  # ranges from 0. (no flatness) to 1. (flat)
 
       closure:
         pure_signal: false
