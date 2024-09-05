@@ -37,7 +37,7 @@ categories:
         variations:
             bkgfunc:
                 activate: [no, yes, no]
-                label: ["bkg_exp", "bkg_pol3", "bkg_argus"]
+                label: ["exp", "pol3", "Argus"]
                 diffs:
                     analysis:
                         jet_obs:
