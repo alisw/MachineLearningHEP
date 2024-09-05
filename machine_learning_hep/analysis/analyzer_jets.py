@@ -595,7 +595,7 @@ class AnalyzerJets(Analyzer):
         subtract_sidebands = False
         if mcordata == 'data' and self.cfg('sidesub_per_ptjet'):
             self.logger.info('Subtracting sidebands in pt jet bins')
-            for iptjet in range(1, get_nbins(fh_subtracted, 0)):
+            for iptjet in range(get_nbins(fh_subtracted, 0)):
                 if rws := self.roo_ws_ptjet[mcordata][iptjet][ipt]:
                     f = rws.pdf("bkg").asTF(self.roo_ws[mcordata][ipt].var("m"))
                 else:
