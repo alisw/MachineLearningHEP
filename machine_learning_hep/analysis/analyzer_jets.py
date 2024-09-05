@@ -1060,8 +1060,8 @@ class AnalyzerJets(Analyzer):
             self.logger.info("Scaling feed-down with MC luminosity (mb^{-1}): %g", luminosity_mc)
             hfeeddown_det_mc.Scale(luminosity_mc)
 
-            self._save_hist(hfeeddown_det, f'fd/h_ptjet-{var}_feeddown_det_final.png')
-            self._save_hist(hfeeddown_det, f'fd/h_ptjet-{var}_feeddown_det_final_mc.png')
+            self._save_hist(hfeeddown_det, f'fd/h_ptjet-{var}_feeddown_det_final_data.png')
+            self._save_hist(hfeeddown_det_mc, f'fd/h_ptjet-{var}_feeddown_det_final_mc.png')
             self.hfeeddown_det['data'][var] = hfeeddown_det
             self.hfeeddown_det['mc'][var] = hfeeddown_det_mc
 
