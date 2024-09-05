@@ -1056,7 +1056,7 @@ class AnalyzerJets(Analyzer):
             self.logger.info("Scaling feed-down with data luminosity (mb^{-1}): %g", luminosity_data)
             hfeeddown_det.Scale(luminosity_data)
             luminosity_mc = (self.n_colls_read['mc'] / self.n_colls_tvx['mc'] *
-                               self.n_bcs_tvx['mc'] / self.cfg('xsection_inel_mc'))
+                             self.n_bcs_tvx['mc'] / self.cfg('xsection_inel') * self.cfg('lumi_scale_mc'))
             self.logger.info("Scaling feed-down with MC luminosity (mb^{-1}): %g", luminosity_mc)
             hfeeddown_det_mc.Scale(luminosity_mc)
 

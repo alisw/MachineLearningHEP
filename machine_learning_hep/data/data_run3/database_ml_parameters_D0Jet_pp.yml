@@ -386,7 +386,7 @@ D0Jet_pp:
       counter_read_mc: fReadCountsWithTVXAndZVertexAndSelMC
       counter_tvx: fReadCountsWithTVX
       xsection_inel: 59.4 # (mb) cross-section of minimum-bias events # used # systematics
-      xsection_inel_mc: .65 # 1.68 # (mb) cross-section of minimum-bias events # used
+      lumi_scale_mc: 408  # charm enhancement factor in MC to scale the MC luminosity
       branching_ratio: 3.947e-2 # used
 
       observables:
