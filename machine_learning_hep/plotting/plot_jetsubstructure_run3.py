@@ -64,10 +64,11 @@ x_range = {
 
 
 class Plotter:
-    def __init__(self, path_input_file: str, path_database_analysis: str, typean: str, var: str):
+    def __init__(self, path_input_file: str, path_database_analysis: str, typean: str, var: str, mcordata: str):
         self.logger = get_logger()
         self.typean = typean
         self.var = var
+        self.mcordata = mcordata
         self.method = "sidesub"
         self.logger.setLevel(logging.INFO)
 
@@ -78,7 +79,6 @@ class Plotter:
         self.db_typean = self.datap["analysis"][self.typean]
 
         # directories with analysis results
-        self.dir_result_mc = self.db_typean["mc"]["resultsallp"]
         self.dir_result_data = self.db_typean["data"]["resultsallp"]
         file_result_name = self.datap["files_names"]["resultfilename"]
         self.path_file_results = os.path.join(self.dir_result_data, file_result_name)
@@ -311,56 +311,60 @@ class Plotter:
         print("Observable:", self.var)
 
         with TFile.Open(self.path_input_file) as self.file_results:
-            name_hist_unfold_2d = f"h_ptjet-{self.var}_{self.method}_unfolded_data_0"
+            name_hist_unfold_2d = f"h_ptjet-{self.var}_{self.method}_unfolded_{self.mcordata}_0"
             hist_unfold = self.get_object(name_hist_unfold_2d)
             axis_ptjet = get_axis(hist_unfold, 0)
 
-            # Efficiency
-            print("Plotting efficiency")
-            self.list_obj = self.get_objects("h_pthf_effnew_pr", "h_pthf_effnew_np")
-            self.labels_obj = ["prompt", "nonprompt"]
-            self.title_full = f";{self.latex_pthf};efficiency"
-            self.list_latex = [self.text_alice, self.text_jets, self.get_text_range_ptjet(), self.get_text_range_pthf()]
-            self.make_plot(f"efficiency_{self.var}")
+            if self.mcordata == "data":
+                # Efficiency
+                print("Plotting efficiency")
+                self.list_obj = self.get_objects("h_pthf_effnew_pr", "h_pthf_effnew_np")
+                self.labels_obj = ["prompt", "nonprompt"]
+                self.title_full = f";{self.latex_pthf};efficiency"
+                self.list_latex = [self.text_alice, self.text_jets, self.get_text_range_ptjet(),
+                                   self.get_text_range_pthf()]
+                self.make_plot(f"efficiency_{self.var}")
 
-            bins_ptjet = (0, 1, 2, 3)
-            self.list_obj = self.get_objects(*(f"h_ptjet-pthf_effnew_pr_"
-                                               f"{string_range_ptjet(get_bin_limits(axis_ptjet, iptjet + 1))}"
-                                               for iptjet in bins_ptjet))
-            self.labels_obj = [self.get_text_range_ptjet(iptjet) for iptjet in bins_ptjet]
-            self.make_plot(f"efficiency_ptjet_{self.var}")
+                bins_ptjet = (0, 1, 2, 3)
+                self.list_obj = self.get_objects(*(f"h_ptjet-pthf_effnew_pr_"
+                                                   f"{string_range_ptjet(get_bin_limits(axis_ptjet, iptjet + 1))}"
+                                                   for iptjet in bins_ptjet))
+                self.labels_obj = [self.get_text_range_ptjet(iptjet) for iptjet in bins_ptjet]
+                self.make_plot(f"efficiency_ptjet_{self.var}")
 
-            # TODO: efficiency (old vs new)
+                # TODO: efficiency (old vs new)
 
             # loop over jet pt
             for iptjet in (1, 2):
                 range_ptjet = get_bin_limits(axis_ptjet, iptjet + 1)
                 string_ptjet = string_range_ptjet(range_ptjet)
 
-                # Sideband subtraction
-                print("Plotting sideband subtraction")
-                # loop over hadron pt
-                for ipt in range(self.n_bins_pthf):
-                    range_pthf = (self.edges_pthf[ipt], self.edges_pthf[ipt+1])
-                    string_pthf = string_range_pthf(range_pthf)
+                if self.mcordata == "data":
+                    # Sideband subtraction
+                    print("Plotting sideband subtraction")
+                    # loop over hadron pt
+                    for ipt in range(self.n_bins_pthf):
+                        range_pthf = (self.edges_pthf[ipt], self.edges_pthf[ipt+1])
+                        string_pthf = string_range_pthf(range_pthf)
 
-                    self.list_obj = self.get_objects(f'h_ptjet-{self.var}_signal_{string_pthf}_data',
-                                                     f'h_ptjet-{self.var}_sideband_{string_pthf}_data',
-                                                     f'h_ptjet-{self.var}_subtracted_notscaled_{string_pthf}_data')
-                    self.list_obj = [project_hist(h, [1], {0: (iptjet + 1, iptjet + 1)}) for h in self.list_obj]
-                    self.labels_obj = ["signal region", "scaled sidebands", "after subtraction"]
-                    self.title_full = f";{self.latex_obs};counts"
-                    self.list_latex = [self.text_alice, self.text_jets, self.get_text_range_ptjet(iptjet),
-                                       self.get_text_range_pthf(ipt, iptjet)]
-                    if self.var in ("zg", "rg", "nsd"):
-                        self.list_latex.append(self.text_sd)
-                    self.make_plot(f"sidebands_{self.var}_{string_ptjet}_{string_pthf}")
+                        self.list_obj = self.get_objects(f'h_ptjet-{self.var}_signal_{string_pthf}_{self.mcordata}',
+                                                         f'h_ptjet-{self.var}_sideband_{string_pthf}_{self.mcordata}',
+                                                         f'h_ptjet-{self.var}_subtracted_notscaled_{string_pthf}'
+                                                         f'_{self.mcordata}')
+                        self.list_obj = [project_hist(h, [1], {0: (iptjet + 1, iptjet + 1)}) for h in self.list_obj]
+                        self.labels_obj = ["signal region", "scaled sidebands", "after subtraction"]
+                        self.title_full = f";{self.latex_obs};counts"
+                        self.list_latex = [self.text_alice, self.text_jets, self.get_text_range_ptjet(iptjet),
+                                           self.get_text_range_pthf(ipt, iptjet)]
+                        if self.var in ("zg", "rg", "nsd"):
+                            self.list_latex.append(self.text_sd)
+                        self.make_plot(f"sidebands_{self.var}_{self.mcordata}_{string_ptjet}_{string_pthf}")
 
                 # Feed-down subtraction
                 print("Plotting feed-down subtraction")
-                self.list_obj = self.get_objects(f'h_ptjet-{self.var}_{self.method}_effscaled_data',
-                                                 f'h_ptjet-{self.var}_feeddown_det_final',
-                                                 f'h_ptjet-{self.var}_{self.method}_data')
+                self.list_obj = self.get_objects(f'h_ptjet-{self.var}_{self.method}_effscaled_{self.mcordata}',
+                                                 f'h_ptjet-{self.var}_feeddown_det_final_{self.mcordata}',
+                                                 f'h_ptjet-{self.var}_{self.method}_{self.mcordata}')
                 self.list_obj[0] = self.list_obj[0].Clone(f"{self.list_obj[0].GetName()}_fd_before_{iptjet}")
                 self.list_obj[1] = self.list_obj[1].Clone(f"{self.list_obj[1].GetName()}_fd_{iptjet}")
                 self.list_obj[2] = self.list_obj[2].Clone(f"{self.list_obj[2].GetName()}_fd_after_{iptjet}")
@@ -372,7 +376,7 @@ class Plotter:
                                    self.get_text_range_pthf(-1, iptjet)]
                 if self.var in ("zg", "rg", "nsd"):
                     self.list_latex.append(self.text_sd)
-                self.make_plot(f"feeddown_{self.var}_{string_ptjet}")
+                self.make_plot(f"feeddown_{self.var}_{self.mcordata}_{string_ptjet}")
 
                 # TODO: feed-down (after 2D, fraction)
 
@@ -382,14 +386,14 @@ class Plotter:
 
                 # Results
                 print("Plotting results")
-                self.list_obj = [self.get_object(f"h_{self.var}_{self.method}_unfolded_data_"
+                self.list_obj = [self.get_object(f"h_{self.var}_{self.method}_unfolded_{self.mcordata}_"
                                                  f"{string_ptjet}_sel_selfnorm")]
                 # TODO: results (systematics)
                 # nameobj = "%s_hf_data_%d_syst" % (self.var, iptjet)
                 # hf_data_syst = self.get_object(nameobj, file_results)
                 self.labels_obj = ["data"]
                 self.title_full = self.title_full_default
-                self.make_plot(f"results_{self.var}_{string_ptjet}")
+                self.make_plot(f"results_{self.var}_{self.mcordata}_{string_ptjet}")
 
 
 def main():
@@ -412,8 +416,9 @@ def main():
     list_vars = ["zpar"]
     for var in list_vars:
         print(f"Processing observable {var}")
-        ploter = Plotter(args.input_file, args.database_analysis, args.type_ana, var)
-        ploter.plot()
+        for mcordata in ("data", "mc"):
+            ploter = Plotter(args.input_file, args.database_analysis, args.type_ana, var, mcordata)
+            ploter.plot()
 
 
 if __name__ == "__main__":
