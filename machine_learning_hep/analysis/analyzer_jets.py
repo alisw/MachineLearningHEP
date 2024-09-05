@@ -27,6 +27,8 @@ from machine_learning_hep.utils.hist import (bin_array, create_hist, norm_respon
                                              get_nbins, project_hist,
                                              scale_bin, sum_hists, ensure_sumw2)
 
+# pylint: disable=too-many-instance-attributes,too-many-lines,too-many-nested-blocks
+
 
 def string_range_ptjet(range_pt):
     return f"ptjet-{range_pt[0]:g}-{range_pt[1]:g}"
@@ -36,7 +38,7 @@ def string_range_pthf(range_pt):
     return f"pthf-{range_pt[0]:g}-{range_pt[1]:g}"
 
 
-class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes,too-many-lines
+class AnalyzerJets(Analyzer):
     species = "analyzer"
 
     def __init__(self, datap, case, typean, period):
@@ -815,6 +817,10 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes,too
                             c = TCanvas()
                             for i, h in enumerate(fh_unfolded):
                                 hproj = project_hist(h, [1], {0: (j+1, j+1)})
+                                empty = hproj.Integral() < 1.e-7
+                                if empty and i == 0:
+                                    self.logger.error("Projection %s %s is empty.", mcordata,
+                                                      string_range_ptjet(range_ptjet))
                                 self._save_hist(
                                     hproj,
                                     f'uf/h_{var}_{method}_unfolded_{mcordata}_' +
@@ -826,15 +832,16 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes,too
                                         f'uf/h_{var}_{method}_unfolded_{mcordata}_' +
                                         f'{string_range_ptjet(range_ptjet)}_sel.png')
                                     # Save also the self-normalised version.
-                                    hproj_sel = hproj.Clone(f"{hproj.GetName()}_selfnorm")
-                                    hproj_sel.Scale(1. / hproj_sel.Integral(), "width")
-                                    self.logger.debug("Final histogram: %s, jet pT %g to %g",
-                                                      var, range_ptjet[0], range_ptjet[1])
-                                    # self.logger.debug(print_histogram(hproj_sel))
-                                    self._save_hist(
-                                        hproj_sel,
-                                        f'uf/h_{var}_{method}_unfolded_{mcordata}_' +
-                                        f'{string_range_ptjet(range_ptjet)}_sel_selfnorm.png')
+                                    if not empty:
+                                        hproj_sel = hproj.Clone(f"{hproj.GetName()}_selfnorm")
+                                        hproj_sel.Scale(1. / hproj_sel.Integral(), "width")
+                                        self.logger.debug("Final histogram: %s, jet pT %g to %g",
+                                                          var, range_ptjet[0], range_ptjet[1])
+                                        # self.logger.debug(print_histogram(hproj_sel))
+                                        self._save_hist(
+                                            hproj_sel,
+                                            f'uf/h_{var}_{method}_unfolded_{mcordata}_' +
+                                            f'{string_range_ptjet(range_ptjet)}_sel_selfnorm.png')
                                 c.cd()
                                 hcopy = hproj.DrawCopy('same' if i > 0 else '')
                                 hcopy.SetLineColor(i+1)
