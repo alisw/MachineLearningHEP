@@ -471,9 +471,8 @@ class AnalyzerJets(Analyzer):
                             continue
                         roows = self.roows.get(ipt) if iptjet is None else self.roows_ptjet.get((iptjet, ipt))
                         if roows is None and level != self.fit_levels[0]:
-                            self.logger.warning('missing previous fit result, skipping %s iptjet %s ipt %d',
-                                                level, iptjet, ipt)
-                            continue
+                            self.logger.critical('missing previous fit result, cannot fit %s iptjet %s ipt %d',
+                                                 level, iptjet, ipt)
                         for par in fitcfg.get('fix_params', []):
                             if var := roows.var(par):
                                 var.setConstant(True)
@@ -494,11 +493,16 @@ class AnalyzerJets(Analyzer):
                         # TODO: save snapshot per level
                         # roo_ws.saveSnapshot(level, None)
                         if iptjet is not None:
+                            self.logger.debug("Setting roows_ptjet for %s iptjet %s ipt %d", level, iptjet, ipt)
                             self.roows_ptjet[(iptjet, ipt)] = roo_ws
                             self.roo_ws_ptjet[level][iptjet][ipt] = roo_ws
                         else:
+                            self.logger.debug("Setting roows for %s iptjet %s ipt %d", level, iptjet, ipt)
                             self.roows[ipt] = roo_ws
                             self.roo_ws[level][ipt] = roo_ws
+                            for jptjet in range(get_nbins(h, 1)):
+                                self.roows_ptjet[(jptjet, ipt)] = roo_ws.Clone()
+                                self.roo_ws_ptjet[level][jptjet][ipt] = roo_ws.Clone()
                             # TODO: take parameter names from DB
                             if level in ('data', 'mc'):
                                 varname_mean = fitcfg.get('var_mean', 'mean')
