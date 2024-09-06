@@ -40,7 +40,8 @@ from machine_learning_hep.do_variations import (
 from machine_learning_hep.logger import get_logger
 
 # HF specific imports
-from machine_learning_hep.utilities import (  # make_plot,
+from machine_learning_hep.utilities import (
+    make_plot,
     combine_graphs,
     draw_latex,
     get_colour,
@@ -545,11 +546,12 @@ class AnalyzerJetSystematics:
                     )
                     input_histograms_sys[iptjet][sys_cat][sys_var].Draw("same")
                     nsys = nsys + 1
+                latex_text = "%g #leq %s < %g GeV/#it{c}" % (self.edges_ptjet_gen_min[iptjet],
+                                                             self.latex_ptjet, self.edges_ptjet_gen_max[iptjet])
                 latex = TLatex(
                     0.15,
                     0.82,
-                    "%g #leq %s < %g GeV/#it{c}"
-                    % (self.edges_ptjet_gen_min[iptjet], self.latex_ptjet, self.edges_ptjet_gen_max[iptjet]),
+                    latex_text,
                 )
                 draw_latex(latex)
                 leg_sysvar_each.Draw("same")
@@ -566,11 +568,21 @@ class AnalyzerJetSystematics:
                 leg_sysvar_ratio = TLegend(0.77, 0.2, 0.95, 0.85, self.systematic_catlabels[sys_cat])  # Rg
                 setup_legend(leg_sysvar_ratio)
                 histo_ratio = []
+
+                n_bins = input_histograms_default[iptjet].GetNbinsX()
+                # Make the histograms for the distribution of var/default values per bin of observable.
+                list_his_cat_vars = [TH1F(f"his_cat_vars_{var}_{suffix}_{suffix2}_{ibin + 1}",
+                                     f"{self.systematic_catlabels[sys_cat]} distribution, bin {ibin + 1};"
+                                       "var/def;counts", 6, 0., 2.) for ibin in range(n_bins)]
+
                 for sys_var in range(self.systematic_variations[sys_cat]):
                     default_his = input_histograms_default[iptjet].Clone("default_his")
                     var_his = input_histograms_sys[iptjet][sys_cat][sys_var].Clone("var_his")
                     var_his.Divide(default_his)
                     histo_ratio.append(var_his)
+                    # Fill the histogram for the distribution of var/default values.
+                    for ibin in range(n_bins):
+                        list_his_cat_vars[ibin].Fill(var_his.GetBinContent(ibin + 1))
                 l_his_all = []
                 for his_var in histo_ratio:
                     if his_var.Integral() != 0:
@@ -578,7 +590,6 @@ class AnalyzerJetSystematics:
                 y_min, y_max = get_y_window_his(l_his_all, False)
                 y_margin_up = 0.15
                 y_margin_down = 0.05
-
                 for sys_var in range(self.systematic_variations[sys_cat]):
                     if sys_var == 0:
                         histo_ratio[sys_var].GetYaxis().SetRangeUser(
@@ -604,6 +615,20 @@ class AnalyzerJetSystematics:
                 # line.Draw()
                 leg_sysvar_ratio.Draw("same")
                 self.save_canvas(csysvar_ratio, f"sys_var_{var}_{suffix}_{suffix2}_ratio")
+
+                # print([[h.GetBinContent(i + 1) for i in range(h.GetNbinsX())] for h in list_his_cat_vars])
+                axis_x = var_his.GetXaxis()
+                can_dist, _ = make_plot(f"sys_var_{var}_{suffix}_{suffix2}_ratio_dist",
+                                        list_obj=list_his_cat_vars, labels_obj=[f"{axis_x.GetBinLowEdge(ibin + 1)}-"
+                                                                                f"{axis_x.GetBinUpEdge(ibin + 1)}"
+                                                                                for ibin in range(n_bins)],
+                                        opt_leg_g=self.opt_leg_g, opt_plot_g=self.opt_plot_g, opt_plot_h="p l",
+                                        offsets_xy=self.offsets_axes,
+                                        leg_pos=[0.7, 0.7, 0.8, 0.85],
+                                        margins_y=[0.05, 0.05], margins_c=self.margins_can,
+                                        title=f"{latex_obs} {latex_text} {self.systematic_catlabels[sys_cat]};"
+                                        "var/default;counts")
+                self.save_canvas(can_dist, f"sys_var_{var}_{suffix}_{suffix2}_ratio_dist")
 
                 # Plot efficiency variations
 
