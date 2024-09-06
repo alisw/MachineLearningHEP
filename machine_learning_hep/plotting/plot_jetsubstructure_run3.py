@@ -169,6 +169,10 @@ class Plotter:
         # self.obs_gen_min = float(self.edges_obs_gen[0])
         # self.obs_gen_max = float(self.edges_obs_gen[-1])
 
+        # unfolding
+        self.niter_unfolding = self.db_typean["unfolding_iterations"]
+        self.choice_iter_unfolding = self.db_typean["unfolding_iterations_sel"]
+
         print("Rec obs edges:", self.edges_obs_rec, "Gen obs edges:", self.edges_obs_gen)
         print("Rec ptjet edges:", self.edges_ptjet_rec, "Gen ptjet edges:", self.edges_ptjet_gen)
 
@@ -280,13 +284,17 @@ class Plotter:
         pt_max = min(pt_max, self.edges_ptjet_gen[iptjet + 1]) if iptjet > -1 else pt_max
         return self.text_pth % (pt_min, self.latex_hadron, pt_max, self.latex_hadron)
 
-    def make_plot(self, name: str):
+    def make_plot(self, name: str, colours=None, markers=None):
         """Wrapper method for calling make_plot and saving the canvas."""
         assert all(self.list_obj)
         n_obj = len(self.list_obj)
         assert len(self.labels_obj) == n_obj
         self.list_colours = [get_colour(i, 1) for i in range(n_obj)]
+        if colours is not None:
+            self.list_colours = colours
         self.list_markers = [get_marker(i) for i in range(n_obj)]
+        if markers is not None:
+            self.list_markers = markers
         y_margin_up_adj = self.y_margin_up + 1. - self.y_latex_top + self.y_step * (len(self.list_latex) - 1)
         can, new = make_plot(name,
                              list_obj=self.list_obj, labels_obj=self.labels_obj,
@@ -320,17 +328,19 @@ class Plotter:
                 print("Plotting efficiency")
                 self.list_obj = self.get_objects("h_pthf_effnew_pr", "h_pthf_effnew_np")
                 self.labels_obj = ["prompt", "nonprompt"]
-                self.title_full = f";{self.latex_pthf};efficiency"
+                self.title_full = f";{self.latex_pthf};{self.latex_hadron} efficiency"
                 self.list_latex = [self.text_alice, self.text_jets, self.get_text_range_ptjet(),
                                    self.get_text_range_pthf()]
                 self.make_plot(f"efficiency_{self.var}")
 
                 bins_ptjet = (0, 1, 2, 3)
-                self.list_obj = self.get_objects(*(f"h_ptjet-pthf_effnew_pr_"
-                                                   f"{string_range_ptjet(get_bin_limits(axis_ptjet, iptjet + 1))}"
-                                                   for iptjet in bins_ptjet))
-                self.labels_obj = [self.get_text_range_ptjet(iptjet) for iptjet in bins_ptjet]
-                self.make_plot(f"efficiency_ptjet_{self.var}")
+                for cat, label in zip(("pr", "np"), ("prompt", "non-prompt")):
+                    self.list_obj = self.get_objects(*(f"h_ptjet-pthf_effnew_{cat}_"
+                                                       f"{string_range_ptjet(get_bin_limits(axis_ptjet, iptjet + 1))}"
+                                                       for iptjet in bins_ptjet))
+                    self.labels_obj = [self.get_text_range_ptjet(iptjet) for iptjet in bins_ptjet]
+                    self.title_full = f";{self.latex_pthf};{label}-{self.latex_hadron} efficiency"
+                    self.make_plot(f"efficiency_{self.var}_{cat}_ptjet")
 
                 # TODO: efficiency (old vs new)
 
@@ -381,19 +391,48 @@ class Plotter:
                 # TODO: feed-down (after 2D, fraction)
 
                 # Unfolding
-                # print("Plotting unfolding")
-                # TODO: unfolding (before/after, convergence)
+                print("Plotting unfolding")
+                self.list_obj = [self.get_object(f"h_{self.var}_{self.method}_unfolded_{self.mcordata}_"
+                                                 f"{string_ptjet}_{i}") for i in range(self.niter_unfolding)]
+                self.labels_obj = [f"iteration {i + 1}" for i in range(self.niter_unfolding)]
+                self.title_full = f";{self.latex_obs};counts"
+                self.make_plot(f"unfolding_convergence_{self.var}_{self.mcordata}_{string_ptjet}")
+
+                h_ref = self.get_object(f"h_{self.var}_{self.method}_unfolded_{self.mcordata}_{string_ptjet}_sel")
+                for h in self.list_obj:
+                    h.Divide(h_ref)
+                self.title_full = f";{self.latex_obs};counts (variation/default)"
+                self.make_plot(f"unfolding_convergence_ratio_{self.var}_{self.mcordata}_{string_ptjet}")
+
+                # TODO: unfolding (before/after)
 
                 # Results
                 print("Plotting results")
                 self.list_obj = [self.get_object(f"h_{self.var}_{self.method}_unfolded_{self.mcordata}_"
                                                  f"{string_ptjet}_sel_selfnorm")]
-                # TODO: results (systematics)
-                # nameobj = "%s_hf_data_%d_syst" % (self.var, iptjet)
-                # hf_data_syst = self.get_object(nameobj, file_results)
                 self.labels_obj = ["data"]
+                path_syst = f"{os.path.expandvars(self.dir_input)}/systematics.root"
+                self.list_colours, self.list_markers, gr_syst = None, None, None
+                if os.path.exists(path_syst):
+                    self.logger.info("Getting systematics from %s", path_syst)
+                    if not (file_syst := TFile.Open(path_syst)):
+                        self.logger.fatal(make_message_notfound(path_syst))
+                    name_gr_sys = f"sys_{self.var}_{string_ptjet}"
+                    if not (gr_syst := file_syst.Get(name_gr_sys)):
+                        self.logger.fatal(make_message_notfound(name_gr_sys))
+                    # We need to plot the data on top of the systematics but
+                    # we want to show the systematics marker after the data marker in the legend.
+                    self.list_obj.insert(0, gr_syst)
+                    self.labels_obj.insert(0, "")
+                    self.list_markers = [get_marker(0)] * 2
+                    self.list_colours = [get_colour(i, j) for i, j in zip((0, 0), (2, 1))]
                 self.title_full = self.title_full_default
-                self.make_plot(f"results_{self.var}_{self.mcordata}_{string_ptjet}")
+                can, new = self.make_plot(f"results_{self.var}_{self.mcordata}_{string_ptjet}",
+                                          colours=self.list_colours, markers=self.list_markers)
+                if gr_syst:
+                    # We have to add the systematics marker in the legend by hand.
+                    new[0].AddEntry(gr_syst, "syst. unc.", "f")
+                    self.save_canvas(can)
 
 
 def main():
