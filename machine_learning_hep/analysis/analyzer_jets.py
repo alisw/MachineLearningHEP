@@ -838,6 +838,7 @@ class AnalyzerJets(Analyzer):
                                         self.logger.debug("Final histogram: %s, jet pT %g to %g",
                                                           var, range_ptjet[0], range_ptjet[1])
                                         # self.logger.debug(print_histogram(hproj_sel))
+                                        ROOT.gStyle.SetOptStat(0)
                                         self._save_hist(
                                             hproj_sel,
                                             f'uf/h_{var}_{method}_unfolded_{mcordata}_' +
@@ -966,11 +967,16 @@ class AnalyzerJets(Analyzer):
                 h_effkine_gen = self._build_effkine(
                     rfile.Get(f'h_effkine_fd_gen_nocuts_{var}'),
                     rfile.Get(f'h_effkine_fd_gen_cut_{var}'))
+                self._save_hist(h_effkine_gen, f'fd/h_effkine-ptjet-{var}_fd_gen.png', 'text')
                 h_effkine_det = self._build_effkine(
                     rfile.Get(f'h_effkine_fd_det_nocuts_{var}'),
                     rfile.Get(f'h_effkine_fd_det_cut_{var}'))
+                self._save_hist(h_effkine_det, f'fd/h_effkine-ptjet-{var}_fd_det.png', 'text')
                 h_response = rfile.Get(f'h_response_fd_{var}')
-                h_response.Print('v')
+                self._save_hist(project_hist(h_response, [0, 3], {}), f'fd/h_response_ptjet_{var}.png')
+                self._save_hist(project_hist(h_response, [1, 4], {}), f'fd/h_response_pthf_{var}.png')
+                self._save_hist(project_hist(h_response, [2, 5], {}), f'fd/h_response_shape_{var}.png')
+                h_response.Print('all')
                 print(f'fd folding for {var=}')
                 h_response_norm = norm_response(h_response, 3)
                 h3_fd_gen.Multiply(h_effkine_gen)

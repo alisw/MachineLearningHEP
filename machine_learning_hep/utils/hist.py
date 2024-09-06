@@ -305,7 +305,7 @@ def norm_response(response, dim_out):
             set_bin_val(response_norm, bin_out + bin_in, get_bin_val(response, bin_out + bin_in) / norm)
             set_bin_err(response_norm, bin_out + bin_in, get_bin_err(response, bin_out + bin_in) / norm)
             total += get_bin_val(response_norm, bin_out + bin_in)
-        print(f'distributed {bin_in=} to {total=} counts')
+        # print(f'distributed {bin_in=} to {total=} counts')
     return response_norm
 
 
@@ -320,13 +320,17 @@ def fold_hist(hist, response):
         total = 0.
         for bin_out in itertools.product(*(range(1, get_nbins(hfold, i) + 1) for i in range(get_dim(hfold)))):
             total += get_bin_val(response, bin_out + bin_in)
-        print(f'redistributed {bin_in=} to {total=} counts')
+        # print(f'redistributed {bin_in=} to {total=} counts')
 
     for bin_out in itertools.product(*(range(1, get_nbins(hfold, i) + 1) for i in range(get_dim(hfold)))):
         val = 0.
         err = 0.
         for bin_in in itertools.product(*(range(1, get_nbins(hist, i) + 1) for i in range(get_dim(hist)))):
-            print(f'{bin_out=} collecting {bin_in=} with weight {get_bin_val(response, bin_out + bin_in)}')
+            # if bin_in == bin_out:
+            #     val = get_bin_val(hist, bin_in)
+            #     err = get_bin_err(hist, bin_in)**2
+            # continue
+            # print(f'{bin_out=} collecting {bin_in=} with weight {get_bin_val(response, bin_out + bin_in)}')
             val += get_bin_val(hist, bin_in) * get_bin_val(response, bin_out + bin_in)
             err += get_bin_err(hist, bin_in)**2 * get_bin_val(response, bin_out + bin_in)**2
         set_bin_val(hfold, bin_out, val)
