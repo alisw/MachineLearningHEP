@@ -529,24 +529,27 @@ categories:
         rms_both_sides: true
         variations:
             ml:
-                activate: [no, no, no, yes, no, no, yes]
+                activate: [no, no, no, yes, yes, yes, yes, yes, yes, yes, yes, yes, yes]
                 label:
-                    - "default"  # working point (for tests, should be same as the default result)
-                    - "null"  # no cuts (for tests, whatever was applied on Hyperloop)
-                    - "loosest"  # same cuts as Hyperloop (for tests, should be same as null)
-                    - "loose"  # to increase efficiency by 20 %
-                    - "tight 2"
-                    - "tight 4"
-                    - "tight"  # to decrease efficiency by 20 %
+                    # default: working point (for tests, should be same as the default result)
+                    # null: no cuts (for tests, whatever was applied on Hyperloop)
+                    # loosest: same cuts as Hyperloop (for tests, should be same as null)
+                    ["default", "null", "loosest", "loose 5", "loose 4", "loose 3", "loose 2", "loose 1", "tight 1", "tight 2", "tight 3", "tight 4", "tight 5"]
                 diffs:
                     analysis:
                         jet_obs:
-                            use_cuts: [True, True, True, True, True, True, True]
+                            use_cuts: [True, True, True, True, True, True, True, True, True, True, True, True, True]
                             cuts:
                                     - ["mlPromptScore > 0.97", "mlPromptScore > 0.9", "mlPromptScore > 0.9", "mlPromptScore > 0.85", "mlPromptScore > 0.85", "mlPromptScore > 0.8", "mlPromptScore > 0.8", "mlPromptScore > 0.6", "mlPromptScore > 0.6"]  # default
                                     - [null,null,null,null,null,null,null,null,null,null]
                                     - ["mlPromptScore > 0.85", "mlPromptScore > 0.6", "mlPromptScore > 0.6", "mlPromptScore > 0.4", "mlPromptScore > 0.4", "mlPromptScore > 0.4", "mlPromptScore > 0.4", "mlPromptScore > 0.15", "mlPromptScore > 0.15"]  # loosest
-                                    - ["mlPromptScore > 0.961", "mlPromptScore > 0.83", "mlPromptScore > 0.84", "mlPromptScore > 0.74", "mlPromptScore > 0.74", "mlPromptScore > 0.62", "mlPromptScore > 0.63", "mlPromptScore > 0.15", "mlPromptScore > 0.15"]  # loose
-                                    - ["mlPromptScore > 0.98", "mlPromptScore > 0.9", "mlPromptScore > 0.9", "mlPromptScore > 0.85", "mlPromptScore > 0.85", "mlPromptScore > 0.8", "mlPromptScore > 0.8", "mlPromptScore > 0.6", "mlPromptScore > 0.6"]  # tight 2
-                                    - ["mlPromptScore > 0.97", "mlPromptScore > 0.9", "mlPromptScore > 0.9", "mlPromptScore > 0.85", "mlPromptScore > 0.85", "mlPromptScore > 0.8", "mlPromptScore > 0.8", "mlPromptScore > 0.6", "mlPromptScore > 0.6"]  # tight 4
-                                    - ["mlPromptScore > 0.978", "mlPromptScore > 0.94", "mlPromptScore > 0.937", "mlPromptScore > 0.915", "mlPromptScore > 0.91", "mlPromptScore > 0.89", "mlPromptScore > 0.88", "mlPromptScore > 0.85", "mlPromptScore > 0.85"]  # tight
+                                    -  ["mlPromptScore > 0.961", "mlPromptScore > 0.83", "mlPromptScore > 0.84", "mlPromptScore > 0.74", "mlPromptScore > 0.74", "mlPromptScore > 0.62", "mlPromptScore > 0.63", "mlPromptScore > 0.15", "mlPromptScore > 0.15"]  # loose 5
+                                    -  ["mlPromptScore > 0.9628", "mlPromptScore > 0.844", "mlPromptScore > 0.852", "mlPromptScore > 0.762", "mlPromptScore > 0.762", "mlPromptScore > 0.656", "mlPromptScore > 0.664", "mlPromptScore > 0.24", "mlPromptScore > 0.24"]  # loose 4
+                                    -  ["mlPromptScore > 0.9646", "mlPromptScore > 0.858", "mlPromptScore > 0.864", "mlPromptScore > 0.784", "mlPromptScore > 0.784", "mlPromptScore > 0.692", "mlPromptScore > 0.698", "mlPromptScore > 0.33", "mlPromptScore > 0.33"]  # loose 3
+                                    -  ["mlPromptScore > 0.9664", "mlPromptScore > 0.872", "mlPromptScore > 0.876", "mlPromptScore > 0.806", "mlPromptScore > 0.806", "mlPromptScore > 0.728", "mlPromptScore > 0.732", "mlPromptScore > 0.42", "mlPromptScore > 0.42"]  # loose 2
+                                    -  ["mlPromptScore > 0.9682", "mlPromptScore > 0.886", "mlPromptScore > 0.888", "mlPromptScore > 0.828", "mlPromptScore > 0.828", "mlPromptScore > 0.764", "mlPromptScore > 0.766", "mlPromptScore > 0.51", "mlPromptScore > 0.51"]  # loose 1
+                                    -  ["mlPromptScore > 0.9716", "mlPromptScore > 0.908", "mlPromptScore > 0.9074", "mlPromptScore > 0.863", "mlPromptScore > 0.862", "mlPromptScore > 0.818", "mlPromptScore > 0.816", "mlPromptScore > 0.65", "mlPromptScore > 0.65"]  # tight 1
+                                    -  ["mlPromptScore > 0.9732", "mlPromptScore > 0.916", "mlPromptScore > 0.9148", "mlPromptScore > 0.876", "mlPromptScore > 0.874", "mlPromptScore > 0.836", "mlPromptScore > 0.832", "mlPromptScore > 0.7", "mlPromptScore > 0.7"]  # tight 2
+                                    -  ["mlPromptScore > 0.9748", "mlPromptScore > 0.924", "mlPromptScore > 0.9222", "mlPromptScore > 0.889", "mlPromptScore > 0.886", "mlPromptScore > 0.854", "mlPromptScore > 0.848", "mlPromptScore > 0.75", "mlPromptScore > 0.75"]  # tight 3
+                                    -  ["mlPromptScore > 0.9764", "mlPromptScore > 0.932", "mlPromptScore > 0.9296", "mlPromptScore > 0.902", "mlPromptScore > 0.898", "mlPromptScore > 0.872", "mlPromptScore > 0.864", "mlPromptScore > 0.8", "mlPromptScore > 0.8"]  # tight 4
+                                    -  ["mlPromptScore > 0.978", "mlPromptScore > 0.94", "mlPromptScore > 0.937", "mlPromptScore > 0.915", "mlPromptScore > 0.91", "mlPromptScore > 0.89", "mlPromptScore > 0.88", "mlPromptScore > 0.85", "mlPromptScore > 0.85"]  # tight 5
