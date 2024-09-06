@@ -922,7 +922,7 @@ categories:
                 diffs:
                     analysis:
                         jet_obs:
-                            xsection_inel: [54.91, 60.69]  # TODO: update values for Run 3
+                            xsection_inel: [53.46, 65.34]
     tracking:
         activate: yes
         processor: true
