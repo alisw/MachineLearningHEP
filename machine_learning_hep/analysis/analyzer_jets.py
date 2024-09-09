@@ -473,7 +473,7 @@ class AnalyzerJets(Analyzer):
                             h_invmass = project_hist(hsel, [0], cuts_proj)
                         if h_invmass.GetEntries() < 100: # TODO: reconsider criterion
                             self.logger.error('Not enough entries to fit %s iptjet %s ipt %d',
-                                                level, iptjet, ipt)
+                                              level, iptjet, ipt)
                             continue
                         roows = self.roows.get(ipt) if iptjet is None else self.roows_ptjet.get((iptjet, ipt))
                         if roows is None and level != self.fit_levels[0]:
@@ -724,7 +724,7 @@ class AnalyzerJets(Analyzer):
             rfilename = self.n_filemass_mc if mcordata == "mc" else self.n_filemass
             with TFile(rfilename) as rfile:
                 for var in [None] + self.observables['all']:
-                    self.logger.info('Running analysis for %s using %s', var, method)
+                    self.logger.info('Running analysis for obs. %s, %s using %s', var, mcordata, method)
                     label = f'-{var}' if var else ''
                     self.logger.debug('looking for %s', f'h_mass-ptjet-pthf{label}')
                     if fh := rfile.Get(f'h_mass-ptjet-pthf{label}'):  # TODO: add sanity check
@@ -736,6 +736,8 @@ class AnalyzerJets(Analyzer):
                             h_in = project_hist(fh, axes_proj, {2: (ipt+1, ipt+1)})
                             ensure_sumw2(h_in)
                             # Signal extraction
+                            self.logger.info("Signal extraction (method %s): obs. %s, %s, ipt %d",
+                                             method, var, mcordata, ipt)
                             if method == 'sidesub':
                                 h = self._subtract_sideband(h_in, var, mcordata, ipt)
                             elif method == 'sigextr':
@@ -757,6 +759,8 @@ class AnalyzerJets(Analyzer):
                                     h = h_proj
                             # Efficiency correction
                             if mcordata == 'data' or not self.cfg('closure.use_matched'):
+                                self.logger.info("Efficiency correction: obs. %s, %s, ipt %d",
+                                                 var, mcordata, ipt)
                                 self.logger.info('correcting efficiency')
                                 self._correct_efficiency(h, ipt)
                             fh_sub.append(h)
@@ -778,6 +782,7 @@ class AnalyzerJets(Analyzer):
 
                         fh_sum_fdsub = fh_sum.Clone()
                         # Feed-down subtraction
+                        self.logger.info("Feed-down subtraction: obs. %s, %s", var, mcordata)
                         if mcordata == 'data' or not self.cfg('closure.exclude_feeddown_det'):
                             self._subtract_feeddown(fh_sum_fdsub, var, mcordata)
                         self._clip_neg(fh_sum_fdsub)
@@ -819,6 +824,7 @@ class AnalyzerJets(Analyzer):
                             self._save_hist(
                                 hproj, f'uf/h_{var}_{method}_{mcordata}_{string_range_ptjet(range_ptjet)}.png')
                         # Unfolding
+                        self.logger.info("Unfolding: obs. %s, %s", var, mcordata)
                         fh_unfolded = self._unfold(fh_sum_fdsub, var, mcordata)
                         for i, h in enumerate(fh_unfolded):
                             self._save_hist(h, f'h_ptjet-{var}_{method}_unfolded_{mcordata}_{i}.png')
@@ -858,6 +864,7 @@ class AnalyzerJets(Analyzer):
                             self._save_canvas(c,
                                               f'uf/h_{var}_{method}_convergence_{mcordata}_' +
                                               f'{string_range_ptjet(range_ptjet)}.png')
+                        self.logger.info("Analysis complete: obs. %s, %s", var, mcordata)
 
 
     def analyze_with_sidesub(self):
