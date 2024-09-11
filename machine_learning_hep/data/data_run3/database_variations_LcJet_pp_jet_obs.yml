@@ -326,22 +326,52 @@ categories:
                                         signal: [-2.5, 2.5]  # variation
                                         right: [3., 5.5]
             ranges:
-                activate: [yes, yes]
+                activate: [yes, yes, yes, yes, yes, yes, yes, yes]
                 label:
                     - "SB 3#minus6#it{#sigma}"
                     - "SB 3#minus5#it{#sigma}"
+                    - "SB 3#minus6#it{#sigma} left"
+                    - "SB 3.5#minus6#it{#sigma} left"
+                    - "SB 4#minus6#it{#sigma} left"
+                    - "SB 3#minus6#it{#sigma} right"
+                    - "SB 3.5#minus6#it{#sigma} right"
+                    - "SB 4#minus6#it{#sigma} right"
                 diffs:
                     analysis:
                         jet_obs:
                             sidesub:
-                                - - regions:
+                                - - regions:  # 3-6
                                         left: [-6., -3.]  # variation
                                         signal: [-2., 2.]
                                         right: [3., 6.]  # variation
-                                - - regions:
+                                - - regions:  # 3-5
                                         left: [-5., -3.]  # variation
                                         signal: [-2., 2.]
                                         right: [3., 5.]  # variation
+                                - - regions:  # 3-6 left
+                                        left: [-6., -3.]  # variation
+                                        signal: [-2., 2.]
+                                        right: [3., 5.5]
+                                - - regions:  # 3.5-6 left
+                                        left: [-6., -3.5]  # variation
+                                        signal: [-2., 2.]
+                                        right: [3., 5.5]
+                                - - regions:  # 4-6 left
+                                        left: [-6., -4.]  # variation
+                                        signal: [-2., 2.]
+                                        right: [3., 5.5]
+                                - - regions:  # 3-6 right
+                                        left: [-5.5, -3.]
+                                        signal: [-2., 2.]
+                                        right: [3., 6.]  # variation
+                                - - regions:  # 3.5-6 right
+                                        left: [-5.5, -3.]
+                                        signal: [-2., 2.]
+                                        right: [3.5, 6.]  # variation
+                                - - regions:  # 4-6 right
+                                        left: [-5.5, -3.]
+                                        signal: [-2., 2.]
+                                        right: [4., 6.]  # variation
             sb_left:  # TODO?
                 activate: [no]
                 label: ["left sb only"]

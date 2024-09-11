@@ -453,9 +453,9 @@ LcJet_pp:
       #sidesub_per_ptjet: true
       sidesub:
         - regions:
-            left: [-5.5, -3.]
-            signal: [-2., 2.]
-            right: [3., 5.5]
+            left: [-5.5, -3.]  # systematics
+            signal: [-2., 2.]  # systematics
+            right: [3., 5.5]  # systematics
 
       mass_fit:
         func_sig: 'gaus'
