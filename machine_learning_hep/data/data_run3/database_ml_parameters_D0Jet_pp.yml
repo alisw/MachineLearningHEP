@@ -664,12 +664,12 @@ D0Jet_pp:
         - ptrange: [16., 100.]
           regions:
             left: [-2., -2.]
-            signal: [-2., 2.] # systematics?
-            right: [3., 5.] # systematics?
+            signal: [-2., 2.]  # systematics
+            right: [3., 5.]  # systematics
         - regions:
-            left: [-5.5, -3.] # systematics?
-            signal: [-2., 2.] # systematics?
-            right: [3., 5.5] # systematics?
+            left: [-5.5, -3.]  # systematics
+            signal: [-2., 2.]  # systematics
+            right: [3., 5.5]  # systematics
 
       # mass_fit:
       #   func_sig: 'gaus'

@@ -684,15 +684,15 @@ categories:
                     - "SB 3#minus5#it{#sigma}"
                     - "SB 3#minus6#it{#sigma} left"
                     - "SB 3.5#minus6#it{#sigma} left"
-                    - "SB 4.0#minus6#it{#sigma} left"
-                    - "SB 3.0#minus6#it{#sigma} right"
+                    - "SB 4#minus6#it{#sigma} left"
+                    - "SB 3#minus6#it{#sigma} right"
                     - "SB 3.5#minus6#it{#sigma} right"
-                    - "SB 4.0#minus6#it{#sigma} right"
+                    - "SB 4#minus6#it{#sigma} right"
                 diffs:
                     analysis:
                         jet_obs:
                             sidesub:
-                                - - level: mc
+                                - - level: mc  # 3-6
                                     regions:
                                         left: [-2., -2.]
                                         signal: [-2., 2.]
@@ -706,7 +706,7 @@ categories:
                                         left: [-6., -3.]  # variation
                                         signal: [-2., 2.]
                                         right: [3., 6.]  # variation
-                                - - level: mc
+                                - - level: mc  # 3-5
                                     regions:
                                         left: [-2., -2.]
                                         signal: [-2., 2.]
@@ -720,7 +720,7 @@ categories:
                                         left: [-5., -3.]  # variation
                                         signal: [-2., 2.]
                                         right: [3., 5.]  # variation
-                                - - level: mc
+                                - - level: mc  # 3-6 left
                                     regions:
                                         left: [-2., -2.]
                                         signal: [-2., 2.]
@@ -729,12 +729,12 @@ categories:
                                     regions:
                                         left: [-2., -2.]
                                         signal: [-2., 2.]
-                                        right: [3., 5.]  # variation
+                                        right: [3., 5.]
                                   - regions:
                                         left: [-6., -3.]  # variation
                                         signal: [-2., 2.]
-                                        right: [3., 5.5]  # variation
-                                - - level: mc
+                                        right: [3., 5.5]
+                                - - level: mc  # 3.5-6 left
                                     regions:
                                         left: [-2., -2.]
                                         signal: [-2., 2.]
@@ -743,12 +743,12 @@ categories:
                                     regions:
                                         left: [-2., -2.]
                                         signal: [-2., 2.]
-                                        right: [3., 5.]  # variation
+                                        right: [3., 5.]
                                   - regions:
                                         left: [-6., -3.5]  # variation
                                         signal: [-2., 2.]
                                         right: [3., 5.5]
-                                - - level: mc
+                                - - level: mc  # 4-6 left
                                     regions:
                                         left: [-2., -2.]
                                         signal: [-2., 2.]
@@ -757,12 +757,12 @@ categories:
                                     regions:
                                         left: [-2., -2.]
                                         signal: [-2., 2.]
-                                        right: [3., 5.]  # variation
+                                        right: [3., 5.]
                                   - regions:
                                         left: [-6., -4.0]  # variation
                                         signal: [-2., 2.]
                                         right: [3., 5.5]
-                                - - level: mc
+                                - - level: mc  # 3-6 right
                                     regions:
                                         left: [-2., -2.]
                                         signal: [-2., 2.]
@@ -771,12 +771,12 @@ categories:
                                     regions:
                                         left: [-2., -2.]
                                         signal: [-2., 2.]
-                                        right: [3., 5.]  # variation
+                                        right: [3., 5.5]  # variation
                                   - regions:
                                         left: [-5.5., -3.0]
                                         signal: [-2., 2.]
                                         right: [3., 6.]  # variation
-                                - - level: mc
+                                - - level: mc  # 3.5-6 right
                                     regions:
                                         left: [-2., -2.]
                                         signal: [-2., 2.]
@@ -785,12 +785,12 @@ categories:
                                     regions:
                                         left: [-2., -2.]
                                         signal: [-2., 2.]
-                                        right: [3., 5.]  # variation
+                                        right: [3.5, 5.5]  # variation
                                   - regions:
                                         left: [-5.5., -3.0]
                                         signal: [-2., 2.]
                                         right: [3.5, 6.]  # variation
-                                - - level: mc
+                                - - level: mc  # 4-6 right
                                     regions:
                                         left: [-2., -2.]
                                         signal: [-2., 2.]
@@ -799,7 +799,7 @@ categories:
                                     regions:
                                         left: [-2., -2.]
                                         signal: [-2., 2.]
-                                        right: [3., 5.]  # variation
+                                        right: [4., 5.5]  # variation
                                   - regions:
                                         left: [-5.5., -3.0]
                                         signal: [-2., 2.]
