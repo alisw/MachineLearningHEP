@@ -462,9 +462,10 @@ def get_x_window_his(l_his: list):
     return x_min, x_max
 
 
-def get_y_window_gr(l_gr: list, with_errors=True):
+def get_y_window_gr(l_gr: list, with_errors=True, range_x=None):
     """Return the minimum and maximum y value so that all the points of the graphs in the list
-    fit in the range (by default including the error bars)."""
+    fit in the range (by default including the error bars).
+    Consider only points within range_x if provided."""
 
     def err_low(graph):
         return graph.GetEYlow if isinstance(graph, TGraphAsymmErrors) else graph.GetEY
@@ -476,24 +477,33 @@ def get_y_window_gr(l_gr: list, with_errors=True):
         l_gr = [l_gr]
     y_min = float("inf")
     y_max = float("-inf")
+    consider_x = isinstance(range_x, list) and len(range_x) == 2
     for gr in l_gr:
         for i in range(gr.GetN()):
+            x_i = (gr.GetX())[i]
+            if consider_x and (x_i < range_x[0] or x_i > range_x[1]):
+                continue
             y_min = min(y_min, (gr.GetY())[i] - ((err_low(gr)())[i] if with_errors else 0))
             y_max = max(y_max, (gr.GetY())[i] + ((err_high(gr)())[i] if with_errors else 0))
     return y_min, y_max
 
 
-def get_y_window_his(l_his: list, with_errors=True):
+def get_y_window_his(l_his: list, with_errors=True, range_x=None):
     """Return the minimum and maximum y value so that all the points of the histograms in the list
-    fit in the range (by default including the error bars)."""
+    fit in the range (by default including the error bars).
+    Consider only bins within range_x if provided."""
     if not isinstance(l_his, list):
         l_his = [l_his]
     y_min = float("inf")
     y_max = float("-inf")
+    consider_x = isinstance(range_x, list) and len(range_x) == 2
     for his in l_his:
-        for i in range(his.GetNbinsX()):
-            cont = his.GetBinContent(i + 1)
-            err = his.GetBinError(i + 1) if with_errors else 0
+        for ibin in range(his.GetXaxis().GetFirst(), his.GetXaxis().GetLast() + 1):
+            x_ibin = his.GetXaxis().GetBinCenter(ibin)
+            if consider_x and (x_ibin < range_x[0] or x_ibin > range_x[1]):
+                continue
+            cont = his.GetBinContent(ibin)
+            err = his.GetBinError(ibin) if with_errors else 0
             y_min = min(y_min, cont - err)
             y_max = max(y_max, cont + err)
     return y_min, y_max
@@ -884,16 +894,16 @@ def make_plot(  # pylint: disable=too-many-arguments, too-many-branches, too-man
     if isinstance(range_x, list) and len(range_x) == 2:
         x_min_plot, x_max_plot = range_x
 
-    # get y range of histograms
+    # get y range of histograms within [x_min_plot, x_max_plot]
     y_min_h, y_max_h = float("inf"), float("-inf")
     if len(list_h) > 0:
-        y_min_h, y_max_h = get_y_window_his(list_h, "y" in with_errors)
+        y_min_h, y_max_h = get_y_window_his(list_h, "y" in with_errors, [x_min_plot, x_max_plot])
         if log_y and y_min_h <= 0:
             y_min_h = min((h.GetMinimum(0) for h in list_h))
-    # get y range of graphs
+    # get y range of graphs within [x_min_plot, x_max_plot]
     y_min_g, y_max_g = float("inf"), float("-inf")
     if len(list_g) > 0:
-        y_min_g, y_max_g = get_y_window_gr(list_g, "y" in with_errors)
+        y_min_g, y_max_g = get_y_window_gr(list_g, "y" in with_errors, [x_min_plot, x_max_plot])
         if log_y and y_min_g <= 0:
             y_min_g = min((min0_gr(g) for g in list_g))
     # get total y range
