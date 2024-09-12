@@ -36,7 +36,7 @@ categories:
         rms_both_sides: true
         variations:
             bkgfunc:
-                activate: [yes]
+                activate: [no]
                 label: ["bkg. func."]
                 diffs:
                     analysis:
@@ -119,7 +119,7 @@ categories:
                                       model:
                                         fn: 'SUM::refl(frac_l[0.,1.]*refl_l, refl_r)'
                                   - level: mcrefl
-                                    ptrange: [12., 36.]
+                                    ptrange: [12., 48.]
                                     datasel: mcrefl
                                     range: [1.40, 2.4]
                                     components:
@@ -172,7 +172,7 @@ categories:
                                       model:
                                         fn: 'SUM::sigrefl(frac_refl[0.,1.]*refl, sig)'
                                   - level: mc
-                                    ptrange: [12., 36.]
+                                    ptrange: [12., 48.]
                                     range: [1.40, 2.40]
                                     fix_params: ['frac_l', 'mean_l', 'mean_r', 'sigma_l', 'sigma_r', 'frac_wide', 'sigma_g1', 'sigma_wide']
                                     components:
@@ -262,7 +262,7 @@ categories:
                         jet_obs:
                             todo: [0]
             massmin:
-                activate: [yes]
+                activate: [no]
                 label:
                     - "#it{m} min. 1.75"
                 diffs:
@@ -346,7 +346,7 @@ categories:
                                       model:
                                         fn: 'SUM::refl(frac_l[0.,1.]*refl_l, refl_r)'
                                   - level: mcrefl
-                                    ptrange: [12., 36.]
+                                    ptrange: [12., 48.]
                                     datasel: mcrefl
                                     range: [1.40, 2.4]
                                     components:
@@ -399,7 +399,7 @@ categories:
                                       model:
                                         fn: 'SUM::sigrefl(frac_refl[0.,1.]*refl, sig)'
                                   - level: mc
-                                    ptrange: [12., 36.]
+                                    ptrange: [12., 48.]
                                     range: [1.40, 2.40]
                                     fix_params: ['frac_l', 'mean_l', 'mean_r', 'sigma_l', 'sigma_r', 'frac_wide', 'sigma_g1', 'sigma_wide']
                                     components:
@@ -678,7 +678,7 @@ categories:
                                         signal: [-2.5, 2.5]  # variation
                                         right: [3., 5.5]
             ranges:
-                activate: [yes, yes, yes, yes, yes, yes, yes, yes]
+                activate: [yes, yes, yes, yes, no, no, no, no]
                 label:
                     - "SB 3#minus6#it{#sigma}"
                     - "SB 3#minus5#it{#sigma}"
