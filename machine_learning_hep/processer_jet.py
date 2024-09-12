@@ -131,11 +131,17 @@ class ProcesserJets(Processer):
         df['hfPx'] = df.fPt * np.cos(df.fPhi)
         df['hfPy'] = df.fPt * np.sin(df.fPhi)
         df['hfPz'] = df.fPt * np.sinh(df.fEta)
+        df['piPx'] = df.jetPx - df.hfPx
+        df['piPy'] = df.jetPy - df.hfPy
+        df['piPz'] = df.jetPz - df.hfPz
         df['zpar_num'] = df.jetPx * df.hfPx + df.jetPy * df.hfPy + df.jetPz * df.hfPz
         df['zpar_den'] = df.jetPx * df.jetPx + df.jetPy * df.jetPy + df.jetPz * df.jetPz
         df['zpar'] = df.zpar_num / df.zpar_den
         df[df['zpar'] >= 1.]['zpar'] = .999 # move 1 to last bin
         df['nsub21'] = df.fNSub2 / df.fNSub1
+        df['E_D'] = np.sqrt(1.86**2 + df.hfPx**2 + df.hfPy**2 + df.hfPz**2)
+        df['E_pi'] = np.sqrt(.139**2 + df.piPx**2 + df.piPy**2 + df.piPz**2)
+        df['M_D_pi'] = np.sqrt((df.E_D + df.E_pi)**2 - df.jetPx**2 - df.jetPy**2 - df.jetPz**2)
 
         self.logger.debug('zg')
         df['zg_array'] = np.array(.5 - abs(df.fPtSubLeading / (df.fPtLeading + df.fPtSubLeading) - .5))
@@ -232,6 +238,8 @@ class ProcesserJets(Processer):
                         dfquery(df, 'idx_match >= 0', inplace=True)
 
             self._calculate_variables(df)
+            # FIXME: suppress D*, move to DB
+            df = df[(abs(df.M_D_pi - 2.01) > .01) | (df.fJetNConstituents > 2)]
 
             for obs, spec in self.cfg('observables', {}).items():
                 self.logger.debug('preparing histograms for %s', obs)
@@ -281,7 +289,8 @@ class ProcesserJets(Processer):
         h_response_fd = {var:
             create_hist(
                 f'h_response_fd_{var}',
-                f";p_{{T}}^{{jet}} (GeV/#it{{c}});{var};p_{{T}}^{{jet}} (GeV/#it{{c}});{var};p_{{T}} (GeV/#it{{c}})",
+                f";p_{{T}}^{{jet}} (GeV/#it{{c}});p_{{T}}^{{HF}} (GeV/#it{{c}});{var};" +
+                f"p_{{T}}^{{jet}} (GeV/#it{{c}});p_{{T}}^{{HF}} (GeV/#it{{c}});{var}",
                 self.binarrays_ptjet['det'][var], self.binarrays_obs['det']['fPt'], self.binarrays_obs['det'][var],
                 self.binarrays_ptjet['gen'][var], self.binarrays_obs['gen']['fPt'], self.binarrays_obs['gen'][var])
             for var in self.cfg('observables', []) if not '-' in var}
@@ -380,7 +389,8 @@ class ProcesserJets(Processer):
 
                 if cat in dfmatch and dfmatch[cat] is not None:
                     self._prepare_response(dfmatch[cat], h_effkine, h_response, cat, var)
-                    self._prepare_response_fd(dfmatch[cat], h_effkine_fd, h_response_fd, var)
+                    if cat == 'np':
+                        self._prepare_response_fd(dfmatch[cat], h_effkine_fd, h_response_fd, var)
                     f = self.cfg('frac_mcana', .2)
                     _, df_mccorr = self.split_df(dfmatch[cat], f if f < 1. else 0.)
                     self._prepare_response(df_mccorr, h_effkine_frac, h_response_frac, cat, var)
@@ -428,6 +438,8 @@ class ProcesserJets(Processer):
         axis_var_gen = get_axis(h_response[var], 5)
 
         df = dfi
+        fill_hist(h_response[var], df[['fJetPt', 'fPt', f'{var}', 'fJetPt_gen', 'fPt_gen', f'{var}_gen']])
+
         # TODO: the first cut should be taken care of by under-/overflow bins, check their usage in analyzer
         df = df.loc[(df.fJetPt >= axis_ptjet_det.GetXmin()) & (df.fJetPt < axis_ptjet_det.GetXmax()) &
                     (df.fPt >= axis_pthf_det.GetXmin()) & (df.fPt < axis_pthf_det.GetXmax()) &
@@ -438,14 +450,12 @@ class ProcesserJets(Processer):
                     (df[f'{var}_gen'] >= axis_var_gen.GetXmin()) & (df[f'{var}_gen'] < axis_var_gen.GetXmax())]
         fill_hist(h_effkine[('det', 'cut', var)], df[['fJetPt', 'fPt', var]])
 
-        fill_hist(h_response[var], df[['fJetPt', 'fPt', f'{var}', 'fJetPt_gen', 'fPt_gen', f'{var}_gen']])
-
         df = dfi
         df = df.loc[(df.fJetPt_gen >= axis_ptjet_gen.GetXmin()) & (df.fJetPt_gen < axis_ptjet_gen.GetXmax()) &
                     (df.fPt_gen >= axis_pthf_gen.GetXmin()) & (df.fPt_gen < axis_pthf_gen.GetXmax()) &
                     (df[f'{var}_gen'] >= axis_var_gen.GetXmin()) & (df[f'{var}_gen'] < axis_var_gen.GetXmax())]
-        fill_hist(h_effkine[('gen', 'nocuts', var)], df[['fJetPt_gen', 'fPt', f'{var}_gen']])
+        fill_hist(h_effkine[('gen', 'nocuts', var)], df[['fJetPt_gen', 'fPt_gen', f'{var}_gen']])
         df = df.loc[(df.fJetPt >= axis_ptjet_det.GetXmin()) & (df.fJetPt < axis_ptjet_det.GetXmax()) &
                     (df.fPt >= axis_pthf_det.GetXmin()) & (df.fPt < axis_pthf_det.GetXmax()) &
                     (df[f'{var}'] >= axis_var_det.GetXmin()) & (df[f'{var}'] < axis_var_det.GetXmax())]
-        fill_hist(h_effkine[('gen', 'cut', var)], df[['fJetPt_gen', 'fPt', f'{var}_gen']])
+        fill_hist(h_effkine[('gen', 'cut', var)], df[['fJetPt_gen', 'fPt_gen', f'{var}_gen']])

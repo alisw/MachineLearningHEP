@@ -446,8 +446,8 @@ D0Jet_pp:
           components:
             sig:
               fn: 'Gaussian::peak(m[1.,5.], mean[1.85,1.89], sigma_g1[.01,.08])'
-            bkg:
-              fn: 'Gaussian::wide(m, mean, sigma_wide[.05,1.])'
+            wide:
+              fn: 'Gaussian::wide(m, mean, expr("n*sigma_g1", n[1.,5.], sigma_g1))'
             model:
               fn: 'SUM::sig(frac_wide[0.,.3]*wide, peak)'
         - level: mcrefl
@@ -530,49 +530,49 @@ D0Jet_pp:
         - level: mc
           ptrange: [1., 3.]
           range: [1.69, 2.04]
-          fix_params: ['frac_l', 'mean_l', 'mean_r', 'sigma_l', 'sigma_r', 'frac_wide', 'sigma_g1', 'sigma_wide']
+          fix_params: ['frac_l', 'mean_l', 'mean_r', 'sigma_l', 'sigma_r', 'frac_wide', 'sigma_g1', 'n']
           components:
             model:
               fn: 'SUM::sigrefl(frac_refl[0.,1.]*refl, sig)'
         - level: mc
           ptrange: [3., 4.]
           range: [1.68, 2.06]
-          fix_params: ['frac_l', 'mean_l', 'mean_r', 'sigma_l', 'sigma_r', 'frac_wide', 'sigma_g1', 'sigma_wide']
+          fix_params: ['frac_l', 'mean_l', 'mean_r', 'sigma_l', 'sigma_r', 'frac_wide', 'sigma_g1', 'n']
           components:
             model:
               fn: 'SUM::sigrefl(frac_refl[0.,1.]*refl, sig)'
         - level: mc
           ptrange: [4., 5.]
           range: [1.64, 2.08]
-          fix_params: ['frac_l', 'mean_l', 'mean_r', 'sigma_l', 'sigma_r', 'frac_wide', 'sigma_g1', 'sigma_wide']
+          fix_params: ['frac_l', 'mean_l', 'mean_r', 'sigma_l', 'sigma_r', 'frac_wide', 'sigma_g1', 'n']
           components:
             model:
               fn: 'SUM::sigrefl(frac_refl[0.,1.]*refl, sig)'
         - level: mc
           ptrange: [5., 6.]
           range: [1.64, 2.10]
-          fix_params: ['frac_l', 'mean_l', 'mean_r', 'sigma_l', 'sigma_r', 'frac_wide', 'sigma_g1', 'sigma_wide']
+          fix_params: ['frac_l', 'mean_l', 'mean_r', 'sigma_l', 'sigma_r', 'frac_wide', 'sigma_g1', 'n']
           components:
             model:
               fn: 'SUM::sigrefl(frac_refl[0.,1.]*refl, sig)'
         - level: mc
           ptrange: [6., 8.]
           range: [1.60, 2.14]
-          fix_params: ['frac_l', 'mean_l', 'mean_r', 'sigma_l', 'sigma_r', 'frac_wide', 'sigma_g1', 'sigma_wide']
+          fix_params: ['frac_l', 'mean_l', 'mean_r', 'sigma_l', 'sigma_r', 'frac_wide', 'sigma_g1', 'n']
           components:
             model:
               fn: 'SUM::sigrefl(frac_refl[0.,1.]*refl, sig)'
         - level: mc
           ptrange: [8., 12.]
           range: [1.52, 2.30]
-          fix_params: ['frac_l', 'mean_l', 'mean_r', 'sigma_l', 'sigma_r', 'frac_wide', 'sigma_g1', 'sigma_wide']
+          fix_params: ['frac_l', 'mean_l', 'mean_r', 'sigma_l', 'sigma_r', 'frac_wide', 'sigma_g1', 'n']
           components:
             model:
               fn: 'SUM::sigrefl(frac_refl[0.,1.]*refl, sig)'
         - level: mc
           ptrange: [12., 48.]
           range: [1.40, 2.40]
-          fix_params: ['frac_l', 'mean_l', 'mean_r', 'sigma_l', 'sigma_r', 'frac_wide', 'sigma_g1', 'sigma_wide']
+          fix_params: ['frac_l', 'mean_l', 'mean_r', 'sigma_l', 'sigma_r', 'frac_wide', 'sigma_g1', 'n']
           components:
             model:
               fn: 'SUM::sigrefl(frac_refl[0.,1.]*refl, sig)'
@@ -701,6 +701,7 @@ D0Jet_pp:
       frac_mcana: .2 # fraction of MC sample for the closure
       fd_root: '/data2/vkucera/powheg/trees_powheg_fd_central.root' # systematics
       fd_parquet: '/data2/jklein/powheg/trees_powheg_fd_central.parquet' # systematics
+      fd_folding_method: 3d
 
       # obsolete?
       proc_type: Jets # used
@@ -803,7 +804,19 @@ D0Jet_pp:
 
       # Additional cuts applied before mass histogram is filled
       use_cuts: True  # systematics
-      cuts: ["mlBkgScore < 0.02", "mlBkgScore < 0.02", "mlBkgScore < 0.02", "mlBkgScore < 0.05", "mlBkgScore < 0.06", "mlBkgScore < 0.08", "mlBkgScore < 0.08", "mlBkgScore < 0.10", "mlBkgScore < 0.10", "mlBkgScore < 0.20", "mlBkgScore < 0.25", "mlBkgScore < 0.30"]  # (sel_an_binmin bins) systematics FIXME: Update for new model.
+      cuts:
+        - "mlBkgScore < 0.02"
+        - "mlBkgScore < 0.02"
+        - "mlBkgScore < 0.02"
+        - "mlBkgScore < 0.05"
+        - "mlBkgScore < 0.06"
+        - "mlBkgScore < 0.08"
+        - "mlBkgScore < 0.08"
+        - "mlBkgScore < 0.10"
+        - "mlBkgScore < 0.10"
+        - "mlBkgScore < 0.20"
+        - "mlBkgScore < 0.25"
+        - "mlBkgScore < 0.30"
 
   systematics:  # used in machine_learning_hep/analysis/systematics.py
     probvariation:
