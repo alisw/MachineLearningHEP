@@ -343,7 +343,7 @@ class AnalyzerJetSystematics:
             input_histograms_default.append(input_file_default.Get(name_his))
             if not input_histograms_default[iptjet]:
                 self.logger.critical(make_message_notfound(name_his, path_def))
-            self.crop_histogram(input_histograms_default[iptjet], var)
+            # self.crop_histogram(input_histograms_default[iptjet], var)
             print(f"Default histogram ({range_ptjet[0]} to {range_ptjet[1]})")
             print_histogram(input_histograms_default[iptjet], self.verbose)
             # name_eff = f"h_ptjet-pthf_effnew_pr_{string_range_ptjet(range_ptjet)}"
@@ -411,7 +411,7 @@ class AnalyzerJetSystematics:
                     path_eff_file = path_eff.replace(self.string_default, string_catvar)
                     if not sys_var_histo_eff:
                         self.logger.critical(make_message_notfound(name_eff, path_eff_file))
-                    self.crop_histogram(sys_var_histo, var)
+                    # self.crop_histogram(sys_var_histo, var)
                     input_histograms_syscatvar.append(sys_var_histo)
                     input_histograms_eff.append(sys_var_histo_eff)
                     print_histogram(sys_var_histo_eff, self.verbose)
@@ -1017,8 +1017,8 @@ class AnalyzerJetSystematics:
             leg_finalwsys = TLegend(0.7, 0.78, 0.85, 0.88)
             setup_legend(leg_finalwsys)
             leg_finalwsys.AddEntry(input_histograms_default[iptjet], "data", "P")
-            self.crop_histogram(input_histograms_default[iptjet], var)
-            self.crop_graph(tgsys[iptjet], var)
+            # self.crop_histogram(input_histograms_default[iptjet], var)
+            # self.crop_graph(tgsys[iptjet], var)
             setup_histogram(input_histograms_default[iptjet], get_colour(0, 0))
             y_min_g, y_max_g = get_y_window_gr([tgsys[iptjet]])
             y_min_h, y_max_h = get_y_window_his([input_histograms_default[iptjet]])
@@ -1032,9 +1032,9 @@ class AnalyzerJetSystematics:
             # input_histograms_default[iptjet].GetXaxis().SetRangeUser(
             #     round(obs_gen_min, 2), round(obs_gen_max, 2)
             # )
-            input_histograms_default[iptjet].GetXaxis().SetRangeUser(
-                round(x_range[var][0], 2), round(x_range[var][1], 2)
-            )
+            # input_histograms_default[iptjet].GetXaxis().SetRangeUser(
+            #     round(x_range[var][0], 2), round(x_range[var][1], 2)
+            # )
             input_histograms_default[iptjet].SetTitle("")
             input_histograms_default[iptjet].SetXTitle(latex_obs)
             input_histograms_default[iptjet].SetYTitle(latex_y)
@@ -1091,9 +1091,9 @@ class AnalyzerJetSystematics:
             crelativesys.SetRightMargin(0.25)
             leg_relativesys = TLegend(0.77, 0.2, 0.95, 0.85)
             setup_legend(leg_relativesys, textsize=self.fontsize)
-            for g in tgsys_cat[iptjet]:
-                self.crop_graph(g, var)
-            self.crop_histogram(h_default_stat_err[iptjet], var)
+            # for g in tgsys_cat[iptjet]:
+            #     self.crop_graph(g, var)
+            # self.crop_histogram(h_default_stat_err[iptjet], var)
             y_min_g, y_max_g = get_y_window_gr(tgsys_cat[iptjet])
             y_min_h, y_max_h = get_y_window_his([h_default_stat_err[iptjet]])
             y_min = min(y_min_g, y_min_h)
@@ -1198,9 +1198,9 @@ class AnalyzerJetSystematics:
             # leg_relativesys_gr = TLegend(.77, .2, 0.95, .85)
             leg_relativesys_gr = TLegend(0.77 * 9 / 10, 0.5, 0.95, 0.85)  # scale for width 900 -> 1000
             setup_legend(leg_relativesys_gr, textsize=self.fontsize)
-            for g in tgsys_gr[iptjet]:
-                self.crop_graph(g, var)
-            self.crop_histogram(h_default_stat_err[iptjet], var)
+            # for g in tgsys_gr[iptjet]:
+            #     self.crop_graph(g, var)
+            # self.crop_histogram(h_default_stat_err[iptjet], var)
             y_min_g, y_max_g = get_y_window_gr(tgsys_gr[iptjet])
             y_min_h, y_max_h = get_y_window_his([h_default_stat_err[iptjet]])
             y_min = min(y_min_g, y_min_h)
