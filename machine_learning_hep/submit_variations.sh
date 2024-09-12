@@ -13,7 +13,9 @@ ANALYSIS="$3"
 CONFIG_FILE="$4"
 RUN=0
 CMD_VAR="python ${DIR_THIS}/do_variations.py ${DB_DEFAULT} ${DB_VARIATION}"
-NJOBS=50 # number of parallel jobs
+declare -a NJOBS  # number of parallel jobs
+NJOBS[0]=50  # for variations without processor
+NJOBS[1]=5   # for variations with processor
 SCRIPT="script.sh" # name of the script with the execution lines
 
 ${CMD_VAR} || ErrExit
@@ -30,7 +32,9 @@ done
 
 if ((RUN)); then
   echo -e "\nRunning variations"
-  { ${CMD_VAR} -a "${ANALYSIS}" -r "${CONFIG_FILE}" -s "$SCRIPT" && parallel --will-cite --progress -j $NJOBS < "$SCRIPT"; } || ErrExit
+  for PROC in 0 1; do
+    ${CMD_VAR} -a "${ANALYSIS}" -r "${CONFIG_FILE}" -s "$SCRIPT" -p $PROC && parallel --will-cite --progress -j ${NJOBS[$PROC]} < "$SCRIPT"
+  done || ErrExit
 else
   echo -e "\nCleaning"
   ${CMD_VAR} -c -s "$SCRIPT" || ErrExit
