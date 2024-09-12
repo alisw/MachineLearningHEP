@@ -480,6 +480,8 @@ def main(args=None):
     args = parser.parse_args(args)
 
     configure_logger(args.debug, args.log_file, args.quiet)
+    logger = get_logger()
+    logger.info("Initialising analysis with database: %s", args.database_analysis)
 
     # Extract which database and run config to be used
     pkg_data = "machine_learning_hep.data"
