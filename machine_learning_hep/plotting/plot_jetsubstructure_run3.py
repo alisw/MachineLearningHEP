@@ -29,7 +29,7 @@ import numpy as np
 import yaml
 from ROOT import TFile, gROOT, gStyle
 
-from machine_learning_hep.logger import get_logger
+from machine_learning_hep.logger import get_logger, configure_logger
 from machine_learning_hep.analysis.analyzer_jets import string_range_ptjet, string_range_pthf
 
 # HF specific imports
@@ -65,6 +65,7 @@ x_range = {
 
 class Plotter:
     def __init__(self, path_input_file: str, path_database_analysis: str, typean: str, var: str, mcordata: str):
+        configure_logger(False)
         self.logger = get_logger()
         self.typean = typean
         self.var = var
@@ -88,7 +89,7 @@ class Plotter:
         self.dir_input = os.path.dirname(self.path_input_file)
         self.file_results = None
 
-        print(f"Input file: {self.path_input_file}")
+        self.logger.info("Input file: %s", self.path_input_file)
 
         # output directory for figures
         self.fig_formats = ["pdf", "png"]
@@ -96,7 +97,7 @@ class Plotter:
         for fmt in self.fig_formats:
             (self.dir_out_figs / fmt).mkdir(parents=True, exist_ok=True)
 
-        print(f"Plots will be saved in {self.dir_out_figs}")
+        self.logger.info("Plots will be saved in %s", self.dir_out_figs)
 
         # plotting
         self.list_obj = []
@@ -173,8 +174,8 @@ class Plotter:
         self.niter_unfolding = self.db_typean["unfolding_iterations"]
         self.choice_iter_unfolding = self.db_typean["unfolding_iterations_sel"]
 
-        print("Rec obs edges:", self.edges_obs_rec, "Gen obs edges:", self.edges_obs_gen)
-        print("Rec ptjet edges:", self.edges_ptjet_rec, "Gen ptjet edges:", self.edges_ptjet_gen)
+        self.logger.info("Rec obs edges: %s, Gen obs edges: %s", self.edges_obs_rec, self.edges_obs_gen)
+        self.logger.info("Rec ptjet edges: %s, Gen ptjet edges: %s", self.edges_ptjet_rec, self.edges_ptjet_gen)
 
         # official figures
         # self.size_can = [800, 800]
@@ -319,7 +320,7 @@ class Plotter:
         return can, new
 
     def plot(self):
-        print("Observable:", self.var)
+        self.logger.info("Observable: %s", self.var)
 
         with TFile.Open(self.path_input_file) as self.file_results:
             name_hist_unfold_2d = f"h_ptjet-{self.var}_{self.method}_unfolded_{self.mcordata}_0"
@@ -328,7 +329,7 @@ class Plotter:
 
             if self.mcordata == "data":
                 # Efficiency
-                print("Plotting efficiency")
+                self.logger.info("Plotting efficiency")
                 self.list_obj = self.get_objects("h_pthf_effnew_pr", "h_pthf_effnew_np")
                 self.labels_obj = ["prompt", "nonprompt"]
                 self.title_full = f";{self.latex_pthf};{self.latex_hadron} efficiency"
@@ -362,7 +363,7 @@ class Plotter:
 
                 if self.mcordata == "data":
                     # Sideband subtraction
-                    print("Plotting sideband subtraction")
+                    self.logger.info("Plotting sideband subtraction")
                     # loop over hadron pt
                     for ipt in range(self.n_bins_pthf):
                         range_pthf = (self.edges_pthf[ipt], self.edges_pthf[ipt+1])
@@ -382,7 +383,7 @@ class Plotter:
                         self.make_plot(f"sidebands_{self.var}_{self.mcordata}_{string_ptjet}_{string_pthf}")
 
                 # Feed-down subtraction
-                print("Plotting feed-down subtraction")
+                self.logger.info("Plotting feed-down subtraction")
                 self.list_obj = self.get_objects(f'h_ptjet-{self.var}_{self.method}_effscaled_{self.mcordata}',
                                                  f'h_ptjet-{self.var}_feeddown_det_final_{self.mcordata}',
                                                  f'h_ptjet-{self.var}_{self.method}_{self.mcordata}')
@@ -402,7 +403,7 @@ class Plotter:
                 # TODO: feed-down (after 2D, fraction)
 
                 # Unfolding
-                print("Plotting unfolding")
+                self.logger.info("Plotting unfolding")
                 self.list_obj = [self.get_object(f"h_{self.var}_{self.method}_unfolded_{self.mcordata}_"
                                                  f"{string_ptjet}_{i}") for i in range(self.niter_unfolding)]
                 self.labels_obj = [f"iteration {i + 1}" for i in range(self.niter_unfolding)]
@@ -418,7 +419,7 @@ class Plotter:
                 # TODO: unfolding (before/after)
 
                 # Results
-                print("Plotting results")
+                self.logger.info("Plotting results")
                 self.range_x = x_range[self.var]
                 self.list_obj = [self.get_object(f"h_{self.var}_{self.method}_unfolded_{self.mcordata}_"
                                                  f"{string_ptjet}_sel_selfnorm")]
@@ -456,7 +457,7 @@ class Plotter:
                     new[0].AddEntry(gr_syst, "syst. unc.", "f")
                     self.save_canvas(can)
 
-            print("Plotting results for all pt jet together")
+            self.logger.info("Plotting results for all pt jet together")
             self.list_obj = list_syst_all + list_stat_all
             self.labels_obj = [""] * len(list_syst_all) + list_labels_all
             self.list_colours = list_colours_syst_all + list_colours_stat_all
