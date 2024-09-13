@@ -606,11 +606,13 @@ def get_markersize(marker: int, size_def=1.5):
     return size_def
 
 
-def setup_histogram(hist, colour=1, markerstyle=kOpenCircle, size=1.5):
+def setup_histogram(hist, colour=1, markerstyle=kOpenCircle, size=1.5, textsize=0.05):
     hist.SetStats(0)
-    hist.SetTitleSize(0.05, "X")
+    hist.GetXaxis().SetLabelSize(textsize)
+    hist.GetYaxis().SetLabelSize(textsize)
+    hist.SetTitleSize(textsize, "X")
+    hist.SetTitleSize(textsize, "Y")
     hist.SetTitleOffset(1.0, "X")
-    hist.SetTitleSize(0.05, "Y")
     hist.SetTitleOffset(1.0, "Y")
     hist.SetLineWidth(3)
     hist.SetLineColor(colour)
@@ -640,9 +642,11 @@ def setup_legend(legend, textsize=0.035):
 
 
 def setup_tgraph(tg_, colour=1, markerstyle=kOpenCircle, size=1.5, alphastyle=0.8, fillstyle=1001, textsize=0.05):
+    tg_.GetXaxis().SetLabelSize(textsize)
+    tg_.GetYaxis().SetLabelSize(textsize)
     tg_.GetXaxis().SetTitleSize(textsize)
-    tg_.GetXaxis().SetTitleOffset(1.0)
     tg_.GetYaxis().SetTitleSize(textsize)
+    tg_.GetXaxis().SetTitleOffset(1.0)
     tg_.GetYaxis().SetTitleOffset(1.0)
     tg_.SetFillColorAlpha(colour, alphastyle)
     tg_.SetLineWidth(0)
@@ -787,8 +791,6 @@ def make_plot(  # pylint: disable=too-many-arguments, too-many-branches, too-man
             gr.GetXaxis().SetLimits(x_min_plot, x_max_plot)
             gr.GetYaxis().SetRangeUser(y_min_plot, y_max_plot)
             gr.GetXaxis().SetMaxDigits(maxdigits)
-            gr.GetXaxis().SetLabelSize(0.045)
-            gr.GetYaxis().SetLabelSize(0.045)
             gr.GetYaxis().SetMaxDigits(maxdigits)
             gr.GetYaxis().SetTitleOffset(1.2)
             if offsets_xy:
@@ -797,6 +799,8 @@ def make_plot(  # pylint: disable=too-many-arguments, too-many-branches, too-man
             gr.Draw("AP")
             list_new.append(gr)
         setup_histogram(histogram, get_my_colour(counter_plot), get_my_marker(counter_plot), get_my_size(counter_plot))
+        histogram.GetXaxis().SetLimits(x_min_plot, x_max_plot)
+        histogram.GetXaxis().SetRangeUser(x_min_plot, x_max_plot)
         if isinstance(opt_plot_h, list):
             opt_plot = opt_plot_h
         else:

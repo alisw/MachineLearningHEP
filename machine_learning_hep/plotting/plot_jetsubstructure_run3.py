@@ -349,7 +349,7 @@ class Plotter:
                 # TODO: efficiency (old vs new)
 
             # loop over jet pt
-            list_iptjet = [1, 2, 3]  # indices of jet pt bins to process
+            list_iptjet = [1, 2]  # indices of jet pt bins to process
             # Results
             list_stat_all = []
             list_syst_all = []
@@ -360,6 +360,7 @@ class Plotter:
             for i_iptjet, iptjet in enumerate(list_iptjet):
                 range_ptjet = get_bin_limits(axis_ptjet, iptjet + 1)
                 string_ptjet = string_range_ptjet(range_ptjet)
+                self.range_x = None
 
                 if self.mcordata == "data":
                     # Sideband subtraction
@@ -423,7 +424,6 @@ class Plotter:
                 self.range_x = x_range[self.var]
                 self.list_obj = [self.get_object(f"h_{self.var}_{self.method}_unfolded_{self.mcordata}_"
                                                  f"{string_ptjet}_sel_selfnorm")]
-                self.crop_histogram(self.list_obj[0], self.var)
                 self.labels_obj = ["data"]
                 self.list_colours = [get_colour(i_iptjet, 1)]
                 self.list_markers = [get_marker(i_iptjet)]
@@ -440,7 +440,6 @@ class Plotter:
                     name_gr_sys = f"sys_{self.var}_{string_ptjet}"
                     if not (gr_syst := file_syst.Get(name_gr_sys)):
                         self.logger.fatal(make_message_notfound(name_gr_sys))
-                    self.crop_graph(gr_syst, self.var)
                     list_syst_all.append(gr_syst)
                     # We need to plot the data on top of the systematics but
                     # we want to show the systematics marker after the data marker in the legend.
@@ -458,6 +457,7 @@ class Plotter:
                     self.save_canvas(can)
 
             self.logger.info("Plotting results for all pt jet together")
+            self.range_x = x_range[self.var]
             self.list_obj = list_syst_all + list_stat_all
             self.labels_obj = [""] * len(list_syst_all) + list_labels_all
             self.list_colours = list_colours_syst_all + list_colours_stat_all
