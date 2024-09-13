@@ -210,12 +210,14 @@ class Plotter:
         # text
         self.text_alice = "ALICE Preliminary, pp, #sqrt{#it{s}} = 13.6 TeV"  # preliminaries
         # self.text_alice = "#bf{ALICE}, pp, #sqrt{#it{s}} = 13.6 TeV"  # paper
-        self.text_jets = "%s-tagged track jets, anti-#it{k}_{T}, #it{R} = 0.4" % self.latex_hadron
+        self.text_jets = "%s-tagged charged-particle jets, anti-#it{k}_{T}, #it{R} = 0.4" % self.latex_hadron
         self.text_ptjet = "%g #leq %s (GeV/#it{c}) < %g, |#it{#eta}_{jet ch}| < 0.5"
         self.text_pth = "%g #leq #it{p}_{T}^{%s} (GeV/#it{c}) < %g, |#it{y}_{%s}| < 0.8"
         self.text_sd = "Soft drop (#it{z}_{cut} = 0.1, #it{#beta} = 0)"
         # self.text_acc_h = "|#it{y}| < 0.8"
         # self.text_powheg = "POWHEG + PYTHIA 6 + EvtGen"
+        self.range_x = None
+        self.range_y = None
 
     def cfg(self, param, default=None):
         return reduce(lambda d, key: d.get(key, default) if isinstance(d, dict) else default,
@@ -232,7 +234,7 @@ class Plotter:
         """Constrain x range of histogram and reset outside bins."""
         if var not in x_range:
             return
-        # hist.GetXaxis().SetRangeUser(round(x_range[var][0], 2), round(x_range[var][1], 2))
+        hist.GetXaxis().SetRangeUser(round(x_range[var][0], 2), round(x_range[var][1], 2))
         hist.GetXaxis().SetLimits(round(x_range[var][0], 2), round(x_range[var][1], 2))
         reset_hist_outside_range(hist, *x_range[var])
 
@@ -240,7 +242,7 @@ class Plotter:
         """Constrain x range of graph and reset outside points."""
         if var not in x_range:
             return
-        # graph.GetXaxis().SetRangeUser(round(x_range[var][0], 2), round(x_range[var][1], 2))
+        graph.GetXaxis().SetRangeUser(round(x_range[var][0], 2), round(x_range[var][1], 2))
         graph.GetXaxis().SetLimits(round(x_range[var][0], 2), round(x_range[var][1], 2))
         reset_graph_outside_range(graph, *x_range[var])
 
@@ -302,6 +304,7 @@ class Plotter:
                              offsets_xy=self.offsets_axes,
                              colours=self.list_colours, markers=self.list_markers, leg_pos=self.leg_pos,
                              margins_y=[self.y_margin_down, y_margin_up_adj], margins_c=self.margins_can,
+                             range_x=self.range_x, range_y=self.range_y,
                              title=self.title_full)
         self.list_new += new
         if self.list_latex:
@@ -345,7 +348,15 @@ class Plotter:
                 # TODO: efficiency (old vs new)
 
             # loop over jet pt
-            for iptjet in (1, 2):
+            list_iptjet = [1, 2, 3]  # indices of jet pt bins to process
+            # Results
+            list_stat_all = []
+            list_syst_all = []
+            list_labels_all = []
+            list_markers_all = []
+            list_colours_stat_all = []
+            list_colours_syst_all = []
+            for i_iptjet, iptjet in enumerate(list_iptjet):
                 range_ptjet = get_bin_limits(axis_ptjet, iptjet + 1)
                 string_ptjet = string_range_ptjet(range_ptjet)
 
@@ -408,11 +419,19 @@ class Plotter:
 
                 # Results
                 print("Plotting results")
+                self.range_x = x_range[self.var]
                 self.list_obj = [self.get_object(f"h_{self.var}_{self.method}_unfolded_{self.mcordata}_"
                                                  f"{string_ptjet}_sel_selfnorm")]
+                self.crop_histogram(self.list_obj[0], self.var)
                 self.labels_obj = ["data"]
+                self.list_colours = [get_colour(i_iptjet, 1)]
+                self.list_markers = [get_marker(i_iptjet)]
+                list_stat_all += self.list_obj
+                list_labels_all += [self.get_text_range_ptjet(iptjet)]
+                list_colours_stat_all += self.list_colours
+                list_markers_all += self.list_markers
                 path_syst = f"{os.path.expandvars(self.dir_input)}/systematics.root"
-                self.list_colours, self.list_markers, gr_syst = None, None, None
+                gr_syst = None
                 if os.path.exists(path_syst):
                     self.logger.info("Getting systematics from %s", path_syst)
                     if not (file_syst := TFile.Open(path_syst)):
@@ -420,12 +439,15 @@ class Plotter:
                     name_gr_sys = f"sys_{self.var}_{string_ptjet}"
                     if not (gr_syst := file_syst.Get(name_gr_sys)):
                         self.logger.fatal(make_message_notfound(name_gr_sys))
+                    self.crop_graph(gr_syst, self.var)
+                    list_syst_all.append(gr_syst)
                     # We need to plot the data on top of the systematics but
                     # we want to show the systematics marker after the data marker in the legend.
                     self.list_obj.insert(0, gr_syst)
                     self.labels_obj.insert(0, "")
-                    self.list_markers = [get_marker(0)] * 2
-                    self.list_colours = [get_colour(i, j) for i, j in zip((0, 0), (2, 1))]
+                    self.list_colours.insert(0, get_colour(i_iptjet, 2))
+                    self.list_markers.insert(0, get_marker(i_iptjet))
+                    list_colours_syst_all.append(self.list_colours[0])
                 self.title_full = self.title_full_default
                 can, new = self.make_plot(f"results_{self.var}_{self.mcordata}_{string_ptjet}",
                                           colours=self.list_colours, markers=self.list_markers)
@@ -433,6 +455,19 @@ class Plotter:
                     # We have to add the systematics marker in the legend by hand.
                     new[0].AddEntry(gr_syst, "syst. unc.", "f")
                     self.save_canvas(can)
+
+            print("Plotting results for all pt jet together")
+            self.list_obj = list_syst_all + list_stat_all
+            self.labels_obj = [""] * len(list_syst_all) + list_labels_all
+            self.list_colours = list_colours_syst_all + list_colours_stat_all
+            self.list_markers = list_markers_all * (1 + int(bool(list_syst_all)))
+            self.title_full = self.title_full_default
+            can, new = self.make_plot(f"results_{self.var}_{self.mcordata}_ptjet-all",
+                                      colours=self.list_colours, markers=self.list_markers)
+            if list_syst_all:
+                # We have to add the systematics marker in the legend by hand.
+                new[0].AddEntry(gr_syst, "syst. unc.", "f")
+                self.save_canvas(can)
 
 
 def main():
@@ -451,13 +486,13 @@ def main():
 
     gROOT.SetBatch(True)
 
-    # list_vars = ["zg", "nsd", "rg", "zpar"]
-    list_vars = ["zpar"]
+    list_vars = ["zg", "nsd", "rg", "zpar"]
+    # list_vars = ["zpar"]
     for var in list_vars:
         print(f"Processing observable {var}")
         for mcordata in ("data", "mc"):
-            ploter = Plotter(args.input_file, args.database_analysis, args.type_ana, var, mcordata)
-            ploter.plot()
+            plotter = Plotter(args.input_file, args.database_analysis, args.type_ana, var, mcordata)
+            plotter.plot()
 
 
 if __name__ == "__main__":
