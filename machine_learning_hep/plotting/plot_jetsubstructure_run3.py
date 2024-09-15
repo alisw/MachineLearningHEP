@@ -425,6 +425,7 @@ class Plotter:
 
                 # Results
                 self.logger.info("Plotting results")
+                self.plot_errors_x = False
                 self.range_x = x_range[self.var]
                 self.list_obj = [self.get_object(f"h_{self.var}_{self.method}_unfolded_{self.mcordata}_"
                                                  f"{string_ptjet}_sel_selfnorm")]
@@ -444,6 +445,8 @@ class Plotter:
                     name_gr_sys = f"sys_{self.var}_{string_ptjet}"
                     if not (gr_syst := file_syst.Get(name_gr_sys)):
                         self.logger.fatal(make_message_notfound(name_gr_sys))
+                    if self.var == "nsd":
+                        shrink_err_x(gr_syst)
                     list_syst_all.append(gr_syst)
                     # We need to plot the data on top of the systematics but
                     self.list_obj.insert(0, gr_syst)
@@ -458,7 +461,10 @@ class Plotter:
 
                 # TODO: comparison with PYTHIA HF, PYTHIA inclusive, Run 2 inclusive
 
+                self.plot_errors_x = True
+
             self.logger.info("Plotting results for all pt jet together")
+            self.plot_errors_x = False
             self.range_x = x_range[self.var]
             self.list_obj = list_syst_all + list_stat_all
             self.labels_obj = list_labels_all + [""] * len(list_syst_all)  # do not show the histograms in the legend
@@ -470,6 +476,7 @@ class Plotter:
 
             # TODO: high-pt/low-pt bottom panel, comparison with PYTHIA HF, PYTHIA inclusive
 
+            self.plot_errors_x = True
 
 def main():
     """
