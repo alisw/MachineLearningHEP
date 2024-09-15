@@ -608,12 +608,12 @@ def get_markersize(marker: int, size_def=1.5):
     return size_def
 
 
-def setup_histogram(hist, colour=1, markerstyle=kOpenCircle, size=1.5, textsize=0.05):
+def setup_histogram(hist, colour=1, markerstyle=kOpenCircle, size=1.5, textsize=0.05, scale_title=1.3):
     hist.SetStats(0)
     hist.GetXaxis().SetLabelSize(textsize)
     hist.GetYaxis().SetLabelSize(textsize)
-    hist.SetTitleSize(textsize, "X")
-    hist.SetTitleSize(textsize, "Y")
+    hist.SetTitleSize(textsize * scale_title, "X")
+    hist.SetTitleSize(textsize * scale_title, "Y")
     hist.SetTitleOffset(1.0, "X")
     hist.SetTitleOffset(1.0, "Y")
     hist.SetLineWidth(3)
@@ -623,11 +623,11 @@ def setup_histogram(hist, colour=1, markerstyle=kOpenCircle, size=1.5, textsize=
     hist.SetMarkerColor(colour)
 
 
-def setup_tgraph(tg_, colour=1, markerstyle=kOpenCircle, size=1.5, alphastyle=0.8, fillstyle=1001, textsize=0.05):
+def setup_tgraph(tg_, colour=1, markerstyle=kOpenCircle, size=1.5, alphastyle=0.8, fillstyle=1001, textsize=0.05, scale_title=1.3):
     tg_.GetXaxis().SetLabelSize(textsize)
     tg_.GetYaxis().SetLabelSize(textsize)
-    tg_.GetXaxis().SetTitleSize(textsize)
-    tg_.GetYaxis().SetTitleSize(textsize)
+    tg_.GetXaxis().SetTitleSize(textsize * scale_title)
+    tg_.GetYaxis().SetTitleSize(textsize * scale_title)
     tg_.GetXaxis().SetTitleOffset(1.0)
     tg_.GetYaxis().SetTitleOffset(1.0)
     tg_.SetLineWidth(0)
@@ -708,6 +708,8 @@ def make_plot(  # pylint: disable=too-many-arguments, too-many-branches, too-man
     margins_y=None,
     with_errors="xy",
     logscale=None,
+    font_size=0.032,
+    scale=1.
 ):
     """
     Make a plot with objects from a list (list_obj).
@@ -745,6 +747,8 @@ def make_plot(  # pylint: disable=too-many-arguments, too-many-branches, too-man
         expressed as fractions of the total plotting range)
     - including the error bars in the range calculations (with_errors),
         (format: string containing any of x, y)
+    - font size relative to the full canvas height (font_size)
+    - height of the pad relative to the full canvas height (scale)
     """
 
     # HELPING FUNCTIONS
@@ -770,7 +774,7 @@ def make_plot(  # pylint: disable=too-many-arguments, too-many-branches, too-man
         return get_markersize(get_my_marker(i))
 
     def plot_graph(graph):
-        setup_tgraph(graph, get_my_colour(counter_plot), get_my_marker(counter_plot), get_my_size(counter_plot))
+        setup_tgraph(graph, get_my_colour(counter_plot), get_my_marker(counter_plot), get_my_size(counter_plot), textsize=(font_size / scale))
         graph.SetTitle(title)
         graph.GetXaxis().SetLimits(x_min_plot, x_max_plot)
         graph.GetYaxis().SetRangeUser(y_min_plot, y_max_plot)
@@ -792,7 +796,7 @@ def make_plot(  # pylint: disable=too-many-arguments, too-many-branches, too-man
         # If nothing has been plotted yet, plot an empty graph to set the exact ranges.
         if counter_plot == 0:
             gr = TGraph(histogram)
-            setup_tgraph(gr)
+            setup_tgraph(gr, textsize=(font_size / scale))
             gr.SetMarkerSize(0)
             gr.SetTitle(title)
             gr.GetXaxis().SetLimits(x_min_plot, x_max_plot)
@@ -805,7 +809,7 @@ def make_plot(  # pylint: disable=too-many-arguments, too-many-branches, too-man
                 gr.GetYaxis().SetTitleOffset(offsets_xy[1])
             gr.Draw("AP")
             list_new.append(gr)
-        setup_histogram(histogram, get_my_colour(counter_plot), get_my_marker(counter_plot), get_my_size(counter_plot))
+        setup_histogram(histogram, get_my_colour(counter_plot), get_my_marker(counter_plot), get_my_size(counter_plot), textsize=(font_size / scale))
         histogram.GetXaxis().SetLimits(x_min_plot, x_max_plot)
         histogram.GetXaxis().SetRangeUser(x_min_plot, x_max_plot)
         if isinstance(opt_plot_h, list):

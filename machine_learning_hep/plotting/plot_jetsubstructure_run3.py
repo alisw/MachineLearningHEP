@@ -178,30 +178,31 @@ class Plotter:
         self.logger.info("Rec ptjet edges: %s, Gen ptjet edges: %s", self.edges_ptjet_rec, self.edges_ptjet_gen)
 
         # official figures
-        # self.size_can = [800, 800]
-        self.offsets_axes = [0.8, 1.1]
-        self.margins_can = [0.1, 0.13, 0.05, 0.03]
-        self.fontsize = 0.035
+        self.size_can = [800, 800]
+        self.size_can_double = [800, 800]
+        # self.margins_can = [0.1, 0.13, 0.1, 0.03]  # [bottom, left, top, right]
+        self.margins_can = [0.08, 0.12, 0.08, 0.05]  # [bottom, left, top, right]
+        # self.margins_can_double = [0.1, 0.1, 0.1, 0.1]
+        # self.margins_can_double = [0., 0., 0., 0.]
+        self.offsets_axes = [0.8, 1.3]
+        # self.offsets_axes_double = [0.8, 0.8]
+        # self.size_thg = 0.05
+        # self.offset_thg = 0.85
+        # self.fontsize = 0.06
+        self.fontsize_glob = 0.032  # font size relative to the canvas height
+        # self.scale_title = 1.3  # scaling factor to increase the size of axis titles
+        self.tick_length = 0.02
         self.opt_plot_h = ""
         self.opt_leg_h = "P"  # marker
         self.opt_plot_g = "2P"  # marker and error rectangles
         self.opt_leg_g = "PF"  # L line, P maker, F box, E vertical error bar
-        self.x_latex = 0.18
-        self.y_latex_top = 0.88
-        self.y_step = 0.05
+        self.x_latex = 0.16
+        self.y_latex_top = 1. - self.margins_can[2] - self.fontsize_glob - self.tick_length - 0.01
+        self.y_step_glob = 0.05
         self.leg_pos = [.72, .75, .85, .85]
         # self.y_margin_up = 0.46
         self.y_margin_up = 0.05
         self.y_margin_down = 0.05
-        # size_can_double = [800, 800]
-        # offsets_axes_double = [0.8, 0.8]
-        # margins_can_double = [0.1, 0.1, 0.1, 0.1]
-        # margins_can_double = [0., 0., 0., 0.]
-        # size_thg = 0.05
-        # offset_thg = 0.85
-        # fontsize_glob = 0.032 # font size relative to the canvas height
-        # scale_title = 1.3 # scaling factor to increase the size of axis titles
-        # tick_length = 0.02
         self.plot_errors_x = True  # plot horizontal error bars
 
         # axes titles
@@ -290,7 +291,7 @@ class Plotter:
         pt_max = min(pt_max, self.edges_ptjet_gen[iptjet + 1]) if iptjet > -1 else pt_max
         return self.text_pth % (pt_min, self.latex_hadron, pt_max, self.latex_hadron)
 
-    def make_plot(self, name: str, colours=None, markers=None):
+    def make_plot(self, name: str, can=None, pad=0, scale=1., colours=None, markers=None):
         """Wrapper method for calling make_plot and saving the canvas."""
         assert all(self.list_obj)
         n_obj = len(self.list_obj)
@@ -301,27 +302,67 @@ class Plotter:
         self.list_markers = [get_marker(i) for i in range(n_obj)]
         if markers is not None:
             self.list_markers = markers
-        y_margin_up_adj = self.y_margin_up + 1. - self.y_latex_top + self.y_step * (len(self.list_latex) - 1)
-        can, new = make_plot(name,
+        # Adjust panel margin for the height of text.
+        y_margin_up_adj = self.y_margin_up
+        if self.list_latex:
+            panel_top = 1. - self.margins_can[2]
+            panel_height = 1. - self.margins_can[0] - self.margins_can[2]
+            latex_bottom = self.y_latex_top - self.y_step_glob * (len(self.list_latex) - 1)
+            y_margin_up_adj += (panel_top - latex_bottom) / panel_height
+        can, new = make_plot(name, can=can, pad=pad, scale=scale,
                              list_obj=self.list_obj, labels_obj=self.labels_obj,
                              opt_leg_h=self.opt_leg_h, opt_plot_h=self.opt_plot_h,
                              opt_leg_g=self.opt_leg_g, opt_plot_g=self.opt_plot_g,
-                             offsets_xy=self.offsets_axes,
+                             offsets_xy=self.offsets_axes, size=self.size_can, font_size=self.fontsize_glob,
                              colours=self.list_colours, markers=self.list_markers, leg_pos=self.leg_pos,
                              margins_y=[self.y_margin_down, y_margin_up_adj], margins_c=self.margins_can,
                              range_x=self.range_x, range_y=self.range_y,
                              title=self.title_full)
+        new[0].SetTextSize(self.fontsize_glob / scale)
         self.list_new += new
         if self.list_latex:
             self.list_new += draw_latex_lines(self.list_latex,
                                               x_start=self.x_latex, y_start=self.y_latex_top,
-                                              y_step=self.y_step, font_size=self.fontsize)
+                                              y_step=self.y_step_glob, font_size=self.fontsize_glob)
         gStyle.SetErrorX(0.5)  # reset default width
         if not self.plot_errors_x:
             gStyle.SetErrorX(0)  # do not plot horizontal error bars of histograms
         self.save_canvas(can)
         gStyle.SetErrorX(0.5)  # reset default width
         return can, new
+
+    def set_pad_heights(self, can, panel_heights_ratios: list[float]) -> list[float]:
+        """Divide canvas vertically into adjacent panels and set pad margins.
+        Resulting canvas will have pads containing panels of heights in proportions in panel_heights_ratios.
+        Returns heights of resulting pads."""
+        epsilon = 1.e-6
+        # Calculate panel heights relative to the canvas height based on panel height ratios and canvas margins.
+        margin_top = self.margins_can[2]  # height of the top margin relative to the canvas height
+        margin_bottom = self.margins_can[0]  # height of the bottom margin relative to the canvas height
+        h_usable = 1. - margin_top - margin_bottom  # usable fraction of the canvas height
+        panel_heights = [h / sum(panel_heights_ratios) * h_usable for h in panel_heights_ratios]
+        assert abs(sum(panel_heights) + margin_bottom + margin_top - 1.) < epsilon
+        # Create pads.
+        n_pads = len(panel_heights)
+        can.Divide(1, n_pads)
+        pads = [can.cd(i + 1) for i in range(n_pads)]
+        # Calculate heights of the pads relative to the canvas height.
+        pad_heights = panel_heights
+        pad_heights[0] += margin_top
+        pad_heights[-1] += margin_bottom
+        # Calculate pad edges. (from 1 to 0)
+        y_edges = [1. - sum(pad_heights[0:i]) for i in range(n_pads + 1)]
+        print(f"edges: {y_edges}")
+        assert abs(y_edges[0] - 1.) < epsilon
+        assert abs(y_edges[-1]) < epsilon
+        # Set pad edges and margins.
+        for i in range(n_pads):
+            pads[i].SetPad(0., y_edges[i + 1], 1., y_edges[i])
+            pads[i].SetBottomMargin(0.)
+            pads[i].SetTopMargin(0.)
+        pads[0].SetTopMargin(margin_top / pad_heights[0])
+        pads[-1].SetBottomMargin(margin_bottom / pad_heights[-1])
+        return pad_heights
 
     def plot(self):
         self.logger.info("Observable: %s", self.var)
@@ -494,8 +535,8 @@ def main():
 
     gROOT.SetBatch(True)
 
-    list_vars = ["zg", "nsd", "rg", "zpar"]
-    # list_vars = ["zpar"]
+    # list_vars = ["zg", "nsd", "rg", "zpar"]
+    list_vars = ["zpar"]
     for var in list_vars:
         print(f"Processing observable {var}")
         for mcordata in ("data", "mc"):
