@@ -182,8 +182,10 @@ class Plotter:
         self.offsets_axes = [0.8, 1.1]
         self.margins_can = [0.1, 0.13, 0.05, 0.03]
         self.fontsize = 0.035
-        self.opt_leg_g = "FP"  # for systematic uncertainties in the legend
-        self.opt_plot_g = "2"
+        self.opt_plot_h = ""
+        self.opt_leg_h = "P"  # marker
+        self.opt_plot_g = "2P"  # marker and error rectangles
+        self.opt_leg_g = "PF"  # L line, P maker, F box, E vertical error bar
         self.x_latex = 0.18
         self.y_latex_top = 0.88
         self.y_step = 0.05
@@ -250,6 +252,7 @@ class Plotter:
     def get_object(self, name: str):
         if not (obj := self.file_results.Get(name)):
             self.logger.fatal(make_message_notfound(name))
+        obj.SetDirectory(0)  # Decouple the object from the file.
         return obj
 
     def get_objects(self, *names: str):
@@ -292,7 +295,7 @@ class Plotter:
         assert all(self.list_obj)
         n_obj = len(self.list_obj)
         assert len(self.labels_obj) == n_obj
-        self.list_colours = [get_colour(i, 1) for i in range(n_obj)]
+        self.list_colours = [get_colour(i) for i in range(n_obj)]
         if colours is not None:
             self.list_colours = colours
         self.list_markers = [get_marker(i) for i in range(n_obj)]
@@ -301,6 +304,7 @@ class Plotter:
         y_margin_up_adj = self.y_margin_up + 1. - self.y_latex_top + self.y_step * (len(self.list_latex) - 1)
         can, new = make_plot(name,
                              list_obj=self.list_obj, labels_obj=self.labels_obj,
+                             opt_leg_h=self.opt_leg_h, opt_plot_h=self.opt_plot_h,
                              opt_leg_g=self.opt_leg_g, opt_plot_g=self.opt_plot_g,
                              offsets_xy=self.offsets_axes,
                              colours=self.list_colours, markers=self.list_markers, leg_pos=self.leg_pos,
@@ -425,7 +429,7 @@ class Plotter:
                 self.list_obj = [self.get_object(f"h_{self.var}_{self.method}_unfolded_{self.mcordata}_"
                                                  f"{string_ptjet}_sel_selfnorm")]
                 self.labels_obj = ["data"]
-                self.list_colours = [get_colour(i_iptjet, 1)]
+                self.list_colours = [get_colour(i_iptjet)]
                 self.list_markers = [get_marker(i_iptjet)]
                 list_stat_all += self.list_obj
                 list_labels_all += [self.get_text_range_ptjet(iptjet)]
@@ -442,33 +446,29 @@ class Plotter:
                         self.logger.fatal(make_message_notfound(name_gr_sys))
                     list_syst_all.append(gr_syst)
                     # We need to plot the data on top of the systematics but
-                    # we want to show the systematics marker after the data marker in the legend.
                     self.list_obj.insert(0, gr_syst)
-                    self.labels_obj.insert(0, "")
-                    self.list_colours.insert(0, get_colour(i_iptjet, 2))
+                    self.labels_obj.insert(0, "data")
+                    self.labels_obj[1] = ""  # do not show the histogram in the legend
+                    self.list_colours.insert(0, get_colour(i_iptjet))
                     self.list_markers.insert(0, get_marker(i_iptjet))
                     list_colours_syst_all.append(self.list_colours[0])
                 self.title_full = self.title_full_default
                 can, new = self.make_plot(f"results_{self.var}_{self.mcordata}_{string_ptjet}",
                                           colours=self.list_colours, markers=self.list_markers)
-                if gr_syst:
-                    # We have to add the systematics marker in the legend by hand.
-                    new[0].AddEntry(gr_syst, "syst. unc.", "f")
-                    self.save_canvas(can)
+
+                # TODO: comparison with PYTHIA HF, PYTHIA inclusive, Run 2 inclusive
 
             self.logger.info("Plotting results for all pt jet together")
             self.range_x = x_range[self.var]
             self.list_obj = list_syst_all + list_stat_all
-            self.labels_obj = [""] * len(list_syst_all) + list_labels_all
+            self.labels_obj = list_labels_all + [""] * len(list_syst_all)  # do not show the histograms in the legend
             self.list_colours = list_colours_syst_all + list_colours_stat_all
             self.list_markers = list_markers_all * (1 + int(bool(list_syst_all)))
             self.title_full = self.title_full_default
             can, new = self.make_plot(f"results_{self.var}_{self.mcordata}_ptjet-all",
                                       colours=self.list_colours, markers=self.list_markers)
-            if list_syst_all:
-                # We have to add the systematics marker in the legend by hand.
-                new[0].AddEntry(gr_syst, "syst. unc.", "f")
-                self.save_canvas(can)
+
+            # TODO: high-pt/low-pt bottom panel, comparison with PYTHIA HF, PYTHIA inclusive
 
 
 def main():
