@@ -511,7 +511,10 @@ class Plotter:
                 # TODO: efficiency (old vs new)
 
             # loop over jet pt
-            list_iptjet = [2, 3]  # indices of jet pt bins to process
+            if self.species == "D0":
+                list_iptjet = [2, 3]  # indices of jet pt bins to process
+            if self.species == "Lc":
+                list_iptjet = [0, 1, 2]  # indices of jet pt bins to process
             # Results
             list_stat_all = []
             list_syst_all = []
@@ -590,6 +593,8 @@ class Plotter:
                 self.labels_obj = ["data"]
                 self.list_colours = [get_colour(i_iptjet)]
                 self.list_markers = [get_marker(i_iptjet)]
+                self.opt_plot_h = [self.opt_plot_h]
+                self.opt_leg_h = [self.opt_leg_h]
                 list_stat_all += self.list_obj
                 list_labels_all += [self.get_text_range_ptjet(iptjet)]
                 list_colours_stat_all += self.list_colours
@@ -603,7 +608,7 @@ class Plotter:
                     if self.var == "nsd":
                         shrink_err_x(gr_syst)
                     list_syst_all.append(gr_syst)
-                    # We need to plot the data on top of the systematics but
+                    # We need to plot the data on top of the systematics.
                     self.list_obj.insert(0, gr_syst)
                     self.labels_obj.insert(0, "data")
                     self.labels_obj[1] = ""  # do not show the histogram in the legend
@@ -611,41 +616,35 @@ class Plotter:
                     self.list_markers.insert(0, get_marker(i_iptjet))
                     list_colours_syst_all.append(self.list_colours[0])
                 self.title_full = self.title_full_default
-                can, new = self.make_plot(f"results_{self.var}_{self.mcordata}_{string_ptjet}",
-                                          colours=self.list_colours, markers=self.list_markers)
                 # Plot Run 2 Lc PYTHIA FF
                 if self.species == "Lc" and self.var == "zpar" and string_ptjet == string_range_ptjet((7, 15)):
                     run2_lc_sim = self.get_run2_lc_sim()
-                    for h, i, t, c in zip((run2_lc_sim["monash"], run2_lc_sim["cr2"]),
-                                        (self.l_monash, self.l_mode2),
-                                        (self.text_monash, self.text_mode2),
-                                        (self.c_lc_monash, self.c_lc_mode2)):
-                        h_line = h.Clone(h.GetName() + "_line")
-                        setup_histogram(h_line, get_colour(c))
-                        h_line.SetLineStyle(i)
-                        new.append(h_line.DrawCopy("hist same"))
-                        new[0].AddEntry(new[-1], t, "L")
+                    run2_lc_sim["monash"].SetLineStyle(self.l_monash)
+                    run2_lc_sim["cr2"].SetLineStyle(self.l_mode2)
+                    self.list_obj += [run2_lc_sim["monash"], run2_lc_sim["cr2"]]
+                    self.labels_obj += [self.text_monash, self.text_mode2]
+                    self.list_colours += [get_colour(c) for c in (self.c_lc_monash, self.c_lc_mode2)]
+                    self.opt_plot_h += ["hist", "hist"]
+                    self.opt_leg_h += ["L", "L"]
                 # Plot Run 2 D0 PYTHIA
                 if self.species == "D0" and string_ptjet == string_range_ptjet((15, 30)):
                     run2_d0_sim = self.get_run2_d0_all()
                 # Plot Run 3 D0 PYTHIA
                 if self.species == "D0":
                     run3_d0_sim = self.get_run3_d0_sim()
-
-                if not self.plot_errors_x:
-                    gStyle.SetErrorX(0)  # do not plot horizontal error bars of histograms
-                self.save_canvas(can)
-                gStyle.SetErrorX(0.5)  # reset default width
-
                 # TODO: comparison with PYTHIA HF, PYTHIA inclusive, Run 2 inclusive
 
-                self.plot_errors_x = True
+                can, new = self.make_plot(f"results_{self.var}_{self.mcordata}_{string_ptjet}",
+                                        colours=self.list_colours, markers=self.list_markers)
+                # Reset defaults.
+                self.opt_plot_h = ""
+                self.opt_leg_h = "P"
 
             self.logger.info("Plotting results for all pt jet together")
             self.plot_errors_x = False
             self.range_x = x_range[self.var]
             self.list_obj = list_syst_all + list_stat_all
-            self.labels_obj = list_labels_all + [""] * len(list_syst_all)  # do not show the histograms in the legend
+            self.labels_obj = list_labels_all  # do not show the histograms in the legend
             self.list_colours = list_colours_syst_all + list_colours_stat_all
             self.list_markers = list_markers_all * (1 + int(bool(list_syst_all)))
             self.title_full = self.title_full_default
@@ -655,7 +654,7 @@ class Plotter:
             can, new = self.make_plot(name_can, can=can, pad=1, scale=pad_heights[0],
                                       colours=self.list_colours, markers=self.list_markers)
             # ratio low-pt/high-pt bottom panel
-            iptjet_ref = 3  # reference pt jet bin
+            iptjet_ref = list_iptjet[-1]  # reference pt jet bin
             assert iptjet_ref in list_iptjet
             i_iptjet_ref = list_iptjet.index(iptjet_ref)
             list_ratio_stat, list_ratio_syst = make_ratios(list_stat_all, list_syst_all, i_iptjet_ref, False)

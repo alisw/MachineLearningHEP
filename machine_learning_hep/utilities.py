@@ -774,7 +774,7 @@ def make_plot(  # pylint: disable=too-many-arguments, too-many-branches, too-man
         return get_markersize(get_my_marker(i))
 
     def plot_graph(graph):
-        setup_tgraph(graph, get_my_colour(counter_plot), get_my_marker(counter_plot), get_my_size(counter_plot), textsize=(font_size / scale))
+        setup_tgraph(graph, get_my_colour(counter_plot_obj), get_my_marker(counter_plot_obj), get_my_size(counter_plot_obj), textsize=(font_size / scale))
         graph.SetTitle(title)
         graph.GetXaxis().SetLimits(x_min_plot, x_max_plot)
         graph.GetYaxis().SetRangeUser(y_min_plot, y_max_plot)
@@ -786,17 +786,13 @@ def make_plot(  # pylint: disable=too-many-arguments, too-many-branches, too-man
         if offsets_xy:
             graph.GetXaxis().SetTitleOffset(offsets_xy[0])
             graph.GetYaxis().SetTitleOffset(offsets_xy[1] * scale)
-        if leg and n_labels > counter_plot and isinstance(labels_obj, list) and len(labels_obj[counter_plot]) > 0:
-            leg.AddEntry(graph, labels_obj[counter_plot], opt_leg_g)
-        if isinstance(opt_plot_g, list):
-            opt_plot = opt_plot_g
-        else:
-            opt_plot = [opt_plot_g] * (counter_plot + 1)
-        graph.DrawClone(opt_plot[counter_plot] + "A" if counter_plot == 0 else opt_plot[counter_plot])
+        if leg and n_labels > counter_plot_obj and isinstance(labels_obj, list) and len(labels_obj[counter_plot_obj]) > 0:
+            leg.AddEntry(graph, labels_obj[counter_plot_obj], opt_leg_g[counter_plot_g])
+        graph.DrawClone(opt_plot_g[counter_plot_g] + "A" if counter_plot_obj == 0 else opt_plot_g[counter_plot_g])
 
     def plot_histogram(histogram):
         # If nothing has been plotted yet, plot an empty graph to set the exact ranges.
-        if counter_plot == 0:
+        if counter_plot_obj == 0:
             gr = TGraph(histogram)
             setup_tgraph(gr, textsize=(font_size / scale))
             gr.SetMarkerSize(0)
@@ -813,21 +809,13 @@ def make_plot(  # pylint: disable=too-many-arguments, too-many-branches, too-man
                 gr.GetYaxis().SetTitleOffset(offsets_xy[1] * scale)
             gr.DrawClone("AP")
             list_new.append(gr)
-        setup_histogram(histogram, get_my_colour(counter_plot), get_my_marker(counter_plot), get_my_size(counter_plot), textsize=(font_size / scale))
+        setup_histogram(histogram, get_my_colour(counter_plot_obj), get_my_marker(counter_plot_obj), get_my_size(counter_plot_obj), textsize=(font_size / scale))
         histogram.GetXaxis().SetLimits(x_min_plot, x_max_plot)
         histogram.GetXaxis().SetRangeUser(x_min_plot, x_max_plot)
-        if isinstance(opt_plot_h, list):
-            opt_plot = opt_plot_h
-        else:
-            opt_plot = [opt_plot_h] * (counter_plot + 1)
-        if isinstance(opt_leg_h, list):
-            opt_leg = opt_leg_h
-        else:
-            opt_leg = [opt_leg_h] * (counter_plot + 1)
-        if leg and n_labels > counter_plot and isinstance(labels_obj, list) and len(labels_obj[counter_plot]) > 0:
-            leg.AddEntry(histogram, labels_obj[counter_plot], opt_leg[counter_plot])
-        # print(f"Plotting {histogram.GetName()} with option {opt_plot[counter_plot]}")
-        histogram.DrawCopy(opt_plot[counter_plot])
+        if leg and n_labels > counter_plot_obj and isinstance(labels_obj, list) and len(labels_obj[counter_plot_obj]) > 0:
+            leg.AddEntry(histogram, labels_obj[counter_plot_obj], opt_leg_h[counter_plot_h])
+        # print(f"Plotting {histogram.GetName()} with option {opt_plot_h[counter_plot_h]}")
+        histogram.DrawCopy(opt_plot_h[counter_plot_h])
 
     def plot_latex(latex):
         draw_latex(latex)
@@ -855,12 +843,22 @@ def make_plot(  # pylint: disable=too-many-arguments, too-many-branches, too-man
     n_labels = len(labels_obj)
     if margins_y is None:
         margins_y = [0.05, 0.05]
+    if not isinstance(opt_leg_h, list):
+        opt_leg_h = [opt_leg_h] * len(list_obj)
+    if not isinstance(opt_leg_g, list):
+        opt_leg_g = [opt_leg_g] * len(list_obj)
+    if not isinstance(opt_plot_g, list):
+        opt_plot_g = [opt_plot_g] * len(list_obj)
+    if not isinstance(opt_plot_h, list):
+        opt_plot_h = [opt_plot_h] * len(list_obj)
+
+    # print(f"Objects {len(list_obj)}, options: {opt_leg_h}, {opt_leg_g}, {opt_plot_h}, {opt_plot_g}")
 
     # create and set canvas
     if can and pad > 0:
         can.cd(pad)
         print(f"Entering pad {pad} in canvas {can.GetName()}")
-    else:
+    if not can:
         can = TCanvas(name, name)
         print(f"Creating new canvas with name {name}")
     setup_canvas(can)
@@ -936,31 +934,29 @@ def make_plot(  # pylint: disable=too-many-arguments, too-many-branches, too-man
         y_min_plot, y_max_plot = range_y
 
     # append "same" to the histogram plotting option if needed
-    if isinstance(opt_plot_h, list):
-        for opt in opt_plot_h:
-            opt = opt.lower()
-            opt_not_in = all(opt not in opt_plot_h for opt in ("same", "lego", "surf"))
-            if opt_not_in:
-                opt += " same"
-    else:
-        opt_plot_h = opt_plot_h.lower()
-        opt_not_in = all(opt not in opt_plot_h for opt in ("same", "lego", "surf"))
-        if opt_not_in:
-            opt_plot_h += " same"
+    for i, opt in enumerate(opt_plot_h):
+        if not any(o in opt.lower() for o in ("same", "lego", "surf")):
+            opt_plot_h[i] = opt + " same"
 
     # plot objects
-    counter_plot = 0  # counter of plotted histograms and graphs
+    counter_plot_obj = 0  # counter of plotted objects
+    counter_plot_h = 0  # counter of plotted histograms
+    counter_plot_g = 0  # counter of plotted graphs
     for obj in list_obj:
         if is_histogram(obj):
             plot_histogram(obj)
-            counter_plot += 1
+            counter_plot_h += 1
+            counter_plot_obj += 1
         elif is_graph(obj):
             plot_graph(obj)
-            counter_plot += 1
+            counter_plot_g += 1
+            counter_plot_obj += 1
         elif is_latex(obj):
             plot_latex(obj)
+            counter_plot_obj += 1
         elif isinstance(obj, TObject):
             obj.Draw()
+            counter_plot_obj += 1
         else:
             continue
 
