@@ -27,7 +27,7 @@ from functools import reduce
 import numpy as np
 
 import yaml
-from ROOT import TCanvas, TFile, gROOT, gStyle, TVirtualPad
+from ROOT import TCanvas, TFile, gROOT, gStyle, TVirtualPad, TLine
 
 from machine_learning_hep.logger import get_logger, configure_logger
 from machine_learning_hep.analysis.analyzer_jets import string_range_ptjet, string_range_pthf
@@ -44,6 +44,7 @@ from machine_learning_hep.utilities import (
     get_mean_hist,
     get_mean_graph,
     get_mean_uncertainty,
+    make_ratios,
 )
 from machine_learning_hep.utils.hist import get_axis, bin_array, project_hist, get_dim, get_bin_limits
 
@@ -295,7 +296,7 @@ class Plotter:
         """Wrapper method for calling make_plot and saving the canvas."""
         assert all(self.list_obj)
         n_obj = len(self.list_obj)
-        assert len(self.labels_obj) == n_obj
+        # assert len(self.labels_obj) == n_obj
         self.list_colours = [get_colour(i) for i in range(n_obj)]
         if colours is not None:
             self.list_colours = colours
@@ -407,6 +408,10 @@ class Plotter:
             name_hist_unfold_2d = f"h_ptjet-{self.var}_{self.method}_unfolded_{self.mcordata}_0"
             hist_unfold = self.get_object(name_hist_unfold_2d)
             axis_ptjet = get_axis(hist_unfold, 0)
+            line_1 = TLine(x_range[self.var][0], 1., x_range[self.var][1], 1.)
+            line_1.SetLineStyle(9)
+            line_1.SetLineColor(1)
+            line_1.SetLineWidth(3)
 
             if self.mcordata == "data":
                 # Efficiency
@@ -550,13 +555,22 @@ class Plotter:
             self.title_full = self.title_full_default
             name_can = f"results_{self.var}_{self.mcordata}_ptjet-all"
             can = TCanvas(name_can, name_can)
-            pad_heights = self.set_pad_heights(can, [2, 3])
+            pad_heights = self.set_pad_heights(can, [2, 1])
             can, new = self.make_plot(name_can, can=can, pad=1, scale=pad_heights[0],
                                       colours=self.list_colours, markers=self.list_markers)
+            # ratio high-pt/low-pt bottom panel
+            iptjet_ref = 2  # reference pt jet bin
+            assert iptjet_ref in list_iptjet
+            i_iptjet_ref = list_iptjet.index(iptjet_ref)
+            list_ratio_stat, list_ratio_syst = make_ratios(list_stat_all, list_syst_all, i_iptjet_ref, False)
+            self.list_obj = list_ratio_syst + list_ratio_stat + [line_1]
+            self.labels_obj = []
+            self.list_latex = []
+            self.title_full = f";{self.latex_obs};ratio"
             can, new = self.make_plot(name_can, can=can, pad=2, scale=pad_heights[1],
                                       colours=self.list_colours, markers=self.list_markers)
 
-            # TODO: high-pt/low-pt bottom panel, comparison with PYTHIA HF, PYTHIA inclusive
+            # TODO: comparison with PYTHIA HF, PYTHIA inclusive
 
             self.plot_errors_x = True
 

@@ -1019,7 +1019,27 @@ def tg_sys(central, variations):
     return tg
 
 
-def divide_graphs(gr_num, gr_den):
+def divide_histograms(h_num, h_den, errors_den=True):
+    """Divide TGraphAsymmErrors"""
+    n_bins = h_num.GetNbinsX()
+    if h_den.GetNbinsX() != n_bins:
+        print("Error: numbers of bins differ")
+        return None
+    h_rat = h_num.Clone(f"{h_num.GetName()}_ratio")
+    for i in range(1, n_bins + 1):
+        y_a = h_num.GetBinContent(i)
+        e_a = h_num.GetBinError(i)
+        y_b = h_den.GetBinContent(i)
+        e_b = h_den.GetBinError(i)
+        if not errors_den:
+            e_b = 0.
+        r = y_a / y_b
+        h_rat.SetBinContent(i, r)
+        h_rat.SetBinError(i, math.sqrt(e_a * e_a + r * r * e_b * e_b) / y_b)
+    return h_rat
+
+
+def divide_graphs(gr_num, gr_den, errors_den=True):
     """Divide TGraphAsymmErrors"""
     n_points = gr_num.GetN()
     if gr_den.GetN() != n_points:
@@ -1033,11 +1053,24 @@ def divide_graphs(gr_num, gr_den):
         y_b = gr_den.GetPointY(i)
         e_b_plus = gr_den.GetErrorYhigh(i)
         e_b_minus = gr_den.GetErrorYlow(i)
+        if not errors_den:
+            e_b_plus = 0.
+            e_b_minus = 0.
         r = y_a / y_b
         gr_rat.SetPointY(i, r)
         gr_rat.SetPointEYhigh(i, math.sqrt(e_a_plus * e_a_plus + r * r * e_b_minus * e_b_minus) / y_b)
         gr_rat.SetPointEYlow(i, math.sqrt(e_a_minus * e_a_minus + r * r * e_b_plus * e_b_plus) / y_b)
     return gr_rat
+
+
+def make_ratios(l_his, l_gr, i_ref, errors_den=True):
+    assert i_ref < len(l_his)
+    l_ratio_h = [divide_histograms(h, l_his[i_ref], errors_den) for h in l_his]
+    l_ratio_g = None
+    if l_gr:
+        assert i_ref < len(l_gr)
+        l_ratio_g = [divide_graphs(g, l_gr[i_ref], errors_den) for g in l_gr]
+    return l_ratio_h, l_ratio_g
 
 
 def scale_graph(graph, number: float):
