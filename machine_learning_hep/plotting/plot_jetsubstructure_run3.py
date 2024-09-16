@@ -301,6 +301,18 @@ class Plotter:
         with TFile.Open(path_file) as file:
             return {title : self.get_object(name, file) for title, name in names.items()}
 
+    # def get_run2_d0(self):
+    #     path_file = "/home/vkucera/mlhep/run2/results/d0/results_all.root"
+    #     names = {"monash" : "input_pythia8defaultpt_jet_7.00_15.00",
+    #              "cr2" : "input_pythia8colour2softpt_jet_7.00_15.00"}
+    #     for obs in ("zg", "rg", "nsd"):
+    #         for flavour in ("hf", "inclusive"):
+    #             for source in ("data", "pythia"):
+    #                 for type in ("stat", "syst"):
+
+    #     with TFile.Open(path_file) as file:
+    #         return {title : self.get_object(name, file) for title, name in names.items()}
+
     def report_means(self, h_stat, h_syst, iptjet):
         mean_z_stat = get_mean_hist(h_stat)
         mean_z_syst = get_mean_graph(h_syst)
@@ -476,7 +488,7 @@ class Plotter:
                 # TODO: efficiency (old vs new)
 
             # loop over jet pt
-            list_iptjet = [1, 2]  # indices of jet pt bins to process
+            list_iptjet = [2, 3]  # indices of jet pt bins to process
             # Results
             list_stat_all = []
             list_syst_all = []
@@ -616,8 +628,8 @@ class Plotter:
             pad_heights = self.set_pad_heights(can, [2, 1])
             can, new = self.make_plot(name_can, can=can, pad=1, scale=pad_heights[0],
                                       colours=self.list_colours, markers=self.list_markers)
-            # ratio high-pt/low-pt bottom panel
-            iptjet_ref = 2  # reference pt jet bin
+            # ratio low-pt/high-pt bottom panel
+            iptjet_ref = 3  # reference pt jet bin
             assert iptjet_ref in list_iptjet
             i_iptjet_ref = list_iptjet.index(iptjet_ref)
             list_ratio_stat, list_ratio_syst = make_ratios(list_stat_all, list_syst_all, i_iptjet_ref, False)
