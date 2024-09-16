@@ -27,7 +27,7 @@ from functools import reduce
 import numpy as np
 
 import yaml
-from ROOT import TCanvas, TFile, gROOT, gStyle, TVirtualPad, TLine
+from ROOT import TCanvas, TFile, gROOT, gStyle, TVirtualPad, TLine, TH1
 
 from machine_learning_hep.logger import get_logger, configure_logger
 from machine_learning_hep.analysis.analyzer_jets import string_range_ptjet, string_range_pthf
@@ -288,30 +288,53 @@ class Plotter:
             file = self.file_results
         if not (obj := file.Get(name)):
             self.logger.fatal(make_message_notfound(name))
-        obj.SetDirectory(0)  # Decouple the object from the file.
+        if isinstance(obj, TH1):
+            obj.SetDirectory(0)  # Decouple the object from the file.
         return obj
 
     def get_objects(self, *names: str, file=None):
         return [self.get_object(name, file) for name in names]
 
-    def get_sim_lc(self):
+    def get_run2_lc_sim(self):
         path_file = "/home/vkucera/mlhep/run2/results/lc/simulations.root"
+        self.logger.info("Getting Run 2 Lc sim from %s.", path_file)
         names = {"monash" : "input_pythia8defaultpt_jet_7.00_15.00",
                  "cr2" : "input_pythia8colour2softpt_jet_7.00_15.00"}
         with TFile.Open(path_file) as file:
             return {title : self.get_object(name, file) for title, name in names.items()}
 
-    # def get_run2_d0(self):
-    #     path_file = "/home/vkucera/mlhep/run2/results/d0/results_all.root"
-    #     names = {"monash" : "input_pythia8defaultpt_jet_7.00_15.00",
-    #              "cr2" : "input_pythia8colour2softpt_jet_7.00_15.00"}
-    #     for obs in ("zg", "rg", "nsd"):
-    #         for flavour in ("hf", "inclusive"):
-    #             for source in ("data", "pythia"):
-    #                 for type in ("stat", "syst"):
+    def get_run2_d0_all(self):
+        path_file = "/home/vkucera/mlhep/run2/results/d0/results_all.root"
+        self.logger.info("Getting Run 2 D0 all from %s.", path_file)
+        dict_obj = {}
+        with TFile.Open(path_file) as file:
+            for obs in ("zg", "rg", "nsd"):
+                dict_obj[obs] = {}
+                for flavour in ("hf", "incl"):
+                    dict_obj[obs][flavour] = {}
+                    for source in ("data", "pythia"):
+                        dict_obj[obs][flavour][source] = {}
+                        for type in ("stat", "syst"):
+                            if source == "pythia" and type == "syst":
+                                continue
+                            name = f"{obs}_{flavour}_{source}_1_{type}"
+                            dict_obj[obs][flavour][source][type] = self.get_object(name, file)
+        return dict_obj
 
-    #     with TFile.Open(path_file) as file:
-    #         return {title : self.get_object(name, file) for title, name in names.items()}
+    def get_run3_d0_sim(self):
+        # path_file = "aliceml:/home/nzardosh/PYTHIA_Sim/PYTHIA8_Simulations/Plots/Run3/fOut.root"
+        path_file = "/home/vkucera/mlhep/run3/simulations/fOut.root"
+        self.logger.info("Getting Run 3 D0 sim from %s.", path_file)
+        pattern = "fh_D0_%s_%.2f_JetpT_%.2f"
+        obs = {"zg" : "Zg", "rg" : "Rg", "nsd" : "Nsd", "zpar" : "SoftMode2_FF"}
+        dict_obj = {}
+        with TFile.Open(path_file) as file:
+            for title, obs in obs.items():
+                dict_obj[title] = {}
+                for iptjet in (0, 1, 2, 3):
+                    name = pattern % (obs, self.edges_ptjet_gen[iptjet], self.edges_ptjet_gen[iptjet + 1])
+                    dict_obj[title][iptjet] = self.get_object(name, file)
+        return dict_obj
 
     def report_means(self, h_stat, h_syst, iptjet):
         mean_z_stat = get_mean_hist(h_stat)
@@ -572,14 +595,11 @@ class Plotter:
                 list_colours_stat_all += self.list_colours
                 list_markers_all += self.list_markers
                 path_syst = f"{os.path.expandvars(self.dir_input)}/systematics.root"
-                gr_syst = None
                 if os.path.exists(path_syst):
                     self.logger.info("Getting systematics from %s", path_syst)
                     if not (file_syst := TFile.Open(path_syst)):
                         self.logger.fatal(make_message_notfound(path_syst))
-                    name_gr_sys = f"sys_{self.var}_{string_ptjet}"
-                    if not (gr_syst := file_syst.Get(name_gr_sys)):
-                        self.logger.fatal(make_message_notfound(name_gr_sys))
+                    gr_syst = self.get_object(f"sys_{self.var}_{string_ptjet}", file_syst)
                     if self.var == "nsd":
                         shrink_err_x(gr_syst)
                     list_syst_all.append(gr_syst)
@@ -593,19 +613,25 @@ class Plotter:
                 self.title_full = self.title_full_default
                 can, new = self.make_plot(f"results_{self.var}_{self.mcordata}_{string_ptjet}",
                                           colours=self.list_colours, markers=self.list_markers)
-                # Plot PYTHIA FF
+                # Plot Run 2 Lc PYTHIA FF
                 if self.species == "Lc" and self.var == "zpar" and string_ptjet == string_range_ptjet((7, 15)):
-                    sim_lc = self.get_sim_lc()
-                    self.labels_obj += ["PYTHIA 8 Monash", "PYTHIA 8 CR-BLC Mode 2"]
-                    for h, i, t, c in zip((sim_lc["monash"], sim_lc["cr2"]),
-                                       (self.l_monash, self.l_mode2),
-                                       (self.text_monash, self.text_mode2),
-                                       (self.c_lc_monash, self.c_lc_mode2)):
+                    run2_lc_sim = self.get_run2_lc_sim()
+                    for h, i, t, c in zip((run2_lc_sim["monash"], run2_lc_sim["cr2"]),
+                                        (self.l_monash, self.l_mode2),
+                                        (self.text_monash, self.text_mode2),
+                                        (self.c_lc_monash, self.c_lc_mode2)):
                         h_line = h.Clone(h.GetName() + "_line")
                         setup_histogram(h_line, get_colour(c))
                         h_line.SetLineStyle(i)
                         new.append(h_line.DrawCopy("hist same"))
                         new[0].AddEntry(new[-1], t, "L")
+                # Plot Run 2 D0 PYTHIA
+                if self.species == "D0" and string_ptjet == string_range_ptjet((15, 30)):
+                    run2_d0_sim = self.get_run2_d0_all()
+                # Plot Run 3 D0 PYTHIA
+                if self.species == "D0":
+                    run3_d0_sim = self.get_run3_d0_sim()
+
                 if not self.plot_errors_x:
                     gStyle.SetErrorX(0)  # do not plot horizontal error bars of histograms
                 self.save_canvas(can)
