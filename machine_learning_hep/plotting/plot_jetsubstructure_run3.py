@@ -627,8 +627,23 @@ class Plotter:
                     self.opt_plot_h += ["hist", "hist"]
                     self.opt_leg_h += ["L", "L"]
                 # Plot Run 2 D0 PYTHIA
-                if self.species == "D0" and string_ptjet == string_range_ptjet((15, 30)):
+                if self.species == "D0" and self.var in ("zg", "rg", "nsd") and string_ptjet == string_range_ptjet((15, 30)):
                     run2_d0_sim = self.get_run2_d0_all()
+                    for flavour in ("hf", "incl"):
+                        for source in ("data", "pythia"):
+                            for type in ("syst", "stat"):
+                                if source == "pythia" and type == "syst":
+                                    continue
+                                self.list_obj += [run2_d0_sim[self.var][flavour][source][type]]
+                                self.labels_obj += [f"{flavour} {source} {type}"]
+                                self.list_colours += [get_colour(len(self.list_obj))]
+                                if type == "stat":
+                                    if source == "pythia":
+                                        self.opt_plot_h += ["hist"]
+                                        self.opt_leg_h += ["L"]
+                                    else:
+                                        self.opt_plot_h += [""]
+                                        self.opt_leg_h += ["P"]
                 # Plot Run 3 D0 PYTHIA
                 if self.species == "D0":
                     run3_d0_sim = self.get_run3_d0_sim()
