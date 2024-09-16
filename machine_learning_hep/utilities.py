@@ -1033,9 +1033,13 @@ def divide_histograms(h_num, h_den, errors_den=True):
         e_b = h_den.GetBinError(i)
         if not errors_den:
             e_b = 0.
-        r = y_a / y_b
-        h_rat.SetBinContent(i, r)
-        h_rat.SetBinError(i, math.sqrt(e_a * e_a + r * r * e_b * e_b) / y_b)
+        if abs(y_b) < 1.e-6:
+            h_rat.SetBinContent(i, 0)
+            h_rat.SetBinError(i, 0)
+        else:
+            r = y_a / y_b
+            h_rat.SetBinContent(i, r)
+            h_rat.SetBinError(i, math.sqrt(e_a * e_a + r * r * e_b * e_b) / y_b)
     return h_rat
 
 
@@ -1056,10 +1060,15 @@ def divide_graphs(gr_num, gr_den, errors_den=True):
         if not errors_den:
             e_b_plus = 0.
             e_b_minus = 0.
-        r = y_a / y_b
-        gr_rat.SetPointY(i, r)
-        gr_rat.SetPointEYhigh(i, math.sqrt(e_a_plus * e_a_plus + r * r * e_b_minus * e_b_minus) / y_b)
-        gr_rat.SetPointEYlow(i, math.sqrt(e_a_minus * e_a_minus + r * r * e_b_plus * e_b_plus) / y_b)
+        if abs(y_b) < 1.e-6:
+            gr_rat.SetPointY(i, 0)
+            gr_rat.SetPointEYhigh(i, 0)
+            gr_rat.SetPointEYlow(i, 0)
+        else:
+            r = y_a / y_b
+            gr_rat.SetPointY(i, r)
+            gr_rat.SetPointEYhigh(i, math.sqrt(e_a_plus * e_a_plus + r * r * e_b_minus * e_b_minus) / y_b)
+            gr_rat.SetPointEYlow(i, math.sqrt(e_a_minus * e_a_minus + r * r * e_b_plus * e_b_plus) / y_b)
     return gr_rat
 
 
