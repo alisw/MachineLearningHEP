@@ -76,6 +76,12 @@ class Plotter:
         self.method = "sidesub"
         self.logger.setLevel(logging.INFO)
 
+        self.species = None
+        if "D0Jet" in path_database_analysis:
+            self.species = "D0"
+        if "LcJet" in path_database_analysis:
+            self.species = "Lc"
+
         with open(path_database_analysis, "r", encoding="utf-8") as file_db:
             db_analysis = yaml.safe_load(file_db)
         case = list(db_analysis.keys())[0]
@@ -437,7 +443,7 @@ class Plotter:
         return pad_heights
 
     def plot(self):
-        self.logger.info("Observable: %s", self.var)
+        self.logger.info("Observable: %s %s", self.species, self.var)
 
         with TFile.Open(self.path_input_file) as self.file_results:
             name_hist_unfold_2d = f"h_ptjet-{self.var}_{self.method}_unfolded_{self.mcordata}_0"
@@ -576,7 +582,7 @@ class Plotter:
                 can, new = self.make_plot(f"results_{self.var}_{self.mcordata}_{string_ptjet}",
                                           colours=self.list_colours, markers=self.list_markers)
                 # Plot PYTHIA FF
-                if self.var == "zpar" and string_ptjet == string_range_ptjet((7, 15)):
+                if self.species == "Lc" and self.var == "zpar" and string_ptjet == string_range_ptjet((7, 15)):
                     sim_lc = self.get_sim_lc()
                     self.labels_obj += ["PYTHIA 8 Monash", "PYTHIA 8 CR-BLC Mode 2"]
                     for h, i, t, c in zip((sim_lc["monash"], sim_lc["cr2"]),
@@ -642,11 +648,12 @@ def main():
 
     gROOT.SetBatch(True)
 
-    # list_vars = ["zg", "nsd", "rg", "zpar"]
-    list_vars = ["zpar"]
+    list_vars = ["zg", "nsd", "rg", "zpar"]
+    # list_vars = ["zpar"]
     for var in list_vars:
         print(f"Processing observable {var}")
-        for mcordata in ("data", "mc"):
+        # for mcordata in ("data", "mc"):
+        for mcordata in ["data"]:
             plotter = Plotter(args.input_file, args.database_analysis, args.type_ana, var, mcordata)
             plotter.plot()
 
