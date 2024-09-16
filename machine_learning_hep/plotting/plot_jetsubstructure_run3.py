@@ -27,7 +27,7 @@ from functools import reduce
 import numpy as np
 
 import yaml
-from ROOT import TFile, gROOT, gStyle
+from ROOT import TCanvas, TFile, gROOT, gStyle, TVirtualPad
 
 from machine_learning_hep.logger import get_logger, configure_logger
 from machine_learning_hep.analysis.analyzer_jets import string_range_ptjet, string_range_pthf
@@ -302,19 +302,41 @@ class Plotter:
         self.list_markers = [get_marker(i) for i in range(n_obj)]
         if markers is not None:
             self.list_markers = markers
+        # Recalculate coordinates to preserve absolute size of text and its absolute offset from the top of the panel.
+        leg_pos_adj = self.leg_pos.copy()
+        self.y_latex_top = 1. - (self.fontsize_glob + self.tick_length + 0.01) / scale
+        panel_top = 1.
+        panel_height = 1.
+        margin_bottom = self.margins_can[0]  # height of the bottom margin relative to the canvas height
+        margin_top = self.margins_can[2]  # height of the top margin relative to the canvas height
+        if pad == 0:
+            self.y_latex_top -= margin_top
+            panel_top -= margin_top
+            panel_height -= margin_bottom + margin_top
+        else:
+            leg_height = self.leg_pos[3] - self.leg_pos[1]
+            if pad == 1:
+                self.y_latex_top -= margin_top / scale
+                panel_top -= margin_top / scale
+                panel_height -= margin_top / scale
+                leg_pos_adj[3] = 1. - (1. - self.leg_pos[3]) / scale
+                leg_pos_adj[1] = leg_pos_adj[3] - leg_height / scale
+            else:
+                leg_pos_adj[3] = 1. - (1. - self.leg_pos[3] - margin_top) / scale
+                leg_pos_adj[1] = leg_pos_adj[3] - leg_height / scale
+            if pad == self.get_n_pads(can):
+                panel_height -= margin_bottom / scale
         # Adjust panel margin for the height of text.
         y_margin_up_adj = self.y_margin_up
         if self.list_latex:
-            panel_top = 1. - self.margins_can[2]
-            panel_height = 1. - self.margins_can[0] - self.margins_can[2]
-            latex_bottom = self.y_latex_top - self.y_step_glob * (len(self.list_latex) - 1)
+            latex_bottom = self.y_latex_top - self.y_step_glob / scale * (len(self.list_latex) - 1)
             y_margin_up_adj += (panel_top - latex_bottom) / panel_height
         can, new = make_plot(name, can=can, pad=pad, scale=scale,
                              list_obj=self.list_obj, labels_obj=self.labels_obj,
                              opt_leg_h=self.opt_leg_h, opt_plot_h=self.opt_plot_h,
                              opt_leg_g=self.opt_leg_g, opt_plot_g=self.opt_plot_g,
                              offsets_xy=self.offsets_axes, size=self.size_can, font_size=self.fontsize_glob,
-                             colours=self.list_colours, markers=self.list_markers, leg_pos=self.leg_pos,
+                             colours=self.list_colours, markers=self.list_markers, leg_pos=leg_pos_adj,
                              margins_y=[self.y_margin_down, y_margin_up_adj], margins_c=self.margins_can,
                              range_x=self.range_x, range_y=self.range_y,
                              title=self.title_full)
@@ -323,7 +345,7 @@ class Plotter:
         if self.list_latex:
             self.list_new += draw_latex_lines(self.list_latex,
                                               x_start=self.x_latex, y_start=self.y_latex_top,
-                                              y_step=self.y_step_glob, font_size=self.fontsize_glob)
+                                              y_step=self.y_step_glob / scale, font_size=self.fontsize_glob / scale)
         gStyle.SetErrorX(0.5)  # reset default width
         if not self.plot_errors_x:
             gStyle.SetErrorX(0)  # do not plot horizontal error bars of histograms
@@ -331,14 +353,26 @@ class Plotter:
         gStyle.SetErrorX(0.5)  # reset default width
         return can, new
 
+    def get_n_pads(self, can) -> int:
+        """Count pads in a canvas."""
+        if not can:
+            return 0
+        npads = 0
+        for obj in can.GetListOfPrimitives():
+            if obj.InheritsFrom(TVirtualPad.Class()):
+                npads += 1
+        return npads
+
     def set_pad_heights(self, can, panel_heights_ratios: list[float]) -> list[float]:
         """Divide canvas vertically into adjacent panels and set pad margins.
         Resulting canvas will have pads containing panels of heights in proportions in panel_heights_ratios.
         Returns heights of resulting pads."""
         epsilon = 1.e-6
         # Calculate panel heights relative to the canvas height based on panel height ratios and canvas margins.
-        margin_top = self.margins_can[2]  # height of the top margin relative to the canvas height
         margin_bottom = self.margins_can[0]  # height of the bottom margin relative to the canvas height
+        margin_left = self.margins_can[1]  # height of the left margin relative to the canvas height
+        margin_top = self.margins_can[2]  # height of the top margin relative to the canvas height
+        margin_right = self.margins_can[3]  # height of the right margin relative to the canvas height
         h_usable = 1. - margin_top - margin_bottom  # usable fraction of the canvas height
         panel_heights = [h / sum(panel_heights_ratios) * h_usable for h in panel_heights_ratios]
         assert abs(sum(panel_heights) + margin_bottom + margin_top - 1.) < epsilon
@@ -352,7 +386,6 @@ class Plotter:
         pad_heights[-1] += margin_bottom
         # Calculate pad edges. (from 1 to 0)
         y_edges = [1. - sum(pad_heights[0:i]) for i in range(n_pads + 1)]
-        print(f"edges: {y_edges}")
         assert abs(y_edges[0] - 1.) < epsilon
         assert abs(y_edges[-1]) < epsilon
         # Set pad edges and margins.
@@ -360,6 +393,9 @@ class Plotter:
             pads[i].SetPad(0., y_edges[i + 1], 1., y_edges[i])
             pads[i].SetBottomMargin(0.)
             pads[i].SetTopMargin(0.)
+            pads[i].SetLeftMargin(margin_left)
+            pads[i].SetRightMargin(margin_right)
+            pads[i].SetTicks(1, 1)
         pads[0].SetTopMargin(margin_top / pad_heights[0])
         pads[-1].SetBottomMargin(margin_bottom / pad_heights[-1])
         return pad_heights
@@ -512,7 +548,12 @@ class Plotter:
             self.list_colours = list_colours_syst_all + list_colours_stat_all
             self.list_markers = list_markers_all * (1 + int(bool(list_syst_all)))
             self.title_full = self.title_full_default
-            can, new = self.make_plot(f"results_{self.var}_{self.mcordata}_ptjet-all",
+            name_can = f"results_{self.var}_{self.mcordata}_ptjet-all"
+            can = TCanvas(name_can, name_can)
+            pad_heights = self.set_pad_heights(can, [2, 3])
+            can, new = self.make_plot(name_can, can=can, pad=1, scale=pad_heights[0],
+                                      colours=self.list_colours, markers=self.list_markers)
+            can, new = self.make_plot(name_can, can=can, pad=2, scale=pad_heights[1],
                                       colours=self.list_colours, markers=self.list_markers)
 
             # TODO: high-pt/low-pt bottom panel, comparison with PYTHIA HF, PYTHIA inclusive

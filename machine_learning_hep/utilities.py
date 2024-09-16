@@ -781,16 +781,18 @@ def make_plot(  # pylint: disable=too-many-arguments, too-many-branches, too-man
         graph.GetXaxis().SetMaxDigits(maxdigits)
         graph.GetYaxis().SetMaxDigits(maxdigits)
         graph.GetYaxis().SetTitleOffset(1.2)
+        graph.GetXaxis().SetLabelOffset(0.005 / scale)
+        graph.GetYaxis().SetLabelOffset(0.005)
         if offsets_xy:
             graph.GetXaxis().SetTitleOffset(offsets_xy[0])
-            graph.GetYaxis().SetTitleOffset(offsets_xy[1])
+            graph.GetYaxis().SetTitleOffset(offsets_xy[1] * scale)
         if leg and n_labels > counter_plot and isinstance(labels_obj, list) and len(labels_obj[counter_plot]) > 0:
             leg.AddEntry(graph, labels_obj[counter_plot], opt_leg_g)
         if isinstance(opt_plot_g, list):
             opt_plot = opt_plot_g
         else:
             opt_plot = [opt_plot_g] * (counter_plot + 1)
-        graph.Draw(opt_plot[counter_plot] + "A" if counter_plot == 0 else opt_plot[counter_plot])
+        graph.DrawClone(opt_plot[counter_plot] + "A" if counter_plot == 0 else opt_plot[counter_plot])
 
     def plot_histogram(histogram):
         # If nothing has been plotted yet, plot an empty graph to set the exact ranges.
@@ -804,10 +806,12 @@ def make_plot(  # pylint: disable=too-many-arguments, too-many-branches, too-man
             gr.GetXaxis().SetMaxDigits(maxdigits)
             gr.GetYaxis().SetMaxDigits(maxdigits)
             gr.GetYaxis().SetTitleOffset(1.2)
+            gr.GetXaxis().SetLabelOffset(0.005 / scale)
+            gr.GetYaxis().SetLabelOffset(0.005)
             if offsets_xy:
                 gr.GetXaxis().SetTitleOffset(offsets_xy[0])
-                gr.GetYaxis().SetTitleOffset(offsets_xy[1])
-            gr.Draw("AP")
+                gr.GetYaxis().SetTitleOffset(offsets_xy[1] * scale)
+            gr.DrawClone("AP")
             list_new.append(gr)
         setup_histogram(histogram, get_my_colour(counter_plot), get_my_marker(counter_plot), get_my_size(counter_plot), textsize=(font_size / scale))
         histogram.GetXaxis().SetLimits(x_min_plot, x_max_plot)
@@ -823,7 +827,7 @@ def make_plot(  # pylint: disable=too-many-arguments, too-many-branches, too-man
         if leg and n_labels > counter_plot and isinstance(labels_obj, list) and len(labels_obj[counter_plot]) > 0:
             leg.AddEntry(histogram, labels_obj[counter_plot], opt_leg[counter_plot])
         # print(f"Plotting {histogram.GetName()} with option {opt_plot[counter_plot]}")
-        histogram.Draw(opt_plot[counter_plot])
+        histogram.DrawCopy(opt_plot[counter_plot])
 
     def plot_latex(latex):
         draw_latex(latex)
