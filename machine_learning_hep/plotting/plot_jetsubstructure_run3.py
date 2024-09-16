@@ -200,7 +200,7 @@ class Plotter:
         self.x_latex = 0.16
         self.y_latex_top = 1. - self.margins_can[2] - self.fontsize_glob - self.tick_length - 0.01
         self.y_step_glob = 0.05
-        self.leg_pos = [.72, .75, .85, .85]
+        self.leg_pos = [.72, .7, .85, .8]
         # self.y_margin_up = 0.46
         self.y_margin_up = 0.05
         self.y_margin_down = 0.05
