@@ -45,6 +45,8 @@ from machine_learning_hep.utilities import (
     get_mean_graph,
     get_mean_uncertainty,
     make_ratios,
+    setup_histogram,
+    setup_tgraph,
 )
 from machine_learning_hep.utils.hist import get_axis, bin_array, project_hist, get_dim, get_bin_limits
 
@@ -221,8 +223,32 @@ class Plotter:
         self.text_sd = "Soft drop (#it{z}_{cut} = 0.1, #it{#beta} = 0)"
         # self.text_acc_h = "|#it{y}| < 0.8"
         # self.text_powheg = "POWHEG + PYTHIA 6 + EvtGen"
+        self.text_monash = "PYTHIA 8 Monash"
+        self.text_mode2 = "PYTHIA 8 CR Mode 2"
         self.range_x = None
         self.range_y = None
+
+        # colour and marker indices
+        self.c_lc_data = 0
+        self.c_d0_data = 1
+        self.c_lc_monash = 2
+        self.c_lc_mode2 = 3
+        self.c_lcd0_data = 6
+        self.c_d0_monash = 4
+        self.c_d0_mode2 = 5
+
+        # markers
+        self.m_lc_data = get_marker(0)
+        self.m_d0_data = get_marker(1)
+        self.m_lc_monash = 1 # get_marker(2)
+        self.m_lc_mode2 = 1 # get_marker(3)
+        self.m_lcd0_data = get_marker(4)
+        self.m_d0_monash = get_marker(4)
+        self.m_d0_mode2 = get_marker(5)
+
+        # line styles
+        self.l_monash = 2
+        self.l_mode2 = 4
 
     def cfg(self, param, default=None):
         return reduce(lambda d, key: d.get(key, default) if isinstance(d, dict) else default,
@@ -251,14 +277,23 @@ class Plotter:
         graph.GetXaxis().SetLimits(round(x_range[var][0], 2), round(x_range[var][1], 2))
         reset_graph_outside_range(graph, *x_range[var])
 
-    def get_object(self, name: str):
-        if not (obj := self.file_results.Get(name)):
+    def get_object(self, name: str, file=None):
+        if file is None:
+            file = self.file_results
+        if not (obj := file.Get(name)):
             self.logger.fatal(make_message_notfound(name))
         obj.SetDirectory(0)  # Decouple the object from the file.
         return obj
 
-    def get_objects(self, *names: str):
-        return [self.get_object(name) for name in names]
+    def get_objects(self, *names: str, file=None):
+        return [self.get_object(name, file) for name in names]
+
+    def get_sim_lc(self):
+        path_file = "/home/vkucera/mlhep/run2/results/lc/simulations.root"
+        names = {"monash" : "input_pythia8defaultpt_jet_7.00_15.00",
+                 "cr2" : "input_pythia8colour2softpt_jet_7.00_15.00"}
+        with TFile.Open(path_file) as file:
+            return {title : self.get_object(name, file) for title, name in names.items()}
 
     def report_means(self, h_stat, h_syst, iptjet):
         mean_z_stat = get_mean_hist(h_stat)
@@ -540,6 +575,23 @@ class Plotter:
                 self.title_full = self.title_full_default
                 can, new = self.make_plot(f"results_{self.var}_{self.mcordata}_{string_ptjet}",
                                           colours=self.list_colours, markers=self.list_markers)
+                # Plot PYTHIA FF
+                if self.var == "zpar" and string_ptjet == string_range_ptjet((7, 15)):
+                    sim_lc = self.get_sim_lc()
+                    self.labels_obj += ["PYTHIA 8 Monash", "PYTHIA 8 CR-BLC Mode 2"]
+                    for h, i, t, c in zip((sim_lc["monash"], sim_lc["cr2"]),
+                                       (self.l_monash, self.l_mode2),
+                                       (self.text_monash, self.text_mode2),
+                                       (self.c_lc_monash, self.c_lc_mode2)):
+                        h_line = h.Clone(h.GetName() + "_line")
+                        setup_histogram(h_line, get_colour(c))
+                        h_line.SetLineStyle(i)
+                        new.append(h_line.DrawCopy("hist same"))
+                        new[0].AddEntry(new[-1], t, "L")
+                if not self.plot_errors_x:
+                    gStyle.SetErrorX(0)  # do not plot horizontal error bars of histograms
+                self.save_canvas(can)
+                gStyle.SetErrorX(0.5)  # reset default width
 
                 # TODO: comparison with PYTHIA HF, PYTHIA inclusive, Run 2 inclusive
 
