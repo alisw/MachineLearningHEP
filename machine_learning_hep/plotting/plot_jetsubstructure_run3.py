@@ -210,7 +210,10 @@ class Plotter:
         self.x_latex = 0.16
         self.y_latex_top = 1. - self.margins_can[2] - self.fontsize_glob - self.tick_length - 0.01
         self.y_step_glob = 0.05
-        self.leg_pos = [.72, .7, .85, .8]
+        self.leg_pos_default = [.72, .7, .85, .8]
+        self.leg_pos = self.leg_pos_default
+        self.leg_horizontal_default = True
+        self.leg_horizontal = True
         # self.y_margin_up = 0.46
         self.y_margin_up = 0.05
         self.y_margin_down = 0.05
@@ -226,8 +229,9 @@ class Plotter:
         self.text_alice = "ALICE Preliminary, pp, #sqrt{#it{s}} = 13.6 TeV"  # preliminaries
         # self.text_alice = "#bf{ALICE}, pp, #sqrt{#it{s}} = 13.6 TeV"  # paper
         self.text_jets = "%s-tagged charged-particle jets, anti-#it{k}_{T}, #it{R} = 0.4" % self.latex_hadron
-        self.text_ptjet = "%g #leq %s (GeV/#it{c}) < %g, |#it{#eta}_{jet ch}| < 0.5"
-        self.text_pth = "%g #leq #it{p}_{T}^{%s} (GeV/#it{c}) < %g, |#it{y}_{%s}| < 0.8"
+        self.text_ptjet = "%g #leq %s (GeV/#it{c}) < %g"
+        self.text_etajet = "|#it{#eta}_{jet ch}| < 0.5"
+        self.text_pth_yh = "%g #leq #it{p}_{T}^{%s} (GeV/#it{c}) < %g, |#it{y}_{%s}| < 0.8"
         self.text_sd = "Soft drop (#it{z}_{cut} = 0.1, #it{#beta} = 0)"
         # self.text_acc_h = "|#it{y}| < 0.8"
         # self.text_powheg = "POWHEG + PYTHIA 6 + EvtGen"
@@ -391,7 +395,7 @@ class Plotter:
         pt_min = self.edges_pthf[0] if ipthf < 0 else self.edges_pthf[ipthf]
         pt_max = self.edges_pthf[-1] if ipthf < 0 else self.edges_pthf[ipthf + 1]
         pt_max = min(pt_max, self.edges_ptjet_gen[iptjet + 1]) if iptjet > -1 else pt_max
-        return self.text_pth % (pt_min, self.latex_hadron, pt_max, self.latex_hadron)
+        return self.text_pth_yh % (pt_min, self.latex_hadron, pt_max, self.latex_hadron)
 
     def make_plot(self, name: str, can=None, pad=0, scale=1., colours=None, markers=None):
         """Wrapper method for calling make_plot and saving the canvas."""
@@ -404,6 +408,17 @@ class Plotter:
         self.list_markers = [get_marker(i) for i in range(n_obj)]
         if markers is not None:
             self.list_markers = markers
+
+        # Adjust legend parameters.
+        scale_text_leg = 0.8
+        n_entries_leg = len([s for s in self.labels_obj if s])
+        if self.leg_horizontal:
+            y_leg_max = self.y_latex_top - self.y_step_glob * (len(self.list_latex) - 1 + 0.2)
+            y_leg_min = y_leg_max - self.y_step_glob
+            self.leg_pos = [self.x_latex, y_leg_min, 0.85, y_leg_max]
+        else:
+            self.leg_pos[1] = self.leg_pos[3] - n_entries_leg * self.y_step_glob * scale_text_leg
+
         # Recalculate coordinates to preserve absolute size of text and its absolute offset from the top of the panel.
         leg_pos_adj = self.leg_pos.copy()
         self.y_latex_top = 1. - (self.fontsize_glob + self.tick_length + 0.01) / scale
@@ -428,11 +443,15 @@ class Plotter:
                 leg_pos_adj[1] = leg_pos_adj[3] - leg_height / scale
             if pad == self.get_n_pads(can):
                 panel_height -= margin_bottom / scale
+
         # Adjust panel margin for the height of text.
         y_margin_up_adj = self.y_margin_up
         if self.list_latex:
-            latex_bottom = self.y_latex_top - self.y_step_glob / scale * (len(self.list_latex) - 1)
+            latex_bottom = self.y_latex_top - self.y_step_glob / scale * (len(self.list_latex) - 1 + int(self.leg_horizontal))
             y_margin_up_adj += (panel_top - latex_bottom) / panel_height
+            assert self.y_margin_down + y_margin_up_adj < 1.
+
+        # Plot
         can, new = make_plot(name, can=can, pad=pad, scale=scale,
                              list_obj=self.list_obj, labels_obj=self.labels_obj,
                              opt_leg_h=self.opt_leg_h, opt_plot_h=self.opt_plot_h,
@@ -442,7 +461,11 @@ class Plotter:
                              margins_y=[self.y_margin_down, y_margin_up_adj], margins_c=self.margins_can,
                              range_x=self.range_x, range_y=self.range_y,
                              title=self.title_full)
-        new[0].SetTextSize(self.fontsize_glob / scale)
+        leg = new[0]
+        if self.leg_horizontal:
+            n_entries_leg = leg.GetListOfPrimitives().GetSize()
+            leg.SetNColumns(n_entries_leg)
+        leg.SetTextSize(self.fontsize_glob / scale * scale_text_leg)
         self.list_new += new
         if self.list_latex:
             self.list_new += draw_latex_lines(self.list_latex,
@@ -513,6 +536,7 @@ class Plotter:
             line_1.SetLineStyle(9)
             line_1.SetLineColor(1)
             line_1.SetLineWidth(3)
+            self.leg_pos = self.leg_pos_default
 
             if self.mcordata == "data":
                 # Efficiency
@@ -520,7 +544,7 @@ class Plotter:
                 self.list_obj = self.get_objects("h_pthf_effnew_pr", "h_pthf_effnew_np")
                 self.labels_obj = ["prompt", "nonprompt"]
                 self.title_full = f";{self.latex_pthf};{self.latex_hadron} efficiency"
-                self.list_latex = [self.text_alice, self.text_jets, self.get_text_range_ptjet(),
+                self.list_latex = [self.text_alice, self.text_jets, f"{self.get_text_range_ptjet()}, {self.text_etajet}",
                                    self.get_text_range_pthf()]
                 self.make_plot(f"efficiency_{self.var}")
 
@@ -567,7 +591,7 @@ class Plotter:
                         self.list_obj = [project_hist(h, [1], {0: (iptjet + 1, iptjet + 1)}) for h in self.list_obj]
                         self.labels_obj = ["signal region", "scaled sidebands", "after subtraction"]
                         self.title_full = f";{self.latex_obs};counts"
-                        self.list_latex = [self.text_alice, self.text_jets, self.get_text_range_ptjet(iptjet),
+                        self.list_latex = [self.text_alice, self.text_jets, f"{self.get_text_range_ptjet(iptjet)}, {self.text_etajet}",
                                            self.get_text_range_pthf(ipt, iptjet)]
                         if self.var in ("zg", "rg", "nsd"):
                             self.list_latex.append(self.text_sd)
@@ -585,7 +609,7 @@ class Plotter:
                 self.list_obj = [project_hist(h, axes[1:], {0: (iptjet+1,)*2}) for h in self.list_obj]
                 self.labels_obj = ["before subtraction", "feed-down", "after subtraction"]
                 self.title_full = f";{self.latex_obs};counts"
-                self.list_latex = [self.text_alice, self.text_jets, self.get_text_range_ptjet(iptjet),
+                self.list_latex = [self.text_alice, self.text_jets, f"{self.get_text_range_ptjet(iptjet)}, {self.text_etajet}",
                                    self.get_text_range_pthf(-1, iptjet)]
                 if self.var in ("zg", "rg", "nsd"):
                     self.list_latex.append(self.text_sd)
@@ -716,15 +740,22 @@ class Plotter:
                     self.list_markers += [get_marker(count_histograms(self.list_obj))]
                     self.opt_plot_h += ["hist"]
                     self.opt_leg_h += ["L"]
-
+                self.leg_horizontal = True
                 can, new = self.make_plot(f"results_{self.var}_{self.mcordata}_{string_ptjet}",
                                         colours=self.list_colours, markers=self.list_markers)
                 # Reset defaults.
                 self.opt_plot_h = ""
                 self.opt_leg_h = "P"
+                self.leg_pos = self.leg_pos_default
+                self.leg_horizontal = self.leg_horizontal_default
 
             self.logger.info("Plotting results for all pt jet together")
             self.plot_errors_x = False
+            self.list_latex = [self.text_alice, self.text_jets,
+                                self.get_text_range_pthf(-1, iptjet)]
+            if self.var in ("zg", "rg", "nsd"):
+                self.list_latex.append(self.text_sd)
+            self.leg_horizontal = True
             self.range_x = x_range[self.var]
             self.list_obj = list_syst_all + list_stat_all
             self.labels_obj = list_labels_all  # do not show the histograms in the legend
