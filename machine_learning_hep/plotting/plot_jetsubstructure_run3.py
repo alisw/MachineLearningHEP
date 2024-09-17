@@ -417,7 +417,7 @@ class Plotter:
         if self.leg_horizontal:
             y_leg_max = self.y_latex_top - self.y_step_glob * (len(self.list_latex) - 1 + 0.2)
             y_leg_min = y_leg_max - self.y_step_glob
-            self.leg_pos = [self.x_latex, y_leg_min, 0.85, y_leg_max]
+            self.leg_pos = [self.x_latex, y_leg_min, 1. - self.margins_can[3] - self.tick_length - 0.01, y_leg_max]
         else:
             self.leg_pos[1] = self.leg_pos[3] - n_entries_leg * self.y_step_glob * scale_text_leg
 
