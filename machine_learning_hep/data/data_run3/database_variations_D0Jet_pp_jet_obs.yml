@@ -866,7 +866,7 @@ categories:
         rms_both_sides: true
         variations:
             flatness:
-                activate: [yes, yes, yes, yes, yes, yes, yes, yes, yes, yes]
+                activate: [yes, yes, yes, yes, yes, yes, yes, yes, yes, no]
                 label: ["flat 0.1", "flat 0.2", "flat 0.3", "flat 0.4", "flat 0.5", "flat 0.6", "flat 0.7", "flat 0.8", "flat 0.9", "flat 1.0"]
                 diffs:
                     analysis:
