@@ -718,7 +718,10 @@ class Plotter:
                                     continue
                                 if not plot_data and source == "data":
                                     continue
-                                self.list_obj += [run2_d0_sim[self.var][flavour][source][type]]
+                                obj = run2_d0_sim[self.var][flavour][source][type]
+                                if self.var == "nsd" and type == "syst":
+                                    shrink_err_x(obj)
+                                self.list_obj += [obj]
                                 if type == "syst":
                                     self.plot_order += [-1. / len(self.list_obj)]  # increasing between -1 and 0
                                 else:
