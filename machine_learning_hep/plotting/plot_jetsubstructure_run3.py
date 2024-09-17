@@ -47,6 +47,8 @@ from machine_learning_hep.utilities import (
     make_ratios,
     setup_histogram,
     setup_tgraph,
+    count_histograms,
+    count_graphs,
 )
 from machine_learning_hep.utils.hist import get_axis, bin_array, project_hist, get_dim, get_bin_limits
 
@@ -333,7 +335,10 @@ class Plotter:
                 dict_obj[title] = {}
                 for iptjet in (0, 1, 2, 3):
                     name = pattern % (obs, self.edges_ptjet_gen[iptjet], self.edges_ptjet_gen[iptjet + 1])
-                    dict_obj[title][iptjet] = self.get_object(name, file)
+                    obj = self.get_object(name, file)
+                    if self.var == "zpar":
+                        obj.Scale(1. / obj.Integral(), "width")
+                    dict_obj[title][iptjet] = obj
         return dict_obj
 
     def report_means(self, h_stat, h_syst, iptjet):
@@ -514,7 +519,7 @@ class Plotter:
             if self.species == "D0":
                 list_iptjet = [2, 3]  # indices of jet pt bins to process
             if self.species == "Lc":
-                list_iptjet = [0, 1, 2]  # indices of jet pt bins to process
+                list_iptjet = [0, 1, 2, 3]  # indices of jet pt bins to process
             # Results
             list_stat_all = []
             list_syst_all = []
@@ -616,27 +621,55 @@ class Plotter:
                     self.list_markers.insert(0, get_marker(i_iptjet))
                     list_colours_syst_all.append(self.list_colours[0])
                 self.title_full = self.title_full_default
-                # Plot Run 2 Lc PYTHIA FF
-                if self.species == "Lc" and self.var == "zpar" and string_ptjet == string_range_ptjet((7, 15)):
+                # Plot additional stuff.
+                plot_run2_lc_sim = False
+                plot_run2_d0_all = True
+                plot_run3_d0_sim = False
+                plot_data = True
+                plot_sim = False
+                plot_incl = True
+                # Plot Run 2 Lc PYTHIA FF, 7-15 GeV/c
+                if plot_run2_lc_sim and plot_sim and self.species == "Lc" and self.var == "zpar" and string_ptjet == string_range_ptjet((7, 15)):
                     run2_lc_sim = self.get_run2_lc_sim()
                     run2_lc_sim["monash"].SetLineStyle(self.l_monash)
                     run2_lc_sim["cr2"].SetLineStyle(self.l_mode2)
                     self.list_obj += [run2_lc_sim["monash"], run2_lc_sim["cr2"]]
                     self.labels_obj += [self.text_monash, self.text_mode2]
                     self.list_colours += [get_colour(c) for c in (self.c_lc_monash, self.c_lc_mode2)]
+                    self.list_markers += [get_marker(m) for m in (self.m_lc_monash, self.m_lc_mode2)]
                     self.opt_plot_h += ["hist", "hist"]
                     self.opt_leg_h += ["L", "L"]
-                # Plot Run 2 D0 PYTHIA
-                if self.species == "D0" and self.var in ("zg", "rg", "nsd") and string_ptjet == string_range_ptjet((15, 30)):
+                # Plot Run 2 D0 all, 15-30 GeV/c
+                if plot_run2_d0_all and self.species == "D0" and self.var in ("zg", "rg", "nsd") and string_ptjet == string_range_ptjet((15, 30)):
                     run2_d0_sim = self.get_run2_d0_all()
-                    for flavour in ("hf", "incl"):
-                        for source in ("data", "pythia"):
+                    c = count_histograms(self.list_obj)
+                    print(f"n histo {count_histograms(self.list_obj)}")
+                    m = count_histograms(self.list_obj)
+                    for source in ("data", "pythia"):
+                        for flavour in ("hf", "incl"):
+                            c += 1
+                            m += 1
                             for type in ("syst", "stat"):
                                 if source == "pythia" and type == "syst":
                                     continue
+                                if not plot_incl and flavour == "incl":
+                                    continue
+                                if not plot_sim and source == "pythia":
+                                    continue
+                                if not plot_data and source == "data":
+                                    continue
                                 self.list_obj += [run2_d0_sim[self.var][flavour][source][type]]
-                                self.labels_obj += [f"{flavour} {source} {type}"]
-                                self.list_colours += [get_colour(len(self.list_obj))]
+                                label = f"{flavour} {source}"
+                                print(f"{label} Colour {c}")
+                                if source == "data":
+                                    label = "Run 2"
+                                    if flavour == "incl":
+                                        label += " incl."
+                                    if type == "stat":
+                                        label = ""
+                                self.labels_obj += [label]
+                                self.list_colours += [get_colour(c)]
+                                self.list_markers += [get_marker(m)]
                                 if type == "stat":
                                     if source == "pythia":
                                         self.opt_plot_h += ["hist"]
@@ -645,9 +678,14 @@ class Plotter:
                                         self.opt_plot_h += [""]
                                         self.opt_leg_h += ["P"]
                 # Plot Run 3 D0 PYTHIA
-                if self.species == "D0":
+                if plot_run3_d0_sim and plot_sim and self.species == "D0" and iptjet in (0, 1, 2, 3):
                     run3_d0_sim = self.get_run3_d0_sim()
-                # TODO: comparison with PYTHIA HF, PYTHIA inclusive, Run 2 inclusive
+                    self.list_obj += [run3_d0_sim[self.var][iptjet]]
+                    self.labels_obj += ["HF PYTHIA Run 3"]
+                    self.list_colours += [get_colour(count_histograms(self.list_obj))]
+                    self.list_markers += [get_marker(count_histograms(self.list_obj))]
+                    self.opt_plot_h += ["hist"]
+                    self.opt_leg_h += ["L"]
 
                 can, new = self.make_plot(f"results_{self.var}_{self.mcordata}_{string_ptjet}",
                                         colours=self.list_colours, markers=self.list_markers)
