@@ -112,6 +112,8 @@ class Plotter:
 
         # plotting
         self.list_obj = []
+        self.plot_order_default = None
+        self.plot_order = None
         self.labels_obj = []
         self.list_latex = []
         self.list_colours = []
@@ -453,7 +455,7 @@ class Plotter:
 
         # Plot
         can, new = make_plot(name, can=can, pad=pad, scale=scale,
-                             list_obj=self.list_obj, labels_obj=self.labels_obj,
+                             list_obj=self.list_obj, labels_obj=self.labels_obj, plot_order=self.plot_order,
                              opt_leg_h=self.opt_leg_h, opt_plot_h=self.opt_plot_h,
                              opt_leg_g=self.opt_leg_g, opt_plot_g=self.opt_plot_g,
                              offsets_xy=self.offsets_axes, size=self.size_can, font_size=self.fontsize_glob,
@@ -639,6 +641,7 @@ class Plotter:
                 self.range_x = x_range[self.var]
                 self.list_obj = [self.get_object(f"h_{self.var}_{self.method}_unfolded_{self.mcordata}_"
                                                  f"{string_ptjet}_sel_selfnorm")]
+                self.plot_order = list(range(len(self.list_obj)))
                 self.labels_obj = ["data"]
                 self.list_colours = [get_colour(i_iptjet)]
                 self.list_markers = [get_marker(i_iptjet)]
@@ -659,6 +662,7 @@ class Plotter:
                     list_syst_all.append(gr_syst)
                     # We need to plot the data on top of the systematics.
                     self.list_obj.insert(0, gr_syst)
+                    self.plot_order.insert(0, -1)
                     self.labels_obj.insert(0, "data")
                     self.labels_obj[1] = ""  # do not show the histogram in the legend
                     self.list_colours.insert(0, get_colour(i_iptjet))
@@ -677,6 +681,7 @@ class Plotter:
                 if plot_run2_lc_data and plot_data and self.species == "Lc" and self.var == "zpar" and iptjet in (0, 1):
                     run2_lc_data = self.get_run2_lc_data()
                     self.list_obj += [run2_lc_data[iptjet]["syst"], run2_lc_data[iptjet]["stat"]]
+                    self.plot_order += [-0.5, max(self.plot_order) + 1]
                     self.labels_obj += ["Run 2", ""]
                     self.list_colours += [get_colour(count_histograms(self.list_obj))] * 2
                     self.list_markers += [get_marker(count_histograms(self.list_obj))] * 2
@@ -688,6 +693,7 @@ class Plotter:
                     run2_lc_sim["monash"].SetLineStyle(self.l_monash)
                     run2_lc_sim["cr2"].SetLineStyle(self.l_mode2)
                     self.list_obj += [run2_lc_sim["monash"], run2_lc_sim["cr2"]]
+                    self.plot_order += [max(self.plot_order) + 1, max(self.plot_order) + 2]
                     self.labels_obj += [self.text_monash, self.text_mode2]
                     self.list_colours += [get_colour(c) for c in (self.c_lc_monash, self.c_lc_mode2)]
                     self.list_markers += [get_marker(m) for m in (self.m_lc_monash, self.m_lc_mode2)]
@@ -713,6 +719,10 @@ class Plotter:
                                 if not plot_data and source == "data":
                                     continue
                                 self.list_obj += [run2_d0_sim[self.var][flavour][source][type]]
+                                if type == "syst":
+                                    self.plot_order += [-1. / len(self.list_obj)]  # increasing between -1 and 0
+                                else:
+                                    self.plot_order += [max(self.plot_order) + 1]
                                 label = f"{flavour} {source}"
                                 print(f"{label} Colour {c}")
                                 if source == "data":
@@ -735,6 +745,7 @@ class Plotter:
                 if plot_run3_d0_sim and plot_sim and self.species == "D0" and iptjet in (0, 1, 2, 3):
                     run3_d0_sim = self.get_run3_d0_sim()
                     self.list_obj += [run3_d0_sim[self.var][iptjet]]
+                    self.plot_order += [max(self.plot_order) + 1]
                     self.labels_obj += ["HF PYTHIA Run 3"]
                     self.list_colours += [get_colour(count_histograms(self.list_obj))]
                     self.list_markers += [get_marker(count_histograms(self.list_obj))]
@@ -744,6 +755,7 @@ class Plotter:
                 can, new = self.make_plot(f"results_{self.var}_{self.mcordata}_{string_ptjet}",
                                         colours=self.list_colours, markers=self.list_markers)
                 # Reset defaults.
+                self.plot_order = self.plot_order_default
                 self.opt_plot_h = ""
                 self.opt_leg_h = "P"
                 self.leg_pos = self.leg_pos_default

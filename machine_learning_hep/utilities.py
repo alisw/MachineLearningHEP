@@ -735,7 +735,8 @@ def make_plot(  # pylint: disable=too-many-arguments, too-many-branches, too-man
     with_errors="xy",
     logscale=None,
     font_size=0.032,
-    scale=1.
+    scale=1.,
+    plot_order=None
 ):
     """
     Make a plot with objects from a list (list_obj).
@@ -775,6 +776,7 @@ def make_plot(  # pylint: disable=too-many-arguments, too-many-branches, too-man
         (format: string containing any of x, y)
     - font size relative to the full canvas height (font_size)
     - height of the pad relative to the full canvas height (scale)
+    - order in which to plot objects (plot_order)
     """
 
     # HELPING FUNCTIONS
@@ -800,7 +802,7 @@ def make_plot(  # pylint: disable=too-many-arguments, too-many-branches, too-man
         return get_markersize(get_my_marker(i))
 
     def plot_graph(graph):
-        setup_tgraph(graph, get_my_colour(counter_plot_obj), get_my_marker(counter_plot_obj), get_my_size(counter_plot_obj), textsize=(font_size / scale))
+        setup_tgraph(graph, get_my_colour(i_obj), get_my_marker(i_obj), get_my_size(i_obj), textsize=(font_size / scale))
         graph.SetTitle(title)
         graph.GetXaxis().SetLimits(x_min_plot, x_max_plot)
         graph.GetYaxis().SetRangeUser(y_min_plot, y_max_plot)
@@ -812,8 +814,8 @@ def make_plot(  # pylint: disable=too-many-arguments, too-many-branches, too-man
         if offsets_xy:
             graph.GetXaxis().SetTitleOffset(offsets_xy[0])
             graph.GetYaxis().SetTitleOffset(offsets_xy[1] * scale)
-        if leg and n_labels > counter_plot_obj and isinstance(labels_obj, list) and len(labels_obj[counter_plot_obj]) > 0:
-            leg.AddEntry(graph, labels_obj[counter_plot_obj], opt_leg_g[counter_plot_g])
+        if leg and n_labels > i_obj and isinstance(labels_obj, list) and len(labels_obj[i_obj]) > 0:
+            leg.AddEntry(graph, labels_obj[i_obj], opt_leg_g[counter_plot_g])
         graph.DrawClone(opt_plot_g[counter_plot_g] + "A" if counter_plot_obj == 0 else opt_plot_g[counter_plot_g])
 
     def plot_histogram(histogram):
@@ -835,11 +837,11 @@ def make_plot(  # pylint: disable=too-many-arguments, too-many-branches, too-man
                 gr.GetYaxis().SetTitleOffset(offsets_xy[1] * scale)
             gr.DrawClone("AP")
             list_new.append(gr)
-        setup_histogram(histogram, get_my_colour(counter_plot_obj), get_my_marker(counter_plot_obj), get_my_size(counter_plot_obj), textsize=(font_size / scale))
+        setup_histogram(histogram, get_my_colour(i_obj), get_my_marker(i_obj), get_my_size(i_obj), textsize=(font_size / scale))
         histogram.GetXaxis().SetLimits(x_min_plot, x_max_plot)
         histogram.GetXaxis().SetRangeUser(x_min_plot, x_max_plot)
-        if leg and n_labels > counter_plot_obj and isinstance(labels_obj, list) and len(labels_obj[counter_plot_obj]) > 0:
-            leg.AddEntry(histogram, labels_obj[counter_plot_obj], opt_leg_h[counter_plot_h])
+        if leg and n_labels > i_obj and isinstance(labels_obj, list) and len(labels_obj[i_obj]) > 0:
+            leg.AddEntry(histogram, labels_obj[i_obj], opt_leg_h[counter_plot_h])
         # print(f"Plotting {histogram.GetName()} with option {opt_plot_h[counter_plot_h]}")
         histogram.DrawCopy(opt_plot_h[counter_plot_h])
 
@@ -956,10 +958,18 @@ def make_plot(  # pylint: disable=too-many-arguments, too-many-branches, too-man
             opt_plot_h[i] = opt + " same"
 
     # plot objects
+    i_obj = -1  # index of the current object in the input lists
     counter_plot_obj = 0  # counter of plotted objects
     counter_plot_h = 0  # counter of plotted histograms
     counter_plot_g = 0  # counter of plotted graphs
-    for obj in list_obj:
+    if not plot_order:
+        plot_order = list(range(len(list_obj)))
+    assert len(plot_order) == len(list_obj)
+    assert list(dict.fromkeys(plot_order)) == plot_order  # Protect against duplicate indices.
+    plot_index_order = sorted(plot_order)
+    for i in plot_index_order:
+        i_obj = plot_order.index(i)
+        obj = list_obj[i_obj]
         if is_histogram(obj):
             plot_histogram(obj)
             counter_plot_h += 1
