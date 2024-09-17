@@ -331,9 +331,9 @@ class Plotter:
         with TFile.Open(path_file) as file:
             return {title : self.get_object(name, file) for title, name in names.items()}
 
-    def get_run2_d0_all(self) -> dict:
+    def get_run2_d0_sd(self) -> dict:
         path_file = "/home/vkucera/mlhep/run2/results/d0/results_all.root"
-        self.logger.info("Getting Run 2 D0 all from %s.", path_file)
+        self.logger.info("Getting Run 2 D0 SD from %s.", path_file)
         dict_obj = {}
         with TFile.Open(path_file) as file:
             for obs in ("zg", "rg", "nsd"):
@@ -348,6 +348,14 @@ class Plotter:
                             name = f"{obs}_{flavour}_{source}_1_{type}"
                             dict_obj[obs][flavour][source][type] = self.get_object(name, file)
         return dict_obj
+
+    def get_run2_d0_ff(self) -> dict:
+        path_file = "/home/vkucera/mlhep/run2/results/d0/FFD0_Jakub_20220130.root"
+        self.logger.info("Getting Run 2 D0 FF from %s.", path_file)
+        names = {"stat" : "hData_binned",
+                 "syst" : "haeData_binned_syst"}
+        with TFile.Open(path_file) as file:
+            return {title : self.get_object(name, file) for title, name in names.items()}
 
     def get_run3_d0_sim(self) -> dict:
         # path_file = "aliceml:/home/nzardosh/PYTHIA_Sim/PYTHIA8_Simulations/Plots/Run3/fOut.root"
@@ -563,7 +571,7 @@ class Plotter:
 
             # loop over jet pt
             if self.species == "D0":
-                list_iptjet = [2, 3]  # indices of jet pt bins to process
+                list_iptjet = [0, 1, 2, 3]  # indices of jet pt bins to process
             if self.species == "Lc":
                 list_iptjet = [1]  # indices of jet pt bins to process
             # Results
@@ -669,14 +677,17 @@ class Plotter:
                     self.list_markers.insert(0, get_marker(i_iptjet))
                     list_colours_syst_all.append(self.list_colours[0])
                 self.title_full = self.title_full_default
+
                 # Plot additional stuff.
                 plot_run2_lc_data = True
                 plot_run2_lc_sim = True
-                plot_run2_d0_all = True
-                plot_run3_d0_sim = False
+                plot_run2_d0_ff = True
+                plot_run2_d0_sd = False
+                plot_run3_d0_sim = True
                 plot_data = True
                 plot_sim = True
-                plot_incl = True
+                plot_incl = False
+
                 # Plot Run 2 Lc data FF, 5-7, 7-15, 15-35 GeV/c
                 if plot_run2_lc_data and plot_data and self.species == "Lc" and self.var == "zpar" and iptjet in (0, 1):
                     run2_lc_data = self.get_run2_lc_data()
@@ -699,11 +710,10 @@ class Plotter:
                     self.list_markers += [get_marker(m) for m in (self.m_lc_monash, self.m_lc_mode2)]
                     self.opt_plot_h += ["hist", "hist"]
                     self.opt_leg_h += ["L", "L"]
-                # Plot Run 2 D0 all, 15-30 GeV/c
-                if plot_run2_d0_all and self.species == "D0" and self.var in ("zg", "rg", "nsd") and string_ptjet == string_range_ptjet((15, 30)):
-                    run2_d0_sim = self.get_run2_d0_all()
+                # Plot Run 2 D0 Soft drop, 15-30 GeV/c
+                if plot_run2_d0_sd and self.species == "D0" and self.var in ("zg", "rg", "nsd") and string_ptjet == string_range_ptjet((15, 30)):
+                    run2_d0_sd = self.get_run2_d0_sd()
                     c = count_histograms(self.list_obj)
-                    print(f"n histo {count_histograms(self.list_obj)}")
                     m = count_histograms(self.list_obj)
                     for source in ("data", "pythia"):
                         for flavour in ("hf", "incl"):
@@ -718,7 +728,7 @@ class Plotter:
                                     continue
                                 if not plot_data and source == "data":
                                     continue
-                                obj = run2_d0_sim[self.var][flavour][source][type]
+                                obj = run2_d0_sd[self.var][flavour][source][type]
                                 if self.var == "nsd" and type == "syst":
                                     shrink_err_x(obj)
                                 self.list_obj += [obj]
@@ -727,7 +737,6 @@ class Plotter:
                                 else:
                                     self.plot_order += [max(self.plot_order) + 1]
                                 label = f"{flavour} {source}"
-                                print(f"{label} Colour {c}")
                                 if source == "data":
                                     label = "Run 2"
                                     if flavour == "incl":
@@ -744,7 +753,17 @@ class Plotter:
                                     else:
                                         self.opt_plot_h += [""]
                                         self.opt_leg_h += ["P"]
-                # Plot Run 3 D0 PYTHIA
+                # Plot Run 2 D0 FF, 7-15 GeV/c (Jakub)
+                if plot_run2_d0_ff and plot_data and self.species == "D0" and self.var == "zpar" and string_ptjet == string_range_ptjet((7, 15)):
+                    run2_d0_ff = self.get_run2_d0_ff()
+                    self.list_obj += [run2_d0_ff["syst"], run2_d0_ff["stat"]]
+                    self.plot_order += [-0.5, max(self.plot_order) + 1]
+                    self.labels_obj += ["Run 2", ""]
+                    self.list_colours += [get_colour(count_histograms(self.list_obj))] * 2
+                    self.list_markers += [get_marker(count_histograms(self.list_obj))] * 2
+                    self.opt_plot_h += [""]
+                    self.opt_leg_h += ["P"]
+                # Plot Run 3 D0 PYTHIA (Nima)
                 if plot_run3_d0_sim and plot_sim and self.species == "D0" and iptjet in (0, 1, 2, 3):
                     run3_d0_sim = self.get_run3_d0_sim()
                     self.list_obj += [run3_d0_sim[self.var][iptjet]]
