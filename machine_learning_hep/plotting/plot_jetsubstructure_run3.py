@@ -555,7 +555,8 @@ class Plotter:
             line_1.SetLineWidth(3)
             self.leg_pos = self.leg_pos_default
 
-            if self.mcordata == "data":
+            plot_efficiency = False
+            if plot_efficiency and self.mcordata == "data":
                 # Efficiency
                 self.logger.info("Plotting efficiency")
                 self.list_obj = self.get_objects("h_pthf_effnew_pr", "h_pthf_effnew_np")
@@ -593,8 +594,9 @@ class Plotter:
                 string_ptjet = string_range_ptjet(range_ptjet)
                 self.range_x = None
 
-                if self.mcordata == "data":
-                    # Sideband subtraction
+                # Sideband subtraction
+                plot_sidebands = False
+                if plot_sidebands and self.mcordata == "data":
                     self.logger.info("Plotting sideband subtraction")
                     # loop over hadron pt
                     for ipt in range(self.n_bins_pthf):
@@ -615,43 +617,51 @@ class Plotter:
                         self.make_plot(f"sidebands_{self.var}_{self.mcordata}_{string_ptjet}_{string_pthf}")
 
                 # Feed-down subtraction
-                self.logger.info("Plotting feed-down subtraction")
-                self.list_obj = self.get_objects(f'h_ptjet-{self.var}_{self.method}_effscaled_{self.mcordata}',
-                                                 f'h_ptjet-{self.var}_feeddown_det_final_{self.mcordata}',
-                                                 f'h_ptjet-{self.var}_{self.method}_{self.mcordata}')
-                self.list_obj[0] = self.list_obj[0].Clone(f"{self.list_obj[0].GetName()}_fd_before_{iptjet}")
-                self.list_obj[1] = self.list_obj[1].Clone(f"{self.list_obj[1].GetName()}_fd_{iptjet}")
-                self.list_obj[2] = self.list_obj[2].Clone(f"{self.list_obj[2].GetName()}_fd_after_{iptjet}")
-                axes = list(range(get_dim(self.list_obj[0])))
-                self.list_obj = [project_hist(h, axes[1:], {0: (iptjet+1,)*2}) for h in self.list_obj]
-                self.labels_obj = ["before subtraction", "feed-down", "after subtraction"]
-                self.title_full = f";{self.latex_obs};counts"
-                self.list_latex = [self.text_alice, self.text_jets, f"{self.get_text_range_ptjet(iptjet)}, {self.text_etajet}",
-                                   self.get_text_range_pthf(-1, iptjet)]
-                if self.var in ("zg", "rg", "nsd"):
-                    self.list_latex.append(self.text_sd)
-                self.make_plot(f"feeddown_{self.var}_{self.mcordata}_{string_ptjet}")
+                plot_feeddown = False
+                if plot_feeddown:
+                    self.logger.info("Plotting feed-down subtraction")
+                    self.list_obj = self.get_objects(f'h_ptjet-{self.var}_{self.method}_effscaled_{self.mcordata}',
+                                                    f'h_ptjet-{self.var}_feeddown_det_final_{self.mcordata}',
+                                                    f'h_ptjet-{self.var}_{self.method}_{self.mcordata}')
+                    self.list_obj[0] = self.list_obj[0].Clone(f"{self.list_obj[0].GetName()}_fd_before_{iptjet}")
+                    self.list_obj[1] = self.list_obj[1].Clone(f"{self.list_obj[1].GetName()}_fd_{iptjet}")
+                    self.list_obj[2] = self.list_obj[2].Clone(f"{self.list_obj[2].GetName()}_fd_after_{iptjet}")
+                    axes = list(range(get_dim(self.list_obj[0])))
+                    self.list_obj = [project_hist(h, axes[1:], {0: (iptjet+1,)*2}) for h in self.list_obj]
+                    self.labels_obj = ["before subtraction", "feed-down", "after subtraction"]
+                    self.title_full = f";{self.latex_obs};counts"
+                    self.list_latex = [self.text_alice, self.text_jets, f"{self.get_text_range_ptjet(iptjet)}, {self.text_etajet}",
+                                    self.get_text_range_pthf(-1, iptjet)]
+                    if self.var in ("zg", "rg", "nsd"):
+                        self.list_latex.append(self.text_sd)
+                    self.make_plot(f"feeddown_{self.var}_{self.mcordata}_{string_ptjet}")
 
-                # TODO: feed-down (after 2D, fraction)
+                    # TODO: feed-down (after 2D, fraction)
 
                 # Unfolding
-                self.logger.info("Plotting unfolding")
-                self.list_obj = [self.get_object(f"h_{self.var}_{self.method}_unfolded_{self.mcordata}_"
-                                                 f"{string_ptjet}_{i}") for i in range(self.niter_unfolding)]
-                self.labels_obj = [f"iteration {i + 1}" for i in range(self.niter_unfolding)]
-                self.title_full = f";{self.latex_obs};counts"
-                self.make_plot(f"unfolding_convergence_{self.var}_{self.mcordata}_{string_ptjet}")
+                plot_unfolding = False
+                if plot_unfolding:
+                    self.logger.info("Plotting unfolding")
+                    self.list_obj = [self.get_object(f"h_{self.var}_{self.method}_unfolded_{self.mcordata}_"
+                                                    f"{string_ptjet}_{i}") for i in range(self.niter_unfolding)]
+                    self.labels_obj = [f"iteration {i + 1}" for i in range(self.niter_unfolding)]
+                    self.title_full = f";{self.latex_obs};counts"
+                    self.make_plot(f"unfolding_convergence_{self.var}_{self.mcordata}_{string_ptjet}")
 
-                h_ref = self.get_object(f"h_{self.var}_{self.method}_unfolded_{self.mcordata}_{string_ptjet}_sel")
-                for h in self.list_obj:
-                    h.Divide(h_ref)
-                self.title_full = f";{self.latex_obs};counts (variation/default)"
-                self.make_plot(f"unfolding_convergence_ratio_{self.var}_{self.mcordata}_{string_ptjet}")
+                    h_ref = self.get_object(f"h_{self.var}_{self.method}_unfolded_{self.mcordata}_{string_ptjet}_sel")
+                    for h in self.list_obj:
+                        h.Divide(h_ref)
+                    self.title_full = f";{self.latex_obs};counts (variation/default)"
+                    self.make_plot(f"unfolding_convergence_ratio_{self.var}_{self.mcordata}_{string_ptjet}")
 
-                # TODO: unfolding (before/after)
+                    # TODO: unfolding (before/after)
 
                 # Results
                 self.logger.info("Plotting results")
+                self.list_latex = [self.text_alice, self.text_jets, f"{self.get_text_range_ptjet(iptjet)}, {self.text_etajet}",
+                                self.get_text_range_pthf(-1, iptjet)]
+                if self.var in ("zg", "rg", "nsd"):
+                    self.list_latex.append(self.text_sd)
                 self.plot_errors_x = False
                 self.range_x = x_range[self.var]
                 self.list_obj = [self.get_object(f"h_{self.var}_{self.method}_unfolded_{self.mcordata}_"
@@ -832,7 +842,8 @@ class Plotter:
             can, new = self.make_plot(name_can, can=can, pad=2, scale=pad_heights[1],
                                       colours=self.list_colours, markers=self.list_markers)
 
-            # TODO: comparison with PYTHIA HF, PYTHIA inclusive
+            # TODO
+            self.logger.info("Plotting Lc vs D0")
 
             self.plot_errors_x = True
 
