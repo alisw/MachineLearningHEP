@@ -764,7 +764,7 @@ class Plotter:
             self.logger.info("Plotting results for all pt jet together")
             self.plot_errors_x = False
             self.list_latex = [self.text_alice, self.text_jets,
-                                self.get_text_range_pthf(-1, iptjet)]
+                                f"{self.get_text_range_pthf(-1, iptjet)}, {self.text_etajet}"]
             if self.var in ("zg", "rg", "nsd"):
                 self.list_latex.append(self.text_sd)
             self.leg_horizontal = True
