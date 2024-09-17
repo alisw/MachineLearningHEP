@@ -357,22 +357,29 @@ class Plotter:
         with TFile.Open(path_file) as file:
             return {title : self.get_object(name, file) for title, name in names.items()}
 
-    def get_run3_d0_sim(self) -> dict:
+    def get_run3_sim(self) -> dict:
         # path_file = "aliceml:/home/nzardosh/PYTHIA_Sim/PYTHIA8_Simulations/Plots/Run3/fOut.root"
-        path_file = "/home/vkucera/mlhep/run3/simulations/fOut.root"
-        self.logger.info("Getting Run 3 D0 sim from %s.", path_file)
-        pattern = "fh_D0_%s_%.2f_JetpT_%.2f"
-        obs = {"zg" : "Zg", "rg" : "Rg", "nsd" : "Nsd", "zpar" : "SoftMode2_FF"}
+        path_file = "/home/vkucera/mlhep/run3/simulations/fOut_v3.root"
+        self.logger.info("Getting Run 3 sim from %s.", path_file)
+        pattern = "fh_%s%s_%s_%.2f_JetpT_%.2f"
+        obs = {"zg" : "Zg", "rg" : "Rg", "nsd" : "Nsd", "zpar" : "FF"}
+        species = {"D0" : "D0", "Lc" : "Lc", "incl" : "Inclusive"}
+        source = {"monash" : "M", "mode2" : "SM2"}
         dict_obj = {}
         with TFile.Open(path_file) as file:
-            for title, obs in obs.items():
-                dict_obj[title] = {}
-                for iptjet in (0, 1, 2, 3):
-                    name = pattern % (obs, self.edges_ptjet_gen[iptjet], self.edges_ptjet_gen[iptjet + 1])
-                    obj = self.get_object(name, file)
-                    if self.var == "zpar":
-                        obj.Scale(1. / obj.Integral(), "width")
-                    dict_obj[title][iptjet] = obj
+            for s_obs, obs in obs.items():
+                dict_obj[s_obs] = {}
+                for s_spec, spec in species.items():
+                    dict_obj[s_obs][s_spec] = {}
+                    for s_src, src in source.items():
+                        if s_spec == "incl" and s_src == "mode2":
+                            continue
+                        dict_obj[s_obs][s_spec][s_src] = {}
+                        for iptjet in (0, 1, 2, 3):
+                            name = pattern % (spec, src, obs, self.edges_ptjet_gen[iptjet], self.edges_ptjet_gen[iptjet + 1])
+                            obj = self.get_object(name, file)
+                            # obj.Scale(1. / obj.Integral(), "width")
+                            dict_obj[s_obs][s_spec][s_src][iptjet] = obj
         return dict_obj
 
     def report_means(self, h_stat, h_syst, iptjet):
@@ -683,10 +690,10 @@ class Plotter:
                 plot_run2_lc_sim = True
                 plot_run2_d0_ff = True
                 plot_run2_d0_sd = False
-                plot_run3_d0_sim = True
-                plot_data = True
+                plot_run3_sim = True
+                plot_data = False
                 plot_sim = True
-                plot_incl = False
+                plot_incl = True
 
                 # Plot Run 2 Lc data FF, 5-7, 7-15, 15-35 GeV/c
                 if plot_run2_lc_data and plot_data and self.species == "Lc" and self.var == "zpar" and iptjet in (0, 1):
@@ -705,11 +712,12 @@ class Plotter:
                     run2_lc_sim["cr2"].SetLineStyle(self.l_mode2)
                     self.list_obj += [run2_lc_sim["monash"], run2_lc_sim["cr2"]]
                     self.plot_order += [max(self.plot_order) + 1, max(self.plot_order) + 2]
-                    self.labels_obj += [self.text_monash, self.text_mode2]
+                    # self.labels_obj += [self.text_monash, self.text_mode2]
+                    self.labels_obj += ["R2 M", "R2 SM2"]
                     self.list_colours += [get_colour(c) for c in (self.c_lc_monash, self.c_lc_mode2)]
-                    self.list_markers += [get_marker(m) for m in (self.m_lc_monash, self.m_lc_mode2)]
-                    self.opt_plot_h += ["hist", "hist"]
-                    self.opt_leg_h += ["L", "L"]
+                    self.list_markers += [1] * 2
+                    self.opt_plot_h += ["hist e"] * 2
+                    self.opt_leg_h += ["L"] * 2
                 # Plot Run 2 D0 Soft drop, 15-30 GeV/c
                 if plot_run2_d0_sd and self.species == "D0" and self.var in ("zg", "rg", "nsd") and string_ptjet == string_range_ptjet((15, 30)):
                     run2_d0_sd = self.get_run2_d0_sd()
@@ -745,10 +753,13 @@ class Plotter:
                                         label = ""
                                 self.labels_obj += [label]
                                 self.list_colours += [get_colour(c)]
-                                self.list_markers += [get_marker(m)]
+                                if source == "pythia":
+                                    self.list_markers += [1]
+                                else:
+                                    self.list_markers += [get_marker(m)]
                                 if type == "stat":
                                     if source == "pythia":
-                                        self.opt_plot_h += ["hist"]
+                                        self.opt_plot_h += ["hist e"]
                                         self.opt_leg_h += ["L"]
                                     else:
                                         self.opt_plot_h += [""]
@@ -763,16 +774,24 @@ class Plotter:
                     self.list_markers += [get_marker(count_histograms(self.list_obj))] * 2
                     self.opt_plot_h += [""]
                     self.opt_leg_h += ["P"]
-                # Plot Run 3 D0 PYTHIA (Nima)
-                if plot_run3_d0_sim and plot_sim and self.species == "D0" and iptjet in (0, 1, 2, 3):
-                    run3_d0_sim = self.get_run3_d0_sim()
-                    self.list_obj += [run3_d0_sim[self.var][iptjet]]
-                    self.plot_order += [max(self.plot_order) + 1]
-                    self.labels_obj += ["HF PYTHIA Run 3"]
-                    self.list_colours += [get_colour(count_histograms(self.list_obj))]
-                    self.list_markers += [get_marker(count_histograms(self.list_obj))]
-                    self.opt_plot_h += ["hist"]
-                    self.opt_leg_h += ["L"]
+                # Plot Run 3 PYTHIA (Nima)
+                if plot_run3_sim and plot_sim and iptjet in (0, 1, 2, 3):
+                    run3_sim = self.get_run3_sim()
+                    l_spec = [self.species]
+                    if plot_incl:
+                        l_spec.append("incl")
+                    l_src = ["monash", "mode2"]
+                    for s_spec in l_spec:
+                        for s_src in l_src:
+                            if s_spec == "incl" and s_src == "mode2":
+                                continue
+                            self.list_obj += [run3_sim[self.var][s_spec][s_src][iptjet]]
+                            self.plot_order += [max(self.plot_order) + 1]
+                            self.labels_obj += [f"{s_spec} {s_src}"]
+                            self.list_colours += [get_colour(count_histograms(self.list_obj))]
+                            self.list_markers += [1]
+                            self.opt_plot_h += ["hist e"]
+                            self.opt_leg_h += ["L"]
                 self.leg_horizontal = True
                 can, new = self.make_plot(f"results_{self.var}_{self.mcordata}_{string_ptjet}",
                                         colours=self.list_colours, markers=self.list_markers)
