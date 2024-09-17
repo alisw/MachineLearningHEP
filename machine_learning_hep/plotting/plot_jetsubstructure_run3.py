@@ -297,7 +297,27 @@ class Plotter:
     def get_objects(self, *names: str, file=None):
         return [self.get_object(name, file) for name in names]
 
-    def get_run2_lc_sim(self):
+    def get_run2_lc_data(self) -> dict:
+        path_file_stat = "/home/vkucera/mlhep/run2/results/lc/unfolding_results.root"
+        path_file_syst = "/home/vkucera/mlhep/run2/results/lc/systematics_results.root"
+        self.logger.info("Getting Run 2 Lc data from %s %s.", path_file_stat, path_file_syst)
+        dict_obj = {}
+        pattern_stat = "unfolded_z_sel_pt_jet_%.2f_%.2f"
+        pattern_sys = "tgsys_pt_jet_%.2f_%.2f"
+        for iptjet in (0, 1):
+            with (
+                TFile.Open(path_file_stat) as file_stat,
+                TFile.Open(path_file_syst) as file_syst
+            ):
+                name_stat = pattern_stat % (self.edges_ptjet_gen[iptjet], self.edges_ptjet_gen[iptjet + 1])
+                name_syst = pattern_sys % (self.edges_ptjet_gen[iptjet], self.edges_ptjet_gen[iptjet + 1])
+                dict_obj[iptjet] = {
+                    "stat" : self.get_object(name_stat, file_stat),
+                    "syst" : self.get_object(name_syst, file_syst)
+                }
+        return dict_obj
+
+    def get_run2_lc_sim(self) -> dict:
         path_file = "/home/vkucera/mlhep/run2/results/lc/simulations.root"
         self.logger.info("Getting Run 2 Lc sim from %s.", path_file)
         names = {"monash" : "input_pythia8defaultpt_jet_7.00_15.00",
@@ -305,7 +325,7 @@ class Plotter:
         with TFile.Open(path_file) as file:
             return {title : self.get_object(name, file) for title, name in names.items()}
 
-    def get_run2_d0_all(self):
+    def get_run2_d0_all(self) -> dict:
         path_file = "/home/vkucera/mlhep/run2/results/d0/results_all.root"
         self.logger.info("Getting Run 2 D0 all from %s.", path_file)
         dict_obj = {}
@@ -323,7 +343,7 @@ class Plotter:
                             dict_obj[obs][flavour][source][type] = self.get_object(name, file)
         return dict_obj
 
-    def get_run3_d0_sim(self):
+    def get_run3_d0_sim(self) -> dict:
         # path_file = "aliceml:/home/nzardosh/PYTHIA_Sim/PYTHIA8_Simulations/Plots/Run3/fOut.root"
         path_file = "/home/vkucera/mlhep/run3/simulations/fOut.root"
         self.logger.info("Getting Run 3 D0 sim from %s.", path_file)
@@ -519,7 +539,7 @@ class Plotter:
             if self.species == "D0":
                 list_iptjet = [2, 3]  # indices of jet pt bins to process
             if self.species == "Lc":
-                list_iptjet = [0, 1, 2, 3]  # indices of jet pt bins to process
+                list_iptjet = [1]  # indices of jet pt bins to process
             # Results
             list_stat_all = []
             list_syst_all = []
@@ -622,12 +642,22 @@ class Plotter:
                     list_colours_syst_all.append(self.list_colours[0])
                 self.title_full = self.title_full_default
                 # Plot additional stuff.
+                plot_run2_lc_data = True
                 plot_run2_lc_sim = False
                 plot_run2_d0_all = True
                 plot_run3_d0_sim = False
                 plot_data = True
                 plot_sim = False
                 plot_incl = True
+                # Plot Run 2 Lc data FF, 5-7, 7-15, 15-35 GeV/c
+                if plot_run2_lc_data and plot_data and self.species == "Lc" and self.var == "zpar" and iptjet in (0, 1):
+                    run2_lc_data = self.get_run2_lc_data()
+                    self.list_obj += [run2_lc_data[iptjet]["syst"], run2_lc_data[iptjet]["stat"]]
+                    self.labels_obj += ["Run 2", ""]
+                    self.list_colours += [get_colour(count_histograms(self.list_obj))] * 2
+                    self.list_markers += [get_marker(count_histograms(self.list_obj))] * 2
+                    self.opt_plot_h += [""]
+                    self.opt_leg_h += ["P"]
                 # Plot Run 2 Lc PYTHIA FF, 7-15 GeV/c
                 if plot_run2_lc_sim and plot_sim and self.species == "Lc" and self.var == "zpar" and string_ptjet == string_range_ptjet((7, 15)):
                     run2_lc_sim = self.get_run2_lc_sim()
