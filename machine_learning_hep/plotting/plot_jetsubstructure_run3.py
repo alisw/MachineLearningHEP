@@ -643,11 +643,11 @@ class Plotter:
                 self.title_full = self.title_full_default
                 # Plot additional stuff.
                 plot_run2_lc_data = True
-                plot_run2_lc_sim = False
+                plot_run2_lc_sim = True
                 plot_run2_d0_all = True
                 plot_run3_d0_sim = False
                 plot_data = True
-                plot_sim = False
+                plot_sim = True
                 plot_incl = True
                 # Plot Run 2 Lc data FF, 5-7, 7-15, 15-35 GeV/c
                 if plot_run2_lc_data and plot_data and self.species == "Lc" and self.var == "zpar" and iptjet in (0, 1):
