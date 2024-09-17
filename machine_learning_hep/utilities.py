@@ -682,6 +682,32 @@ def draw_latex_lines(lines: "list[str]", x_start=0.18, y_start=0.85, y_step=0.05
     return list_latex
 
 
+def is_histogram(obj):
+    return isinstance(obj, TH1)
+
+
+def is_graph(obj):
+    return isinstance(obj, TGraph)
+
+
+def is_latex(obj):
+    return isinstance(obj, TLatex)
+
+
+def count_histograms(l_obj: list) -> int:
+    """Get number of histograms in a list."""
+    if not isinstance(l_obj, list):
+        return 0
+    return sum(is_histogram(o) for o in l_obj)
+
+
+def count_graphs(l_obj: list) -> int:
+    """Get number of graphs in a list."""
+    if not isinstance(l_obj, list):
+        return 0
+    return sum(is_graph(o) for o in l_obj)
+
+
 def make_plot(  # pylint: disable=too-many-arguments, too-many-branches, too-many-statements, too-many-locals
     name,
     can=None,
@@ -819,15 +845,6 @@ def make_plot(  # pylint: disable=too-many-arguments, too-many-branches, too-man
 
     def plot_latex(latex):
         draw_latex(latex)
-
-    def is_histogram(obj):
-        return isinstance(obj, TH1)
-
-    def is_graph(obj):
-        return isinstance(obj, TGraph)
-
-    def is_latex(obj):
-        return isinstance(obj, TLatex)
 
     # BODY STARTS HERE
 
