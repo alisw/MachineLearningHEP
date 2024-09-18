@@ -737,11 +737,11 @@ class Plotter:
                 plot_run2_d0_ff_data = True
                 plot_run2_d0_sd = True
                 plot_run3_sim = False
-                plot_data = False
-                plot_sim = True
+                plot_data = True
+                plot_sim = False
                 plot_incl = False
 
-                # Plot Run 2 Lc data FF, 5-7, 7-15, 15-35 GeV/c
+                # Plot Run 2, Lc, FF, data, 5-7, 7-15, 15-35 GeV/c
                 if plot_run2_lc_ff_data and plot_data and self.species == "Lc" and self.var == "zpar" and iptjet in (0, 1):
                     run2_lc_ff_data = self.get_run2_lc_ff_data()
                     self.list_obj += [run2_lc_ff_data[iptjet]["syst"], run2_lc_ff_data[iptjet]["stat"]]
@@ -751,7 +751,7 @@ class Plotter:
                     self.list_markers += [get_marker(count_histograms(self.list_obj))] * 2
                     self.opt_plot_h += [""]
                     self.opt_leg_h += ["P"]
-                # Plot Run 2 Lc PYTHIA FF, 7-15 GeV/c
+                # Plot Run 2, Lc, FF, sim, 7-15 GeV/c
                 if plot_run2_lc_ff_sim and plot_sim and self.species == "Lc" and self.var == "zpar" and string_ptjet == string_range_ptjet((7, 15)):
                     run2_lc_ff_sim = self.get_run2_lc_ff_sim()
                     run2_lc_ff_sim["monash"].SetLineStyle(self.l_monash)
@@ -764,7 +764,7 @@ class Plotter:
                     self.list_markers += [1] * 2
                     self.opt_plot_h += ["hist e"] * 2
                     self.opt_leg_h += ["L"] * 2
-                # Plot Run 2 D0 Soft drop, 15-30 GeV/c
+                # Plot Run 2, D0, Soft drop, data + sim, 15-30 GeV/c
                 if plot_run2_d0_sd and self.species == "D0" and self.var in ("zg", "rg", "nsd") and string_ptjet == string_range_ptjet((15, 30)):
                     run2_d0_sd = self.get_run2_d0_sd()
                     c = count_histograms(self.list_obj) + 1
@@ -794,7 +794,7 @@ class Plotter:
                                 if source == "data":
                                     label = "Run 2"
                                     if flavour == "incl":
-                                        label += " incl."
+                                        label += " inclusive"
                                     if type == "stat":
                                         label = ""
                                 self.labels_obj += [label]
@@ -810,7 +810,7 @@ class Plotter:
                                     else:
                                         self.opt_plot_h += [""]
                                         self.opt_leg_h += ["P"]
-                # Plot Run 2 D0 FF, 7-15 GeV/c (Jakub)
+                # Plot Run 2, D0, FF, data, 7-15 GeV/c (Jakub)
                 if plot_run2_d0_ff_data and plot_data and self.species == "D0" and self.var == "zpar" and string_ptjet == string_range_ptjet((7, 15)):
                     run2_d0_ff_data = self.get_run2_d0_ff_data()
                     self.list_obj += [run2_d0_ff_data["syst"], run2_d0_ff_data["stat"]]
@@ -820,7 +820,7 @@ class Plotter:
                     self.list_markers += [get_marker(count_histograms(self.list_obj))] * 2
                     self.opt_plot_h += [""]
                     self.opt_leg_h += ["P"]
-                # Plot Run 3 PYTHIA (Nima)
+                # Plot Run 3, Lc or D0, SD and FF, sim (Nima)
                 if plot_run3_sim and plot_sim and iptjet in (0, 1, 2, 3):
                     run3_sim = self.get_run3_sim()
                     l_spec = [self.species]
@@ -889,7 +889,7 @@ class Plotter:
                     self.opt_leg_h = [self.opt_leg_h] + 2 * ["L"]
                     self.leg_horizontal = True
                     self.list_latex = []
-                    self.title_full = f";{self.latex_obs};ratio"
+                    self.title_full = f";{self.latex_obs};#Lambda_{{c}}/D^{{0}}"
                     can, new = self.make_plot(name_can, can=can, pad=2, scale=pad_heights[1],
                                             colours=self.list_colours, markers=self.list_markers)
 
