@@ -305,7 +305,7 @@ class Plotter:
     def get_objects(self, *names: str, file=None):
         return [self.get_object(name, file) for name in names]
 
-    def get_run2_lc_data(self) -> dict:
+    def get_run2_lc_ff_data(self) -> dict:
         path_file_stat = "/home/vkucera/mlhep/run2/results/lc/unfolding_results.root"
         path_file_syst = "/home/vkucera/mlhep/run2/results/lc/systematics_results.root"
         self.logger.info("Getting Run 2 Lc data from %s %s.", path_file_stat, path_file_syst)
@@ -325,9 +325,17 @@ class Plotter:
                 }
         return dict_obj
 
-    def get_run2_lc_sim(self) -> dict:
+    def get_run2_lc_ff_sim(self) -> dict:
         path_file = "/home/vkucera/mlhep/run2/results/lc/simulations.root"
         self.logger.info("Getting Run 2 Lc sim from %s.", path_file)
+        names = {"monash" : "input_pythia8defaultpt_jet_7.00_15.00",
+                 "cr2" : "input_pythia8colour2softpt_jet_7.00_15.00"}
+        with TFile.Open(path_file) as file:
+            return {title : self.get_object(name, file) for title, name in names.items()}
+
+    def get_run2_d0_ff_sim(self) -> dict:
+        path_file = "/home/vkucera/mlhep/run2/results/d0/simulations_3_D0.root"
+        self.logger.info("Getting Run 2 D0 sim from %s.", path_file)
         names = {"monash" : "input_pythia8defaultpt_jet_7.00_15.00",
                  "cr2" : "input_pythia8colour2softpt_jet_7.00_15.00"}
         with TFile.Open(path_file) as file:
@@ -351,7 +359,7 @@ class Plotter:
                             dict_obj[obs][flavour][source][type] = self.get_object(name, file)
         return dict_obj
 
-    def get_run2_d0_ff(self) -> dict:
+    def get_run2_d0_ff_data(self) -> dict:
         path_file = "/home/vkucera/mlhep/run2/results/d0/FFD0_Jakub_20220130.root"
         self.logger.info("Getting Run 2 D0 FF from %s.", path_file)
         names = {"stat" : "hData_binned",
@@ -706,9 +714,9 @@ class Plotter:
                 self.title_full = self.title_full_default
 
                 # Plot additional stuff.
-                plot_run2_lc_data = True
-                plot_run2_lc_sim = True
-                plot_run2_d0_ff = True
+                plot_run2_lc_ff_data = True
+                plot_run2_lc_ff_sim = True
+                plot_run2_d0_ff_data = True
                 plot_run2_d0_sd = True
                 plot_run3_sim = False
                 plot_data = False
@@ -716,9 +724,9 @@ class Plotter:
                 plot_incl = False
 
                 # Plot Run 2 Lc data FF, 5-7, 7-15, 15-35 GeV/c
-                if plot_run2_lc_data and plot_data and self.species == "Lc" and self.var == "zpar" and iptjet in (0, 1):
-                    run2_lc_data = self.get_run2_lc_data()
-                    self.list_obj += [run2_lc_data[iptjet]["syst"], run2_lc_data[iptjet]["stat"]]
+                if plot_run2_lc_ff_data and plot_data and self.species == "Lc" and self.var == "zpar" and iptjet in (0, 1):
+                    run2_lc_ff_data = self.get_run2_lc_ff_data()
+                    self.list_obj += [run2_lc_ff_data[iptjet]["syst"], run2_lc_ff_data[iptjet]["stat"]]
                     self.plot_order += [-0.5, max(self.plot_order) + 1]
                     self.labels_obj += ["Run 2", ""]
                     self.list_colours += [get_colour(count_histograms(self.list_obj))] * 2
@@ -726,11 +734,11 @@ class Plotter:
                     self.opt_plot_h += [""]
                     self.opt_leg_h += ["P"]
                 # Plot Run 2 Lc PYTHIA FF, 7-15 GeV/c
-                if plot_run2_lc_sim and plot_sim and self.species == "Lc" and self.var == "zpar" and string_ptjet == string_range_ptjet((7, 15)):
-                    run2_lc_sim = self.get_run2_lc_sim()
-                    run2_lc_sim["monash"].SetLineStyle(self.l_monash)
-                    run2_lc_sim["cr2"].SetLineStyle(self.l_mode2)
-                    self.list_obj += [run2_lc_sim["monash"], run2_lc_sim["cr2"]]
+                if plot_run2_lc_ff_sim and plot_sim and self.species == "Lc" and self.var == "zpar" and string_ptjet == string_range_ptjet((7, 15)):
+                    run2_lc_ff_sim = self.get_run2_lc_ff_sim()
+                    run2_lc_ff_sim["monash"].SetLineStyle(self.l_monash)
+                    run2_lc_ff_sim["cr2"].SetLineStyle(self.l_mode2)
+                    self.list_obj += [run2_lc_ff_sim["monash"], run2_lc_ff_sim["cr2"]]
                     self.plot_order += [max(self.plot_order) + 1, max(self.plot_order) + 2]
                     # self.labels_obj += [self.text_monash, self.text_mode2]
                     self.labels_obj += ["R2 M", "R2 SM2"]
@@ -785,9 +793,9 @@ class Plotter:
                                         self.opt_plot_h += [""]
                                         self.opt_leg_h += ["P"]
                 # Plot Run 2 D0 FF, 7-15 GeV/c (Jakub)
-                if plot_run2_d0_ff and plot_data and self.species == "D0" and self.var == "zpar" and string_ptjet == string_range_ptjet((7, 15)):
-                    run2_d0_ff = self.get_run2_d0_ff()
-                    self.list_obj += [run2_d0_ff["syst"], run2_d0_ff["stat"]]
+                if plot_run2_d0_ff_data and plot_data and self.species == "D0" and self.var == "zpar" and string_ptjet == string_range_ptjet((7, 15)):
+                    run2_d0_ff_data = self.get_run2_d0_ff_data()
+                    self.list_obj += [run2_d0_ff_data["syst"], run2_d0_ff_data["stat"]]
                     self.plot_order += [-0.5, max(self.plot_order) + 1]
                     self.labels_obj += ["Run 2", ""]
                     self.list_colours += [get_colour(count_histograms(self.list_obj))] * 2
@@ -824,13 +832,19 @@ class Plotter:
                 self.leg_horizontal = self.leg_horizontal_default
 
                 # Plot Lc vs D0.
-                if plot_lc_vs_d0 and iptjet == 1 and self.var == "zpar" and self.species == "Lc" and plot_run2_d0_ff:
+                if plot_lc_vs_d0 and iptjet == 1 and self.var == "zpar" and self.species == "Lc" and plot_run2_d0_ff_data:
                     self.list_latex = [self.text_alice,
                                     self.text_jets.replace(self.latex_hadron, "HF"),
                                     f"{self.get_text_range_ptjet(iptjet)}, {self.text_etajet}",
                                     self.get_text_range_pthf(-1, iptjet).replace(self.latex_hadron, "HF")]
-                    run2_d0_ff = self.get_run2_d0_ff()
-                    self.list_obj = [gr_syst, run2_d0_ff["syst"], h_stat, run2_d0_ff["stat"]]
+                    run2_d0_ff_data = self.get_run2_d0_ff_data()
+                    run2_lc_ff_sim = self.get_run2_lc_ff_sim()
+                    run2_lc_ff_sim["monash"].SetLineStyle(self.l_monash)
+                    run2_lc_ff_sim["cr2"].SetLineStyle(self.l_mode2)
+                    run2_d0_ff_sim = self.get_run2_d0_ff_sim()
+                    run2_d0_ff_sim["monash"].SetLineStyle(self.l_monash + 2)
+                    run2_d0_ff_sim["cr2"].SetLineStyle(self.l_mode2 + 2)
+                    self.list_obj = [gr_syst, run2_d0_ff_data["syst"], h_stat, run2_d0_ff_data["stat"]]
                     self.plot_order = list(range(len(self.list_obj)))
                     self.labels_obj = ["#Lambda_{c}", "D^{0} (Run 2)", "", ""]
                     self.list_colours = [get_colour(i) for i in (0, 1)] * 2
@@ -842,13 +856,20 @@ class Plotter:
                     can, new = self.make_plot(name_can, can=can, pad=1, scale=pad_heights[0],
                                             colours=self.list_colours, markers=self.list_markers)
                     # ratio Lc/D0 bottom panel
-                    rat_stat = divide_histograms(h_stat, run2_d0_ff["stat"])
-                    rat_syst = divide_graphs(gr_syst, run2_d0_ff["syst"])
-                    self.list_obj = [rat_syst, rat_stat, line_1]
+                    rat_stat = divide_histograms(h_stat, run2_d0_ff_data["stat"])
+                    rat_syst = divide_graphs(gr_syst, run2_d0_ff_data["syst"])
+                    rat_monash = divide_histograms(run2_lc_ff_sim["monash"], run2_d0_ff_sim["monash"])
+                    rat_cr2 = divide_histograms(run2_lc_ff_sim["cr2"], run2_d0_ff_sim["cr2"])
+                    rat_monash.SetLineStyle(self.l_monash)
+                    rat_cr2.SetLineStyle(self.l_mode2)
+                    self.list_obj = [rat_syst, rat_stat, rat_monash, rat_cr2, line_1]
                     self.plot_order = list(range(len(self.list_obj)))
-                    self.labels_obj = []
-                    self.list_colours = [get_colour(0)] * 2
-                    self.list_markers = [get_marker(0)] * 2
+                    self.labels_obj = ["data", "", "Monash", "CR2"]
+                    self.list_colours = [get_colour(i) for i in (0, 0, self.c_lc_monash, self.c_lc_mode2)]
+                    self.list_markers = [get_marker(0)] * 2 + [1, 1]
+                    self.opt_plot_h = [self.opt_plot_h] + 2 * ["hist e"]
+                    self.opt_leg_h = [self.opt_leg_h] + 2 * ["L"]
+                    self.leg_horizontal = True
                     self.list_latex = []
                     self.title_full = f";{self.latex_obs};ratio"
                     can, new = self.make_plot(name_can, can=can, pad=2, scale=pad_heights[1],
