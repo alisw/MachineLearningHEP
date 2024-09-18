@@ -874,12 +874,14 @@ def make_plot(  # pylint: disable=too-many-arguments, too-many-branches, too-man
     # print(f"Objects {len(list_obj)}, options: {opt_leg_h}, {opt_leg_g}, {opt_plot_h}, {opt_plot_g}")
 
     # create and set canvas
+    this_pad = None
     if can and pad > 0:
-        can.cd(pad)
         print(f"Entering pad {pad} in canvas {can.GetName()}")
+        this_pad = can.cd(pad)
     if not can:
-        can = TCanvas(name, name)
         print(f"Creating new canvas with name {name}")
+        can = TCanvas(name, name)
+        this_pad = can
     setup_canvas(can)
     if isinstance(size, list) and len(size) == 2:
         can.SetCanvasSize(*size)
@@ -988,7 +990,8 @@ def make_plot(  # pylint: disable=too-many-arguments, too-many-branches, too-man
             continue
 
     # plot axes on top
-    can.RedrawAxis()
+    assert this_pad is not None
+    this_pad.RedrawAxis()
 
     # plot legend
     if leg:
@@ -1098,7 +1101,7 @@ def divide_graphs(gr_num, gr_den, errors_den=True):
 def make_ratios(l_his, l_gr, i_ref, errors_den=True):
     assert i_ref < len(l_his)
     l_ratio_h = [divide_histograms(h, l_his[i_ref], errors_den) for h in l_his]
-    l_ratio_g = None
+    l_ratio_g = []
     if l_gr:
         assert i_ref < len(l_gr)
         l_ratio_g = [divide_graphs(g, l_gr[i_ref], errors_den) for g in l_gr]
