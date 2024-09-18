@@ -44,6 +44,8 @@ from machine_learning_hep.utilities import (
     get_mean_hist,
     get_mean_graph,
     get_mean_uncertainty,
+    divide_histograms,
+    divide_graphs,
     make_ratios,
     setup_histogram,
     setup_tgraph,
@@ -579,18 +581,21 @@ class Plotter:
 
                 # TODO: efficiency (old vs new)
 
-            # loop over jet pt
+            # Results
+
             if self.species == "D0":
                 list_iptjet = [0, 1, 2, 3]  # indices of jet pt bins to process
             if self.species == "Lc":
                 list_iptjet = [1]  # indices of jet pt bins to process
-            # Results
+            plot_lc_vs_d0 = True
             list_stat_all = []
             list_syst_all = []
             list_labels_all = []
             list_markers_all = []
             list_colours_stat_all = []
             list_colours_syst_all = []
+
+            # loop over jet pt
             for i_iptjet, iptjet in enumerate(list_iptjet):
                 range_ptjet = get_bin_limits(axis_ptjet, iptjet + 1)
                 string_ptjet = string_range_ptjet(range_ptjet)
@@ -819,7 +824,7 @@ class Plotter:
                 self.leg_horizontal = self.leg_horizontal_default
 
                 # Plot Lc vs D0.
-                if iptjet == 1 and self.var == "zpar" and self.species == "Lc" and plot_run2_d0_ff:
+                if plot_lc_vs_d0 and iptjet == 1 and self.var == "zpar" and self.species == "Lc" and plot_run2_d0_ff:
                     self.list_latex = [self.text_alice,
                                     self.text_jets.replace(self.latex_hadron, "HF"),
                                     f"{self.get_text_range_ptjet(iptjet)}, {self.text_etajet}",
@@ -831,7 +836,22 @@ class Plotter:
                     self.list_colours = [get_colour(i) for i in (0, 1)] * 2
                     self.list_markers = [get_marker(i) for i in (0, 1)] * 2
                     self.leg_horizontal = False
-                    self.make_plot(f"results_Lc-D0_{self.var}_{self.mcordata}_{string_ptjet}",
+                    name_can = f"results_Lc-D0_{self.var}_{self.mcordata}_{string_ptjet}"
+                    can = TCanvas(name_can, name_can)
+                    pad_heights = self.set_pad_heights(can, [2, 1])
+                    can, new = self.make_plot(name_can, can=can, pad=1, scale=pad_heights[0],
+                                            colours=self.list_colours, markers=self.list_markers)
+                    # ratio Lc/D0 bottom panel
+                    rat_stat = divide_histograms(h_stat, run2_d0_ff["stat"])
+                    rat_syst = divide_graphs(gr_syst, run2_d0_ff["syst"])
+                    self.list_obj = [rat_syst, rat_stat, line_1]
+                    self.plot_order = list(range(len(self.list_obj)))
+                    self.labels_obj = []
+                    self.list_colours = [get_colour(0)] * 2
+                    self.list_markers = [get_marker(0)] * 2
+                    self.list_latex = []
+                    self.title_full = f";{self.latex_obs};ratio"
+                    can, new = self.make_plot(name_can, can=can, pad=2, scale=pad_heights[1],
                                             colours=self.list_colours, markers=self.list_markers)
 
                 # Reset defaults.
@@ -879,7 +899,6 @@ class Plotter:
             self.leg_horizontal = self.leg_horizontal_default
 
             # Lc vs D0
-            plot_lc_vs_d0 = True
             if plot_lc_vs_d0 and self.species == "Lc" and self.var == "zpar":
                 self.logger.info("Plotting Lc vs D0")
                 self.plot_errors_x = False
