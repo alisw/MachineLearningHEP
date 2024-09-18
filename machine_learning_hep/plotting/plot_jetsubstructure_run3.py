@@ -212,7 +212,8 @@ class Plotter:
         self.opt_plot_g = "2P"  # marker and error rectangles
         self.opt_leg_g = "PF"  # L line, P maker, F box, E vertical error bar
         self.x_latex = 0.16
-        self.y_latex_top = 1. - self.margins_can[2] - self.fontsize_glob - self.tick_length - 0.01
+        # self.y_latex_top = 1. - self.margins_can[2] - self.fontsize_glob - self.tick_length - 0.01
+        self.y_latex_top = None
         self.y_step_glob = 0.05
         self.leg_pos_default = [.72, .7, .85, .8]
         self.leg_pos = self.leg_pos_default
@@ -438,47 +439,64 @@ class Plotter:
         if markers is not None:
             self.list_markers = markers
 
-        # Adjust legend parameters.
+        margin_bottom = self.margins_can[0]  # size of the bottom margin relative to the canvas height
+        margin_top = self.margins_can[2]  # size of the top margin relative to the canvas height
+        margin_right = self.margins_can[3]  # size of the right margin relative to the canvas height
+        padding_top_glob = self.tick_length + 0.01
+        padding_right_glob = self.tick_length + 0.01
+        if self.y_latex_top is None:
+            y_latex_top_glob = 1. - (self.fontsize_glob + padding_top_glob)
+            y_latex_top_loc = 1. - (self.fontsize_glob + padding_top_glob) / scale
+        else:
+            y_latex_top_glob = self.y_latex_top
+            y_latex_top_loc = 1. - (1. - y_latex_top_glob) / scale
+        if pad in (0, 1):
+            y_latex_top_glob -= margin_top
+            y_latex_top_loc -= margin_top / scale
+
+        # Adjust global legend parameters.
         scale_text_leg = 0.8
+        leg_pos_glob = self.leg_pos.copy()
         n_entries_leg = len([s for s in self.labels_obj if s])
         if self.leg_horizontal:
-            y_leg_max = self.y_latex_top - self.y_step_glob * (len(self.list_latex) - 1 + 0.2)
-            y_leg_min = y_leg_max - self.y_step_glob
-            self.leg_pos = [self.x_latex, y_leg_min, 1. - self.margins_can[3] - self.tick_length - 0.01, y_leg_max]
-        else:
-            self.leg_pos[1] = self.leg_pos[3] - n_entries_leg * self.y_step_glob * scale_text_leg
-
-        # Recalculate coordinates to preserve absolute size of text and its absolute offset from the top of the panel.
-        leg_pos_adj = self.leg_pos.copy()
-        self.y_latex_top = 1. - (self.fontsize_glob + self.tick_length + 0.01) / scale
-        panel_top = 1.
-        panel_height = 1.
-        margin_bottom = self.margins_can[0]  # height of the bottom margin relative to the canvas height
-        margin_top = self.margins_can[2]  # height of the top margin relative to the canvas height
-        if pad == 0:
-            self.y_latex_top -= margin_top
-            panel_top -= margin_top
-            panel_height -= margin_bottom + margin_top
-        else:
-            leg_height = self.leg_pos[3] - self.leg_pos[1]
-            if pad == 1:
-                self.y_latex_top -= margin_top / scale
-                panel_top -= margin_top / scale
-                panel_height -= margin_top / scale
-                leg_pos_adj[3] = 1. - (1. - self.leg_pos[3]) / scale
-                leg_pos_adj[1] = leg_pos_adj[3] - leg_height / scale
+            if self.list_latex:
+                y_leg_max = y_latex_top_glob - self.y_step_glob * (len(self.list_latex) - 1 + 0.2)
             else:
-                leg_pos_adj[3] = 1. - (1. - self.leg_pos[3] - margin_top) / scale
-                leg_pos_adj[1] = leg_pos_adj[3] - leg_height / scale
+                y_leg_max = 1. - margin_top - padding_top_glob
+            y_leg_min = y_leg_max - self.y_step_glob
+            leg_pos_glob = [self.x_latex, y_leg_min, 1. - margin_right - padding_right_glob, y_leg_max]
+        else:
+            leg_pos_glob[1] = leg_pos_glob[3] - n_entries_leg * self.y_step_glob * scale_text_leg
+        leg_height_glob = leg_pos_glob[3] - leg_pos_glob[1]
+
+        # Recalculate local coordinates to preserve absolute size of text and its absolute offset from the top of the panel.
+        leg_pos_loc = leg_pos_glob.copy()
+        y_panel_top_loc = 1.
+        panel_height_loc = 1.
+        if pad == 0:
+            y_panel_top_loc -= margin_top
+            panel_height_loc -= margin_bottom + margin_top
+        else:
+            if pad == 1:
+                y_panel_top_loc -= margin_top / scale
+                panel_height_loc -= margin_top / scale
+                leg_pos_loc[3] = 1. - (1. - leg_pos_glob[3]) / scale
+                leg_pos_loc[1] = leg_pos_loc[3] - leg_height_glob / scale
+            else:
+                leg_pos_loc[3] = 1. - (1. - leg_pos_glob[3] - margin_top) / scale
+                leg_pos_loc[1] = leg_pos_loc[3] - leg_height_glob / scale
             if pad == self.get_n_pads(can):
-                panel_height -= margin_bottom / scale
+                panel_height_loc -= margin_bottom / scale
 
         # Adjust panel margin for the height of text.
-        y_margin_up_adj = self.y_margin_up
+        y_margin_up_loc = self.y_margin_up
+        y_margin_down_loc = self.y_margin_down
         if self.list_latex:
-            latex_bottom = self.y_latex_top - self.y_step_glob / scale * (len(self.list_latex) - 1 + int(self.leg_horizontal))
-            y_margin_up_adj += (panel_top - latex_bottom) / panel_height
-            assert self.y_margin_down + y_margin_up_adj < 1.
+            y_latex_bottom_loc = y_latex_top_loc - self.y_step_glob / scale * (len(self.list_latex) - 1 + int(self.leg_horizontal and n_entries_leg > 0))
+            y_margin_up_loc += (y_panel_top_loc - y_latex_bottom_loc) / panel_height_loc
+        elif self.leg_horizontal and n_entries_leg > 0:
+            y_margin_up_loc += (y_panel_top_loc - leg_pos_loc[1]) / panel_height_loc
+        assert y_margin_down_loc + y_margin_up_loc < 1.
 
         # Plot
         can, new = make_plot(name, can=can, pad=pad, scale=scale,
@@ -486,8 +504,8 @@ class Plotter:
                              opt_leg_h=self.opt_leg_h, opt_plot_h=self.opt_plot_h,
                              opt_leg_g=self.opt_leg_g, opt_plot_g=self.opt_plot_g,
                              offsets_xy=self.offsets_axes, size=self.size_can, font_size=self.fontsize_glob,
-                             colours=self.list_colours, markers=self.list_markers, leg_pos=leg_pos_adj,
-                             margins_y=[self.y_margin_down, y_margin_up_adj], margins_c=self.margins_can,
+                             colours=self.list_colours, markers=self.list_markers, leg_pos=leg_pos_loc,
+                             margins_y=[y_margin_down_loc, y_margin_up_loc], margins_c=self.margins_can,
                              range_x=self.range_x, range_y=self.range_y,
                              title=self.title_full)
         leg = new[0]
@@ -498,7 +516,7 @@ class Plotter:
         self.list_new += new
         if self.list_latex:
             self.list_new += draw_latex_lines(self.list_latex,
-                                              x_start=self.x_latex, y_start=self.y_latex_top,
+                                              x_start=self.x_latex, y_start=y_latex_top_loc,
                                               y_step=self.y_step_glob / scale, font_size=self.fontsize_glob / scale)
         gStyle.SetErrorX(0.5)  # reset default width
         if not self.plot_errors_x:
