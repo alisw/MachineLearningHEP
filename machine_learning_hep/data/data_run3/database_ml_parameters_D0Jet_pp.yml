@@ -260,8 +260,7 @@ D0Jet_pp:
       seedmerge: [12] #list of periods
       period: [LHC22o] #list of periods
       select_period: [1]
-      prefix_dir: /data2/MLhep/real/train_266172/ # zpar test
-      # prefix_dir: /data2/MLhep/real/train_260031/ # full stats new
+      prefix_dir: /data2/MLhep/real/train_260031/ # full stats new
       # prefix_dir: /data2/MLhep/real/train_257023/ # full stats
       # prefix_dir: /data2/MLhep/real/train_240309/ # Andrea's model
       # prefix_dir: /data2/MLhep/real/train_245508/ # pass7
@@ -269,11 +268,11 @@ D0Jet_pp:
       # prefix_dir: /data2/MLhep/real/train_245510/ # no PID
       # prefix_dir: /data2/MLhep/real/train_245511/ # full PID
       unmerged_tree_dir: [/alice/] #list of periods
-      pkl: ['${USER}/d0jet_train_266172/pkl'] #list of periods
-      pkl_skimmed: ['${USER}/d0jet_train_266172/pklsk'] #list of periods
-      pkl_skimmed_merge_for_ml: ['${USER}/d0jet_train_266172/pklskml'] #list of periods
-      pkl_skimmed_merge_for_ml_all: '${USER}/d0jet_train_266172/pp_data_mltot'
-      pkl_evtcounter_all: '${USER}/d0jet_train_266172/pp_data_evttot'
+      pkl: ['${USER}/d0jet/pkl'] #list of periods
+      pkl_skimmed: ['${USER}/d0jet/pklsk'] #list of periods
+      pkl_skimmed_merge_for_ml: ['${USER}/d0jet/pklskml'] #list of periods
+      pkl_skimmed_merge_for_ml_all: '${USER}/d0jet/pp_data_mltot'
+      pkl_evtcounter_all: '${USER}/d0jet/pp_data_evttot'
       mcreweights: [../Analyses] #list of periods
     mc:
       nprocessesparallel: 80
@@ -741,12 +740,12 @@ D0Jet_pp:
         mc: null
       data: &data_out_default
         runselection: [null] #FIXME # used but useless
-        results: ['/home/${USER}/mlhep/d0jet_train_266172/jet_obs/default/default/data/results'] #list of periods
-        resultsallp: '/home/${USER}/mlhep/d0jet_train_266172/jet_obs/default/default/data/results_all'
+        results: ['/home/${USER}/mlhep/d0jet/jet_obs/default/default/data/results'] #list of periods
+        resultsallp: '/home/${USER}/mlhep/d0jet/jet_obs/default/default/data/results_all'
       mc: &mc_out_default
         runselection: [null] #FIXME # used but useless
-        results: ['/home/${USER}/mlhep/d0jet_train_266172/jet_obs/default/default/mc/results'] #list of periods
-        resultsallp: '/home/${USER}/mlhep/d0jet_train_266172/jet_obs/default/default/mc/results_all'
+        results: ['/home/${USER}/mlhep/d0jet/jet_obs/default/default/mc/results'] #list of periods
+        resultsallp: '/home/${USER}/mlhep/d0jet/jet_obs/default/default/mc/results_all'
       data_proc: # alternative processor output used as the analyzer input
         <<: *data_out_default
       mc_proc: # alternative processor output used as the analyzer input
