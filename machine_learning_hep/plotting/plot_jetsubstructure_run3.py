@@ -359,7 +359,7 @@ class Plotter:
 
     def get_run3_sim(self) -> dict:
         # path_file = "aliceml:/home/nzardosh/PYTHIA_Sim/PYTHIA8_Simulations/Plots/Run3/fOut.root"
-        path_file = "/home/vkucera/mlhep/run3/simulations/fOut_v3.root"
+        path_file = "/home/vkucera/mlhep/run3/simulations/fOut_v5.root"
         self.logger.info("Getting Run 3 sim from %s.", path_file)
         pattern = "fh_%s%s_%s_%.2f_JetpT_%.2f"
         obs = {"zg" : "Zg", "rg" : "Rg", "nsd" : "Nsd", "zpar" : "FF"}
@@ -408,11 +408,13 @@ class Plotter:
         pt_max = self.edges_ptjet_gen[-1] if iptjet < 0 else self.edges_ptjet_gen[iptjet + 1]
         return self.text_ptjet % (pt_min, self.latex_ptjet, pt_max)
 
-    def get_text_range_pthf(self, ipthf=-1, iptjet=-1):
+    def get_text_range_pthf(self, ipthf=-1, iptjet=-1, hadron=None):
+        if hadron is None:
+            hadron = self.latex_hadron
         pt_min = self.edges_pthf[0] if ipthf < 0 else self.edges_pthf[ipthf]
         pt_max = self.edges_pthf[-1] if ipthf < 0 else self.edges_pthf[ipthf + 1]
         pt_max = min(pt_max, self.edges_ptjet_gen[iptjet + 1]) if iptjet > -1 else pt_max
-        return self.text_pth_yh % (pt_min, self.latex_hadron, pt_max, self.latex_hadron)
+        return self.text_pth_yh % (pt_min, hadron, pt_max, hadron)
 
     def make_plot(self, name: str, can=None, pad=0, scale=1., colours=None, markers=None):
         """Wrapper method for calling make_plot and saving the canvas."""
@@ -658,14 +660,17 @@ class Plotter:
 
                 # Results
                 self.logger.info("Plotting results")
-                self.list_latex = [self.text_alice, self.text_jets, f"{self.get_text_range_ptjet(iptjet)}, {self.text_etajet}",
-                                self.get_text_range_pthf(-1, iptjet)]
+                self.list_latex = [self.text_alice,
+                                   self.text_jets,
+                                   f"{self.get_text_range_ptjet(iptjet)}, {self.text_etajet}",
+                                   self.get_text_range_pthf(-1, iptjet)]
                 if self.var in ("zg", "rg", "nsd"):
                     self.list_latex.append(self.text_sd)
                 self.plot_errors_x = False
                 self.range_x = x_range[self.var]
-                self.list_obj = [self.get_object(f"h_{self.var}_{self.method}_unfolded_{self.mcordata}_"
-                                                 f"{string_ptjet}_sel_selfnorm")]
+                h_stat = self.get_object(f"h_{self.var}_{self.method}_unfolded_{self.mcordata}_"
+                                         f"{string_ptjet}_sel_selfnorm")
+                self.list_obj = [h_stat]
                 self.plot_order = list(range(len(self.list_obj)))
                 self.labels_obj = ["data"]
                 self.list_colours = [get_colour(i_iptjet)]
@@ -699,11 +704,11 @@ class Plotter:
                 plot_run2_lc_data = True
                 plot_run2_lc_sim = True
                 plot_run2_d0_ff = True
-                plot_run2_d0_sd = False
-                plot_run3_sim = True
+                plot_run2_d0_sd = True
+                plot_run3_sim = False
                 plot_data = False
                 plot_sim = True
-                plot_incl = True
+                plot_incl = False
 
                 # Plot Run 2 Lc data FF, 5-7, 7-15, 15-35 GeV/c
                 if plot_run2_lc_data and plot_data and self.species == "Lc" and self.var == "zpar" and iptjet in (0, 1):
@@ -731,7 +736,7 @@ class Plotter:
                 # Plot Run 2 D0 Soft drop, 15-30 GeV/c
                 if plot_run2_d0_sd and self.species == "D0" and self.var in ("zg", "rg", "nsd") and string_ptjet == string_range_ptjet((15, 30)):
                     run2_d0_sd = self.get_run2_d0_sd()
-                    c = count_histograms(self.list_obj)
+                    c = count_histograms(self.list_obj) + 1
                     m = count_histograms(self.list_obj)
                     for source in ("data", "pythia"):
                         for flavour in ("hf", "incl"):
@@ -754,7 +759,7 @@ class Plotter:
                                     self.plot_order += [-1. / len(self.list_obj)]  # increasing between -1 and 0
                                 else:
                                     self.plot_order += [max(self.plot_order) + 1]
-                                label = f"{flavour} {source}"
+                                label = f"R2 {flavour} {source}"
                                 if source == "data":
                                     label = "Run 2"
                                     if flavour == "incl":
@@ -805,6 +810,30 @@ class Plotter:
                 self.leg_horizontal = True
                 can, new = self.make_plot(f"results_{self.var}_{self.mcordata}_{string_ptjet}",
                                         colours=self.list_colours, markers=self.list_markers)
+
+                # Reset defaults.
+                self.plot_order = self.plot_order_default
+                self.opt_plot_h = ""
+                self.opt_leg_h = "P"
+                self.leg_pos = self.leg_pos_default
+                self.leg_horizontal = self.leg_horizontal_default
+
+                # Plot Lc vs D0.
+                if iptjet == 1 and self.var == "zpar" and self.species == "Lc" and plot_run2_d0_ff:
+                    self.list_latex = [self.text_alice,
+                                    self.text_jets.replace(self.latex_hadron, "HF"),
+                                    f"{self.get_text_range_ptjet(iptjet)}, {self.text_etajet}",
+                                    self.get_text_range_pthf(-1, iptjet).replace(self.latex_hadron, "HF")]
+                    run2_d0_ff = self.get_run2_d0_ff()
+                    self.list_obj = [gr_syst, run2_d0_ff["syst"], h_stat, run2_d0_ff["stat"]]
+                    self.plot_order = list(range(len(self.list_obj)))
+                    self.labels_obj = ["#Lambda_{c}", "D^{0} (Run 2)", "", ""]
+                    self.list_colours = [get_colour(i) for i in (0, 1)] * 2
+                    self.list_markers = [get_marker(i) for i in (0, 1)] * 2
+                    self.leg_horizontal = False
+                    self.make_plot(f"results_Lc-D0_{self.var}_{self.mcordata}_{string_ptjet}",
+                                            colours=self.list_colours, markers=self.list_markers)
+
                 # Reset defaults.
                 self.plot_order = self.plot_order_default
                 self.opt_plot_h = ""
@@ -842,8 +871,55 @@ class Plotter:
             can, new = self.make_plot(name_can, can=can, pad=2, scale=pad_heights[1],
                                       colours=self.list_colours, markers=self.list_markers)
 
-            # TODO
-            self.logger.info("Plotting Lc vs D0")
+            # Reset defaults.
+            self.plot_order = self.plot_order_default
+            self.opt_plot_h = ""
+            self.opt_leg_h = "P"
+            self.leg_pos = self.leg_pos_default
+            self.leg_horizontal = self.leg_horizontal_default
+
+            # Lc vs D0
+            plot_lc_vs_d0 = True
+            if plot_lc_vs_d0 and self.species == "Lc" and self.var == "zpar":
+                self.logger.info("Plotting Lc vs D0")
+                self.plot_errors_x = False
+                self.list_latex = [self.text_alice,
+                                   self.text_jets,
+                                   f"{self.get_text_range_pthf(-1, iptjet)}, {self.text_etajet}",
+                                   ]
+                if self.var in ("zg", "rg", "nsd"):
+                    self.list_latex.append(self.text_sd)
+                self.leg_horizontal = True
+                self.range_x = x_range[self.var]
+                # Get D0 results
+                path_input_file_d0 = self.path_input_file.replace("lc", "d0")
+                path_syst_d0 = path_syst.replace("lc", "d0")
+                with (TFile.Open(path_input_file_d0) as file_results_d0,
+                      TFile.Open(path_syst_d0) as file_syst_d0):
+                    names_his = []
+                    names_syst = []
+                    for i_iptjet, iptjet in enumerate(list_iptjet):
+                        range_ptjet = get_bin_limits(axis_ptjet, iptjet + 1)
+                        string_ptjet = string_range_ptjet(range_ptjet)
+                        name_his = f"h_{self.var}_{self.method}_unfolded_{self.mcordata}_{string_ptjet}_sel_selfnorm"
+                        names_his.append(name_his)
+                        names_syst.append(f"sys_{self.var}_{string_ptjet}")
+                    list_stat_all_d0 = [self.get_object(name_his, file_results_d0) for name_his in names_his]
+                    list_syst_all_d0 = [self.get_object(name_syst, file_syst_d0) for name_syst in names_syst]
+                if self.var == "nsd":
+                    for gr_syst in list_syst_all_d0:
+                        shrink_err_x(gr_syst)
+
+                # FIXME
+                self.list_obj = list_syst_all + list_syst_all_d0 + list_stat_all + list_stat_all_d0
+                self.labels_obj = list_labels_all + list_labels_all
+                self.list_colours = list_colours_syst_all + list_colours_stat_all + list_colours_syst_all + list_colours_stat_all
+                self.list_markers = list_markers_all * 2 * (1 + int(bool(list_syst_all)))
+                self.title_full = self.title_full_default
+
+                name_can = f"results_Lc-D0_{self.var}_{self.mcordata}_ptjet-all"
+                self.make_plot(name_can,
+                               colours=self.list_colours, markers=self.list_markers)
 
             self.plot_errors_x = True
 
