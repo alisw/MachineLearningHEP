@@ -221,7 +221,9 @@ class Plotter:
         self.leg_horizontal = True
         # self.y_margin_up = 0.46
         self.y_margin_up = 0.05
+        self.y_margin_up_default = 0.05
         self.y_margin_down = 0.05
+        self.y_margin_down_default = 0.05
         self.plot_errors_x = True  # plot horizontal error bars
 
         # axes titles
@@ -610,7 +612,8 @@ class Plotter:
             # Results
 
             if self.species == "D0":
-                list_iptjet = [0, 1, 2, 3]  # indices of jet pt bins to process
+                # list_iptjet = [0, 1, 2, 3]  # indices of jet pt bins to process
+                list_iptjet = [2, 3]  # indices of jet pt bins to process
             if self.species == "Lc":
                 list_iptjet = [1]  # indices of jet pt bins to process
             plot_lc_vs_d0 = True
@@ -909,15 +912,34 @@ class Plotter:
             self.leg_horizontal = True
             self.range_x = x_range[self.var]
             self.list_obj = list_syst_all + list_stat_all
-            self.labels_obj = list_labels_all  # do not show the histograms in the legend
+            self.labels_obj = list_labels_all + [""] * len(list_stat_all)  # do not show the histograms in the legend
             self.list_colours = list_colours_syst_all + list_colours_stat_all
             self.list_markers = list_markers_all * (1 + int(bool(list_syst_all)))
+            plot_run2_data = True
+            if plot_run2_data:
+                h_run2, g_run2 = None, None
+                if plot_run2_d0_sd and self.species == "D0" and self.var in ("zg", "rg", "nsd"):
+                    h_run2 = run2_d0_sd[self.var]["hf"]["data"]["stat"]
+                    g_run2 = run2_d0_sd[self.var]["hf"]["data"]["syst"]
+                # TODO: if plot_run2_d0_ff_data
+                # TODO: if plot_run2_lc_ff_data
+                if h_run2 is not None:
+                    n_obj = len(self.list_obj)
+                    self.plot_order = list(range(n_obj)) + [-1, -.5]
+                    self.list_obj += [g_run2, h_run2]
+                    self.labels_obj += [f"Run 2, {self.get_text_range_ptjet(2)}", ""]
+                    self.list_colours = [get_colour(i + 1) for i in range(n_obj // 2)] * 2 + [get_colour(0)] * 2
+                    self.list_markers = [get_marker(i + 1) for i in range(n_obj // 2)] * 2 + [get_marker(0)] * 2
+                    self.leg_horizontal = False
+                    self.leg_pos = [.52, .65, .85, .73]
+                    self.y_margin_up = 0.08
             self.title_full = self.title_full_default
             name_can = f"results_{self.var}_{self.mcordata}_ptjet-all"
             can = TCanvas(name_can, name_can)
-            pad_heights = self.set_pad_heights(can, [2, 1])
+            pad_heights = self.set_pad_heights(can, [3, 1])
             can, new = self.make_plot(name_can, can=can, pad=1, scale=pad_heights[0],
                                       colours=self.list_colours, markers=self.list_markers)
+            self.plot_order = self.plot_order_default
             # ratio low-pt/high-pt bottom panel
             iptjet_ref = list_iptjet[-1]  # reference pt jet bin
             assert iptjet_ref in list_iptjet
@@ -936,6 +958,7 @@ class Plotter:
             self.opt_leg_h = "P"
             self.leg_pos = self.leg_pos_default
             self.leg_horizontal = self.leg_horizontal_default
+            self.y_margin_up = self.y_margin_up_default
 
             # Lc vs D0
             if plot_lc_vs_d0 and self.species == "Lc" and self.var == "zpar":
