@@ -596,7 +596,7 @@ class Plotter:
                 self.title_full = f";{self.latex_pthf};{self.latex_hadron} efficiency"
                 self.list_latex = [self.text_alice, self.text_jets, f"{self.get_text_range_ptjet()}, {self.text_etajet}",
                                    self.get_text_range_pthf()]
-                self.make_plot(f"efficiency_{self.var}")
+                self.make_plot(f"{self.species}_efficiency_{self.var}")
 
                 bins_ptjet = (0, 1, 2, 3)
                 for cat, label in zip(("pr", "np"), ("prompt", "non-prompt")):
@@ -605,7 +605,7 @@ class Plotter:
                                                        for iptjet in bins_ptjet))
                     self.labels_obj = [self.get_text_range_ptjet(iptjet) for iptjet in bins_ptjet]
                     self.title_full = f";{self.latex_pthf};{label}-{self.latex_hadron} efficiency"
-                    self.make_plot(f"efficiency_{self.var}_{cat}_ptjet")
+                    self.make_plot(f"{self.species}_efficiency_{self.var}_{cat}_ptjet")
 
                 # TODO: efficiency (old vs new)
 
@@ -650,7 +650,7 @@ class Plotter:
                                            self.get_text_range_pthf(ipt, iptjet)]
                         if self.var in ("zg", "rg", "nsd"):
                             self.list_latex.append(self.text_sd)
-                        self.make_plot(f"sidebands_{self.var}_{self.mcordata}_{string_ptjet}_{string_pthf}")
+                        self.make_plot(f"{self.species}_sidebands_{self.var}_{self.mcordata}_{string_ptjet}_{string_pthf}")
 
                 # Feed-down subtraction
                 plot_feeddown = False
@@ -670,7 +670,7 @@ class Plotter:
                                     self.get_text_range_pthf(-1, iptjet)]
                     if self.var in ("zg", "rg", "nsd"):
                         self.list_latex.append(self.text_sd)
-                    self.make_plot(f"feeddown_{self.var}_{self.mcordata}_{string_ptjet}")
+                    self.make_plot(f"{self.species}_feeddown_{self.var}_{self.mcordata}_{string_ptjet}")
 
                     # TODO: feed-down (after 2D, fraction)
 
@@ -682,13 +682,13 @@ class Plotter:
                                                     f"{string_ptjet}_{i}") for i in range(self.niter_unfolding)]
                     self.labels_obj = [f"iteration {i + 1}" for i in range(self.niter_unfolding)]
                     self.title_full = f";{self.latex_obs};counts"
-                    self.make_plot(f"unfolding_convergence_{self.var}_{self.mcordata}_{string_ptjet}")
+                    self.make_plot(f"{self.species}_unfolding_convergence_{self.var}_{self.mcordata}_{string_ptjet}")
 
                     h_ref = self.get_object(f"h_{self.var}_{self.method}_unfolded_{self.mcordata}_{string_ptjet}_sel")
                     for h in self.list_obj:
                         h.Divide(h_ref)
                     self.title_full = f";{self.latex_obs};counts (variation/default)"
-                    self.make_plot(f"unfolding_convergence_ratio_{self.var}_{self.mcordata}_{string_ptjet}")
+                    self.make_plot(f"{self.species}_unfolding_convergence_ratio_{self.var}_{self.mcordata}_{string_ptjet}")
 
                     # TODO: unfolding (before/after)
 
@@ -842,7 +842,7 @@ class Plotter:
                             self.opt_plot_h += ["hist e"]
                             self.opt_leg_h += ["L"]
                 self.leg_horizontal = True
-                can, new = self.make_plot(f"results_{self.var}_{self.mcordata}_{string_ptjet}",
+                can, new = self.make_plot(f"{self.species}_results_{self.var}_{self.mcordata}_{string_ptjet}",
                                         colours=self.list_colours, markers=self.list_markers)
 
                 # Reset defaults.
@@ -871,7 +871,7 @@ class Plotter:
                     self.list_colours = [get_colour(i) for i in (0, 1)] * 2
                     self.list_markers = [get_marker(i) for i in (0, 1)] * 2
                     self.leg_horizontal = False
-                    name_can = f"results_Lc-D0_{self.var}_{self.mcordata}_{string_ptjet}"
+                    name_can = f"{self.species}_results_Lc-D0_{self.var}_{self.mcordata}_{string_ptjet}"
                     can = TCanvas(name_can, name_can)
                     pad_heights = self.set_pad_heights(can, [2, 1])
                     can, new = self.make_plot(name_can, can=can, pad=1, scale=pad_heights[0],
@@ -934,7 +934,7 @@ class Plotter:
                     self.leg_pos = [.52, .65, .85, .73]
                     self.y_margin_up = 0.08
             self.title_full = self.title_full_default
-            name_can = f"results_{self.var}_{self.mcordata}_ptjet-all"
+            name_can = f"{self.species}_results_{self.var}_{self.mcordata}_ptjet-all"
             can = TCanvas(name_can, name_can)
             pad_heights = self.set_pad_heights(can, [3, 1])
             can, new = self.make_plot(name_can, can=can, pad=1, scale=pad_heights[0],
@@ -998,7 +998,7 @@ class Plotter:
                 self.list_markers = list_markers_all * 2 * (1 + int(bool(list_syst_all)))
                 self.title_full = self.title_full_default
 
-                name_can = f"results_Lc-D0_{self.var}_{self.mcordata}_ptjet-all"
+                name_can = f"{self.species}_results_Lc-D0_{self.var}_{self.mcordata}_ptjet-all"
                 self.make_plot(name_can,
                                colours=self.list_colours, markers=self.list_markers)
 
