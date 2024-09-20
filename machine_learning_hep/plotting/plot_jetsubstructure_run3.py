@@ -858,7 +858,8 @@ class Plotter:
                     l_spec = []
                     if plot_run3_d0_sd_hf_sim:
                         l_spec.append(self.species)
-                    if plot_incl and plot_run3_d0_sd_incl_sim and iptjet == 2:
+                    # if plot_incl and plot_run3_d0_sd_incl_sim and iptjet == 2:
+                    if plot_incl and plot_run3_d0_sd_incl_sim:
                         l_spec.append("incl")
                     l_src = ["monash", "mode2"]
                     for s_spec in l_spec:
