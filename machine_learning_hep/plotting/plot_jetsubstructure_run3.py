@@ -380,7 +380,7 @@ class Plotter:
 
     def get_run3_sim(self) -> dict:
         # path_file = "aliceml:/home/nzardosh/PYTHIA_Sim/PYTHIA8_Simulations/Plots/Run3/fOut.root"
-        path_file = "/home/vkucera/mlhep/run3/simulations/fOut_v6.root"
+        path_file = "/home/vkucera/mlhep/run3/simulations/fOut_v9.root"
         self.logger.info("Getting Run 3 sim from %s.", path_file)
         pattern = "fh_%s%s_%s_%.2f_JetpT_%.2f"
         obs = {"zg" : "Zg", "rg" : "Rg", "nsd" : "Nsd", "zpar" : "FF"}
@@ -869,7 +869,7 @@ class Plotter:
                                 continue
                             obj = run3_sim[self.var][s_spec][s_src][iptjet]
                             rebin = False
-                            if rebin and self.var in ("zg", "rg"):
+                            if rebin and self.var in ("zg", "rg") and s_spec == "incl":
                                 n_bins = obj.GetNbinsX()
                                 array_x = obj.GetXaxis().GetXbins().GetArray()
                                 print(f"Array orig: {[array_x[i] for i in range(n_bins + 1)]}")
@@ -965,6 +965,8 @@ class Plotter:
                 if plot_run2_d0_sd and self.species == "D0" and self.var in ("zg", "rg", "nsd"):
                     h_run2 = run2_d0_sd[self.var]["hf"]["data"]["stat"]
                     g_run2 = run2_d0_sd[self.var]["hf"]["data"]["syst"]
+                    if self.var == "nsd":
+                        shrink_err_x(g_run2)
                 # TODO: if plot_run2_d0_ff_data
                 # TODO: if plot_run2_lc_ff_data
                 if h_run2 is not None:
