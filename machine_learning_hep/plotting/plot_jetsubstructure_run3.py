@@ -372,7 +372,7 @@ class Plotter:
 
     def get_run3_sim(self) -> dict:
         # path_file = "aliceml:/home/nzardosh/PYTHIA_Sim/PYTHIA8_Simulations/Plots/Run3/fOut.root"
-        path_file = "/home/vkucera/mlhep/run3/simulations/fOut_v5.root"
+        path_file = "/home/vkucera/mlhep/run3/simulations/fOut_v6.root"
         self.logger.info("Getting Run 3 sim from %s.", path_file)
         pattern = "fh_%s%s_%s_%.2f_JetpT_%.2f"
         obs = {"zg" : "Zg", "rg" : "Rg", "nsd" : "Nsd", "zpar" : "FF"}
@@ -737,12 +737,22 @@ class Plotter:
                 # Plot additional stuff.
                 plot_run2_lc_ff_data = True
                 plot_run2_lc_ff_sim = True
+
                 plot_run2_d0_ff_data = True
+
                 plot_run2_d0_sd = True
-                plot_run3_sim = False
+                plot_run2_d0_sd_hf_data = False
+                plot_run2_d0_sd_hf_sim = False
+                plot_run2_d0_sd_incl_data = True
+                plot_run2_d0_sd_incl_sim = False
+
+                plot_run3_sim = True
+                plot_run3_d0_sd_hf_sim = True
+                plot_run3_d0_sd_incl_sim = True
+
                 plot_data = True
-                plot_sim = False
-                plot_incl = False
+                plot_sim = True
+                plot_incl = True
 
                 # Plot Run 2, Lc, FF, data, 5-7, 7-15, 15-35 GeV/c
                 if plot_run2_lc_ff_data and plot_data and self.species == "Lc" and self.var == "zpar" and iptjet in (0, 1):
@@ -779,12 +789,23 @@ class Plotter:
                             for type in ("syst", "stat"):
                                 if source == "pythia" and type == "syst":
                                     continue
-                                if not plot_incl and flavour == "incl":
+                                if source == "pythia" and not plot_sim:
                                     continue
-                                if not plot_sim and source == "pythia":
+                                if source == "data" and not plot_data:
                                     continue
-                                if not plot_data and source == "data":
-                                    continue
+                                if flavour == "incl":
+                                    if not plot_incl:
+                                        continue
+                                    if source == "data" and not plot_run2_d0_sd_incl_data:
+                                        continue
+                                    if source == "pythia" and not plot_run2_d0_sd_incl_sim:
+                                        continue
+                                elif flavour == "hf":
+                                    if source == "data" and not plot_run2_d0_sd_hf_data:
+                                        continue
+                                    if source == "pythia" and not plot_run2_d0_sd_hf_sim:
+                                        continue
+
                                 obj = run2_d0_sd[self.var][flavour][source][type]
                                 if self.var == "nsd" and type == "syst":
                                     shrink_err_x(obj)
@@ -801,7 +822,7 @@ class Plotter:
                                     if type == "stat":
                                         label = ""
                                 self.labels_obj += [label]
-                                self.list_colours += [get_colour(c)]
+                                self.list_colours += [get_colour(c + 3)]
                                 if source == "pythia":
                                     self.list_markers += [1]
                                 else:
@@ -826,13 +847,17 @@ class Plotter:
                 # Plot Run 3, Lc or D0, SD and FF, sim (Nima)
                 if plot_run3_sim and plot_sim and iptjet in (0, 1, 2, 3):
                     run3_sim = self.get_run3_sim()
-                    l_spec = [self.species]
-                    if plot_incl:
+                    l_spec = []
+                    if plot_run3_d0_sd_hf_sim:
+                        l_spec.append(self.species)
+                    if plot_incl and plot_run3_d0_sd_incl_sim and iptjet == 2:
                         l_spec.append("incl")
                     l_src = ["monash", "mode2"]
                     for s_spec in l_spec:
                         for s_src in l_src:
                             if s_spec == "incl" and s_src == "mode2":
+                                continue
+                            if s_spec == "D0" and s_src == "monash":
                                 continue
                             self.list_obj += [run3_sim[self.var][s_spec][s_src][iptjet]]
                             self.plot_order += [max(self.plot_order) + 1]
