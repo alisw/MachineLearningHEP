@@ -25,6 +25,7 @@ import os
 from pathlib import Path
 from functools import reduce
 import numpy as np
+from array import array
 
 import yaml
 from ROOT import TCanvas, TFile, gROOT, gStyle, TVirtualPad, TLine, TH1
@@ -67,6 +68,13 @@ x_range = {
     "rg": [0.0, 0.4],
     "nsd": [-0.5, 5.5],
     "zpar": [0.4, 1.0],
+}
+
+x_bins_run2 = {
+    "zg": [-0.1, 0.1, 0.2, 0.3, 0.4, 0.5],
+    "rg": [-0.1, 0.0, 0.1, 0.2, 0.3, 0.4],
+    "nsd": [-0.5, 0.5, 1.5, 2.5, 3.5, 4.5, 5.5],
+    "zpar": [0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0],
 }
 
 
@@ -859,7 +867,18 @@ class Plotter:
                                 continue
                             if s_spec == "D0" and s_src == "monash":
                                 continue
-                            self.list_obj += [run3_sim[self.var][s_spec][s_src][iptjet]]
+                            obj = run3_sim[self.var][s_spec][s_src][iptjet]
+                            rebin = False
+                            if rebin and self.var in ("zg", "rg"):
+                                n_bins = obj.GetNbinsX()
+                                array_x = obj.GetXaxis().GetXbins().GetArray()
+                                print(f"Array orig: {[array_x[i] for i in range(n_bins + 1)]}")
+                                obj = obj.Rebin(len(x_bins_run2[self.var]) - 1, f"{obj.GetName()}_rebin", array('d', x_bins_run2[self.var]))
+                                obj.Scale(0.5)
+                                n_bins = obj.GetNbinsX()
+                                array_x = obj.GetXaxis().GetXbins().GetArray()
+                                print(f"Array rebinned: {[array_x[i] for i in range(n_bins + 1)]}")
+                            self.list_obj += [obj]
                             self.plot_order += [max(self.plot_order) + 1]
                             self.labels_obj += [f"{s_spec} {s_src}"]
                             self.list_colours += [get_colour(count_histograms(self.list_obj))]
