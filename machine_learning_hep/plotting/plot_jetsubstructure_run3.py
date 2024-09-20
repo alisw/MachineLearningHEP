@@ -766,10 +766,10 @@ class Plotter:
                 if plot_run2_lc_ff_data and plot_data and self.species == "Lc" and self.var == "zpar" and iptjet in (0, 1):
                     run2_lc_ff_data = self.get_run2_lc_ff_data()
                     self.list_obj += [run2_lc_ff_data[iptjet]["syst"], run2_lc_ff_data[iptjet]["stat"]]
-                    self.plot_order += [-0.5, max(self.plot_order) + 1]
-                    self.labels_obj += ["Run 2", ""]
-                    self.list_colours += [get_colour(count_histograms(self.list_obj))] * 2
-                    self.list_markers += [get_marker(count_histograms(self.list_obj))] * 2
+                    self.plot_order += [-1.5, max(self.plot_order) - 0.5]
+                    self.labels_obj = ["Run 3", "", "Run 2", ""]
+                    self.list_colours = [get_colour(i) for i in (1, 1, 0, 0)]
+                    self.list_markers = [get_marker(i) for i in (0, 0, 1, 1)]
                     self.opt_plot_h += [""]
                     self.opt_leg_h += ["P"]
                 # Plot Run 2, Lc, FF, sim, 7-15 GeV/c
@@ -885,7 +885,7 @@ class Plotter:
                             self.list_markers += [1]
                             self.opt_plot_h += ["hist e"]
                             self.opt_leg_h += ["L"]
-                self.leg_horizontal = True
+                self.leg_horizontal = False
                 can, new = self.make_plot(f"{self.species}_results_{self.var}_{self.mcordata}_{string_ptjet}",
                                         colours=self.list_colours, markers=self.list_markers)
 
