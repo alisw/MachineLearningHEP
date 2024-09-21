@@ -277,6 +277,8 @@ class Plotter:
         self.l_monash = 2
         self.l_mode2 = 4
 
+        self.path_results_other = "/home/vit/Dokumenty/ALICE/Prace/HF_jets/Run3/mlhep/hp_results/preliminary/data"
+
     def cfg(self, param, default=None):
         return reduce(lambda d, key: d.get(key, default) if isinstance(d, dict) else default,
                       param.split("."), self.datap['analysis'][self.typean])
@@ -317,8 +319,8 @@ class Plotter:
         return [self.get_object(name, file) for name in names]
 
     def get_run2_lc_ff_data(self) -> dict:
-        path_file_stat = "/home/vkucera/mlhep/run2/results/lc/unfolding_results.root"
-        path_file_syst = "/home/vkucera/mlhep/run2/results/lc/systematics_results.root"
+        path_file_stat = f"{self.path_results_other}/run2/results/lc/unfolding_results.root"
+        path_file_syst = f"{self.path_results_other}/run2/results/lc/systematics_results.root"
         self.logger.info("Getting Run 2 Lc data from %s %s.", path_file_stat, path_file_syst)
         dict_obj = {}
         pattern_stat = "unfolded_z_sel_pt_jet_%.2f_%.2f"
@@ -337,7 +339,7 @@ class Plotter:
         return dict_obj
 
     def get_run2_lc_ff_sim(self) -> dict:
-        path_file = "/home/vkucera/mlhep/run2/results/lc/simulations.root"
+        path_file = f"{self.path_results_other}/run2/results/lc/simulations.root"
         self.logger.info("Getting Run 2 Lc sim from %s.", path_file)
         names = {"monash" : "input_pythia8defaultpt_jet_7.00_15.00",
                  "cr2" : "input_pythia8colour2softpt_jet_7.00_15.00"}
@@ -345,7 +347,7 @@ class Plotter:
             return {title : self.get_object(name, file) for title, name in names.items()}
 
     def get_run2_d0_ff_sim(self) -> dict:
-        path_file = "/home/vkucera/mlhep/run2/results/d0/simulations_3_D0.root"
+        path_file = f"{self.path_results_other}/run2/results/d0/simulations_3_D0.root"
         self.logger.info("Getting Run 2 D0 sim from %s.", path_file)
         names = {"monash" : "input_pythia8defaultpt_jet_7.00_15.00",
                  "cr2" : "input_pythia8colour2softpt_jet_7.00_15.00"}
@@ -353,7 +355,7 @@ class Plotter:
             return {title : self.get_object(name, file) for title, name in names.items()}
 
     def get_run2_d0_sd(self) -> dict:
-        path_file = "/home/vkucera/mlhep/run2/results/d0/results_all.root"
+        path_file = f"{self.path_results_other}/run2/results/d0/results_all.root"
         self.logger.info("Getting Run 2 D0 SD from %s.", path_file)
         dict_obj = {}
         with TFile.Open(path_file) as file:
@@ -371,7 +373,7 @@ class Plotter:
         return dict_obj
 
     def get_run2_d0_ff_data(self) -> dict:
-        path_file = "/home/vkucera/mlhep/run2/results/d0/FFD0_Jakub_20220130.root"
+        path_file = f"{self.path_results_other}/run2/results/d0/FFD0_Jakub_20220130.root"
         self.logger.info("Getting Run 2 D0 FF from %s.", path_file)
         names = {"stat" : "hData_binned",
                  "syst" : "haeData_binned_syst"}
@@ -380,7 +382,7 @@ class Plotter:
 
     def get_run3_sim(self) -> dict:
         # path_file = "aliceml:/home/nzardosh/PYTHIA_Sim/PYTHIA8_Simulations/Plots/Run3/fOut.root"
-        path_file = "/home/vkucera/mlhep/run3/simulations/fOut_v9.root"
+        path_file = f"{self.path_results_other}/run3/simulations/fOut_v9.root"
         self.logger.info("Getting Run 3 sim from %s.", path_file)
         pattern = "fh_%s%s_%s_%.2f_JetpT_%.2f"
         obs = {"zg" : "Zg", "rg" : "Rg", "nsd" : "Nsd", "zpar" : "FF"}
