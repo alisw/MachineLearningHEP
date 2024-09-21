@@ -770,8 +770,8 @@ class Plotter:
                     self.list_obj += [run2_lc_ff_data[iptjet]["syst"], run2_lc_ff_data[iptjet]["stat"]]
                     self.plot_order += [-1.5, max(self.plot_order) - 0.5]
                     self.labels_obj = ["Run 3", "", "Run 2", ""]
-                    self.list_colours = [get_colour(i) for i in (1, 1, 0, 0)]
-                    self.list_markers = [get_marker(i) for i in (0, 0, 1, 1)]
+                    self.list_colours += [get_colour(-1)] * 2
+                    self.list_markers += [get_marker(-1)] * 2
                     self.opt_plot_h += [""]
                     self.opt_leg_h += ["P"]
                 # Plot Run 2, Lc, FF, sim, 7-15 GeV/c
@@ -825,18 +825,21 @@ class Plotter:
                                 else:
                                     self.plot_order += [max(self.plot_order) + 1]
                                 label = f"R2 {flavour} {source}"
+                                colour = get_colour(c + 3)
+                                marker = get_marker(m)
                                 if source == "data":
                                     label = "Run 2"
                                     if flavour == "incl":
                                         label += " inclusive"
+                                        colour = get_colour(3)
+                                        marker = get_marker(2)
                                     if type == "stat":
                                         label = ""
-                                self.labels_obj += [label]
-                                self.list_colours += [get_colour(c + 3)]
                                 if source == "pythia":
-                                    self.list_markers += [1]
-                                else:
-                                    self.list_markers += [get_marker(m)]
+                                    marker = 1
+                                self.labels_obj += [label]
+                                self.list_colours += [colour]
+                                self.list_markers += [marker]
                                 if type == "stat":
                                     if source == "pythia":
                                         self.opt_plot_h += ["hist e"]
@@ -850,8 +853,8 @@ class Plotter:
                     self.list_obj += [run2_d0_ff_data["syst"], run2_d0_ff_data["stat"]]
                     self.plot_order += [-0.5, max(self.plot_order) + 1]
                     self.labels_obj += ["Run 2", ""]
-                    self.list_colours += [get_colour(count_histograms(self.list_obj))] * 2
-                    self.list_markers += [get_marker(count_histograms(self.list_obj))] * 2
+                    self.list_colours += [get_colour(-1)] * 2
+                    self.list_markers += [get_marker(-1)] * 2
                     self.opt_plot_h += [""]
                     self.opt_leg_h += ["P"]
                 # Plot Run 3, Lc or D0, SD and FF, sim (Nima)
@@ -941,9 +944,10 @@ class Plotter:
                     run2_d0_ff_sim["cr2"].SetLineStyle(self.l_mode2 + 2)
                     self.list_obj = [gr_syst, run2_d0_ff_data["syst"], h_stat, run2_d0_ff_data["stat"]]
                     self.plot_order = list(range(len(self.list_obj)))
+                    self.plot_order = [1, 0, 3, 2]
                     self.labels_obj = ["#Lambda_{c}", "D^{0} (Run 2)", "", ""]
-                    self.list_colours = [get_colour(i) for i in (0, 1)] * 2
-                    self.list_markers = [get_marker(i) for i in (0, 1)] * 2
+                    self.list_colours = [get_colour(i) for i in (0, -1)] * 2
+                    self.list_markers = [get_marker(i) for i in (0, -1)] * 2
                     self.leg_horizontal = False
                     name_can = f"{self.species}_results_Lc-D0_{self.var}_{self.mcordata}_{string_ptjet}"
                     can = TCanvas(name_can, name_can)
@@ -1004,8 +1008,8 @@ class Plotter:
                     self.plot_order = list(range(n_obj)) + [-1, -.5]
                     self.list_obj += [g_run2, h_run2]
                     self.labels_obj += [f"Run 2, {self.get_text_range_ptjet(2)}", ""]
-                    self.list_colours = [get_colour(i + 1) for i in range(n_obj // 2)] * 2 + [get_colour(0)] * 2
-                    self.list_markers = [get_marker(i + 1) for i in range(n_obj // 2)] * 2 + [get_marker(0)] * 2
+                    self.list_colours += [get_colour(-1)] * 2
+                    self.list_markers += [get_marker(-1)] * 2
                     self.leg_horizontal = False
                     self.leg_pos = [.52, .65, .85, .73]
                     self.y_margin_up = 0.08
