@@ -382,7 +382,7 @@ class Plotter:
 
     def get_run3_sim(self) -> dict:
         # path_file = "aliceml:/home/nzardosh/PYTHIA_Sim/PYTHIA8_Simulations/Plots/Run3/fOut.root"
-        path_file = f"{self.path_results_other}/run3/simulations/fOut_v9.root"
+        path_file = f"{self.path_results_other}/run3/simulations/fOut_v10.root"
         self.logger.info("Getting Run 3 sim from %s.", path_file)
         pattern = "fh_%s%s_%s_%.2f_JetpT_%.2f"
         obs = {"zg" : "Zg", "rg" : "Rg", "nsd" : "Nsd", "zpar" : "FF"}
