@@ -510,13 +510,12 @@ def get_y_window_his(l_his: list, with_errors=True, range_x=None):
 
 
 colours = [
-    kBlack,
     kBlue,
     kRed,
     kGreen + 1,
     kOrange + 1,
-    kMagenta,
     kCyan + 1,
+    kMagenta,
     kGray + 1,
     kBlue + 2,
     kRed - 3,
@@ -525,9 +524,10 @@ colours = [
     kMagenta + 1,
     kCyan + 2,
     kRed + 3,
+    kBlack,
 ]
-colours_alice_point = [kBlack, kBlue + 1, kRed + 1, kGreen + 3, kMagenta + 2, kOrange + 4, kCyan + 2, kYellow + 2]
-colours_alice_syst = [kGray + 1, kBlue - 7, kRed - 7, kGreen - 6, kMagenta - 4, kOrange - 3, kCyan - 6, kYellow - 7]
+colours_alice_point = [kBlue + 1, kRed + 1, kGreen + 3, kOrange + 4, kCyan + 2, kMagenta + 2, kYellow + 2, kBlack]
+colours_alice_syst = [kBlue - 7, kRed - 7, kGreen - 6, kOrange - 3, kCyan - 6, kMagenta - 4, kYellow - 7, kGray + 1]
 
 
 def get_colour(i: int, scheme=1):
@@ -544,7 +544,6 @@ def get_colour(i: int, scheme=1):
 def get_marker(i: int, option=0):
     """Return a marker from the list."""
     markers_open = [
-        kOpenCircle,
         kOpenSquare,
         kOpenCross,
         kOpenDiamond,
@@ -554,9 +553,9 @@ def get_marker(i: int, option=0):
         kOpenThreeTriangles,
         kOpenFourTrianglesX,
         kOpenDoubleDiamond,
+        kOpenCircle,
     ]
     markers_full = [
-        kFullCircle,
         kFullSquare,
         kFullCross,
         kFullDiamond,
@@ -566,6 +565,7 @@ def get_marker(i: int, option=0):
         kFullThreeTriangles,
         kFullFourTrianglesX,
         kFullDoubleDiamond,
+        kFullCircle,
     ]
     markers_thick = [88, 72, 75, 74, 76, 80, 82, 83, 84, 85]
     if option == 1:
