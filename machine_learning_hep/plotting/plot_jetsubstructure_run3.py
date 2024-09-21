@@ -782,7 +782,7 @@ class Plotter:
                     self.list_obj += [run2_lc_ff_sim["monash"], run2_lc_ff_sim["cr2"]]
                     self.plot_order += [max(self.plot_order) + 1, max(self.plot_order) + 2]
                     # self.labels_obj += [self.text_monash, self.text_mode2]
-                    self.labels_obj += ["R2 M", "R2 SM2"]
+                    self.labels_obj += [self.text_monash, self.text_mode2]
                     self.list_colours += [get_colour(c) for c in (self.c_lc_monash, self.c_lc_mode2)]
                     self.list_markers += [1] * 2
                     self.opt_plot_h += ["hist e"] * 2
@@ -858,7 +858,7 @@ class Plotter:
                     self.opt_plot_h += [""]
                     self.opt_leg_h += ["P"]
                 # Plot Run 3, Lc or D0, SD and FF, sim (Nima)
-                if plot_run3_sim and plot_sim and iptjet in (0, 1, 2, 3):
+                if plot_run3_sim and plot_sim and iptjet in (0, 1, 2, 3) and self.var != "zpar":
                     run3_sim = self.get_run3_sim()
                     l_spec = []
                     if plot_run3_d0_sd_hf_sim:
