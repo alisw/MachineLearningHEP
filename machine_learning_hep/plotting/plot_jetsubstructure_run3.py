@@ -275,7 +275,7 @@ class Plotter:
 
         # line styles
         self.l_monash = 2
-        self.l_mode2 = 4
+        self.l_mode2 = 7
 
         self.path_results_other = "/home/vit/Dokumenty/ALICE/Prace/HF_jets/Run3/mlhep/hp_results/preliminary/data"
 
