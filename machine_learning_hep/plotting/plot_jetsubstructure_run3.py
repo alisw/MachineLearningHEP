@@ -864,6 +864,32 @@ class Plotter:
                     if plot_incl and plot_run3_d0_sd_incl_sim:
                         l_spec.append("incl")
                     l_src = ["monash", "mode2"]
+                    names_run3_sim = {
+                        "incl" : "inclusive",
+                        "D0" : "D^{0}",
+                        "Lc" : "#Lambda_{c}",
+                        "mode2" : self.text_mode2,
+                        "monash" : self.text_monash,
+                    }
+                    species = {"D0" : "D0", "Lc" : "Lc", "incl" : "Inclusive"}
+                    source = {"monash" : "M", "mode2" : "SM2"}
+                    colours_run3_sim = {}
+                    lines_run3_sim = {}
+                    for s_spec in species:
+                        colours_run3_sim[s_spec] = {}
+                        lines_run3_sim[s_spec] = {}
+                    colours_run3_sim["D0"]["monash"] = get_colour(self.c_lc_monash)
+                    colours_run3_sim["D0"]["mode2"] = get_colour(self.c_lc_mode2)
+                    colours_run3_sim["Lc"]["monash"] = get_colour(self.c_lc_monash)
+                    colours_run3_sim["Lc"]["mode2"] = get_colour(self.c_lc_mode2)
+                    colours_run3_sim["incl"]["monash"] = get_colour(self.c_lc_monash)
+                    colours_run3_sim["incl"]["mode2"] = get_colour(self.c_lc_mode2)
+                    lines_run3_sim["D0"]["monash"] = self.l_monash
+                    lines_run3_sim["D0"]["mode2"] = self.l_mode2
+                    lines_run3_sim["Lc"]["monash"] = self.l_monash
+                    lines_run3_sim["Lc"]["mode2"] = self.l_mode2
+                    lines_run3_sim["incl"]["monash"] = self.l_monash
+                    lines_run3_sim["incl"]["mode2"] = self.l_mode2
                     for s_spec in l_spec:
                         for s_src in l_src:
                             if s_spec == "incl" and s_src == "mode2":
@@ -881,10 +907,11 @@ class Plotter:
                                 n_bins = obj.GetNbinsX()
                                 array_x = obj.GetXaxis().GetXbins().GetArray()
                                 print(f"Array rebinned: {[array_x[i] for i in range(n_bins + 1)]}")
+                            obj.SetLineStyle(lines_run3_sim[s_spec][s_src])
                             self.list_obj += [obj]
                             self.plot_order += [max(self.plot_order) + 1]
-                            self.labels_obj += [f"{s_spec} {s_src}"]
-                            self.list_colours += [get_colour(count_histograms(self.list_obj))]
+                            self.labels_obj += [f"{names_run3_sim[s_src]} {names_run3_sim[s_spec]}"]
+                            self.list_colours += [colours_run3_sim[s_spec][s_src]]
                             self.list_markers += [1]
                             self.opt_plot_h += ["hist e"]
                             self.opt_leg_h += ["L"]
@@ -932,7 +959,7 @@ class Plotter:
                     rat_cr2.SetLineStyle(self.l_mode2)
                     self.list_obj = [rat_syst, rat_stat, rat_monash, rat_cr2, line_1]
                     self.plot_order = list(range(len(self.list_obj)))
-                    self.labels_obj = ["data", "", "Monash", "CR2"]
+                    self.labels_obj = ["data", "", self.text_monash, self.text_mode2]
                     self.list_colours = [get_colour(i) for i in (0, 0, self.c_lc_monash, self.c_lc_mode2)]
                     self.list_markers = [get_marker(0)] * 2 + [1, 1]
                     self.opt_plot_h = [self.opt_plot_h] + 2 * ["hist e"]
