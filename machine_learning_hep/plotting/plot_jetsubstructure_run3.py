@@ -918,6 +918,14 @@ class Plotter:
                             self.list_markers += [1]
                             self.opt_plot_h += ["hist e"]
                             self.opt_leg_h += ["L"]
+                self.leg_pos = [.53, .8, .85, .68]
+                if self.var == "rg":
+                    if iptjet == 2:
+                        self.leg_pos = [self.x_latex, .8, self.x_latex + 0.32, .63]
+                    elif iptjet == 3:
+                        self.leg_pos = [0.3, .8, 0.3 + 0.32, .25]
+                elif self.species == "Lc" and self.var == "zpar":
+                    self.leg_pos = [.58, .8, 0.58 + .32, .68]
                 self.leg_horizontal = False
                 can, new = self.make_plot(f"{self.species}_results_{self.var}_{self.mcordata}_{string_ptjet}",
                                         colours=self.list_colours, markers=self.list_markers)
@@ -948,6 +956,7 @@ class Plotter:
                     self.labels_obj = ["#Lambda_{c}", "D^{0} (Run 2)", "", ""]
                     self.list_colours = [get_colour(i) for i in (0, -1)] * 2
                     self.list_markers = [get_marker(i) for i in (0, -1)] * 2
+                    self.leg_pos = [.65, .0, .97, .75]
                     self.leg_horizontal = False
                     name_can = f"{self.species}_results_Lc-D0_{self.var}_{self.mcordata}_{string_ptjet}"
                     can = TCanvas(name_can, name_can)
