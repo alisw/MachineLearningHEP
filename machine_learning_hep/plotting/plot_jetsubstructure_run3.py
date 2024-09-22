@@ -247,6 +247,7 @@ class Plotter:
         # self.text_alice = "#bf{ALICE}, pp, #sqrt{#it{s}} = 13.6 TeV"  # paper
         self.text_jets = "%s-tagged charged-particle jets, anti-#it{k}_{T}, #it{R} = 0.4" % self.latex_hadron
         self.text_ptjet = "%g #leq %s (GeV/#it{c}) < %g"
+        self.text_ptcut = "#it{p}_{T, incl. ch. jet}^{leading track} #geq 5.33 GeV/#it{c}"
         self.text_etajet = "|#it{#eta}_{jet ch}| < 0.5"
         self.text_pth_yh = "%g #leq #it{p}_{T}^{%s} (GeV/#it{c}) < %g, |#it{y}_{%s}| < 0.8"
         self.text_sd = "Soft drop (#it{z}_{cut} = 0.1, #it{#beta} = 0)"
@@ -664,6 +665,7 @@ class Plotter:
                                            self.get_text_range_pthf(ipt, iptjet)]
                         if self.var in ("zg", "rg", "nsd"):
                             self.list_latex.append(self.text_sd)
+                            self.list_latex.append(self.text_ptcut)
                         self.make_plot(f"{self.species}_sidebands_{self.var}_{self.mcordata}_{string_ptjet}_{string_pthf}")
 
                 # Feed-down subtraction
@@ -684,6 +686,7 @@ class Plotter:
                                     self.get_text_range_pthf(-1, iptjet)]
                     if self.var in ("zg", "rg", "nsd"):
                         self.list_latex.append(self.text_sd)
+                        self.list_latex.append(self.text_ptcut)
                     self.make_plot(f"{self.species}_feeddown_{self.var}_{self.mcordata}_{string_ptjet}")
 
                     # TODO: feed-down (after 2D, fraction)
@@ -714,6 +717,7 @@ class Plotter:
                                    self.get_text_range_pthf(-1, iptjet)]
                 if self.var in ("zg", "rg", "nsd"):
                     self.list_latex.append(self.text_sd)
+                    self.list_latex.append(self.text_ptcut)
                 self.plot_errors_x = False
                 self.range_x = x_range[self.var]
                 h_stat = self.get_object(f"h_{self.var}_{self.method}_unfolded_{self.mcordata}_"
@@ -925,6 +929,7 @@ class Plotter:
                 if self.var == "rg":
                     if iptjet == 2:
                         self.leg_pos = [self.x_latex, .8, self.x_latex + 0.32, .63]
+                        self.leg_pos[3] -= self.y_step_glob  # if plotting leading track cut for inclusive jets
                     elif iptjet == 3:
                         self.leg_pos = [0.3, .8, 0.3 + 0.32, .25]
                 elif self.species == "Lc" and self.var == "zpar":
@@ -1002,6 +1007,7 @@ class Plotter:
                                 f"{self.get_text_range_pthf(-1, iptjet)}, {self.text_etajet}"]
             if self.var in ("zg", "rg", "nsd"):
                 self.list_latex.append(self.text_sd)
+                # self.list_latex.append(self.text_ptcut)
             self.leg_horizontal = True
             self.range_x = x_range[self.var]
             self.list_obj = list_syst_all + list_stat_all
@@ -1065,6 +1071,7 @@ class Plotter:
                                    ]
                 if self.var in ("zg", "rg", "nsd"):
                     self.list_latex.append(self.text_sd)
+                    self.list_latex.append(self.text_ptcut)
                 self.leg_horizontal = True
                 self.range_x = x_range[self.var]
                 # Get D0 results
