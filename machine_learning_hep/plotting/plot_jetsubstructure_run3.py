@@ -225,6 +225,8 @@ class Plotter:
         self.y_step_glob = 0.05
         self.leg_pos_default = [.72, .7, .85, .8]
         self.leg_pos = self.leg_pos_default
+        self.scale_text_leg_default = 0.8
+        self.scale_text_leg = 0.8
         self.leg_horizontal_default = True
         self.leg_horizontal = True
         # self.y_margin_up = 0.46
@@ -452,6 +454,7 @@ class Plotter:
             self.list_markers = markers
 
         margin_bottom = self.margins_can[0]  # size of the bottom margin relative to the canvas height
+        margin_left = self.margins_can[1]  # size of the right margin relative to the canvas height
         margin_top = self.margins_can[2]  # size of the top margin relative to the canvas height
         margin_right = self.margins_can[3]  # size of the right margin relative to the canvas height
         padding_top_glob = self.tick_length + 0.01
@@ -467,7 +470,7 @@ class Plotter:
             y_latex_top_loc -= margin_top / scale
 
         # Adjust global legend parameters.
-        scale_text_leg = 0.8
+        scale_text_leg = self.scale_text_leg
         leg_pos_glob = self.leg_pos.copy()
         n_entries_leg = len([s for s in self.labels_obj if s])
         if self.leg_horizontal:
@@ -477,6 +480,7 @@ class Plotter:
                 y_leg_max = 1. - margin_top - padding_top_glob
             y_leg_min = y_leg_max - self.y_step_glob
             leg_pos_glob = [self.x_latex, y_leg_min, 1. - margin_right - padding_right_glob, y_leg_max]
+            leg_pos_glob = [margin_left + padding_right_glob, y_leg_min, 1. - margin_right - padding_right_glob, y_leg_max]
         else:
             leg_pos_glob[1] = leg_pos_glob[3] - n_entries_leg * self.y_step_glob * scale_text_leg
         leg_height_glob = leg_pos_glob[3] - leg_pos_glob[1]
@@ -781,8 +785,7 @@ class Plotter:
                     run2_lc_ff_sim["cr2"].SetLineStyle(self.l_mode2)
                     self.list_obj += [run2_lc_ff_sim["monash"], run2_lc_ff_sim["cr2"]]
                     self.plot_order += [max(self.plot_order) + 1, max(self.plot_order) + 2]
-                    # self.labels_obj += [self.text_monash, self.text_mode2]
-                    self.labels_obj += [self.text_monash, self.text_mode2]
+                    self.labels_obj += [f"{self.text_monash}, Run 2", f"{self.text_mode2}, Run 2"]
                     self.list_colours += [get_colour(c) for c in (self.c_lc_monash, self.c_lc_mode2)]
                     self.list_markers += [1] * 2
                     self.opt_plot_h += ["hist e"] * 2
@@ -830,7 +833,7 @@ class Plotter:
                                 if source == "data":
                                     label = "Run 2"
                                     if flavour == "incl":
-                                        label += " inclusive"
+                                        label += ", inclusive"
                                         colour = get_colour(3)
                                         marker = get_marker(2)
                                     if type == "stat":
@@ -913,7 +916,7 @@ class Plotter:
                             obj.SetLineStyle(lines_run3_sim[s_spec][s_src])
                             self.list_obj += [obj]
                             self.plot_order += [max(self.plot_order) + 1]
-                            self.labels_obj += [f"{names_run3_sim[s_src]} {names_run3_sim[s_spec]}"]
+                            self.labels_obj += [f"{names_run3_sim[s_src]}, {names_run3_sim[s_spec]}"]
                             self.list_colours += [colours_run3_sim[s_spec][s_src]]
                             self.list_markers += [1]
                             self.opt_plot_h += ["hist e"]
@@ -925,7 +928,7 @@ class Plotter:
                     elif iptjet == 3:
                         self.leg_pos = [0.3, .8, 0.3 + 0.32, .25]
                 elif self.species == "Lc" and self.var == "zpar":
-                    self.leg_pos = [.58, .8, 0.58 + .32, .68]
+                    self.leg_pos = [.55, .8, 0.8, .68]
                 self.leg_horizontal = False
                 can, new = self.make_plot(f"{self.species}_results_{self.var}_{self.mcordata}_{string_ptjet}",
                                         colours=self.list_colours, markers=self.list_markers)
@@ -935,6 +938,7 @@ class Plotter:
                 self.opt_plot_h = ""
                 self.opt_leg_h = "P"
                 self.leg_pos = self.leg_pos_default
+                self.scale_text_leg = self.scale_text_leg_default
                 self.leg_horizontal = self.leg_horizontal_default
 
                 # Plot Lc vs D0.
@@ -951,9 +955,9 @@ class Plotter:
                     run2_d0_ff_sim["monash"].SetLineStyle(self.l_monash + 2)
                     run2_d0_ff_sim["cr2"].SetLineStyle(self.l_mode2 + 2)
                     self.list_obj = [gr_syst, run2_d0_ff_data["syst"], h_stat, run2_d0_ff_data["stat"]]
-                    self.plot_order = list(range(len(self.list_obj)))
+                    # self.plot_order = list(range(len(self.list_obj)))
                     self.plot_order = [1, 0, 3, 2]
-                    self.labels_obj = ["#Lambda_{c}", "D^{0} (Run 2)", "", ""]
+                    self.labels_obj = ["#Lambda_{c}", "D^{0}, Run 2", "", ""]
                     self.list_colours = [get_colour(i) for i in (0, -1)] * 2
                     self.list_markers = [get_marker(i) for i in (0, -1)] * 2
                     self.leg_pos = [.65, .0, .97, .75]
@@ -972,12 +976,13 @@ class Plotter:
                     rat_cr2.SetLineStyle(self.l_mode2)
                     self.list_obj = [rat_syst, rat_stat, rat_monash, rat_cr2, line_1]
                     self.plot_order = list(range(len(self.list_obj)))
-                    self.labels_obj = ["data", "", self.text_monash, self.text_mode2]
+                    self.labels_obj = ["data", "", f"{self.text_monash}, Run 2", f"{self.text_mode2}, Run 2"]
                     self.list_colours = [get_colour(i) for i in (0, 0, self.c_lc_monash, self.c_lc_mode2)]
                     self.list_markers = [get_marker(0)] * 2 + [1, 1]
                     self.opt_plot_h = [self.opt_plot_h] + 2 * ["hist e"]
                     self.opt_leg_h = [self.opt_leg_h] + 2 * ["L"]
                     self.leg_horizontal = True
+                    self.scale_text_leg = 0.7
                     self.list_latex = []
                     self.title_full = f";{self.latex_obs};#Lambda_{{c}}/D^{{0}}"
                     can, new = self.make_plot(name_can, can=can, pad=2, scale=pad_heights[1],
@@ -988,6 +993,7 @@ class Plotter:
                 self.opt_plot_h = ""
                 self.opt_leg_h = "P"
                 self.leg_pos = self.leg_pos_default
+                self.scale_text_leg = self.scale_text_leg_default
                 self.leg_horizontal = self.leg_horizontal_default
 
             self.logger.info("Plotting results for all pt jet together")
