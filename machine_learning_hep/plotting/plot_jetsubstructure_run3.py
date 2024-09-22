@@ -721,7 +721,7 @@ class Plotter:
 
                 # Results
                 self.logger.info("Plotting results")
-                plot_run2_data = False
+                plot_run2_data = True
                 self.list_latex = [self.text_alice,
                 # self.list_latex = [f"{self.text_alice}, {self.text_run3}",
                                    self.text_jets,
@@ -736,7 +736,8 @@ class Plotter:
                                          f"{string_ptjet}_sel_selfnorm")
                 self.list_obj = [h_stat]
                 self.plot_order = list(range(len(self.list_obj)))
-                self.labels_obj = [self.text_tagged]
+                # self.labels_obj = [self.text_tagged]
+                self.labels_obj = [self.text_run3]
                 self.list_colours = [get_colour(i_iptjet)]
                 self.list_markers = [get_marker(i_iptjet)]
                 self.opt_plot_h = [self.opt_plot_h]
@@ -760,7 +761,8 @@ class Plotter:
                     # We need to plot the data on top of the systematics.
                     self.list_obj.insert(0, gr_syst)
                     self.plot_order.insert(0, -1)
-                    self.labels_obj.insert(0, self.text_tagged)
+                    # self.labels_obj.insert(0, self.text_tagged)
+                    self.labels_obj.insert(0, self.text_run3)
                     self.labels_obj[1] = ""  # do not show the histogram in the legend
                     self.list_colours.insert(0, get_colour(i_iptjet))
                     self.list_markers.insert(0, get_marker(i_iptjet))
@@ -773,13 +775,13 @@ class Plotter:
 
                 plot_run2_d0_ff_data = True
 
-                plot_run2_d0_sd = True
-                plot_run2_d0_sd_hf_data = False
+                plot_run2_d0_sd = 1
+                plot_run2_d0_sd_hf_data = 1
                 plot_run2_d0_sd_hf_sim = False
                 plot_run2_d0_sd_incl_data = False
                 plot_run2_d0_sd_incl_sim = False
 
-                plot_run3_sim = True
+                plot_run3_sim = 0
                 plot_run3_d0_sd_hf_sim = True
                 plot_run3_d0_sd_incl_sim = True
 
@@ -843,7 +845,7 @@ class Plotter:
                                     shrink_err_x(obj)
                                 self.list_obj += [obj]
                                 if type == "syst":
-                                    self.plot_order += [-1. / len(self.list_obj)]  # increasing between -1 and 0
+                                    self.plot_order += [-1 -1. / len(self.list_obj)]  # increasing between -1 and 0
                                 else:
                                     self.plot_order += [max(self.plot_order) + 1]
                                 label = f"R2 {flavour} {source}"
@@ -855,6 +857,9 @@ class Plotter:
                                         label += ", inclusive"
                                         colour = get_colour(3)
                                         marker = get_marker(2)
+                                    else:
+                                        colour = get_colour(-1)
+                                        marker = get_marker(-1)
                                     if type == "stat":
                                         label = ""
                                 if source == "pythia":
