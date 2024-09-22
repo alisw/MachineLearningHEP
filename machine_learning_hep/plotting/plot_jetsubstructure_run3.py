@@ -879,7 +879,7 @@ class Plotter:
                     names_run3_sim = {
                         "incl" : "inclusive",
                         "D0" : "D^{0}",
-                        "Lc" : "#Lambda_{c}",
+                        "Lc" : "#Lambda_{c}^{#plus}",
                         "mode2" : self.text_mode2,
                         "monash" : self.text_monash,
                     }
@@ -964,7 +964,7 @@ class Plotter:
                     self.list_obj = [gr_syst, run2_d0_ff_data["syst"], h_stat, run2_d0_ff_data["stat"]]
                     # self.plot_order = list(range(len(self.list_obj)))
                     self.plot_order = [1, 0, 3, 2]
-                    self.labels_obj = ["#Lambda_{c}", f"D^{0}, {self.text_run2}", "", ""]
+                    self.labels_obj = ["#Lambda_{c}^{#plus}", f"D^{{0}}, {self.text_run2}", "", ""]
                     self.list_colours = [get_colour(i) for i in (0, -1)] * 2
                     self.list_markers = [get_marker(i) for i in (0, -1)] * 2
                     self.leg_pos = [.65, .0, .97, .75]
@@ -991,7 +991,7 @@ class Plotter:
                     self.leg_horizontal = True
                     self.scale_text_leg = 0.7
                     self.list_latex = []
-                    self.title_full = f";{self.latex_obs};#Lambda_{{c}}/D^{{0}}"
+                    self.title_full = f";{self.latex_obs};#Lambda_{{c}}^{{#plus}}/D^{{0}}"
                     can, new = self.make_plot(name_can, can=can, pad=2, scale=pad_heights[1],
                                             colours=self.list_colours, markers=self.list_markers)
 
