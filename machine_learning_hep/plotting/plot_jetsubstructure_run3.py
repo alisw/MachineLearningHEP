@@ -247,7 +247,7 @@ class Plotter:
         self.text_alice = "ALICE Preliminary, pp"  # preliminaries
         # self.text_alice = "#bf{ALICE}, pp, #sqrt{#it{s}} = 13.6 TeV"  # paper
         self.text_tagged = "%s-tagged" % self.latex_hadron
-        self.text_jets = self.text_tagged + " " + "charged-particle jets, anti-#it{k}_{T}, #it{R} = 0.4"
+        self.text_jets = "charged-particle jets, anti-#it{k}_{T}, #it{R} = 0.4"
         self.text_ptjet = "%g #leq %s (GeV/#it{c}) < %g"
         self.text_ptcut = "#it{p}_{T, incl. ch. jet}^{leading track} #geq 5.33 GeV/#it{c}"
         self.text_etajet = "|#it{#eta}_{jet ch}| < 0.5"
@@ -720,7 +720,7 @@ class Plotter:
                 # Results
                 self.logger.info("Plotting results")
                 plot_run2_data = True
-                self.list_latex = [self.text_alice,
+                self.list_latex = [f"{self.text_alice}, {self.text_run3}",
                                    self.text_jets,
                                    f"{self.get_text_range_ptjet(iptjet)}, {self.text_etajet}",
                                    self.get_text_range_pthf(-1, iptjet)]
@@ -733,7 +733,7 @@ class Plotter:
                                          f"{string_ptjet}_sel_selfnorm")
                 self.list_obj = [h_stat]
                 self.plot_order = list(range(len(self.list_obj)))
-                self.labels_obj = ["data"]
+                self.labels_obj = [self.text_tagged]
                 self.list_colours = [get_colour(i_iptjet)]
                 self.list_markers = [get_marker(i_iptjet)]
                 self.opt_plot_h = [self.opt_plot_h]
@@ -757,7 +757,7 @@ class Plotter:
                     # We need to plot the data on top of the systematics.
                     self.list_obj.insert(0, gr_syst)
                     self.plot_order.insert(0, -1)
-                    self.labels_obj.insert(0, "data")
+                    self.labels_obj.insert(0, self.text_tagged)
                     self.labels_obj[1] = ""  # do not show the histogram in the legend
                     self.list_colours.insert(0, get_colour(i_iptjet))
                     self.list_markers.insert(0, get_marker(i_iptjet))
@@ -888,7 +888,7 @@ class Plotter:
                     l_src = ["monash", "mode2"]
                     names_run3_sim = {
                         "incl" : "inclusive",
-                        "D0" : "D^{0}",
+                        "D0" : "D^{0}-tagged",
                         "Lc" : "#Lambda_{c}^{#plus}",
                         "mode2" : self.text_mode2,
                         "monash" : self.text_monash,
