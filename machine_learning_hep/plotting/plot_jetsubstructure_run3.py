@@ -251,6 +251,8 @@ class Plotter:
         self.text_etajet = "|#it{#eta}_{jet ch}| < 0.5"
         self.text_pth_yh = "%g #leq #it{p}_{T}^{%s} (GeV/#it{c}) < %g, |#it{y}_{%s}| < 0.8"
         self.text_sd = "Soft drop (#it{z}_{cut} = 0.1, #it{#beta} = 0)"
+        self.text_run2 = "pp, #sqrt{#it{s}} = 13 TeV"
+        self.text_run3 = "pp, #sqrt{#it{s}} = 13.6 TeV"
         # self.text_acc_h = "|#it{y}| < 0.8"
         # self.text_powheg = "POWHEG + PYTHIA 6 + EvtGen"
         self.text_monash = "PYTHIA 8 Monash"
@@ -777,7 +779,7 @@ class Plotter:
                     run2_lc_ff_data = self.get_run2_lc_ff_data()
                     self.list_obj += [run2_lc_ff_data[iptjet]["syst"], run2_lc_ff_data[iptjet]["stat"]]
                     self.plot_order += [-1.5, max(self.plot_order) - 0.5]
-                    self.labels_obj = ["Run 3", "", "Run 2", ""]
+                    self.labels_obj = ["Run 3", "", self.text_run2, ""]
                     self.list_colours += [get_colour(-1)] * 2
                     self.list_markers += [get_marker(-1)] * 2
                     self.opt_plot_h += [""]
@@ -789,7 +791,7 @@ class Plotter:
                     run2_lc_ff_sim["cr2"].SetLineStyle(self.l_mode2)
                     self.list_obj += [run2_lc_ff_sim["monash"], run2_lc_ff_sim["cr2"]]
                     self.plot_order += [max(self.plot_order) + 1, max(self.plot_order) + 2]
-                    self.labels_obj += [f"{self.text_monash}, Run 2", f"{self.text_mode2}, Run 2"]
+                    self.labels_obj += [f"{self.text_monash}, {self.text_run2}", f"{self.text_mode2}, {self.text_run2}"]
                     self.list_colours += [get_colour(c) for c in (self.c_lc_monash, self.c_lc_mode2)]
                     self.list_markers += [1] * 2
                     self.opt_plot_h += ["hist e"] * 2
@@ -835,7 +837,7 @@ class Plotter:
                                 colour = get_colour(c + 3)
                                 marker = get_marker(m)
                                 if source == "data":
-                                    label = "Run 2"
+                                    label = self.text_run2
                                     if flavour == "incl":
                                         label += ", inclusive"
                                         colour = get_colour(3)
@@ -859,7 +861,7 @@ class Plotter:
                     run2_d0_ff_data = self.get_run2_d0_ff_data()
                     self.list_obj += [run2_d0_ff_data["syst"], run2_d0_ff_data["stat"]]
                     self.plot_order += [-0.5, max(self.plot_order) + 1]
-                    self.labels_obj += ["Run 2", ""]
+                    self.labels_obj += [self.text_run2, ""]
                     self.list_colours += [get_colour(-1)] * 2
                     self.list_markers += [get_marker(-1)] * 2
                     self.opt_plot_h += [""]
@@ -962,7 +964,7 @@ class Plotter:
                     self.list_obj = [gr_syst, run2_d0_ff_data["syst"], h_stat, run2_d0_ff_data["stat"]]
                     # self.plot_order = list(range(len(self.list_obj)))
                     self.plot_order = [1, 0, 3, 2]
-                    self.labels_obj = ["#Lambda_{c}", "D^{0}, Run 2", "", ""]
+                    self.labels_obj = ["#Lambda_{c}", f"D^{0}, {self.text_run2}", "", ""]
                     self.list_colours = [get_colour(i) for i in (0, -1)] * 2
                     self.list_markers = [get_marker(i) for i in (0, -1)] * 2
                     self.leg_pos = [.65, .0, .97, .75]
@@ -981,7 +983,7 @@ class Plotter:
                     rat_cr2.SetLineStyle(self.l_mode2)
                     self.list_obj = [rat_syst, rat_stat, rat_monash, rat_cr2, line_1]
                     self.plot_order = list(range(len(self.list_obj)))
-                    self.labels_obj = ["data", "", f"{self.text_monash}, Run 2", f"{self.text_mode2}, Run 2"]
+                    self.labels_obj = ["data", "", f"{self.text_monash}, {self.text_run2}", f"{self.text_mode2}, {self.text_run2}"]
                     self.list_colours = [get_colour(i) for i in (0, 0, self.c_lc_monash, self.c_lc_mode2)]
                     self.list_markers = [get_marker(0)] * 2 + [1, 1]
                     self.opt_plot_h = [self.opt_plot_h] + 2 * ["hist e"]
@@ -1028,7 +1030,7 @@ class Plotter:
                     n_obj = len(self.list_obj)
                     self.plot_order = list(range(n_obj)) + [-1, -.5]
                     self.list_obj += [g_run2, h_run2]
-                    self.labels_obj += [f"Run 2, {self.get_text_range_ptjet(2)}", ""]
+                    self.labels_obj += [f"{self.text_run2}, {self.get_text_range_ptjet(2)}", ""]
                     self.list_colours += [get_colour(-1)] * 2
                     self.list_markers += [get_marker(-1)] * 2
                     self.leg_horizontal = False
