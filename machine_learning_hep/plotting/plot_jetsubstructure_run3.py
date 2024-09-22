@@ -248,7 +248,8 @@ class Plotter:
         self.text_alice = "ALICE Preliminary, pp"  # preliminaries
         # self.text_alice = "#bf{ALICE}, pp, #sqrt{#it{s}} = 13.6 TeV"  # paper
         self.text_tagged = "%s-tagged" % self.latex_hadron
-        self.text_jets = "charged-particle jets, anti-#it{k}_{T}, #it{R} = 0.4"
+        # self.text_jets = "charged-particle jets, anti-#it{k}_{T}, #it{R} = 0.4"
+        self.text_jets = self.text_tagged + " " + "charged-particle jets, anti-#it{k}_{T}, #it{R} = 0.4"
         self.text_ptjet = "%g #leq %s (GeV/#it{c}) < %g"
         self.text_ptcut = "#it{p}_{T, incl. ch. jet}^{leading track} #geq 5.33 GeV/#it{c}"
         self.text_etajet = "|#it{#eta}_{jet ch}| < 0.5"
@@ -465,7 +466,7 @@ class Plotter:
         margin_right = self.margins_can[3]  # size of the right margin relative to the canvas height
         padding_top_glob = self.tick_length + 0.01
         padding_left_glob = self.tick_length + 0.01
-        padding_right_glob = self.tick_length + 0.5
+        padding_right_glob = self.tick_length + 0.01
         if self.y_latex_top is None:
             y_latex_top_glob = 1. - (self.fontsize_glob + padding_top_glob)
             y_latex_top_loc = 1. - (self.fontsize_glob + padding_top_glob) / scale
@@ -481,7 +482,7 @@ class Plotter:
         leg_pos_glob = self.leg_pos.copy()
         n_entries_leg = len([s for s in self.labels_obj if s])
         n_rows = 1
-        n_columns = 1
+        n_columns = 2
         if self.leg_horizontal:
             n_rows = ceil(n_entries_leg / n_columns)
             if self.list_latex:
@@ -721,7 +722,8 @@ class Plotter:
                 # Results
                 self.logger.info("Plotting results")
                 plot_run2_data = False
-                self.list_latex = [f"{self.text_alice}, {self.text_run3}",
+                self.list_latex = [self.text_alice,
+                # self.list_latex = [f"{self.text_alice}, {self.text_run3}",
                                    self.text_jets,
                                    f"{self.get_text_range_ptjet(iptjet)}, {self.text_etajet}",
                                    self.get_text_range_pthf(-1, iptjet)]
@@ -767,7 +769,7 @@ class Plotter:
 
                 # Plot additional stuff.
                 plot_run2_lc_ff_data = True
-                plot_run2_lc_ff_sim = True
+                plot_run2_lc_ff_sim = False
 
                 plot_run2_d0_ff_data = True
 
