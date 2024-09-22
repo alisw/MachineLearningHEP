@@ -231,10 +231,10 @@ class Plotter:
         self.leg_horizontal_default = True
         self.leg_horizontal = True
         # self.y_margin_up = 0.46
-        self.y_margin_up = 0.04
-        self.y_margin_up_default = 0.04
-        self.y_margin_down = 0.04
-        self.y_margin_down_default = 0.04
+        self.y_margin_up = 0.05
+        self.y_margin_up_default = 0.05
+        self.y_margin_down = 0.05
+        self.y_margin_down_default = 0.05
         self.plot_errors_x = True  # plot horizontal error bars
 
         # axes titles
@@ -463,8 +463,8 @@ class Plotter:
         margin_top = self.margins_can[2]  # size of the top margin relative to the canvas height
         margin_right = self.margins_can[3]  # size of the right margin relative to the canvas height
         padding_top_glob = self.tick_length + 0.01
-        padding_right_left = self.tick_length + 0.01
-        padding_right_glob = self.tick_length + 0.12
+        padding_left_glob = self.tick_length + 0.01
+        padding_right_glob = self.tick_length + 0.5
         if self.y_latex_top is None:
             y_latex_top_glob = 1. - (self.fontsize_glob + padding_top_glob)
             y_latex_top_loc = 1. - (self.fontsize_glob + padding_top_glob) / scale
@@ -489,7 +489,7 @@ class Plotter:
                 y_leg_max = 1. - margin_top - padding_top_glob
             y_leg_min = y_leg_max - n_rows * self.y_step_glob
             # leg_pos_glob = [self.x_latex, y_leg_min, 1. - margin_right - padding_right_glob, y_leg_max]
-            leg_pos_glob = [margin_left + padding_right_left, y_leg_min, 1. - margin_right - padding_right_glob, y_leg_max]
+            leg_pos_glob = [margin_left + padding_left_glob, y_leg_min, 1. - margin_right - padding_right_glob, y_leg_max]
         else:
             leg_pos_glob[1] = leg_pos_glob[3] - n_entries_leg * self.y_step_glob * scale_text_leg
         leg_height_glob = leg_pos_glob[3] - leg_pos_glob[1]
@@ -1022,8 +1022,11 @@ class Plotter:
 
             self.logger.info("Plotting results for all pt jet together")
             self.plot_errors_x = False
-            self.list_latex = [self.text_alice, self.text_jets,
+            self.list_latex = [self.text_alice,
+                               f"{self.text_tagged} {self.text_jets}",
                                 f"{self.get_text_range_pthf(-1, iptjet)}, {self.text_etajet}"]
+            if not plot_run2_data:
+                self.list_latex[0] = f"{self.text_alice}, {self.text_run3}"
             if self.var in ("zg", "rg", "nsd"):
                 self.list_latex.append(self.text_sd)
                 # self.list_latex.append(self.text_ptcut)
@@ -1049,9 +1052,9 @@ class Plotter:
                     self.labels_obj += [f"{self.text_run2}, {self.get_text_range_ptjet(2)}", ""]
                     self.list_colours += [get_colour(-1)] * 2
                     self.list_markers += [get_marker(-1)] * 2
-                    self.leg_horizontal = False
+                    self.leg_horizontal = True
                     self.leg_pos = [.52, .65, .85, .73]
-                    self.y_margin_up = 0.08
+                    self.y_margin_up = 0.04
             self.title_full = self.title_full_default
             name_can = f"{self.species}_results_{self.var}_{self.mcordata}_ptjet-all"
             can = TCanvas(name_can, name_can)
