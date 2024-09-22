@@ -223,7 +223,7 @@ class Plotter:
         self.x_latex = 0.16
         # self.y_latex_top = 1. - self.margins_can[2] - self.fontsize_glob - self.tick_length - 0.01
         self.y_latex_top = None
-        self.y_step_glob = 0.05
+        self.y_step_glob = 0.052
         self.leg_pos_default = [.72, .7, .85, .8]
         self.leg_pos = self.leg_pos_default
         self.scale_text_leg_default = 0.8
@@ -231,10 +231,10 @@ class Plotter:
         self.leg_horizontal_default = True
         self.leg_horizontal = True
         # self.y_margin_up = 0.46
-        self.y_margin_up = 0.05
-        self.y_margin_up_default = 0.05
-        self.y_margin_down = 0.05
-        self.y_margin_down_default = 0.05
+        self.y_margin_up = 0.04
+        self.y_margin_up_default = 0.04
+        self.y_margin_down = 0.04
+        self.y_margin_down_default = 0.04
         self.plot_errors_x = True  # plot horizontal error bars
 
         # axes titles
