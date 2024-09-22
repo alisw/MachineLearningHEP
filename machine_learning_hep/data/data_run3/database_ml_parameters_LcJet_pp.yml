@@ -485,7 +485,7 @@ LcJet_pp:
       usejetptbinned_deff: false
       doeff_resp: true #efficiency correction for the response matrix
       unmatched_gen: true
-      latexnamehadron: "#Lambda_{c}"
+      latexnamehadron: "#Lambda_{c}^{#plus}"
       latexnamedecay: "pK#pi"
       var_binning2: pt_jet
       var_binning2_gen: pt_gen_jet

@@ -26,6 +26,7 @@ from pathlib import Path
 from functools import reduce
 import numpy as np
 from array import array
+from math import ceil
 
 import yaml
 from ROOT import TCanvas, TFile, gROOT, gStyle, TVirtualPad, TLine, TH1
@@ -243,16 +244,17 @@ class Plotter:
         self.title_full_default = self.title_full
         # self.title_full_ratio = ";%s;data/MC: ratio of %s" % (self.title_x, self.title_y)
         # text
-        self.text_alice = "ALICE Preliminary, pp, #sqrt{#it{s}} = 13.6 TeV"  # preliminaries
+        self.text_alice = "ALICE Preliminary, pp"  # preliminaries
         # self.text_alice = "#bf{ALICE}, pp, #sqrt{#it{s}} = 13.6 TeV"  # paper
-        self.text_jets = "%s-tagged charged-particle jets, anti-#it{k}_{T}, #it{R} = 0.4" % self.latex_hadron
+        self.text_tagged = "%s-tagged" % self.latex_hadron
+        self.text_jets = self.text_tagged + " " + "charged-particle jets, anti-#it{k}_{T}, #it{R} = 0.4"
         self.text_ptjet = "%g #leq %s (GeV/#it{c}) < %g"
         self.text_ptcut = "#it{p}_{T, incl. ch. jet}^{leading track} #geq 5.33 GeV/#it{c}"
         self.text_etajet = "|#it{#eta}_{jet ch}| < 0.5"
         self.text_pth_yh = "%g #leq #it{p}_{T}^{%s} (GeV/#it{c}) < %g, |#it{y}_{%s}| < 0.8"
         self.text_sd = "Soft drop (#it{z}_{cut} = 0.1, #it{#beta} = 0)"
-        self.text_run2 = "pp, #sqrt{#it{s}} = 13 TeV"
-        self.text_run3 = "pp, #sqrt{#it{s}} = 13.6 TeV"
+        self.text_run2 = "#sqrt{#it{s}} = 13 TeV"
+        self.text_run3 = "#sqrt{#it{s}} = 13.6 TeV"
         # self.text_acc_h = "|#it{y}| < 0.8"
         # self.text_powheg = "POWHEG + PYTHIA 6 + EvtGen"
         self.text_monash = "PYTHIA 8 Monash"
@@ -461,7 +463,8 @@ class Plotter:
         margin_top = self.margins_can[2]  # size of the top margin relative to the canvas height
         margin_right = self.margins_can[3]  # size of the right margin relative to the canvas height
         padding_top_glob = self.tick_length + 0.01
-        padding_right_glob = self.tick_length + 0.01
+        padding_right_left = self.tick_length + 0.01
+        padding_right_glob = self.tick_length + 0.12
         if self.y_latex_top is None:
             y_latex_top_glob = 1. - (self.fontsize_glob + padding_top_glob)
             y_latex_top_loc = 1. - (self.fontsize_glob + padding_top_glob) / scale
@@ -476,14 +479,17 @@ class Plotter:
         scale_text_leg = self.scale_text_leg
         leg_pos_glob = self.leg_pos.copy()
         n_entries_leg = len([s for s in self.labels_obj if s])
+        n_rows = 1
+        n_columns = 1
         if self.leg_horizontal:
+            n_rows = ceil(n_entries_leg / n_columns)
             if self.list_latex:
                 y_leg_max = y_latex_top_glob - self.y_step_glob * (len(self.list_latex) - 1 + 0.2)
             else:
                 y_leg_max = 1. - margin_top - padding_top_glob
-            y_leg_min = y_leg_max - self.y_step_glob
-            leg_pos_glob = [self.x_latex, y_leg_min, 1. - margin_right - padding_right_glob, y_leg_max]
-            leg_pos_glob = [margin_left + padding_right_glob, y_leg_min, 1. - margin_right - padding_right_glob, y_leg_max]
+            y_leg_min = y_leg_max - n_rows * self.y_step_glob
+            # leg_pos_glob = [self.x_latex, y_leg_min, 1. - margin_right - padding_right_glob, y_leg_max]
+            leg_pos_glob = [margin_left + padding_right_left, y_leg_min, 1. - margin_right - padding_right_glob, y_leg_max]
         else:
             leg_pos_glob[1] = leg_pos_glob[3] - n_entries_leg * self.y_step_glob * scale_text_leg
         leg_height_glob = leg_pos_glob[3] - leg_pos_glob[1]
@@ -511,7 +517,7 @@ class Plotter:
         y_margin_up_loc = self.y_margin_up
         y_margin_down_loc = self.y_margin_down
         if self.list_latex:
-            y_latex_bottom_loc = y_latex_top_loc - self.y_step_glob / scale * (len(self.list_latex) - 1 + int(self.leg_horizontal and n_entries_leg > 0))
+            y_latex_bottom_loc = y_latex_top_loc - self.y_step_glob / scale * (len(self.list_latex) - 1 + n_rows * int(self.leg_horizontal and n_entries_leg > 0))
             y_margin_up_loc += (y_panel_top_loc - y_latex_bottom_loc) / panel_height_loc
         elif self.leg_horizontal and n_entries_leg > 0:
             y_margin_up_loc += (y_panel_top_loc - leg_pos_loc[1]) / panel_height_loc
@@ -530,7 +536,7 @@ class Plotter:
         leg = new[0]
         if self.leg_horizontal:
             n_entries_leg = leg.GetListOfPrimitives().GetSize()
-            leg.SetNColumns(n_entries_leg)
+            leg.SetNColumns(n_columns)
         leg.SetTextSize(self.fontsize_glob / scale * scale_text_leg)
         self.list_new += new
         if self.list_latex:
@@ -667,7 +673,7 @@ class Plotter:
                                            self.get_text_range_pthf(ipt, iptjet)]
                         if self.var in ("zg", "rg", "nsd"):
                             self.list_latex.append(self.text_sd)
-                            self.list_latex.append(self.text_ptcut)
+                            # self.list_latex.append(self.text_ptcut)
                         self.make_plot(f"{self.species}_sidebands_{self.var}_{self.mcordata}_{string_ptjet}_{string_pthf}")
 
                 # Feed-down subtraction
@@ -688,7 +694,7 @@ class Plotter:
                                     self.get_text_range_pthf(-1, iptjet)]
                     if self.var in ("zg", "rg", "nsd"):
                         self.list_latex.append(self.text_sd)
-                        self.list_latex.append(self.text_ptcut)
+                        # self.list_latex.append(self.text_ptcut)
                     self.make_plot(f"{self.species}_feeddown_{self.var}_{self.mcordata}_{string_ptjet}")
 
                     # TODO: feed-down (after 2D, fraction)
@@ -713,13 +719,14 @@ class Plotter:
 
                 # Results
                 self.logger.info("Plotting results")
+                plot_run2_data = True
                 self.list_latex = [self.text_alice,
                                    self.text_jets,
                                    f"{self.get_text_range_ptjet(iptjet)}, {self.text_etajet}",
                                    self.get_text_range_pthf(-1, iptjet)]
                 if self.var in ("zg", "rg", "nsd"):
                     self.list_latex.append(self.text_sd)
-                    self.list_latex.append(self.text_ptcut)
+                    # self.list_latex.append(self.text_ptcut)
                 self.plot_errors_x = False
                 self.range_x = x_range[self.var]
                 h_stat = self.get_object(f"h_{self.var}_{self.method}_unfolded_{self.mcordata}_"
@@ -732,7 +739,10 @@ class Plotter:
                 self.opt_plot_h = [self.opt_plot_h]
                 self.opt_leg_h = [self.opt_leg_h]
                 list_stat_all += self.list_obj
-                list_labels_all += [self.get_text_range_ptjet(iptjet)]
+                label = self.get_text_range_ptjet(iptjet)
+                if plot_run2_data:
+                    label = f"{self.text_run3}, {label}"
+                list_labels_all += [label]
                 list_colours_stat_all += self.list_colours
                 list_markers_all += self.list_markers
                 path_syst = f"{os.path.expandvars(self.dir_input)}/systematics.root"
@@ -779,7 +789,7 @@ class Plotter:
                     run2_lc_ff_data = self.get_run2_lc_ff_data()
                     self.list_obj += [run2_lc_ff_data[iptjet]["syst"], run2_lc_ff_data[iptjet]["stat"]]
                     self.plot_order += [-1.5, max(self.plot_order) - 0.5]
-                    self.labels_obj = ["Run 3", "", self.text_run2, ""]
+                    self.labels_obj = [self.text_run3, "", self.text_run2, ""]
                     self.list_colours += [get_colour(-1)] * 2
                     self.list_markers += [get_marker(-1)] * 2
                     self.opt_plot_h += [""]
@@ -931,14 +941,21 @@ class Plotter:
                 if self.var == "rg":
                     if iptjet == 2:
                         self.leg_pos = [self.x_latex, .8, self.x_latex + 0.32, .63]
-                        self.leg_pos[3] -= self.y_step_glob  # if plotting leading track cut for inclusive jets
+                        # self.leg_pos[3] -= self.y_step_glob  # if plotting leading track cut for inclusive jets
                     elif iptjet == 3:
                         self.leg_pos = [0.3, .8, 0.3 + 0.32, .25]
                 elif self.species == "Lc" and self.var == "zpar":
                     self.leg_pos = [.55, .8, 0.8, .68]
-                self.leg_horizontal = False
+                self.leg_horizontal = True
                 can, new = self.make_plot(f"{self.species}_results_{self.var}_{self.mcordata}_{string_ptjet}",
                                         colours=self.list_colours, markers=self.list_markers)
+                # redo_leg = True
+                # if redo_leg:
+                #     leg = new[0]
+                #     leg_new = leg.Clone()
+                #     leg_new.Clear()
+                #     for i in (0, 2, 1, 3):
+                #         leg_new.AddEntry(self.list_obj[i], self.opt_leg[])
 
                 # Reset defaults.
                 self.plot_order = self.plot_order_default
@@ -964,7 +981,7 @@ class Plotter:
                     self.list_obj = [gr_syst, run2_d0_ff_data["syst"], h_stat, run2_d0_ff_data["stat"]]
                     # self.plot_order = list(range(len(self.list_obj)))
                     self.plot_order = [1, 0, 3, 2]
-                    self.labels_obj = ["#Lambda_{c}^{#plus}", f"D^{{0}}, {self.text_run2}", "", ""]
+                    self.labels_obj = [f"#Lambda_{{c}}^{{#plus}}, {self.text_run3}", f"D^{{0}}, {self.text_run2}", "", ""]
                     self.list_colours = [get_colour(i) for i in (0, -1)] * 2
                     self.list_markers = [get_marker(i) for i in (0, -1)] * 2
                     self.leg_pos = [.65, .0, .97, .75]
@@ -989,7 +1006,7 @@ class Plotter:
                     self.opt_plot_h = [self.opt_plot_h] + 2 * ["hist e"]
                     self.opt_leg_h = [self.opt_leg_h] + 2 * ["L"]
                     self.leg_horizontal = True
-                    self.scale_text_leg = 0.7
+                    # self.scale_text_leg = 0.7
                     self.list_latex = []
                     self.title_full = f";{self.latex_obs};#Lambda_{{c}}^{{#plus}}/D^{{0}}"
                     can, new = self.make_plot(name_can, can=can, pad=2, scale=pad_heights[1],
@@ -1016,7 +1033,6 @@ class Plotter:
             self.labels_obj = list_labels_all + [""] * len(list_stat_all)  # do not show the histograms in the legend
             self.list_colours = list_colours_syst_all + list_colours_stat_all
             self.list_markers = list_markers_all * (1 + int(bool(list_syst_all)))
-            plot_run2_data = True
             if plot_run2_data:
                 h_run2, g_run2 = None, None
                 if plot_run2_d0_sd and self.species == "D0" and self.var in ("zg", "rg", "nsd"):
@@ -1073,7 +1089,7 @@ class Plotter:
                                    ]
                 if self.var in ("zg", "rg", "nsd"):
                     self.list_latex.append(self.text_sd)
-                    self.list_latex.append(self.text_ptcut)
+                    # self.list_latex.append(self.text_ptcut)
                 self.leg_horizontal = True
                 self.range_x = x_range[self.var]
                 # Get D0 results

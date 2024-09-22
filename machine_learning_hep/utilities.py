@@ -612,6 +612,7 @@ def setup_histogram(hist, colour=1, markerstyle=kOpenCircle, size=1.5, textsize=
     hist.SetStats(0)
     hist.GetXaxis().SetLabelSize(textsize)
     hist.GetYaxis().SetLabelSize(textsize)
+    hist.GetYaxis().SetDecimals()
     hist.SetTitleSize(textsize * scale_title, "X")
     hist.SetTitleSize(textsize * scale_title, "Y")
     hist.SetTitleOffset(1.0, "X")
@@ -626,6 +627,7 @@ def setup_histogram(hist, colour=1, markerstyle=kOpenCircle, size=1.5, textsize=
 def setup_tgraph(tg_, colour=1, markerstyle=kOpenCircle, size=1.5, alphastyle=0.8, fillstyle=1001, textsize=0.05, scale_title=1.3):
     tg_.GetXaxis().SetLabelSize(textsize)
     tg_.GetYaxis().SetLabelSize(textsize)
+    tg_.GetYaxis().SetDecimals()
     tg_.GetXaxis().SetTitleSize(textsize * scale_title)
     tg_.GetYaxis().SetTitleSize(textsize * scale_title)
     tg_.GetXaxis().SetTitleOffset(1.0)
