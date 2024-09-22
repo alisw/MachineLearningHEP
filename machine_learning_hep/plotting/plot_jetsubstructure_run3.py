@@ -29,7 +29,7 @@ from array import array
 from math import ceil
 
 import yaml
-from ROOT import TCanvas, TFile, gROOT, gStyle, TVirtualPad, TLine, TH1
+from ROOT import TCanvas, TFile, gROOT, gStyle, TVirtualPad, TLine, TH1, TLegend
 
 from machine_learning_hep.logger import get_logger, configure_logger
 from machine_learning_hep.analysis.analyzer_jets import string_range_ptjet, string_range_pthf
@@ -51,6 +51,7 @@ from machine_learning_hep.utilities import (
     make_ratios,
     setup_histogram,
     setup_tgraph,
+    setup_legend,
     count_histograms,
     count_graphs,
 )
@@ -719,7 +720,7 @@ class Plotter:
 
                 # Results
                 self.logger.info("Plotting results")
-                plot_run2_data = True
+                plot_run2_data = False
                 self.list_latex = [f"{self.text_alice}, {self.text_run3}",
                                    self.text_jets,
                                    f"{self.get_text_range_ptjet(iptjet)}, {self.text_etajet}",
@@ -1070,9 +1071,23 @@ class Plotter:
             self.list_obj = list_ratio_syst + list_ratio_stat + [line_1]
             self.labels_obj = []
             self.list_latex = []
-            self.title_full = f";{self.latex_obs};ratio"
+            self.title_full = f";{self.latex_obs};ratio to    "
             can, new = self.make_plot(name_can, can=can, pad=2, scale=pad_heights[1],
                                       colours=self.list_colours, markers=self.list_markers)
+            width = self.y_step_glob * 2.5
+            leg = TLegend(self.margins_can[1] / 2 - width / 3,
+                          1. - self.y_step_glob / pad_heights[1],
+                          self.margins_can[1] / 2 + width / 1 ,
+                          1.)
+            setup_legend(leg)
+            leg.AddEntry(list_syst_all[-1], " ", "FP")
+            can.cd(2)
+            leg.Draw()
+            gStyle.SetErrorX(0.5)  # reset default width
+            if not self.plot_errors_x:
+                gStyle.SetErrorX(0)  # do not plot horizontal error bars of histograms
+            self.save_canvas(can)
+            gStyle.SetErrorX(0.5)  # reset default width
 
             # Reset defaults.
             self.plot_order = self.plot_order_default
