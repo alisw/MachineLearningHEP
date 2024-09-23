@@ -467,6 +467,7 @@ class Plotter:
         padding_top_glob = self.tick_length + 0.01
         padding_left_glob = self.tick_length + 0.01
         padding_right_glob = self.tick_length + 0.01
+        # padding_right_glob = self.tick_length + 0.5  # for a single-column horizontal legend
         if self.y_latex_top is None:
             y_latex_top_glob = 1. - (self.fontsize_glob + padding_top_glob)
             y_latex_top_loc = 1. - (self.fontsize_glob + padding_top_glob) / scale
@@ -1078,6 +1079,7 @@ class Plotter:
             self.list_obj = list_ratio_syst + list_ratio_stat + [line_1]
             self.labels_obj = []
             self.list_latex = []
+            self.y_margin_up = 0.06  # to fix cropped number on the axis
             self.title_full = f";{self.latex_obs};ratio to    "
             can, new = self.make_plot(name_can, can=can, pad=2, scale=pad_heights[1],
                                       colours=self.list_colours, markers=self.list_markers)
