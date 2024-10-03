@@ -1,6 +1,7 @@
 from collections import deque
 import itertools
 
+import math
 import numpy as np
 import pandas as pd
 import ROOT
@@ -44,10 +45,16 @@ def get_nbins(hist, axis:int):
     return get_axis(hist, axis).GetNbins()
 
 
-# pylint: disable=too-many-branches
-def project_hist(hist, axes: list, limits: dict[int, tuple[int]]):
+def get_bin_limits(axis, i_bin: int):
+    return (axis.GetBinLowEdge(i_bin), axis.GetBinUpEdge(i_bin))
+
+
+# pylint: disable=too-many-branches, too-many-statements
+def project_hist(hist, axes: list, limits: dict[int, tuple[int, int]]):
     # TODO: add consistent suffix for projections
     # TODO: add option for uncertainties ???
+    if not hist:
+        raise ValueError
     if len(axes) == 2:
         axes = axes[:] # slice to avoid modifying the list passed as parameter
         axes.reverse() # compensation for ROOT signature using ydim, xdim for 2d projection
@@ -107,7 +114,6 @@ def project_hist(hist, axes: list, limits: dict[int, tuple[int]]):
                 hproj.Reset()
             return hproj
         raise ValueError
-
     raise NotImplementedError
 
 
@@ -248,3 +254,67 @@ def sum_hists(hists, name = None):
 def ensure_sumw2(hist):
     if hist.GetSumw2N() < 1:
         hist.Sumw2()
+
+
+def get_bin_val(hist, hbin):
+    if isinstance(hist, ROOT.TH1):
+        return hist.GetBinContent(*hbin)
+    if isinstance(hist, ROOT.THn):
+        return hist.GetBinContent(np.array(hbin, 'i'))
+    raise NotImplementedError
+
+
+def get_bin_err(hist, hbin):
+    if isinstance(hist, ROOT.TH1):
+        return hist.GetBinError(*hbin)
+    if isinstance(hist, ROOT.THn):
+        return hist.GetBinError(np.array(hbin, 'i'))
+    raise NotImplementedError
+
+
+def set_bin_val(hist, hbin, val):
+    if isinstance(hist, ROOT.TH1):
+        return hist.SetBinContent(*hbin, val)
+    if isinstance(hist, ROOT.THn):
+        return hist.SetBinContent(np.array(hbin, 'i'), val)
+    raise NotImplementedError
+
+
+def set_bin_err(hist, hbin, val):
+    if isinstance(hist, ROOT.TH1):
+        return hist.SetBinError(*hbin, val)
+    if isinstance(hist, ROOT.THn):
+        return hist.SetBinError(np.array(hbin, 'i'), val)
+    raise NotImplementedError
+
+
+def norm_response(response, dim_out):
+    response_norm = response.Clone()
+    for bin_in in itertools.product(*(range(1, get_nbins(response_norm, iaxis) + 1)
+                                      for iaxis in range(dim_out, get_dim(response_norm)))):
+        for iaxis, val in enumerate(bin_in, dim_out):
+            get_axis(response_norm, iaxis).SetRange(val, val)
+        norm = response_norm.Projection(0).Integral()
+        if np.isclose(norm, 0.):
+            continue
+        for bin_out in itertools.product(*(range(1, get_nbins(response_norm, i)+1) for i in range(dim_out))):
+            set_bin_val(response_norm, bin_out + bin_in, get_bin_val(response_norm, bin_out + bin_in) / norm)
+            set_bin_err(response_norm, bin_out + bin_in, get_bin_err(response_norm, bin_out + bin_in) / norm)
+    return response_norm
+
+
+def fold_hist(hist, response):
+    """Fold hist with response"""
+    assert get_dim(response) > get_dim(hist)
+    dim_out = get_dim(response) - get_dim(hist)
+    axes_spec = list(np.array(get_axis(response, i).GetXbins(), 'd') for i in range(dim_out))
+    hfold = create_hist('test', 'test', *axes_spec)
+    for bin_out in itertools.product(*(range(1, get_nbins(hfold, i)+1) for i in range(get_dim(hfold)))):
+        val = 0.
+        err = 0.
+        for bin_in in itertools.product(*(range(1, get_nbins(hist, i)+1) for i in range(get_dim(hist)))):
+            val += get_bin_val(hist, bin_in) * get_bin_val(response, bin_out + bin_in)
+            err += get_bin_err(hist, bin_in)**2 * get_bin_val(response, bin_out + bin_in)**2
+        set_bin_val(hfold, bin_out, val)
+        set_bin_err(hfold, bin_out, math.sqrt(err))
+    return hfold

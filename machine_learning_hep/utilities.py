@@ -797,7 +797,7 @@ def make_plot(  # pylint: disable=too-many-arguments, too-many-branches, too-man
             opt_leg = [opt_leg_h] * (counter_plot + 1)
         if leg and n_labels > counter_plot and isinstance(labels_obj, list) and len(labels_obj[counter_plot]) > 0:
             leg.AddEntry(histogram, labels_obj[counter_plot], opt_leg[counter_plot])
-        print(f"Plotting {histogram.GetName()} with option {opt_plot[counter_plot]}")
+        # print(f"Plotting {histogram.GetName()} with option {opt_plot[counter_plot]}")
         histogram.Draw(opt_plot[counter_plot])
 
     def plot_latex(latex):
@@ -1011,7 +1011,7 @@ def divide_graphs(gr_num, gr_den):
     return gr_rat
 
 
-def scale_graph(graph, number):
+def scale_graph(graph, number: float):
     """
     Scale TGraphAsymmErrors
     """
@@ -1021,6 +1021,26 @@ def scale_graph(graph, number):
         graph.SetPointY(i, graph.GetPointY(i) * number)
         graph.SetPointEYhigh(i, graph.GetErrorYlow(i) * number)
         graph.SetPointEYlow(i, graph.GetErrorYhigh(i) * number)
+
+
+def reset_hist_outside_range(hist, x_min: float, x_max: float, val_reset=0.0):
+    """Reset bins of histogram hist outside [x_min, x_max] to val_reset."""
+    for i_bin in range(1, hist.GetNbinsX() + 1):
+        if round(hist.GetBinLowEdge(i_bin + 1), 2) <= x_min or round(hist.GetBinLowEdge(i_bin), 2) >= x_max:
+            hist.SetBinContent(i_bin, val_reset)
+            hist.SetBinError(i_bin, 0.0)
+
+
+def reset_graph_outside_range(graph, x_min: float, x_max: float, val_reset=0.0):
+    """Reset points of graph outside [x_min, x_max] to val_reset."""
+    for i_point in range(graph.GetN()):
+        if (
+            round(graph.GetPointX(i_point) + graph.GetErrorXhigh(i_point), 2) <= x_min
+            or round(graph.GetPointX(i_point) - graph.GetErrorXlow(i_point), 2) >= x_max
+        ):
+            graph.SetPointY(i_point, val_reset)
+            graph.SetPointEYlow(i_point, 0.0)
+            graph.SetPointEYhigh(i_point, 0.0)
 
 
 def sqrt_sum_sq(numbers):
@@ -1178,3 +1198,10 @@ def format_value_with_unc(y, e_stat=None, e_syst_plus=None, e_syst_minus=None, n
         else:
             str_value += f" +{str_e_syst_plus} −{str_e_syst_minus} (syst.)"
     return str_value
+
+
+def print_histogram(hist, verbose=True):
+    if verbose:
+        n_bins = hist.GetNbinsX()
+        print(f"{hist.GetName()}, {n_bins} bins, {hist.GetXaxis().GetXmin()} to {hist.GetXaxis().GetXmax()}")
+        print([hist.GetBinContent(i + 1) for i in range(n_bins)])

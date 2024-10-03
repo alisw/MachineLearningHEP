@@ -302,10 +302,19 @@ def healthy_structure(dic_diff: dict):  # pylint: disable=too-many-return-statem
     return True
 
 
-def main(
-    yaml_in, yaml_diff, analysis, clean, proc, script_name
-):  # pylint: disable=too-many-locals, too-many-statements, too-many-branches
+def main(yaml_in: str, yaml_diff: str, analysis: str, config: str, clean: bool, proc: int, script_name: str):  # pylint: disable=too-many-locals, too-many-statements, too-many-branches
     """Main function"""
+
+    suffix_config_default = "analysis.yml"
+    suffix_config_analyser = "analyzer.yml"
+    if analysis:
+        if not config:
+            msg_err("Analysis provided without a default config file.")
+            sys.exit(1)
+        if not config.endswith(suffix_config_default):
+            msg_err(f'Provided default config file does not end with "{suffix_config_default}".')
+            sys.exit(1)
+
     with open(yaml_in, "r", encoding="utf-8") as file_in:
         dic_in = yaml.safe_load(file_in)
     with open(yaml_diff, "r", encoding="utf-8") as file_diff:
@@ -405,8 +414,9 @@ def main(
                 if analysis:
                     if do_processor and not delete_output_dirs(dic_new, analysis, varstring):
                         sys.exit(1)
-                    mode = "complete" if do_processor else "analyzer"
-                    config = "submission/default_%s.yml" % mode
+                    config_final = (
+                        config if do_processor else config.replace(suffix_config_default, suffix_config_analyser)
+                    )
                     print(
                         "Starting the analysis \x1b[1;32m%s\x1b[0m for the variation "
                         "\x1b[1;32m%s: %s\x1b[0m" % (analysis, label_cat, format_varlabel(label_var, index, n_var))
@@ -422,15 +432,15 @@ def main(
                     print("Logfile: %s" % logfile)
                     if script_name:
                         script_lines.append(
-                            "python do_entire_analysis.py "
-                            "-a %s -r %s -d %s -c > %s 2>&1\n" % (analysis, config, yaml_out, logfile)
+                            "mlhep "
+                            "-a %s -r %s -d %s -b --delete-force > %s 2>&1\n"
+                            % (analysis, config_final, yaml_out, logfile)
                         )
                     else:
                         with open(logfile, "w", encoding="utf-8") as ana_out:
                             subprocess.Popen(  # pylint: disable=consider-using-with
                                 shlex.split(
-                                    "python do_entire_analysis.py "
-                                    "-a %s -r %s -d %s -c" % (analysis, config, yaml_out)
+                                    "mlhep " "-a %s -r %s -d %s -b --delete-force" % (analysis, config_final, yaml_out)
                                 ),
                                 stdout=ana_out,
                                 stderr=ana_out,
@@ -456,26 +466,34 @@ def main(
 
 
 if __name__ == "__main__":
-    PARSER = argparse.ArgumentParser(description="Run the analysis with " "variations of parameters.")
-    PARSER.add_argument("input", help="database with default parameters")
-    PARSER.add_argument("diff", help="database with variations")
-    PARSER.add_argument(
+    parser = argparse.ArgumentParser(description="Run the analysis with variations of parameters.")
+    parser.add_argument("input", type=str, help="database with default parameters")
+    parser.add_argument("diff", type=str, help="database with variations")
+    parser.add_argument(
         "-a",
         dest="analysis",
-        help="analysis type " "(If provided, the analysis will be started for all activated variations.)",
+        type=str,
+        help="analysis type (If provided, the analysis will be started for all activated variations.)",
     )
-    PARSER.add_argument(
+    parser.add_argument(
+        "-r",
+        dest="config",
+        type=str,
+        help="default submission configuration file (for the complete analysis)",
+    )
+    parser.add_argument(
         "-s",
         dest="script",
-        help="script name " "(If provided, the analysis execution lines will be written in the script file.)",
+        type=str,
+        help="script name (If provided, the analysis execution lines will be written in the script file.)",
     )
-    PARSER.add_argument("-c", "--clean", action="store_true", help="Delete the created database files at the end.")
-    PARSER.add_argument(
+    parser.add_argument("-c", "--clean", action="store_true", help="Delete the created database files at the end.")
+    parser.add_argument(
         "-p",
         type=int,
         choices=[1, 0],
         dest="proc",
-        help="If 1/0, process only " "categories that do/don't require running the processor.",
+        help="If 1/0, process only categories that do/don't require running the processor.",
     )
-    ARGS = PARSER.parse_args()
-    main(ARGS.input, ARGS.diff, ARGS.analysis, ARGS.clean, ARGS.proc, ARGS.script)
+    args = parser.parse_args()
+    main(args.input, args.diff, args.analysis, args.config, args.clean, args.proc, args.script)
