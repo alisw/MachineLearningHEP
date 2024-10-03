@@ -21,14 +21,14 @@ from matplotlib.ticker import MultipleLocator
 from ROOT import TH1F, TFile  # pylint: disable=import-error,no-name-in-module
 from machine_learning_hep.logger import get_logger
 
-def select_by_threshold(df, label, thr, name):
+def select_by_threshold(df_label, label, thr, name):
     # Changed from >= to > since we use that atm for the nominal selection
     # See processer.py self.l_selml
     if label == "bkg":
-        return df[df[f'y_test_prob{name}{label}'].values <= thr]
+        return df_label[df_label[f'y_test_prob{name}{label}'].values <= thr]
     if label == "":
-        return df[df[f'y_test_prob{name}{label}'].values > thr]
-    return df[df[f'y_test_prob{name}{label}'].values >= thr]
+        return df_label[df_label[f'y_test_prob{name}{label}'].values > thr]
+    return df_label[df_label[f'y_test_prob{name}{label}'].values >= thr]
 
 def get_x_axis(num_steps, class_label):
     ns_left = int(num_steps / 10) - 1
