@@ -29,14 +29,46 @@ from datetime import datetime
 import lz4  # pylint: disable=import-error
 import numpy as np  # pylint: disable=import-error
 import pandas as pd  # pylint: disable=import-error
-from ROOT import (TH1, TH1F, TCanvas, TGraph, TGraphAsymmErrors, TLatex, TLegend,
-                  TObject, TRandom3, kBlack, kBlue, kCyan, kFullCircle, kFullCross,
-                  kFullCrossX, kFullDiamond, kFullDoubleDiamond, kFullFourTrianglesPlus,
-                  kFullFourTrianglesX, kFullSquare, kFullStar, kFullThreeTriangles,
-                  kGray, kGreen, kMagenta, kOpenCircle, kOpenCross, kOpenCrossX,
-                  kOpenDiamond, kOpenDoubleDiamond, kOpenFourTrianglesPlus,
-                  kOpenFourTrianglesX, kOpenSquare, kOpenStar, kOpenThreeTriangles,
-                  kOrange, kRed, kYellow,)
+from ROOT import (
+    TH1,
+    TH1F,
+    TCanvas,
+    TGraph,
+    TGraphAsymmErrors,
+    TLatex,
+    TLegend,
+    TObject,
+    TRandom3,
+    kBlack,
+    kBlue,
+    kCyan,
+    kFullCircle,
+    kFullCross,
+    kFullCrossX,
+    kFullDiamond,
+    kFullDoubleDiamond,
+    kFullFourTrianglesPlus,
+    kFullFourTrianglesX,
+    kFullSquare,
+    kFullStar,
+    kFullThreeTriangles,
+    kGray,
+    kGreen,
+    kMagenta,
+    kOpenCircle,
+    kOpenCross,
+    kOpenCrossX,
+    kOpenDiamond,
+    kOpenDoubleDiamond,
+    kOpenFourTrianglesPlus,
+    kOpenFourTrianglesX,
+    kOpenSquare,
+    kOpenStar,
+    kOpenThreeTriangles,
+    kOrange,
+    kRed,
+    kYellow,
+)
 
 from machine_learning_hep.logger import get_logger
 from machine_learning_hep.selectionutils import select_runs
@@ -624,7 +656,9 @@ def setup_histogram(hist, colour=1, markerstyle=kOpenCircle, size=1.5, textsize=
     hist.SetMarkerColor(colour)
 
 
-def setup_tgraph(tg_, colour=1, markerstyle=kOpenCircle, size=1.5, alphastyle=0.8, fillstyle=1001, textsize=0.05, scale_title=1.3):
+def setup_tgraph(
+    tg_, colour=1, markerstyle=kOpenCircle, size=1.5, alphastyle=0.8, fillstyle=1001, textsize=0.05, scale_title=1.3
+):
     tg_.GetXaxis().SetLabelSize(textsize)
     tg_.GetYaxis().SetLabelSize(textsize)
     tg_.GetYaxis().SetDecimals()
@@ -737,8 +771,8 @@ def make_plot(  # pylint: disable=too-many-arguments, too-many-branches, too-man
     with_errors="xy",
     logscale=None,
     font_size=0.032,
-    scale=1.,
-    plot_order=None
+    scale=1.0,
+    plot_order=None,
 ):
     """
     Make a plot with objects from a list (list_obj).
@@ -804,7 +838,9 @@ def make_plot(  # pylint: disable=too-many-arguments, too-many-branches, too-man
         return get_markersize(get_my_marker(i))
 
     def plot_graph(graph):
-        setup_tgraph(graph, get_my_colour(i_obj), get_my_marker(i_obj), get_my_size(i_obj), textsize=(font_size / scale))
+        setup_tgraph(
+            graph, get_my_colour(i_obj), get_my_marker(i_obj), get_my_size(i_obj), textsize=(font_size / scale)
+        )
         graph.SetTitle(title)
         graph.GetXaxis().SetLimits(x_min_plot, x_max_plot)
         graph.GetYaxis().SetRangeUser(y_min_plot, y_max_plot)
@@ -839,7 +875,9 @@ def make_plot(  # pylint: disable=too-many-arguments, too-many-branches, too-man
                 gr.GetYaxis().SetTitleOffset(offsets_xy[1] * scale)
             gr.DrawClone("AP")
             list_new.append(gr)
-        setup_histogram(histogram, get_my_colour(i_obj), get_my_marker(i_obj), get_my_size(i_obj), textsize=(font_size / scale))
+        setup_histogram(
+            histogram, get_my_colour(i_obj), get_my_marker(i_obj), get_my_size(i_obj), textsize=(font_size / scale)
+        )
         histogram.GetXaxis().SetLimits(x_min_plot, x_max_plot)
         histogram.GetXaxis().SetRangeUser(x_min_plot, x_max_plot)
         if leg and n_labels > i_obj and isinstance(labels_obj, list) and len(labels_obj[i_obj]) > 0:
@@ -1060,8 +1098,8 @@ def divide_histograms(h_num, h_den, errors_den=True):
         y_b = h_den.GetBinContent(i)
         e_b = h_den.GetBinError(i)
         if not errors_den:
-            e_b = 0.
-        if abs(y_b) < 1.e-6:
+            e_b = 0.0
+        if abs(y_b) < 1.0e-6:
             h_rat.SetBinContent(i, 0)
             h_rat.SetBinError(i, 0)
         else:
@@ -1086,9 +1124,9 @@ def divide_graphs(gr_num, gr_den, errors_den=True):
         e_b_plus = gr_den.GetErrorYhigh(i)
         e_b_minus = gr_den.GetErrorYlow(i)
         if not errors_den:
-            e_b_plus = 0.
-            e_b_minus = 0.
-        if abs(y_b) < 1.e-6:
+            e_b_plus = 0.0
+            e_b_minus = 0.0
+        if abs(y_b) < 1.0e-6:
             gr_rat.SetPointY(i, 0)
             gr_rat.SetPointEYhigh(i, 0)
             gr_rat.SetPointEYlow(i, 0)
