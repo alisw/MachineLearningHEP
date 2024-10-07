@@ -846,7 +846,7 @@ class Plotter:
                                     shrink_err_x(obj)
                                 self.list_obj += [obj]
                                 if type == "syst":
-                                    self.plot_order += [-1 -1. / len(self.list_obj)]  # increasing between -1 and 0
+                                    self.plot_order += [-1 -1. / len(self.list_obj)]  # increasing between -2 and -1
                                 else:
                                     self.plot_order += [max(self.plot_order) + 1]
                                 label = f"R2 {flavour} {source}"
