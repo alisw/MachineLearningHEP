@@ -378,11 +378,11 @@ class Plotter:
                     dict_obj[obs][flavour] = {}
                     for source in ("data", "pythia"):
                         dict_obj[obs][flavour][source] = {}
-                        for type in ("stat", "syst"):
-                            if source == "pythia" and type == "syst":
+                        for type_data in ("stat", "syst"):
+                            if source == "pythia" and type_data == "syst":
                                 continue
-                            name = f"{obs}_{flavour}_{source}_1_{type}"
-                            dict_obj[obs][flavour][source][type] = self.get_object(name, file)
+                            name = f"{obs}_{flavour}_{source}_1_{type_data}"
+                            dict_obj[obs][flavour][source][type_data] = self.get_object(name, file)
         return dict_obj
 
     def get_run2_d0_ff_data(self) -> dict:
@@ -914,8 +914,8 @@ class Plotter:
                         for flavour in ("hf", "incl"):
                             c += 1
                             m += 1
-                            for type in ("syst", "stat"):
-                                if source == "pythia" and type == "syst":
+                            for type_data in ("syst", "stat"):
+                                if source == "pythia" and type_data == "syst":
                                     continue
                                 if source == "pythia" and not plot_sim:
                                     continue
@@ -934,11 +934,11 @@ class Plotter:
                                     if source == "pythia" and not plot_run2_d0_sd_hf_sim:
                                         continue
 
-                                obj = run2_d0_sd[self.var][flavour][source][type]
-                                if self.var == "nsd" and type == "syst":
+                                obj = run2_d0_sd[self.var][flavour][source][type_data]
+                                if self.var == "nsd" and type_data == "syst":
                                     shrink_err_x(obj)
                                 self.list_obj += [obj]
-                                if type == "syst":
+                                if type_data == "syst":
                                     self.plot_order += [-1 - 1.0 / len(self.list_obj)]  # increasing between -2 and -1
                                 else:
                                     self.plot_order += [max(self.plot_order) + 1]
@@ -954,14 +954,14 @@ class Plotter:
                                     else:
                                         colour = get_colour(-1)
                                         marker = get_marker(-1)
-                                    if type == "stat":
+                                    if type_data == "stat":
                                         label = ""
                                 if source == "pythia":
                                     marker = 1
                                 self.labels_obj += [label]
                                 self.list_colours += [colour]
                                 self.list_markers += [marker]
-                                if type == "stat":
+                                if type_data == "stat":
                                     if source == "pythia":
                                         self.opt_plot_h += ["hist e"]
                                         self.opt_leg_h += ["L"]
@@ -1280,7 +1280,7 @@ class Plotter:
                     for gr_syst in list_syst_all_d0:
                         shrink_err_x(gr_syst)
 
-                # FIXME
+                # To fix?
                 self.list_obj = list_syst_all + list_syst_all_d0 + list_stat_all + list_stat_all_d0
                 self.labels_obj = list_labels_all + list_labels_all
                 self.list_colours = (
