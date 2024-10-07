@@ -518,7 +518,7 @@ LcJet_pp:
       data: &data_out_default
         runselection: [null] #FIXME
         results: ['/home/${USER}/mlhep/lcjet/jet_obs/default/default/data/results'] #list of periods
-        resultsallp: '/home/vit/Dokumenty/ALICE/Prace/HF_jets/Run3/mlhep/hp_results/preliminary/data/lc'
+        resultsallp: '/home/${USER}/mlhep/lcjet/jet_obs/default/default/data/results_all'
       mc: &mc_out_default
         runselection: [null,null] #FIXME
         results: ['/home/${USER}/mlhep/lcjet/jet_obs/default/default/mc/results'] #list of periods

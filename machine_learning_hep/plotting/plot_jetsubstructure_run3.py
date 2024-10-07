@@ -776,13 +776,13 @@ class Plotter:
 
                 plot_run2_d0_ff_data = True
 
-                plot_run2_d0_sd = 1
-                plot_run2_d0_sd_hf_data = 1
+                plot_run2_d0_sd = True
+                plot_run2_d0_sd_hf_data = True
                 plot_run2_d0_sd_hf_sim = False
                 plot_run2_d0_sd_incl_data = False
                 plot_run2_d0_sd_incl_sim = False
 
-                plot_run3_sim = 0
+                plot_run3_sim = False
                 plot_run3_d0_sd_hf_sim = True
                 plot_run3_d0_sd_incl_sim = True
 

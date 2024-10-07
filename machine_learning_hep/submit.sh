@@ -16,7 +16,7 @@ STAGE="full_analysis"    # stage preprocess + stage analysis (requires train out
 # STAGE="analyzer"       # analysis/steps (requires stage processor done)
 # STAGE="variations"     # run analysis variations (requires stage analyzer done)
 # STAGE="systematics"    # calculate and plot systematics (requires stage variations done)
-STAGE="plotting"       # make analysis plots (requires stage systematics done)
+# STAGE="plotting"       # make analysis plots (requires stage systematics done)
 
 # Suffix of the analysis database name
 

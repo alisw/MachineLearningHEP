@@ -741,7 +741,7 @@ D0Jet_pp:
       data: &data_out_default
         runselection: [null] #FIXME # used but useless
         results: ['/home/${USER}/mlhep/d0jet/jet_obs/default/default/data/results'] #list of periods
-        resultsallp: '/home/vit/Dokumenty/ALICE/Prace/HF_jets/Run3/mlhep/hp_results/preliminary/data/d0'
+        resultsallp: '/home/${USER}/mlhep/d0jet/jet_obs/default/default/data/results_all'
       mc: &mc_out_default
         runselection: [null] #FIXME # used but useless
         results: ['/home/${USER}/mlhep/d0jet/jet_obs/default/default/mc/results'] #list of periods
