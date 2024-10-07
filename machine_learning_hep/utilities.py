@@ -860,7 +860,7 @@ def make_plot(  # pylint: disable=too-many-arguments, too-many-branches, too-man
         # If nothing has been plotted yet, plot an empty graph to set the exact ranges.
         if counter_plot_obj == 0:
             gr = TGraph(histogram)
-            setup_tgraph(gr, textsize=(font_size / scale))
+            setup_tgraph(gr, textsize=font_size / scale)
             gr.SetMarkerSize(0)
             gr.SetTitle(title)
             gr.GetXaxis().SetLimits(x_min_plot, x_max_plot)
