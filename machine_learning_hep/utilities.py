@@ -541,7 +541,7 @@ def get_y_window_his(l_his: list, with_errors=True, range_x=None):
     return y_min, y_max
 
 
-colours = [
+colours_default = [
     kBlue,
     kRed,
     kGreen + 1,
@@ -569,7 +569,7 @@ def get_colour(i: int, scheme=1):
     elif scheme == 2:
         list_col = colours_alice_syst
     else:
-        list_col = colours
+        list_col = colours_default
     return list_col[i % len(list_col)]
 
 

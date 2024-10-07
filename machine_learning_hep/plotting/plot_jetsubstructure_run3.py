@@ -292,7 +292,7 @@ class Plotter:
         self.l_monash = 2
         self.l_mode2 = 7
 
-        self.path_results_other = "/home/vit/Dokumenty/ALICE/Prace/HF_jets/Run3/mlhep/hp_results/preliminary/data"
+        self.path_results_other = "$HOME/mlhep"
 
     def cfg(self, param, default=None):
         return reduce(
