@@ -31,8 +31,8 @@ jobs:
     strategy:
       max-parallel: 6
       matrix:
-        os: [ubuntu-latest, macOS-13]
-        python-version: ['3.9']
+        os: [ubuntu-latest, macOS]
+        python-version: ['3.10']
         # test-tool: [pylint, flake8, pytest]
         test-tool: [pylint, pytest]
 
