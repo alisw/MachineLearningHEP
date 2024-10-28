@@ -586,6 +586,29 @@ class Processer:  # pylint: disable=too-many-instance-attributes
                 dfrecoskml = dfrecosk.query("isstd == 1")
             write_df(dfrecoskml, self.mptfiles_recoskmldec[ipt][file_index])
 
+            if(self.do_ptshape and self.mcordata == 'mc'):
+                dfrecosk_ptshape = read_df(self.mptfiles_recosk_ptshape[ipt][file_index])
+                if self.doml is True:
+                    if self.mltype == "MultiClassification":
+                        dfrecoskml_ptshape = apply(self.mltype, [self.p_modelname], [mod],
+                                                   dfrecosk_ptshape, self.v_train[ipt], self.class_labels)
+                        probs = [f'y_test_prob{self.p_modelname}{label.replace("-", "_")}' \
+                                 for label in self.class_labels]
+                        dfrecoskml_ptshape = dfrecoskml_ptshape[
+                                (dfrecoskml_ptshape[probs[0]] <= self.lpt_probcutpre[ipt][0]) &
+                                (dfrecoskml_ptshape[probs[1]] >= self.lpt_probcutpre[ipt][1]) &
+                                (dfrecoskml_ptshape[probs[2]] >= self.lpt_probcutpre[ipt][2])]
+                    else:
+                        dfrecoskml_ptshape = apply("BinaryClassification", [self.p_modelname], [mod],
+                                                   dfrecosk_ptshape, self.v_train[ipt])
+                        probvar = f"y_test_prob{self.p_modelname}"
+                        dfrecoskml_ptshape = dfrecoskml_ptshape.loc[
+                                              dfrecoskml_ptshape[probvar] > self.lpt_probcutpre[ipt]]
+
+                else:
+                    dfrecoskml_ptshape = dfrecosk_ptshape.query("isstd == 1")
+                write_df(dfrecoskml_ptshape, self.mptfiles_recoskmldec_ptshape[ipt][file_index])
+
     @staticmethod
     def callback(ex):
         get_logger().exception("Error callback: %s", ex)
@@ -717,8 +740,8 @@ class Processer:  # pylint: disable=too-many-instance-attributes
 
     def process_histomass(self):
         self.logger.debug("Doing masshisto %s %s", self.mcordata, self.period)
-        self.logger.debug("Using run selection for mass histo %s %s %s", self.runlistrigger, "for period", self.period)
-        if self.doml is True:
+        self.logger.debug("Using run selection for mass histo %s for period %s", self.runlistrigger, self.period)
+        if self.doml:
             self.logger.debug("Doing ml analysis")
         elif self.do_custom_analysis_cuts:
             self.logger.debug("Using custom cuts")
@@ -736,8 +759,8 @@ class Processer:  # pylint: disable=too-many-instance-attributes
 
     def process_efficiency(self):
         print("Doing efficiencies", self.mcordata, self.period)
-        print("Using run selection for eff histo", self.runlistrigger, "for period", self.period)
-        if self.doml is True:
+        print("Using run selection for eff histo %s for period %s", self.runlistrigger, self.period)
+        if self.doml:
             print("Doing ml analysis")
         elif self.do_custom_analysis_cuts:
             print("Using custom cuts")

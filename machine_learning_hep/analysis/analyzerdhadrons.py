@@ -470,6 +470,35 @@ class AnalyzerDhadrons(Analyzer):  # pylint: disable=invalid-name
         legeffFD.Draw()
         cEffFD.SaveAs(f"{self.d_resultsallpmc}/EffFD{self.case}{self.typean}.eps")
 
+        if self.do_ptshape:
+            cEffFDPtShape = TCanvas('cEffFDPtShape', 'The Fit Canvas')
+            cEffFDPtShape.SetCanvasSize(1900, 1500)
+            cEffFDPtShape.SetWindowSize(500, 500)
+
+            legeffFDPtShape = TLegend(.5, .65, .7, .85)
+            legeffFDPtShape.SetBorderSize(0)
+            legeffFDPtShape.SetFillColor(0)
+            legeffFDPtShape.SetFillStyle(0)
+            legeffFDPtShape.SetTextFont(42)
+            legeffFDPtShape.SetTextSize(0.035)
+
+            h_gen_fd = lfileeff.Get("h_gen_fd_ptshape")
+            h_sel_fd = lfileeff.Get("h_sel_fd_ptshape")
+            h_sel_fd.Divide(h_sel_fd, h_gen_fd, 1.0, 1.0, "B")
+            h_sel_fd.Draw("same")
+            fileouteff.cd()
+            h_sel_fd.SetName("eff_fd_ptshape")
+            h_sel_fd.Write()
+            h_sel_fd.GetXaxis().SetTitle("#it{p}_{T} (GeV/#it{c})")
+            h_sel_fd.GetYaxis().SetTitle("Acc x efficiency feed-down %s %s (1/GeV)"
+                                         % (self.p_latexnhadron, self.typean))
+            h_sel_fd.SetMinimum(0.001)
+            h_sel_fd.SetMaximum(1.)
+            gPad.SetLogy()
+            legeffFDPtShape.Draw()
+            cEffFDPtShape.SaveAs("%s/EffFDPtShape%s%s.eps" % (self.d_resultsallpmc,
+                                                              self.case, self.typean))
+
     @staticmethod
     def calculate_norm(logger, hevents, hselevents):  # TO BE FIXED WITH EV SEL
         if not hevents:
