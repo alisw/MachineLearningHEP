@@ -36,7 +36,7 @@ for fd in $(seq 0.00 0.01 0.00) ; do
 
   mlhep --log-file "logfile_fd${fd}_bkg_${BKG_1216}_${BKG_1624}.log" \
       --run-config submission/default_complete.yml \
-      --database-analysis ${CUR_DB} \
+      --database-analysis "${CUR_DB}" \
       --delete \
      > "debug_fd${fd}_bkg_${BKG_1216}_${BKG_1624}.txt" 2>&1 || ErrExit "Analysis failed"
 done

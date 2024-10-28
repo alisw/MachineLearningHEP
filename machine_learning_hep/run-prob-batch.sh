@@ -8,7 +8,7 @@ DATABASE_EXT="${DATABASE}.yml"
 
 BKG_812=0.25
 BKG_1224=0.30
-#for bkg in $(seq 0.20 0.05 0.5) ; do
+for bkg in $(seq 0.20 0.05 0.5) ; do
   echo "bkg ${BKG_812} ${BKG_1224}"
 
   RESDIR_PATTERN="results-2207-hyp-ml_bkg"
@@ -26,6 +26,6 @@ BKG_1224=0.30
 
   mlhep --log-file "logfile_bkg${bkg}.log" \
       --run-config submission/default_complete.yml \
-      --database-analysis ${CUR_DB} \
+      --database-analysis "${CUR_DB}" \
       --delete
-#done
+done
