@@ -202,6 +202,11 @@ class Processer:  # pylint: disable=too-many-instance-attributes
                 self.l_gen_sl = createlist(self.d_pkl, self.l_path, self.n_gen_sl)
         self.f_totevt = os.path.join(self.d_pkl, self.n_evt)
         self.f_totevtorig = os.path.join(self.d_pkl, self.n_evtorig)
+        self.f_weights = os.path.join(self.d_mcreweights, self.n_mcreweights)
+
+        if self.do_ptshape:
+            with uproot.open(self.f_weights) as fin:
+                self.v_hist_weights = fin[self.n_weights].to_numpy()
 
         self.p_modelname = datap["mlapplication"]["modelname"]
         # Analysis pT bins
@@ -346,6 +351,22 @@ class Processer:  # pylint: disable=too-many-instance-attributes
 
         # self.triggerbit = datap["analysis"][self.typean]["triggerbit"]
         self.runlistrigger = runlisttrigger
+
+        if self.do_ptshape and self.mcordata == "mc":
+            lpt_recosk_ptshape = [None] * self.p_nptbins
+            lpt_gensk_ptshape = [None] * self.p_nptbins
+            lpt_recodec_ptshape = [None] * self.p_nptbins
+
+            for ipt in range(self.p_nptbins):
+                lpt_recosk_ptshape[ipt] = self.v_var_binning_ptshape + self.lpt_recosk[ipt]
+                lpt_gensk_ptshape[ipt] = self.v_var_binning_ptshape + self.lpt_gensk[ipt]
+                lpt_recodec_ptshape[ipt] = self.v_var_binning_ptshape + self.lpt_recodec[ipt]
+            self.mptfiles_recosk_ptshape = [createlist(d_pklsk, self.l_path, \
+                                            lpt_recosk_ptshape[ipt]) for ipt in range(self.p_nptbins)]
+            self.mptfiles_gensk_ptshape = [createlist(d_pklsk, self.l_path, \
+                                           lpt_gensk_ptshape[ipt]) for ipt in range(self.p_nptbins)]
+            self.mptfiles_recoskmldec_ptshape = [createlist(self.d_pkl_dec, self.l_path, \
+                                                 lpt_recodec_ptshape[ipt]) for ipt in range(self.p_nptbins)]
 
         # if os.path.exists(self.d_root) is False:
         #     self.logger.warning("ROOT tree folder is not there. Is it intentional?")
@@ -531,21 +552,25 @@ class Processer:  # pylint: disable=too-many-instance-attributes
                     path = os.path.join(self.d_pkl, self.l_path[file_index], df_spec["file"])
                     write_df(dfo, path)
 
+    def do_skim(self, dfreco, dfgen, var_binning, filenames_reco, filenames_gen, file_index):
+        for ipt in range(self.p_nptbins):
+            dfrecosk = seldf_singlevar(dfreco, var_binning,
+                                       self.lpt_anbinmin[ipt], self.lpt_anbinmax[ipt])
+            dfrecosk = dfquery(dfrecosk, self.s_reco_skim[ipt])
+            write_df(dfrecosk, filenames_reco[ipt][file_index])
+
+            if dfgen is not None:
+                dfgensk = seldf_singlevar(dfgen, var_binning,
+                                          self.lpt_anbinmin[ipt], self.lpt_anbinmax[ipt])
+                dfgensk = dfquery(dfgensk, self.s_gen_skim[ipt])
+                write_df(dfgensk, filenames_gen[ipt][file_index])
+
     def skim(self, file_index):
         dfreco = read_df(self.l_reco[file_index])
         dfgen = read_df(self.l_gen[file_index]) if self.mcordata == "mc" else None
         dfgen_sl = read_df(self.l_gen_sl[file_index]) if self.n_gen_sl and self.mcordata == "mc" else None
 
         for ipt in range(self.p_nptbins):
-            dfrecosk = seldf_singlevar(dfreco, self.v_var_binning, self.lpt_anbinmin[ipt], self.lpt_anbinmax[ipt])
-            dfrecosk = dfquery(dfrecosk, self.s_reco_skim[ipt])
-            write_df(dfrecosk, self.mptfiles_recosk[ipt][file_index])
-
-            if dfgen is not None:
-                dfgensk = seldf_singlevar(dfgen, self.v_var_binning, self.lpt_anbinmin[ipt], self.lpt_anbinmax[ipt])
-                dfgensk = dfquery(dfgensk, self.s_gen_skim[ipt])
-                write_df(dfgensk, self.mptfiles_gensk[ipt][file_index])
-
             if dfgen_sl is not None:
                 dfgensk_sl = seldf_singlevar(
                     dfgen_sl, self.v_var_binning, self.lpt_anbinmin[ipt], self.lpt_anbinmax[ipt]
@@ -553,12 +578,20 @@ class Processer:  # pylint: disable=too-many-instance-attributes
                 dfgensk_sl = dfquery(dfgensk_sl, self.s_gen_skim[ipt])
                 write_df(dfgensk_sl, self.mptfiles_gensk_sl[ipt][file_index])
 
+        self.do_skim(dfreco, dfgen, self.v_var_binning, self.mptfiles_recosk, self.mptfiles_gensk, file_index)
+
+        if self.do_ptshape and self.mcordata == 'mc':
+            reweight(self.v_hist_weights, dfreco, self.v_var_binning, self.v_var_binning_ptshape)
+            reweight(self.v_hist_weights, dfgen, self.v_var_binning, self.v_var_binning_ptshape)
+
+            self.do_skim(dfreco, dfgen, self.v_var_binning_ptshape, self.mptfiles_recosk_ptshape,\
+                    self.mptfiles_gensk_ptshape, file_index)
+
+
+    # pylint: disable=too-many-branches
     def applymodel(self, file_index):
-        for ipt in range(self.p_nptbins):
-            if os.path.exists(self.mptfiles_recoskmldec[ipt][file_index]):
-                if os.stat(self.mptfiles_recoskmldec[ipt][file_index]).st_size != 0:
-                    continue
-            dfrecosk = read_df(self.mptfiles_recosk[ipt][file_index])
+        def do_apply_model(in_filename, out_filename, ipt):
+            dfrecosk = read_df(in_filename)
             if self.p_mask_values:
                 mask_df(dfrecosk, self.p_mask_values)
             if self.doml is True:
@@ -584,30 +617,21 @@ class Processer:  # pylint: disable=too-many-instance-attributes
                     dfrecoskml = dfrecoskml.loc[dfrecoskml[probvar] > self.lpt_probcutpre[ipt]]
             else:
                 dfrecoskml = dfrecosk.query("isstd == 1")
-            write_df(dfrecoskml, self.mptfiles_recoskmldec[ipt][file_index])
+            write_df(dfrecoskml, out_filename)
 
-            if(self.do_ptshape and self.mcordata == 'mc'):
-                dfrecosk_ptshape = read_df(self.mptfiles_recosk_ptshape[ipt][file_index])
-                if self.doml is True:
-                    if self.mltype == "MultiClassification":
-                        dfrecoskml_ptshape = apply(self.mltype, [self.p_modelname], [mod],
-                                                   dfrecosk_ptshape, self.v_train[ipt], self.class_labels)
-                        probs = [f'y_test_prob{self.p_modelname}{label.replace("-", "_")}' \
-                                 for label in self.class_labels]
-                        dfrecoskml_ptshape = dfrecoskml_ptshape[
-                                (dfrecoskml_ptshape[probs[0]] <= self.lpt_probcutpre[ipt][0]) &
-                                (dfrecoskml_ptshape[probs[1]] >= self.lpt_probcutpre[ipt][1]) &
-                                (dfrecoskml_ptshape[probs[2]] >= self.lpt_probcutpre[ipt][2])]
-                    else:
-                        dfrecoskml_ptshape = apply("BinaryClassification", [self.p_modelname], [mod],
-                                                   dfrecosk_ptshape, self.v_train[ipt])
-                        probvar = f"y_test_prob{self.p_modelname}"
-                        dfrecoskml_ptshape = dfrecoskml_ptshape.loc[
-                                              dfrecoskml_ptshape[probvar] > self.lpt_probcutpre[ipt]]
+        for ipt in range(self.p_nptbins):
+            if os.path.exists(self.mptfiles_recoskmldec[ipt][file_index]):
+                if os.stat(self.mptfiles_recoskmldec[ipt][file_index]).st_size != 0:
+                    continue
 
-                else:
-                    dfrecoskml_ptshape = dfrecosk_ptshape.query("isstd == 1")
-                write_df(dfrecoskml_ptshape, self.mptfiles_recoskmldec_ptshape[ipt][file_index])
+            do_apply_model(self.mptfiles_recosk[ipt][file_index],
+                           self.mptfiles_recoskmldec[ipt][file_index],
+                           ipt)
+
+            if self.do_ptshape and self.mcordata == 'mc':
+                do_apply_model(self.mptfiles_recosk_ptshape[ipt][file_index],
+                               self.mptfiles_recoskmldec_ptshape[ipt][file_index],
+                               ipt)
 
     @staticmethod
     def callback(ex):

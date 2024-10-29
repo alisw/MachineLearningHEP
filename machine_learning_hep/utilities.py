@@ -172,7 +172,7 @@ def mask_df(df_to_mask, mask_config):
         df_to_mask.loc[mask_indices, [mc["column"]]] = conv_none(mc["mask_with"])
 
 
-def dfquery(df, selection, **kwargs):  # pylint: disable=invalid-name
+def dfquery(df, selection, **kwargs): # pylint: disable=invalid-name
     return df.query(selection, **kwargs) if selection is not None else df
 
 
@@ -187,6 +187,20 @@ def selectdfrunlist(dfr, runlist, runvar):
         dfr = dfr[issel]
     return dfr
 
+def reweight(hist_weights, df, var, weighted_var): # pylint: disable=invalid-name
+    weights = hist_weights[0]
+    bin_edges = hist_weights[1]
+
+    # Extract pT values from DataFrame
+    var = df[var]
+
+    # Determine bin indices for each pT value
+    bin_index = np.digitize(var, bin_edges) - 1
+
+    # Ensure bin indices are within the valid range
+    bin_index = np.clip(bin_index, 0, len(weights) - 1)
+    df['weights'] = weights[bin_index]
+    df[weighted_var] =  df['weights'] * var
 
 def count_df_length_pkl(*pkls):
     """
