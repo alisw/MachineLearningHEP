@@ -3,6 +3,7 @@ build/*
 dist/*
 *.egg-info
 **/__pycache__
+.direnv
 
 # Python compiled
 *.pyc
