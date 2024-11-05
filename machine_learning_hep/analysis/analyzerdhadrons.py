@@ -122,6 +122,7 @@ class AnalyzerDhadrons(Analyzer):  # pylint: disable=invalid-name
 
         self.p_anahpt = datap["analysis"]["anahptspectrum"]
         self.p_fd_method = datap["analysis"]["fd_method"]
+        self.p_crosssec_prompt = datap["analysis"]["crosssec_prompt"]
         self.p_cctype = datap["analysis"]["cctype"]
         self.p_inputfonllpred = datap["analysis"]["inputfonllpred"]
         self.p_triggereff = datap["analysis"][self.typean].get("triggereff", [1])
@@ -525,7 +526,8 @@ class AnalyzerDhadrons(Analyzer):  # pylint: disable=invalid-name
                            selnorm,
                            self.p_sigmamb,
                            output_prompt,
-                           fileoutcross)
+                           fileoutcross,
+                           self.p_crosssec_prompt)
 
         fileoutcrosstot = TFile.Open("%s/finalcross%s%stot.root" %
                                      (self.d_resultsallpdata, self.case, self.typean), "recreate")

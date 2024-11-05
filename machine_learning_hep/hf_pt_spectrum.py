@@ -18,7 +18,7 @@ brief: script for computation of pT-differential yields (cross sections)
 usage: python3 HfPtSpectrum.py CONFIG
 authors: Fabrizio Grosa <fabrizio.grosa@cern.ch>, CERN
          Luigi Dello Stritto <luigi.dello.stritto@cern.ch>, CERN
-Macro committed and manteined in O2Physics: 
+Macro committed and mantained in O2Physics:
 https://github.com/AliceO2Group/O2Physics/tree/master/PWGHF/D2H/Macros
 """
 
@@ -47,7 +47,7 @@ from machine_learning_hep.hf_analysis_utils import ( # pylint: disable=import-er
 
 def hf_pt_spectrum(channel, # pylint: disable=too-many-locals, too-many-arguments, too-many-statements, too-many-branches
                    b_ratio,
-                   inputfonllpred,
+                   input_fonll_or_fdd_pred,
                    frac_method,
                    prompt_frac,
                    eff_filename,
@@ -58,7 +58,8 @@ def hf_pt_spectrum(channel, # pylint: disable=too-many-locals, too-many-argument
                    norm,
                    sigmamb,
                    output_prompt,
-                   output_file):
+                   output_file,
+                   crosssec_prompt=True):
 
     # final plots style settings
     style_hist = TStyle('style_hist','Histo graphics style')
@@ -87,7 +88,7 @@ def hf_pt_spectrum(channel, # pylint: disable=too-many-locals, too-many-argument
         print(f"\033[91mERROR: channel {channel} not supported. Exit\033[0m")
         sys.exit(2)
 
-    if frac_method not in ["Nb", "fc", "ext"]:
+    if frac_method not in ["Nb", "fc", "ext", "dd"]:
         print(
             f"\033[91mERROR: method to subtract nonprompt"
             f" {frac_method} not supported. Exit\033[0m"
@@ -105,20 +106,23 @@ def hf_pt_spectrum(channel, # pylint: disable=too-many-locals, too-many-argument
 
     histos = {}
 
-    histos["FONLL"] = {"prompt": {}, "nonprompt": {}}
-    infile_fonll = TFile.Open(inputfonllpred)
-    for pred in ("central", "min", "max"):
-        histos["FONLL"]["nonprompt"][pred] = infile_fonll.Get(
-            f"{fonll_hist_name[channel]}fromBpred_{pred}_corr"
-        )
-        histos["FONLL"]["nonprompt"][pred].SetDirectory(0)
-        if frac_method == "fc":
-            histos["FONLL"]["prompt"][pred] = infile_fonll.Get(
-                f"{fonll_hist_name[channel]}pred_{pred}"
-            )
-            histos["FONLL"]["prompt"][pred].SetDirectory(0)
-
-    infile_fonll.Close()
+    source_name = "FDD" if frac_method == "dd" else "FONLL"
+    histos[source_name] = {"prompt": {}, "nonprompt": {}}
+    with TFile.Open(input_fonll_or_fdd_pred) as infile_pred:
+        if frac_method == "dd":
+            histos["corryields_fdd"]["prompt"] = infile_pred.Get(f"hCorrYieldsPrompt")
+            histos["corryields_fdd"]["nonprompt"] = infile_pred.Get(f"hCorrYieldsNonPrompt")
+        else:
+            for pred in ("central", "min", "max"):
+                histos[source_name]["nonprompt"][pred] = infile_pred.Get(
+                    f"{fonll_hist_name[channel]}fromBpred_{pred}_corr"
+                )
+                histos[source_name]["nonprompt"][pred].SetDirectory(0)
+                if frac_method == "fc":
+                    histos[source_name]["prompt"][pred] = infile_pred.Get(
+                        f"{fonll_hist_name[channel]}pred_{pred}"
+                    )
+                    histos[source_name]["prompt"][pred].SetDirectory(0)
 
     infile_rawy = TFile.Open(yield_filename)
     histos["rawyields"] = infile_rawy.Get(yield_histoname)
@@ -200,17 +204,17 @@ def hf_pt_spectrum(channel, # pylint: disable=too-many-locals, too-many-argument
         eff_times_acc_prompt = histos["acceffp"].GetBinContent(i_pt + 1)
         eff_times_acc_nonprompt = histos["acceffnp"].GetBinContent(i_pt + 1)
         ptmin_fonll = (
-            histos["FONLL"]["nonprompt"]["central"].GetXaxis().FindBin(ptmin * 1.0001)
+            histos[source_name]["nonprompt"]["central"].GetXaxis().FindBin(ptmin * 1.0001)
         )
         ptmax_fonll = (
-            histos["FONLL"]["nonprompt"]["central"].GetXaxis().FindBin(ptmax * 0.9999)
+            histos[source_name]["nonprompt"]["central"].GetXaxis().FindBin(ptmax * 0.9999)
         )
         crosssec_nonprompt_fonll = [
-            histos["FONLL"]["nonprompt"][pred].Integral(
+            histos[source_name]["nonprompt"][pred].Integral(
                 ptmin_fonll, ptmax_fonll, "width"
             )
             / (ptmax - ptmin)
-            for pred in histos["FONLL"]["nonprompt"]
+            for pred in histos[source_name]["nonprompt"]
         ]
 
         # compute prompt fraction
@@ -229,11 +233,11 @@ def hf_pt_spectrum(channel, # pylint: disable=too-many-locals, too-many-argument
             )
         elif frac_method == "fc":
             crosssec_prompt_fonll = [
-                histos["FONLL"]["prompt"][pred].Integral(
+                histos[source_name]["prompt"][pred].Integral(
                     ptmin_fonll, ptmax_fonll, "width"
                 )
                 / (ptmax - ptmin)
-                for pred in histos["FONLL"]["prompt"]
+                for pred in histos[source_name]["prompt"]
             ]
             frac, _ = compute_fraction_fc(
                 eff_times_acc_prompt,
@@ -243,6 +247,13 @@ def hf_pt_spectrum(channel, # pylint: disable=too-many-locals, too-many-argument
             )
         elif frac_method == "ext":
             frac[0] = prompt_frac[i_pt]
+        elif frac_method == "dd":
+            yield_times_acceff_prompt = histos["corryields_fdd"]["prompt"][pred].GetBinContent(i_pt + 1) * eff_times_acc_prompt
+            yield_times_acceff_nonprompt = histos["corryields_fdd"]["nonprompt"][pred].GetBinContent(i_pt + 1) * eff_times_acc_nonprompt
+            yield_times_acceff_own = yield_times_acceff_prompt if crosssec_prompt else yield_times_acceff_nonprompt
+            yield_times_acceff_other = yield_times_acceff_nonprompt if crosssec_prompt else yield_times_acceff_prompt
+            frac_v = yield_times_acceff_own / (yield_times_acceff_own + yield_times_acceff_other)
+            frac = [frac_v] * 3
 
         # compute cross section times BR
         crosssec, crosssec_unc = compute_crosssection(
