@@ -396,7 +396,7 @@ class AnalyzerDhadrons(Analyzer):  # pylint: disable=invalid-name
         print(self.n_fileff)
         lfileeff = TFile.Open(self.n_fileff)
         lfileeff.ls()
-        fileouteff = TFile.Open("%s/efficiencies%s%s.root" % (self.d_resultsallpmc,
+        fileouteff = TFile.Open("%s/%s%s%s.root" % (self.d_resultsallpmc, self.efficiency_filename,
                                                               self.case, self.typean), "recreate")
         cEff = TCanvas('cEff', 'The Fit Canvas')
         cEff.SetCanvasSize(1900, 1500)
@@ -474,11 +474,12 @@ class AnalyzerDhadrons(Analyzer):  # pylint: disable=invalid-name
 
         yield_filename = self.make_file_path(self.d_resultsallpdata, self.yields_filename, "root",
                                              None, [self.case, self.typean])
+        yield_filename = "/data8/majak/MLHEP/input-fd-10092024/yields-1224_split_bkg_0.60_0.60_fd_0.00-fixed-sigma.root"
         if not os.path.exists(yield_filename):
             self.logger.fatal(
                 "Yield file %s could not be found", yield_filename)
 
-        fileouteff = f"{self.d_resultsallpmc}/efficiencies{self.case}{self.typean}.root"
+        fileouteff = f"{self.d_resultsallpmc}/{self.efficiency_filename}{self.case}{self.typean}.root"
         if not os.path.exists(fileouteff):
             self.logger.fatal(
                 "Efficiency file %s could not be found", fileouteff)
@@ -488,7 +489,7 @@ class AnalyzerDhadrons(Analyzer):  # pylint: disable=invalid-name
 
         namehistoeffprompt = "eff"
         namehistoefffeed = "eff_fd"
-        nameyield = "hyields0"
+        nameyield = "hRawYields"
 
         histonorm = TH1F("histonorm", "histonorm", 1, 0, 1)
 
@@ -535,7 +536,9 @@ class AnalyzerDhadrons(Analyzer):  # pylint: disable=invalid-name
         f_fileoutcross = TFile.Open(fileoutcross)
         if f_fileoutcross:
             hcross = f_fileoutcross.Get("hptspectrum")
+            hcrossbr = f_fileoutcross.Get("hptspectrum_wo_br")
             fileoutcrosstot.cd()
             hcross.Write()
+            hcrossbr.Write()
         histonorm.Write()
         fileoutcrosstot.Close()

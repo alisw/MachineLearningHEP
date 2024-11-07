@@ -128,7 +128,7 @@ class Processer: # pylint: disable=too-many-instance-attributes
         self.s_gen_skim = datap["sel_gen_skim"]
 
         #bitmap
-        # self.b_mcrefl = datap["bitmap_sel"].get("ismcrefl", None)
+        self.b_mcrefl = datap["bitmap_sel"].get("ismcrefl", None)
 
         #variables name
         self.v_train = datap["variables"]["var_training"]

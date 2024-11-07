@@ -106,7 +106,7 @@ def hf_pt_spectrum(channel, # pylint: disable=too-many-locals, too-many-argument
 
     histos = {}
 
-    source_name = "FDD" if frac_method == "dd" else "FONLL"
+    source_name = "corryields_fdd" if frac_method == "dd" else "FONLL"
     histos[source_name] = {"prompt": {}, "nonprompt": {}}
     with TFile.Open(input_fonll_or_fdd_pred) as infile_pred:
         if frac_method == "dd":
@@ -114,15 +114,15 @@ def hf_pt_spectrum(channel, # pylint: disable=too-many-locals, too-many-argument
             histos["corryields_fdd"]["nonprompt"] = infile_pred.Get(f"hCorrYieldsNonPrompt")
         else:
             for pred in ("central", "min", "max"):
-                histos[source_name]["nonprompt"][pred] = infile_pred.Get(
+                histos["FONLL"]["nonprompt"][pred] = infile_pred.Get(
                     f"{fonll_hist_name[channel]}fromBpred_{pred}_corr"
                 )
-                histos[source_name]["nonprompt"][pred].SetDirectory(0)
+                histos["FONLL"]["nonprompt"][pred].SetDirectory(0)
                 if frac_method == "fc":
-                    histos[source_name]["prompt"][pred] = infile_pred.Get(
+                    histos["FONLL"]["prompt"][pred] = infile_pred.Get(
                         f"{fonll_hist_name[channel]}pred_{pred}"
                     )
-                    histos[source_name]["prompt"][pred].SetDirectory(0)
+                    histos["FONLL"]["prompt"][pred].SetDirectory(0)
 
     infile_rawy = TFile.Open(yield_filename)
     histos["rawyields"] = infile_rawy.Get(yield_histoname)
@@ -203,19 +203,20 @@ def hf_pt_spectrum(channel, # pylint: disable=too-many-locals, too-many-argument
         rawy_unc = histos["rawyields"].GetBinError(i_pt + 1)
         eff_times_acc_prompt = histos["acceffp"].GetBinContent(i_pt + 1)
         eff_times_acc_nonprompt = histos["acceffnp"].GetBinContent(i_pt + 1)
-        ptmin_fonll = (
-            histos[source_name]["nonprompt"]["central"].GetXaxis().FindBin(ptmin * 1.0001)
-        )
-        ptmax_fonll = (
-            histos[source_name]["nonprompt"]["central"].GetXaxis().FindBin(ptmax * 0.9999)
-        )
-        crosssec_nonprompt_fonll = [
-            histos[source_name]["nonprompt"][pred].Integral(
-                ptmin_fonll, ptmax_fonll, "width"
+        if frac_method != "dd":
+            ptmin_fonll = (
+                histos["FONLL"]["nonprompt"]["central"].GetXaxis().FindBin(ptmin * 1.0001)
             )
-            / (ptmax - ptmin)
-            for pred in histos[source_name]["nonprompt"]
-        ]
+            ptmax_fonll = (
+                histos["FONLL"]["nonprompt"]["central"].GetXaxis().FindBin(ptmax * 0.9999)
+            )
+            crosssec_nonprompt_fonll = [
+                histos["FONLL"]["nonprompt"][pred].Integral(
+                    ptmin_fonll, ptmax_fonll, "width"
+                )
+                / (ptmax - ptmin)
+                for pred in histos["FONLL"]["nonprompt"]
+            ]
 
         # compute prompt fraction
         frac = [0,0,0]
@@ -233,11 +234,11 @@ def hf_pt_spectrum(channel, # pylint: disable=too-many-locals, too-many-argument
             )
         elif frac_method == "fc":
             crosssec_prompt_fonll = [
-                histos[source_name]["prompt"][pred].Integral(
+                histos["FONLL"]["prompt"][pred].Integral(
                     ptmin_fonll, ptmax_fonll, "width"
                 )
                 / (ptmax - ptmin)
-                for pred in histos[source_name]["prompt"]
+                for pred in histos["FONLL"]["prompt"]
             ]
             frac, _ = compute_fraction_fc(
                 eff_times_acc_prompt,
@@ -248,8 +249,8 @@ def hf_pt_spectrum(channel, # pylint: disable=too-many-locals, too-many-argument
         elif frac_method == "ext":
             frac[0] = prompt_frac[i_pt]
         elif frac_method == "dd":
-            yield_times_acceff_prompt = histos["corryields_fdd"]["prompt"][pred].GetBinContent(i_pt + 1) * eff_times_acc_prompt
-            yield_times_acceff_nonprompt = histos["corryields_fdd"]["nonprompt"][pred].GetBinContent(i_pt + 1) * eff_times_acc_nonprompt
+            yield_times_acceff_prompt = histos["corryields_fdd"]["prompt"].GetBinContent(i_pt + 1) * eff_times_acc_prompt
+            yield_times_acceff_nonprompt = histos["corryields_fdd"]["nonprompt"].GetBinContent(i_pt + 1) * eff_times_acc_nonprompt
             yield_times_acceff_own = yield_times_acceff_prompt if crosssec_prompt else yield_times_acceff_nonprompt
             yield_times_acceff_other = yield_times_acceff_nonprompt if crosssec_prompt else yield_times_acceff_prompt
             frac_v = yield_times_acceff_own / (yield_times_acceff_own + yield_times_acceff_other)
