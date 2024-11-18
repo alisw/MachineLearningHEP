@@ -193,6 +193,12 @@ def hf_pt_spectrum(channel, # pylint: disable=too-many-locals, too-many-argument
         0,
         1
     )
+    hfraction = TH1F(
+        "hfraction",
+        f";{axistit_pt};{axistit_fprompt}",
+        len(ptlims["rawyields"]) - 1,
+        ptlims["rawyields"],
+    )
 
     for i_pt, (ptmin, ptmax) in enumerate(
         zip(ptlims["rawyields"][:-1], ptlims["rawyields"][1:])
@@ -281,6 +287,8 @@ def hf_pt_spectrum(channel, # pylint: disable=too-many-locals, too-many-argument
             gfraction.SetPointError(
                 i_pt, pt_delta / 2, pt_delta / 2, frac[0] - frac[1], frac[2] - frac[0]
             )
+            hfraction.SetBinContent(i_pt + 1, frac[0])
+            hfraction.SetBinError(i_pt + 1, 0.0)
 
     c = TCanvas("c", "c", 600, 800)
     c.Divide (1, 2)
@@ -300,6 +308,7 @@ def hf_pt_spectrum(channel, # pylint: disable=too-many-locals, too-many-argument
     hnorm.Write()
     if frac_method != "ext":
         gfraction.Write()
+        hfraction.Write()
 
     for _, value in histos.items():
         if isinstance(value, TH1):
