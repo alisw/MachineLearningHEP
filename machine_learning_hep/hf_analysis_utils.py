@@ -16,7 +16,7 @@
 file: hf_analysis_utils.py
 brief: script with miscellanea utils methods for the HF analyses
 author: Fabrizio Grosa <fabrizio.grosa@cern.ch>, CERN
-Macro committed and manteined in O2Physics: 
+Macro committed and manteined in O2Physics:
 https://github.com/AliceO2Group/O2Physics/tree/master/PWGHF/D2H/Macros
 """
 
@@ -237,6 +237,10 @@ def compute_fraction_nb(
                         / rawy
                         / sigma_mb
                     )
+                    print(f"Nb pp fraction {i_sigma} raa ratio {i_raa_ratio} sigma {sigma} "
+                          f"delta_pt {delta_pt} delta_y {delta_y} " \
+                          f"acceff other {acc_eff_other} b_ratio {b_ratio} n_events {n_events} " \
+                          f"rawyields {rawy} sigmamb {sigma_mb} final frac {frac_cent}")
                 else:  # p-Pb or Pb-Pb: iterative evaluation of Raa needed
                     delta_raa = 1.0
                     while delta_raa > 1.0e-3:
@@ -280,6 +284,10 @@ def compute_fraction_nb(
                         / rawy
                         / sigma_mb
                     )
+                    print(f"Nb pp fraction {i_sigma} raa ratio {i_raa_ratio} sigma {sigma} "
+                          f"delta_pt {delta_pt} delta_y {delta_y} " \
+                          f"acceff other {acc_eff_other} b_ratio {b_ratio} n_events {n_events} " \
+                          f"rawyields {rawy} sigmamb {sigma_mb} final frac {frac_cent}")
                 else:  # p-Pb or Pb-Pb: iterative evaluation of Raa needed
                     delta_raa = 1.0
                     frac_tmp = 1.0
@@ -319,6 +327,53 @@ def compute_fraction_nb(
         frac = [frac_cent, frac_cent, frac_cent]
 
     return frac
+
+
+# pylint: disable=too-many-branches,too-many-arguments,too-many-locals,invalid-name
+def compute_fraction_dd(
+    acc_eff_same,
+    acc_eff_other,
+    corryields_same,
+    corryields_other,
+    cov_same,
+    cov_other,
+    cov_comb
+):
+    """
+    Method to get fraction of prompt / FD fraction with data-driven method
+
+    Parameters
+    ----------
+    - acc_eff_same: efficiency times acceptance of prompt (non-prompt) D
+    - acc_eff_other: efficiency times acceptance of non-prompt (prompt) D
+    - corryields_same: corrected yield of prompt (non-prompt) D computed with cut variation
+    - corryields_other: corrected yield of non-prompt (prompt) D computed with cut variation
+    - cov_same: covariance of prompt (non-prompt) D computed with cut variation
+    - cov_other: covariance of non-prompt (prompt) D computed with cut variation
+    - cov_comb: covariance of prompt and non-prompt D computed with cut variation
+
+    Returns
+    ----------
+    - frac: list of fraction of prompt (non-prompt) D (central, min, max)
+            where min = frac - unc, max = frac + unc, and unc is the statistical
+            uncertainty propagated from efficiency and corrected yield uncertainties
+    """
+    yield_times_acceff_same = corryields_same * acc_eff_same
+    yield_times_acceff_other = corryields_other * acc_eff_other
+    frac_v = yield_times_acceff_same / (yield_times_acceff_same + yield_times_acceff_other)
+    print(f"same yield times acceff: {yield_times_acceff_same} " \
+          f"other {yield_times_acceff_other} final frac: {frac_v}")
+
+    denom = (yield_times_acceff_same + yield_times_acceff_other) ** 2
+    der_same_same = (acc_eff_same * (yield_times_acceff_same + yield_times_acceff_other) - \
+                   acc_eff_same**2 * corryields_same) / denom
+    der_same_other = -acc_eff_same * acc_eff_other * corryields_same / denom
+    unc = np.sqrt(der_same_same**2 * cov_same + der_same_other * cov_other + \
+                  2 * der_same_same * der_same_other * cov_comb)
+    print(f"denom {denom} der_same_same {der_same_same} der_same_other {der_same_other} " \
+          f"cov same {cov_same} cov other {cov_other} cov comb {cov_comb} final unc {unc}")
+
+    return [frac_v, frac_v - unc, frac_v + unc]
 
 
 def get_hist_binlimits(histo):

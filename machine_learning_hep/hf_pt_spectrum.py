@@ -42,6 +42,7 @@ from machine_learning_hep.hf_analysis_utils import ( # pylint: disable=import-er
     compute_crosssection,
     compute_fraction_fc,
     compute_fraction_nb,
+    compute_fraction_dd,
     get_hist_binlimits,
 )
 
@@ -106,13 +107,15 @@ def hf_pt_spectrum(channel, # pylint: disable=too-many-locals, too-many-argument
 
     histos = {}
 
-    source_name = "corryields_fdd" if frac_method == "dd" else "FONLL"
-    histos[source_name] = {"prompt": {}, "nonprompt": {}}
     with TFile.Open(input_fonll_or_fdd_pred) as infile_pred:
         if frac_method == "dd":
-            histos["corryields_fdd"]["prompt"] = infile_pred.Get(f"hCorrYieldsPrompt")
-            histos["corryields_fdd"]["nonprompt"] = infile_pred.Get(f"hCorrYieldsNonPrompt")
+            histos["corryields_fdd"] = [infile_pred.Get("hCorrYieldsPrompt"),
+                                        infile_pred.Get("hCorrYieldsNonPrompt")]
+            histos["covariances"] = [infile_pred.Get("hCovPromptPrompt"),
+                                     infile_pred.Get("hCovNonPromptNonPrompt"),
+                                     infile_pred.Get("hCovPromptNonPrompt")]
         else:
+            histos["FONLL"] = {"prompt": {}, "nonprompt": {}}
             for pred in ("central", "min", "max"):
                 histos["FONLL"]["nonprompt"][pred] = infile_pred.Get(
                     f"{fonll_hist_name[channel]}fromBpred_{pred}_corr"
@@ -193,12 +196,6 @@ def hf_pt_spectrum(channel, # pylint: disable=too-many-locals, too-many-argument
         0,
         1
     )
-    hfraction = TH1F(
-        "hfraction",
-        f";{axistit_pt};{axistit_fprompt}",
-        len(ptlims["rawyields"]) - 1,
-        ptlims["rawyields"],
-    )
 
     for i_pt, (ptmin, ptmax) in enumerate(
         zip(ptlims["rawyields"][:-1], ptlims["rawyields"][1:])
@@ -255,12 +252,20 @@ def hf_pt_spectrum(channel, # pylint: disable=too-many-locals, too-many-argument
         elif frac_method == "ext":
             frac[0] = prompt_frac[i_pt]
         elif frac_method == "dd":
-            yield_times_acceff_prompt = histos["corryields_fdd"]["prompt"].GetBinContent(i_pt + 1) * eff_times_acc_prompt
-            yield_times_acceff_nonprompt = histos["corryields_fdd"]["nonprompt"].GetBinContent(i_pt + 1) * eff_times_acc_nonprompt
-            yield_times_acceff_own = yield_times_acceff_prompt if crosssec_prompt else yield_times_acceff_nonprompt
-            yield_times_acceff_other = yield_times_acceff_nonprompt if crosssec_prompt else yield_times_acceff_prompt
-            frac_v = yield_times_acceff_own / (yield_times_acceff_own + yield_times_acceff_other)
-            frac = [frac_v] * 3
+            eff_times_acc_own = eff_times_acc_prompt if crosssec_prompt else eff_times_acc_nonprompt
+            eff_times_acc_other = eff_times_acc_nonprompt if crosssec_prompt else eff_times_acc_prompt
+            pnp_ind = 0 if crosssec_prompt else 1
+            print(f'bin {i_pt + 1} corr yields prompt {histos["corryields_fdd"][0].GetBinContent(i_pt + 1)} ' \
+                  f'non-prompt {histos["corryields_fdd"][1].GetBinContent(i_pt + 1)} ' \
+                  f'eff prompt {eff_times_acc_prompt} non-prompt {eff_times_acc_nonprompt}')
+            frac = compute_fraction_dd(
+                    eff_times_acc_own,
+                    eff_times_acc_other,
+                    histos["corryields_fdd"][pnp_ind].GetBinContent(i_pt + 1),
+                    histos["corryields_fdd"][1 - pnp_ind].GetBinContent(i_pt + 1),
+                    histos["covariances"][pnp_ind].GetBinContent(i_pt + 1),
+                    histos["covariances"][1 - pnp_ind].GetBinContent(i_pt + 1),
+                    histos["covariances"][2].GetBinContent(i_pt + 1))
 
         # compute cross section times BR
         crosssec, crosssec_unc = compute_crosssection(
@@ -284,11 +289,10 @@ def hf_pt_spectrum(channel, # pylint: disable=too-many-locals, too-many-argument
         if frac_method != "ext":
             output_prompt.append(frac[0])
             gfraction.SetPoint(i_pt, pt_cent, frac[0])
+            print(f"Errors in gfraction: {frac[0] - frac[1]}, {frac[2] - frac[0]}")
             gfraction.SetPointError(
                 i_pt, pt_delta / 2, pt_delta / 2, frac[0] - frac[1], frac[2] - frac[0]
             )
-            hfraction.SetBinContent(i_pt + 1, frac[0])
-            hfraction.SetBinError(i_pt + 1, 0.0)
 
     c = TCanvas("c", "c", 600, 800)
     c.Divide (1, 2)
@@ -308,7 +312,6 @@ def hf_pt_spectrum(channel, # pylint: disable=too-many-locals, too-many-argument
     hnorm.Write()
     if frac_method != "ext":
         gfraction.Write()
-        hfraction.Write()
 
     for _, value in histos.items():
         if isinstance(value, TH1):
