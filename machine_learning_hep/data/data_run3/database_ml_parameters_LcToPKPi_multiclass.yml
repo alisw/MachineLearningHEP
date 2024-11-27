@@ -429,7 +429,7 @@ LcpKpi:
         results: [LHC22pp_mc/Results/prod_LHC24d3b/resultsmc] #list of periods
         resultsallp: LHC22pp_mc/Results/prod_LHC24d3b/resultsmctot
 
-      mass_fit_lim: [2.00, 2.47] # region for the fit of the invariant mass distribution [GeV/c^2]
+      mass_fit_lim: [2.10, 2.47] # region for the fit of the invariant mass distribution [GeV/c^2]
       bin_width: 0.001 # bin width of the invariant mass histogram
       # To initialize the individual fits in pT bins
       # Decide whether to take the sigma from MC or data for individual fits
