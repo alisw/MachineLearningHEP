@@ -474,15 +474,17 @@ class AnalyzerDhadrons(Analyzer):  # pylint: disable=invalid-name
 
         yield_filename = self.make_file_path(self.d_resultsallpdata, self.yields_filename, "root",
                                              None, [self.case, self.typean])
-        yield_filename = "/data8/majak/MLHEP/input-fd-10092024/yields-1224_split_bkg_0.60_0.60_fd_0.00-fixed-sigma.root"
+        fileouteff = "/data8/majak/crosssec/merged_yields_fdd_approvals_fd_0.00_0.00_0.00_0.00_0.00_0.00_0.00_0.00_0.00.root"
         if not os.path.exists(yield_filename):
             self.logger.fatal(
                 "Yield file %s could not be found", yield_filename)
 
         fileouteff = f"{self.d_resultsallpmc}/{self.efficiency_filename}{self.case}{self.typean}.root"
+        fileouteff = "/data8/majak/crosssec/merged_eff_fdd_approvals_fd_0.00_0.00_0.00_0.00_0.00_0.00_0.00_0.00_0.00.root"
         if not os.path.exists(fileouteff):
             self.logger.fatal(
                 "Efficiency file %s could not be found", fileouteff)
+
 
         fileoutcross = "%s/finalcross%s%s.root" % \
             (self.d_resultsallpdata, self.case, self.typean)

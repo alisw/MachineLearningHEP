@@ -384,7 +384,7 @@ LcpKpi:
     crosssec_prompt: True # True for prompt, False for non-prompt
     cctype: "pp"
     sigmamb: 59.4e+9 # 50.87e+9 pp5TeV, 57.8e+9 pp13TeV, 59.4e+9 pp Run3, pb
-    inputfonllpred: /data8/majak/systematics/230824/finalCutVarMerged_0-24.root #inputfonllpred: data/fonll/DmesonLcPredictions_13TeV_y05_FFptDepLHCb_BRpythia8_PDG2020.root
+    inputfonllpred: /data8/majak/fdd-results/07112024-check-approvals/fdd-results-merged-sept-yields-eff/CutVarLc_pp13TeV_LHC24d3.root #inputfonllpred: data/fonll/DmesonLcPredictions_13TeV_y05_FFptDepLHCb_BRpythia8_PDG2020.root
     dir_general_plots: analysis_plots
 
     Run3analysis:
