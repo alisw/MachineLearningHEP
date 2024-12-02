@@ -89,7 +89,7 @@ def hf_pt_spectrum(channel, # pylint: disable=too-many-locals, too-many-argument
         print(f"\033[91mERROR: channel {channel} not supported. Exit\033[0m")
         sys.exit(2)
 
-    if frac_method not in ["Nb", "fc", "ext", "dd"]:
+    if frac_method not in ["Nb", "fc", "ext", "dd", "dd_N"]:
         print(
             f"\033[91mERROR: method to subtract nonprompt"
             f" {frac_method} not supported. Exit\033[0m"
@@ -108,7 +108,7 @@ def hf_pt_spectrum(channel, # pylint: disable=too-many-locals, too-many-argument
     histos = {}
 
     with TFile.Open(input_fonll_or_fdd_pred) as infile_pred:
-        if frac_method == "dd":
+        if frac_method in ("dd", "dd_N"):
             histos["corryields_fdd"] = [infile_pred.Get("hCorrYieldsPrompt"),
                                         infile_pred.Get("hCorrYieldsNonPrompt")]
             histos["covariances"] = [infile_pred.Get("hCovPromptPrompt"),
@@ -266,6 +266,9 @@ def hf_pt_spectrum(channel, # pylint: disable=too-many-locals, too-many-argument
                     histos["covariances"][pnp_ind].GetBinContent(i_pt + 1),
                     histos["covariances"][1 - pnp_ind].GetBinContent(i_pt + 1),
                     histos["covariances"][2].GetBinContent(i_pt + 1))
+        elif frac_method == "dd_N":
+            frac = [histos["corryields_fdd"][pnp_ind].GetBinContent(i_pt + 1)] * 3
+
 
         # compute cross section times BR
         crosssec, crosssec_unc = compute_crosssection(

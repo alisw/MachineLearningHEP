@@ -62,6 +62,15 @@ def compute_crosssection(
     if rawy <= 0:
         crosssection = -9999
         crosssec_unc = -1
+    elif method_frac == "dd_N":
+        crosssection = (
+            frac
+            * sigma_mb
+            / (2 * delta_pt * delta_y * n_events * b_ratio)
+        )
+        # TODO: How to calculate the uncertainty?
+        # frac_unc / frac * crosssection?
+        crosssec_unc = 0.
     else:
         crosssection = (
             rawy
