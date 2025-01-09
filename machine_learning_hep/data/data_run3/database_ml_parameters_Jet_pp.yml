@@ -19,12 +19,11 @@ Jet_pp:
     sel_gen_unp: null
     sel_cen_unp: null
     sel_good_evt_unp: null
-    # sel_reco_skim: ["mlBkgScore < 0.02", "mlBkgScore < 0.04", "mlBkgScore < 0.06", "mlBkgScore < .08", "mlBkgScore < 0.14", "mlBkgScore < 0.26", "mlBkgScore < 0.46", "mlBkgScore < 0.52"] # (sel_skim_binmin bins) FIXME: Update for new model.
-    sel_reco_skim: [null, null, null, null, null, null, null, null] # (sel_skim_binmin bins) FIXME: Update for new model.
-    sel_gen_skim: [null, null, null, null, null, null, null, null] # (sel_skim_binmin bins) FIXME: Update for new model.
-    sel_skim_binmin: [1, 3, 4, 5, 6, 8, 12, 16] # skimming pt bins (sel_skim_binmin bins) FIXME: Update for new model.
-    sel_skim_binmax: [3, 4, 5, 6, 8, 12, 16, 48] # skimming pt bins (sel_skim_binmin bins) FIXME: Update for new model.
-    var_binning: fPt
+    sel_reco_skim: [null] # (sel_skim_binmin bins) FIXME: Update for new model.
+    sel_gen_skim: [null] # (sel_skim_binmin bins) FIXME: Update for new model.
+    sel_skim_binmin: [0] # skimming pt bins (sel_skim_binmin bins) FIXME: Update for new model.
+    sel_skim_binmax: [50] # skimming pt bins (sel_skim_binmin bins) FIXME: Update for new model.
+    var_binning: null
     dofullevtmerge: false
 
     # obsolete, to be removed
@@ -51,11 +50,11 @@ Jet_pp:
     #region dfs
     dfs:
         read:
-            # evtorig:
-            #     index: fIndexCJetCO
-            #     trees:
-            #         O2cjetco: [fPosZ]
-            #     filter: "abs(fPosZ) < 10."
+            evtorig:
+                index: fIndexCJetCO
+                trees:
+                    O2cjetco: [fPosZ]
+                filter: "abs(fPosZ) < 10."
             collcnt:
                 trees:
                     O2collcount:
