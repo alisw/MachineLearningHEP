@@ -131,6 +131,8 @@ def createlist(prefolder: str, mylistfolder: list[str], namefile: str):
     """
     Appends base foldername + filename in list
     """
+    if not namefile:
+        return []
     listfiles = appendfiletolist(mylistfolder, namefile)
     listfiles = appendmainfoldertolist(prefolder, listfiles)
     return listfiles

@@ -50,11 +50,12 @@ Jet_pp:
     #region dfs
     dfs:
         read:
-            evtorig:
-                index: fIndexCJetCO
-                trees:
-                    O2cjetco: [fPosZ]
-                filter: "abs(fPosZ) < 10."
+            # evtorig:
+            #     index: fIndexCJetCO
+            #     level: data
+            #     trees:
+            #         O2cjetco: [fPosZ]
+            #     filter: "abs(fPosZ) < 10."
             collcnt:
                 trees:
                     O2collcount:
@@ -113,6 +114,9 @@ Jet_pp:
                             fPairTheta,
                         ]
                 filter: "abs(fJetEta) < (.9 - (fJetR / 100.))" # TODO: check jet eta cut
+                extra:
+                    fPt: 5.
+                    fM: 1.86
 
             colldet:
                 level: det
@@ -154,6 +158,9 @@ Jet_pp:
                             fPairTheta,
                         ]
                 filter: "abs(fJetEta) < (.9 - (fJetR / 100.))" # TODO: check jet eta cut
+                extra:
+                    fPt: 5.
+                    fM: 1.86
 
             colldata:
                 level: data
@@ -189,6 +196,9 @@ Jet_pp:
                             fPairTheta,
                         ]
                 filter: "abs(fJetEta) < (.9 - (fJetR / 100.))" # TODO: check jet eta cut
+                extra:
+                    fPt: 5.
+                    fM: 1.86
 
         merge:
             - { base: jetgen, ref: collgen }
@@ -205,16 +215,21 @@ Jet_pp:
             jetdata:
                 level: data
                 file: AnalysisResultsReco.parquet
-            # evtorig:
-            #     level: all
-            #     file: AnalysisResultsEvtOrig.parquet
-            # evt:
-            #     level: all
-            #     source: evtorig
+            colldata:
+                level: data
+                file: AnalysisResultsEvtOrig.parquet
+            collgen:
+                level: mc
+                file: AnalysisResultsEvtOrig.parquet
+            # colldata_all:
+            #     level: data
             #     file: AnalysisResultsEvt.parquet
-            # collcnt:
-            #     level: all
-            #     file: AnalysisResultsCollCnt.parquet
+            # collgen_all:
+            #     level: mc
+            #     file: AnalysisResultsEvt.parquet
+            collcnt:
+                level: all
+                file: AnalysisResultsCollCnt.parquet
             # bccnt:
             #     level: all
             #     file: AnalysisResultsBcCnt.parquet
@@ -392,7 +407,7 @@ Jet_pp:
         namefile_reco: AnalysisResultsReco.parquet
         namefile_evt: AnalysisResultsEvt.parquet
         namefile_collcnt: AnalysisResultsCollCnt.parquet
-        namefile_bccnt: AnalysisResultsBcCnt.parquet
+        # namefile_bccnt: AnalysisResultsBcCnt.parquet
         namefile_evtvalroot: AnalysisResultsROOTEvtVal.root
         namefile_evtorig: AnalysisResultsEvtOrig.parquet
         namefile_gen: AnalysisResultsGen.parquet
@@ -528,11 +543,12 @@ Jet_pp:
         dir_general_plots: /data2/jklein/data/analysis_plots
 
         jet_obs: &jet_default
+            hfjet: false
             sel_an_binmin: [1, 2, 3, 4, 5, 6, 7, 8, 10, 12, 16, 24] # hadron pt bins (sel_an_binmin bins)
             sel_an_binmax: [2, 3, 4, 5, 6, 7, 8, 10, 12, 16, 24, 48] # hadron pt bins (sel_an_binmin bins) # FIXME: move the last edge in sel_an_binmin
             bins_ptjet: [5, 7, 15, 30, 50, 70] # systematics, TODO: split rec and gen binning
             bins_ptjet_eff: [2, 5, 7, 15, 30, 50, 70, 90] # systematics, TODO: split rec and gen binning
-            cand_collidx: fIndexHfD0CollBases
+            # cand_collidx: fIndexHfD0CollBases
             counter_read_data: fReadCountsWithTVXAndZVertexAndSel8
             counter_read_mc: fReadCountsWithTVXAndZVertexAndSelMC
             counter_tvx: fReadCountsWithTVX
@@ -622,13 +638,13 @@ Jet_pp:
                 lntheta-lnkt:
                     arraycols: [3, 4]
 
-            data_selections:
-                mcsig:
-                    level: mc
-                    query: "(isd0 & seld0) or (isd0bar & seld0bar)"
-                mcrefl:
-                    level: mc
-                    query: "(isd0 & seld0bar) or (isd0bar & seld0)"
+            # data_selections:
+            #     mcsig:
+            #         level: mc
+            #         query: "(isd0 & seld0) or (isd0bar & seld0bar)"
+            #     mcrefl:
+            #         level: mc
+            #         query: "(isd0 & seld0bar) or (isd0bar & seld0)"
 
             corr_refl: true # systematics
             fit_levels: ["mcsig", "mcrefl", "mc", "data"]
@@ -945,10 +961,9 @@ Jet_pp:
             bin_width: 0.001 # bin width of the invariant mass histogram # systematics?
             n_rebin: 3 # number of mass bins to merge
             efficiency:
-                extra_cols:
-                    ["isd0", "isd0bar", "seld0", "seld0bar", "mlBkgScore"]
-                filter_det: "(isd0 & seld0) or (isd0bar & seld0bar)"
-                index_match: fIndexArrayD0CMCPJETOS_hf
+                # extra_cols: ["isd0", "isd0bar", "seld0", "seld0bar"]
+                # filter_det: "(isd0 & seld0) or (isd0bar & seld0bar)"
+                index_match: fIndexArrayD0CMCPJETOS_geo
                 correction_method: run3
 
             unfolding_iterations: 8 # used, maximum iteration
@@ -1070,7 +1085,7 @@ Jet_pp:
             variations_db: database_variations_Jet_pp_jet_obs.yml
 
             # Additional cuts applied before mass histogram is filled
-            use_cuts: True # systematics
+            use_cuts: False # systematics
             cuts: [
                     "mlBkgScore < 0.02",
                     "mlBkgScore < 0.02",

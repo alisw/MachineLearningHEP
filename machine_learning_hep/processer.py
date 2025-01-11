@@ -111,8 +111,8 @@ class Processer: # pylint: disable=too-many-instance-attributes
         self.n_reco = datap["files_names"]["namefile_reco"]
         self.n_evt = datap["files_names"]["namefile_evt"]
         self.n_collcnt = datap["files_names"]["namefile_collcnt"]
-        self.n_bccnt = datap["files_names"]["namefile_bccnt"]
-        self.n_evtorig = datap["files_names"]["namefile_evtorig"]
+        self.n_bccnt = datap["files_names"].get("namefile_bccnt")
+        self.n_evtorig = datap["files_names"].get("namefile_evtorig")
         self.n_evt_count_ml = datap["files_names"].get("namefile_evt_count", "evtcount.yaml")
         self.n_gen = datap["files_names"]["namefile_gen"]
         self.n_filemass = datap["files_names"]["histofilename"]
@@ -373,10 +373,15 @@ class Processer: # pylint: disable=too-many-instance-attributes
                         dfappend(df_name, df)
 
         for df_name, df_spec in self.df_read.items():
-            if dfuse(df_spec) and not dfs[df_name].empty:
+            if dfuse(df_spec):
+                if dfs[df_name].empty:
+                    self.logger.warning("DF %s is empty", df_name)
+                else:
+                    self.logger.info("DF %s is filled", df_name)
                 if 'extra' in df_spec:
-                    self.logger.debug(' %s -> extra', df_name)
+                    self.logger.info(' %s -> extra', df_name)
                     for col_name, col_val in df_spec['extra'].items():
+                        self.logger.info(' %s -> %s', col_name, col_val)
                         dfs[df_name][col_name] = dfs[df_name].eval(col_val)
                 if 'extract_component' in df_spec:
                     self.logger.debug(' %s -> extract_component', df_name)
