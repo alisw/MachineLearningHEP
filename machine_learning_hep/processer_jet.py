@@ -123,6 +123,12 @@ class ProcesserJets(Processer):
     def _calculate_variables(self, df, verify=False): # pylint: disable=invalid-name
         self.logger.info('calculating variables')
         if len(df) == 0:
+            df['nsub21'] = None
+            df['zg'] = None
+            df['rg'] = None
+            df['nsd'] = None
+            df['lnkt'] = None
+            df['lntheta'] = None
             return df
         df['nsub21'] = df.fNSub2 / df.fNSub1
         self.logger.debug('zg')
@@ -386,6 +392,7 @@ class ProcesserJets(Processer):
                 if f := self.cfg('closure.exclude_feeddown_gen'):
                     self.logger.debug('excluding feeddown gen')
                     dfquery(df_mcana, f, inplace=True)
+                self.logger.info("Filling histo from %s", df_mcana)
                 fill_hist(h_mctruth[(cat, var)], df_mcana[['fJetPt_gen', 'fPt_gen', f'{var}_gen']])
 
                 if cat in dfmatch and dfmatch[cat] is not None:
