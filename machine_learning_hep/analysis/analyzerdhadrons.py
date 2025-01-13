@@ -474,7 +474,7 @@ class AnalyzerDhadrons(Analyzer):  # pylint: disable=invalid-name
 
         yield_filename = self.make_file_path(self.d_resultsallpdata, self.yields_filename, "root",
                                              None, [self.case, self.typean])
-        fileouteff = "/data8/majak/crosssec/merged_yields_fdd_approvals_fd_0.00_0.00_0.00_0.00_0.00_0.00_0.00_0.00_0.00.root"
+        yield_filename = "/data8/majak/crosssec/merged_yields_fdd_approvals_fd_0.00_0.00_0.00_0.00_0.00_0.00_0.00_0.00_0.00.root"
         if not os.path.exists(yield_filename):
             self.logger.fatal(
                 "Yield file %s could not be found", yield_filename)

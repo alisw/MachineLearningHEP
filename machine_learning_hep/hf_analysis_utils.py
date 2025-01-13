@@ -377,7 +377,7 @@ def compute_fraction_dd(
     der_same_same = (acc_eff_same * (yield_times_acceff_same + yield_times_acceff_other) - \
                    acc_eff_same**2 * corryields_same) / denom
     der_same_other = -acc_eff_same * acc_eff_other * corryields_same / denom
-    unc = np.sqrt(der_same_same**2 * cov_same + der_same_other * cov_other + \
+    unc = np.sqrt(der_same_same**2 * cov_same + der_same_other**2 * cov_other + \
                   2 * der_same_same * der_same_other * cov_comb)
     print(f"denom {denom} der_same_same {der_same_same} der_same_other {der_same_other} " \
           f"cov same {cov_same} cov other {cov_other} cov comb {cov_comb} final unc {unc}")

@@ -206,7 +206,7 @@ def hf_pt_spectrum(channel, # pylint: disable=too-many-locals, too-many-argument
         rawy_unc = histos["rawyields"].GetBinError(i_pt + 1)
         eff_times_acc_prompt = histos["acceffp"].GetBinContent(i_pt + 1)
         eff_times_acc_nonprompt = histos["acceffnp"].GetBinContent(i_pt + 1)
-        if frac_method != "dd":
+        if frac_method not in ("dd", "dd_N"):
             ptmin_fonll = (
                 histos["FONLL"]["nonprompt"]["central"].GetXaxis().FindBin(ptmin * 1.0001)
             )
@@ -267,6 +267,7 @@ def hf_pt_spectrum(channel, # pylint: disable=too-many-locals, too-many-argument
                     histos["covariances"][1 - pnp_ind].GetBinContent(i_pt + 1),
                     histos["covariances"][2].GetBinContent(i_pt + 1))
         elif frac_method == "dd_N":
+            pnp_ind = 0 if crosssec_prompt else 1
             frac = [histos["corryields_fdd"][pnp_ind].GetBinContent(i_pt + 1)] * 3
 
 
