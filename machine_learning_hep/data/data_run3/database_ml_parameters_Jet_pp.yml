@@ -113,7 +113,7 @@ Jet_pp:
                             fPairEnergy,
                             fPairTheta,
                         ]
-                filter: "abs(fJetEta) < (.9 - (fJetR / 100.))" # TODO: check jet eta cut
+                filter: "abs(fJetEta) < (.9 - (fJetR / 100.)) and fJetPt > 5." # TODO: check jet eta cut
                 extra:
                     fPt: 5.
                     fM: 1.86
@@ -201,7 +201,7 @@ Jet_pp:
                     fM: 1.86
 
         merge:
-            - { base: jetgen, ref: collgen }
+            # - { base: jetgen, ref: collgen }
             - { base: jetdet, ref: colldet }
             - { base: jetdata, ref: colldata }
 
@@ -424,7 +424,7 @@ Jet_pp:
     #region multi
     multi:
         data:
-            nprocessesparallel: 80
+            nprocessesparallel: 10
             maxfiles: [-1] #list of periods
             chunksizeunp: [100] #list of periods
             chunksizeskim: [100] #list of periods
@@ -449,7 +449,7 @@ Jet_pp:
             seedmerge: [12] #list of periods
             period: [LHC24d3b] #list of periods
             select_period: [1]
-            prefix_dir: /data2/MLhep/sim/train_282843/
+            prefix_dir: /data2/MLhep/sim/train_325030/
             unmerged_tree_dir: [alice/]
             pkl: ["${USER}/jet/pkl"] #list of periods
             pkl_skimmed: ["${USER}/jet/pklsk"] #list of periods
@@ -544,8 +544,8 @@ Jet_pp:
 
         jet_obs: &jet_default
             hfjet: false
-            sel_an_binmin: [1, 2, 3, 4, 5, 6, 7, 8, 10, 12, 16, 24] # hadron pt bins (sel_an_binmin bins)
-            sel_an_binmax: [2, 3, 4, 5, 6, 7, 8, 10, 12, 16, 24, 48] # hadron pt bins (sel_an_binmin bins) # FIXME: move the last edge in sel_an_binmin
+            sel_an_binmin: [1] # hadron pt bins (sel_an_binmin bins)
+            sel_an_binmax: [48] # hadron pt bins (sel_an_binmin bins) # FIXME: move the last edge in sel_an_binmin
             bins_ptjet: [5, 7, 15, 30, 50, 70] # systematics, TODO: split rec and gen binning
             bins_ptjet_eff: [2, 5, 7, 15, 30, 50, 70, 90] # systematics, TODO: split rec and gen binning
             # cand_collidx: fIndexHfD0CollBases
@@ -646,8 +646,8 @@ Jet_pp:
             #         level: mc
             #         query: "(isd0 & seld0bar) or (isd0bar & seld0)"
 
-            corr_refl: true # systematics
-            fit_levels: ["mcsig", "mcrefl", "mc", "data"]
+            corr_refl: false # systematics
+            fit_levels: ["mc", "data"]
             mass_roofit:
                 - level: mcsig
                   datasel: mcsig
@@ -1086,20 +1086,7 @@ Jet_pp:
 
             # Additional cuts applied before mass histogram is filled
             use_cuts: False # systematics
-            cuts: [
-                    "mlBkgScore < 0.02",
-                    "mlBkgScore < 0.02",
-                    "mlBkgScore < 0.02",
-                    "mlBkgScore < 0.05",
-                    "mlBkgScore < 0.06",
-                    "mlBkgScore < 0.08",
-                    "mlBkgScore < 0.08",
-                    "mlBkgScore < 0.10",
-                    "mlBkgScore < 0.10",
-                    "mlBkgScore < 0.20",
-                    "mlBkgScore < 0.25",
-                    "mlBkgScore < 0.30",
-                ] # (sel_an_binmin bins) systematics FIXME: Update for new model.
+            cuts: [null]
 
     systematics: # used in machine_learning_hep/analysis/systematics.py
         probvariation:

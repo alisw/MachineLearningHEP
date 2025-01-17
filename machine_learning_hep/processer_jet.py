@@ -392,7 +392,6 @@ class ProcesserJets(Processer):
                 if f := self.cfg('closure.exclude_feeddown_gen'):
                     self.logger.debug('excluding feeddown gen')
                     dfquery(df_mcana, f, inplace=True)
-                self.logger.info("Filling histo from %s", df_mcana)
                 fill_hist(h_mctruth[(cat, var)], df_mcana[['fJetPt_gen', 'fPt_gen', f'{var}_gen']])
 
                 if cat in dfmatch and dfmatch[cat] is not None:
