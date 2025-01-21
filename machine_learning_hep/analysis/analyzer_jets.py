@@ -404,6 +404,9 @@ class AnalyzerJets(Analyzer):
 
     # pylint: disable=too-many-branches,too-many-statements
     def fit(self):
+        if not self.cfg('hfjet', True):
+            self.logger.info("Not fitting mass distributions for inclusive jets")
+            return
         self.logger.info("Fitting inclusive mass distributions")
         gStyle.SetOptFit(1111)
         for level in self.fit_levels:
@@ -738,7 +741,9 @@ class AnalyzerJets(Analyzer):
                             # Signal extraction
                             self.logger.info("Signal extraction (method %s): obs. %s, %s, ipt %d",
                                              method, var, mcordata, ipt)
-                            if method == 'sidesub':
+                            if not self.cfg('hfjet', True):
+                                h = project_hist(h_in, axes_proj[1:], {})
+                            elif method == 'sidesub':
                                 h = self._subtract_sideband(h_in, var, mcordata, ipt)
                             elif method == 'sigextr':
                                 h = self._extract_signal(h_in, var, mcordata, ipt)

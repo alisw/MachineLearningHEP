@@ -123,20 +123,14 @@ class ProcesserJets(Processer):
     def _calculate_variables(self, df, verify=False): # pylint: disable=invalid-name
         self.logger.info('calculating variables')
         if len(df) == 0:
+            df['nsub21'] = None
+            df['zg'] = None
+            df['rg'] = None
+            df['nsd'] = None
+            df['lnkt'] = None
+            df['lntheta'] = None
             return df
-        df['dr'] = np.sqrt((df.fJetEta - df.fEta)**2 + ((df.fJetPhi - df.fPhi + math.pi) % math.tau - math.pi)**2)
-        df['jetPx'] = df.fJetPt * np.cos(df.fJetPhi)
-        df['jetPy'] = df.fJetPt * np.sin(df.fJetPhi)
-        df['jetPz'] = df.fJetPt * np.sinh(df.fJetEta)
-        df['hfPx'] = df.fPt * np.cos(df.fPhi)
-        df['hfPy'] = df.fPt * np.sin(df.fPhi)
-        df['hfPz'] = df.fPt * np.sinh(df.fEta)
-        df['zpar_num'] = df.jetPx * df.hfPx + df.jetPy * df.hfPy + df.jetPz * df.hfPz
-        df['zpar_den'] = df.jetPx * df.jetPx + df.jetPy * df.jetPy + df.jetPz * df.jetPz
-        df['zpar'] = df.zpar_num / df.zpar_den
-        df[df['zpar'] >= 1.]['zpar'] = .999 # move 1 to last bin
         df['nsub21'] = df.fNSub2 / df.fNSub1
-
         self.logger.debug('zg')
         df['zg_array'] = np.array(.5 - abs(df.fPtSubLeading / (df.fPtLeading + df.fPtSubLeading) - .5))
         zcut = self.cfg('zcut', .1)
@@ -150,6 +144,20 @@ class ProcesserJets(Processer):
             (lambda ar: np.log(ar.fPtSubLeading * np.sin(ar.fTheta))), axis=1)
         df['lntheta'] = df['fTheta'].apply(lambda x: -np.log(x))
         # df['lntheta'] = np.array(-np.log(df.fTheta))
+
+        if self.cfg('hfjet', True):
+            df['dr'] = np.sqrt((df.fJetEta - df.fEta)**2 + ((df.fJetPhi - df.fPhi + math.pi) % math.tau - math.pi)**2)
+            df['jetPx'] = df.fJetPt * np.cos(df.fJetPhi)
+            df['jetPy'] = df.fJetPt * np.sin(df.fJetPhi)
+            df['jetPz'] = df.fJetPt * np.sinh(df.fJetEta)
+            df['hfPx'] = df.fPt * np.cos(df.fPhi)
+            df['hfPy'] = df.fPt * np.sin(df.fPhi)
+            df['hfPz'] = df.fPt * np.sinh(df.fEta)
+            df['zpar_num'] = df.jetPx * df.hfPx + df.jetPy * df.hfPy + df.jetPz * df.hfPz
+            df['zpar_den'] = df.jetPx * df.jetPx + df.jetPy * df.jetPy + df.jetPz * df.jetPz
+            df['zpar'] = df.zpar_num / df.zpar_den
+            df[df['zpar'] >= 1.]['zpar'] = .999 # move 1 to last bin
+
         self.logger.debug('done')
         if verify:
             self._verify_variables(df)
@@ -165,6 +173,7 @@ class ProcesserJets(Processer):
 
 
     # region histomass
+    # pylint: disable=too-many-branches
     def process_histomass_single(self, index):
         self.logger.info('Processing (histomass) %s', self.l_evtorig[index])
 
@@ -172,18 +181,20 @@ class ProcesserJets(Processer):
             dfevtorig = read_df(self.l_evtorig[index])
             histonorm = TH1F("histonorm", "histonorm", 4, 0, 4)
             histonorm.SetBinContent(1, len(dfquery(dfevtorig, self.s_evtsel)))
-            dfcollcnt = read_df(self.l_collcnt[index])
-            ser_collcnt = dfcollcnt[self.cfg(f'counter_read_{self.mcordata}')]
-            collcnt_read = functools.reduce(lambda x,y: float(x)+float(y), (ar[0] for ar in ser_collcnt))
-            ser_collcnt = dfcollcnt[self.cfg('counter_tvx')]
-            collcnt_tvx = functools.reduce(lambda x,y: float(x)+float(y), (ar[0] for ar in ser_collcnt))
-            dfbccnt = read_df(self.l_bccnt[index])
-            ser_bccnt = dfbccnt[self.cfg('counter_tvx')]
-            bccnt_tvx = functools.reduce(lambda x,y: float(x)+float(y), (ar[0] for ar in ser_bccnt))
-            self.logger.info('sampled %g collisions', collcnt_read)
-            histonorm.SetBinContent(2, collcnt_read)
-            histonorm.SetBinContent(3, collcnt_tvx)
-            histonorm.SetBinContent(4, bccnt_tvx)
+            if self.l_collcnt:
+                dfcollcnt = read_df(self.l_collcnt[index])
+                ser_collcnt = dfcollcnt[self.cfg(f'counter_read_{self.mcordata}')]
+                collcnt_read = functools.reduce(lambda x,y: float(x)+float(y), (ar[0] for ar in ser_collcnt))
+                self.logger.info('sampled %g collisions', collcnt_read)
+                histonorm.SetBinContent(2, collcnt_read)
+                ser_collcnt = dfcollcnt[self.cfg('counter_tvx')]
+                collcnt_tvx = functools.reduce(lambda x,y: float(x)+float(y), (ar[0] for ar in ser_collcnt))
+                histonorm.SetBinContent(3, collcnt_tvx)
+            if self.l_bccnt:
+                dfbccnt = read_df(self.l_bccnt[index])
+                ser_bccnt = dfbccnt[self.cfg('counter_tvx')]
+                bccnt_tvx = functools.reduce(lambda x,y: float(x)+float(y), (ar[0] for ar in ser_bccnt))
+                histonorm.SetBinContent(4, bccnt_tvx)
             get_axis(histonorm, 0).SetBinLabel(1, 'N_{evt}')
             get_axis(histonorm, 0).SetBinLabel(2, 'N_{coll}')
             get_axis(histonorm, 0).SetBinLabel(3, 'N_{coll}^{TVX}')
@@ -315,21 +326,26 @@ class ProcesserJets(Processer):
 
         with TFile.Open(self.l_histoeff[index], "recreate") as rfile:
             # TODO: avoid hard-coding values here (check if restriction is needed at all)
-            cols = ['ismcprompt', 'ismcsignal', 'ismcfd', 'fPt', 'fEta', 'fPhi', 'fJetPt', 'fJetEta', 'fJetPhi',
-                    'fPtLeading', 'fPtSubLeading', 'fTheta', 'fNSub2DR', 'fNSub1', 'fNSub2']
+            cols = ['ismcprompt', 'ismcsignal', 'ismcfd',
+                    'fPt', 'fEta', 'fPhi', 'fJetPt', 'fJetEta', 'fJetPhi', 'fPtLeading', 'fPtSubLeading', 'fTheta',
+                    'fNSub2DR', 'fNSub1', 'fNSub2'] if self.cfg('hfjet', True) else None
 
             # read generator level
             dfgen_orig = pd.concat(read_df(self.mptfiles_gensk[bin][index], columns=cols)
                                    for bin in self.active_bins_skim)
             df = self._calculate_variables(dfgen_orig)
             df = df.rename(lambda name: name + '_gen', axis=1)
-            dfgen = {'pr': df.loc[(df.ismcsignal_gen == 1) & (df.ismcprompt_gen == 1)],
-                     'np': df.loc[(df.ismcsignal_gen == 1) & (df.ismcfd_gen == 1)]}
+            if self.cfg('hfjet', True):
+                dfgen = {'pr': df.loc[(df.ismcsignal_gen == 1) & (df.ismcprompt_gen == 1)],
+                        'np': df.loc[(df.ismcsignal_gen == 1) & (df.ismcfd_gen == 1)]}
+            else:
+                dfgen = {'pr': df, 'np': df}
 
             # read detector level
-            cols.extend(self.cfg('efficiency.extra_cols', []))
-            if idx := self.cfg('efficiency.index_match'):
-                cols.append(idx)
+            if cols:
+                cols.extend(self.cfg('efficiency.extra_cols', []))
+                if idx := self.cfg('efficiency.index_match'):
+                    cols.append(idx)
             df = pd.concat(read_df(self.mptfiles_recosk[bin][index], columns=cols)
                            for bin in self.active_bins_skim)
 
@@ -342,8 +358,11 @@ class ProcesserJets(Processer):
             else:
                 self.logger.warning('No matching criterion specified, cannot match det and gen')
             df = self._calculate_variables(df)
-            dfdet = {'pr': df.loc[(df.ismcsignal == 1) & (df.ismcprompt == 1)],
-                     'np': df.loc[(df.ismcsignal == 1) & (df.ismcfd == 1)]}
+            if self.cfg('hfjet', True):
+                dfdet = {'pr': df.loc[(df.ismcsignal == 1) & (df.ismcprompt == 1)],
+                        'np': df.loc[(df.ismcsignal == 1) & (df.ismcfd == 1)]}
+            else:
+                dfdet = {'pr': df, 'np': df}
 
             dfmatch = {cat: pd.merge(dfdet[cat], dfgen[cat], left_on=['df', 'idx_match'], right_index=True)
                         for cat in cats if 'idx_match' in dfdet[cat]}
