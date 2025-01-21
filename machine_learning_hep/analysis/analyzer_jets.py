@@ -479,7 +479,7 @@ class AnalyzerJets(Analyzer):
                                               level, iptjet, ipt)
                             continue
                         roows = self.roows.get(ipt) if iptjet is None else self.roows_ptjet.get((iptjet, ipt))
-                        if roows is None:# and level != self.fit_levels[0]:
+                        if roows is None and level != self.fit_levels[0]:
                             self.logger.critical('missing previous fit result, cannot fit %s iptjet %s ipt %d',
                                                  level, iptjet, ipt)
                         for par in fitcfg.get('fix_params', []):
