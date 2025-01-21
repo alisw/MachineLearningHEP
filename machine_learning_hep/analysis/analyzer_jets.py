@@ -74,8 +74,7 @@ class AnalyzerJets(Analyzer):
 
         self.observables = {
             'qa': ['zg', 'rg', 'nsd', 'zpar', 'dr', 'lntheta', 'lnkt', 'lntheta-lnkt'],
-            'all': [var for var, spec in self.cfg('observables', {}).items()]
-                    # if '-' not in var and 'arraycols' not in spec],
+            'all': [*self.cfg('observables', {})],
         }
 
         self.bins_candpt = np.asarray(self.cfg('sel_an_binmin', []) + self.cfg('sel_an_binmax', [])[-1:], 'd')
@@ -716,7 +715,6 @@ class AnalyzerJets(Analyzer):
         fh_subtracted.Scale(1. / frac_sig)
         self._save_hist(fh_subtracted, f'sideband/h_ptjet{label}_subtracted_'
                         f'{string_range_pthf(range_pthf)}_{mcordata}.png')
-        print('subtraction done', flush=True)
 
         return fh_subtracted
 
@@ -743,7 +741,7 @@ class AnalyzerJets(Analyzer):
                             self.logger.info("Signal extraction (method %s): obs. %s, %s, ipt %d",
                                              method, var, mcordata, ipt)
                             if not self.cfg('hfjet', True):
-                                h = project_hist(h_in, axes_proj[1:], {})
+                                h = project_hist(h_in, list(range(1, get_dim(h_in))), {})
                             elif method == 'sidesub':
                                 h = self._subtract_sideband(h_in, var, mcordata, ipt)
                             elif method == 'sigextr':
@@ -751,19 +749,21 @@ class AnalyzerJets(Analyzer):
                             else:
                                 self.logger.critical('invalid method %s', method)
                             self._save_hist(h, f'h_ptjet{label}_{method}_noeff_{mcordata}_pt{ipt}.png')
-                            # if mcordata == 'mc':
-                            #     h_proj = project_hist(h_in, axes_proj[1:], {})
-                            #     h_proj_lim = project_hist(h_in, axes_proj[1:], {0: (1, get_nbins(h_in, 0))})
-                            #     self._save_hist(h_proj, f'h_ptjet{label}_proj_noeff_{mcordata}_pt{ipt}.png')
-                            #     if h and h_proj:
-                            #         self.logger.debug('signal loss %s-%i: %g, fraction in under-/overflow: %g',
-                            #                           mcordata, ipt,
-                            #                           1. - h.Integral()/h_proj.Integral(),
-                            #                           1. - h_proj_lim.Integral()/h_proj.Integral())
-                            #     if self.cfg('closure.pure_signal'):
-                            #         self.logger.debug('assuming pure signal, using projection')
-                            #         h = h_proj
-                            # # Efficiency correction
+                            if mcordata == 'mc':
+                                self.logger.info('projecting %s onto axes: %s', h_in, axes_proj[1:])
+                                h_proj = project_hist(h_in, list(range(1, get_dim(h_in))), {})
+                                h_proj_lim = project_hist(h_in, list(range(1, get_dim(h_in))),
+                                                          {0: (1, get_nbins(h_in, 0))})
+                                self._save_hist(h_proj, f'h_ptjet{label}_proj_noeff_{mcordata}_pt{ipt}.png')
+                                if h and h_proj:
+                                    self.logger.debug('signal loss %s-%i: %g, fraction in under-/overflow: %g',
+                                                      mcordata, ipt,
+                                                      1. - h.Integral()/h_proj.Integral(),
+                                                      1. - h_proj_lim.Integral()/h_proj.Integral())
+                                if self.cfg('closure.pure_signal'):
+                                    self.logger.debug('assuming pure signal, using projection')
+                                    h = h_proj
+                            # Efficiency correction
                             if mcordata == 'data' or not self.cfg('closure.use_matched'):
                                 self.logger.info("Efficiency correction: obs. %s, %s, ipt %d",
                                                  var, mcordata, ipt)
@@ -786,10 +786,6 @@ class AnalyzerJets(Analyzer):
                                             f'_{string_range_ptjet(range_ptjet)}.png')
                                 self._save_canvas(c, filename)
 
-                        # TODO: remove restriction on higher dimensions
-                        if var and '-' in var:
-                            continue
-
                         fh_sum_fdsub = fh_sum.Clone()
                         # Feed-down subtraction
                         self.logger.info("Feed-down subtraction: obs. %s, %s", var, mcordata)
@@ -798,7 +794,7 @@ class AnalyzerJets(Analyzer):
                         self._clip_neg(fh_sum_fdsub)
                         self._save_hist(fh_sum_fdsub, f'h_ptjet{label}_{method}_{mcordata}.png')
 
-                        if get_dim(fh_sum) > 1:
+                        if get_dim(fh_sum) == 2:
                             axes = list(range(get_dim(fh_sum)))
                             axis_ptjet = get_axis(fh_sum, 0)
                             for iptjet in range(get_nbins(fh_sum, 0)):
@@ -824,17 +820,21 @@ class AnalyzerJets(Analyzer):
                                             f'_{string_range_ptjet(range_ptjet)}.png')
                                 self._save_canvas(c, filename)
 
+                        # TODO: remove restriction on higher dimensions
                         if not var:
                             continue
                         axis_ptjet = get_axis(fh_sum_fdsub, 0)
                         for j in range(get_nbins(fh_sum_fdsub, 0)):
-                            # TODO: generalize to higher dimensions
-                            hproj = project_hist(fh_sum_fdsub, [1], {0: [j+1, j+1]})
+                            hproj = project_hist(fh_sum_fdsub, list(range(1, get_dim(fh_sum_fdsub))), {0: [j+1, j+1]})
                             range_ptjet = get_bin_limits(axis_ptjet, j + 1)
                             self._save_hist(
                                 hproj, f'uf/h_{var}_{method}_{mcordata}_{string_range_ptjet(range_ptjet)}.png')
                         # Unfolding
-                        self.logger.info("Unfolding: obs. %s, %s", var, mcordata)
+                        if get_dim(fh_sum_fdsub) > 2:
+                            self.logger.info("No unfolding for 2d distributions: obs. %s, %s", var, mcordata)
+                            continue
+                        else:
+                            self.logger.info("Unfolding: obs. %s, %s", var, mcordata)
                         fh_unfolded = self._unfold(fh_sum_fdsub, var, mcordata)
                         for i, h in enumerate(fh_unfolded):
                             self._save_hist(h, f'h_ptjet-{var}_{method}_unfolded_{mcordata}_{i}.png')
@@ -842,7 +842,7 @@ class AnalyzerJets(Analyzer):
                             range_ptjet = get_bin_limits(axis_ptjet, j + 1)
                             c = TCanvas()
                             for i, h in enumerate(fh_unfolded):
-                                hproj = project_hist(h, [1], {0: (j+1, j+1)})
+                                hproj = project_hist(h, list(range(1, get_dim(h))), {0: (j+1, j+1)})
                                 empty = hproj.Integral() < 1.e-7
                                 if empty and i == 0:
                                     self.logger.error("Projection %s %s %s is empty.", var, mcordata,
@@ -1133,6 +1133,8 @@ class AnalyzerJets(Analyzer):
     #region unfolding
     def _unfold(self, hist, var, mcordata):
         self.logger.debug('Unfolding for %s', var)
+        if get_dim(hist) > 2:
+            raise NotImplementedError
         suffix = '_frac' if mcordata == 'mc' else ''
         with TFile(self.n_fileeff) as rfile:
             h_response = rfile.Get(f'h_response_pr_{var}{suffix}')
