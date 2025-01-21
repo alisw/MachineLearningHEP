@@ -173,6 +173,7 @@ class ProcesserJets(Processer):
 
 
     # region histomass
+    # pylint: disable=too-many-branches
     def process_histomass_single(self, index):
         self.logger.info('Processing (histomass) %s', self.l_evtorig[index])
 
@@ -324,9 +325,10 @@ class ProcesserJets(Processer):
             hist.SetName(hist.GetName() + '_frac')
 
         with TFile.Open(self.l_histoeff[index], "recreate") as rfile:
-            # # TODO: avoid hard-coding values here (check if restriction is needed at all)
-            cols = ['ismcprompt', 'ismcsignal', 'ismcfd', 'fPt', 'fEta', 'fPhi', 'fJetPt', 'fJetEta', 'fJetPhi',
-                    'fPtLeading', 'fPtSubLeading', 'fTheta', 'fNSub2DR', 'fNSub1', 'fNSub2'] if self.cfg('hfjet', True) else None
+            # TODO: avoid hard-coding values here (check if restriction is needed at all)
+            cols = ['ismcprompt', 'ismcsignal', 'ismcfd',
+                    'fPt', 'fEta', 'fPhi', 'fJetPt', 'fJetEta', 'fJetPhi', 'fPtLeading', 'fPtSubLeading', 'fTheta',
+                    'fNSub2DR', 'fNSub1', 'fNSub2'] if self.cfg('hfjet', True) else None
 
             # read generator level
             dfgen_orig = pd.concat(read_df(self.mptfiles_gensk[bin][index], columns=cols)
