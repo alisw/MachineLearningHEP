@@ -252,8 +252,15 @@ def sum_hists(hists, name = None):
 
 
 def ensure_sumw2(hist):
-    if hist.GetSumw2N() < 1:
-        hist.Sumw2()
+    if isinstance(hist, ROOT.TH1):
+        if hist.GetSumw2N() < 1:
+            hist.Sumw2()
+    elif isinstance(hist, ROOT.THn):
+        if hist.GetSumw2() < 0.:
+            hist.Sumw2()
+    else:
+        raise NotImplementedError
+
 
 
 def get_bin_val(hist, hbin):

@@ -74,8 +74,8 @@ class AnalyzerJets(Analyzer):
 
         self.observables = {
             'qa': ['zg', 'rg', 'nsd', 'zpar', 'dr', 'lntheta', 'lnkt', 'lntheta-lnkt'],
-            'all': [var for var, spec in self.cfg('observables', {}).items()
-                    if '-' not in var and 'arraycols' not in spec],
+            'all': [var for var, spec in self.cfg('observables', {}).items()]
+                    # if '-' not in var and 'arraycols' not in spec],
         }
 
         self.bins_candpt = np.asarray(self.cfg('sel_an_binmin', []) + self.cfg('sel_an_binmax', [])[-1:], 'd')
@@ -716,6 +716,7 @@ class AnalyzerJets(Analyzer):
         fh_subtracted.Scale(1. / frac_sig)
         self._save_hist(fh_subtracted, f'sideband/h_ptjet{label}_subtracted_'
                         f'{string_range_pthf(range_pthf)}_{mcordata}.png')
+        print('subtraction done', flush=True)
 
         return fh_subtracted
 
@@ -750,19 +751,19 @@ class AnalyzerJets(Analyzer):
                             else:
                                 self.logger.critical('invalid method %s', method)
                             self._save_hist(h, f'h_ptjet{label}_{method}_noeff_{mcordata}_pt{ipt}.png')
-                            if mcordata == 'mc':
-                                h_proj = project_hist(h_in, axes_proj[1:], {})
-                                h_proj_lim = project_hist(h_in, axes_proj[1:], {0: (1, get_nbins(h_in, 0))})
-                                self._save_hist(h_proj, f'h_ptjet{label}_proj_noeff_{mcordata}_pt{ipt}.png')
-                                if h and h_proj:
-                                    self.logger.debug('signal loss %s-%i: %g, fraction in under-/overflow: %g',
-                                                      mcordata, ipt,
-                                                      1. - h.Integral()/h_proj.Integral(),
-                                                      1. - h_proj_lim.Integral()/h_proj.Integral())
-                                if self.cfg('closure.pure_signal'):
-                                    self.logger.debug('assuming pure signal, using projection')
-                                    h = h_proj
-                            # Efficiency correction
+                            # if mcordata == 'mc':
+                            #     h_proj = project_hist(h_in, axes_proj[1:], {})
+                            #     h_proj_lim = project_hist(h_in, axes_proj[1:], {0: (1, get_nbins(h_in, 0))})
+                            #     self._save_hist(h_proj, f'h_ptjet{label}_proj_noeff_{mcordata}_pt{ipt}.png')
+                            #     if h and h_proj:
+                            #         self.logger.debug('signal loss %s-%i: %g, fraction in under-/overflow: %g',
+                            #                           mcordata, ipt,
+                            #                           1. - h.Integral()/h_proj.Integral(),
+                            #                           1. - h_proj_lim.Integral()/h_proj.Integral())
+                            #     if self.cfg('closure.pure_signal'):
+                            #         self.logger.debug('assuming pure signal, using projection')
+                            #         h = h_proj
+                            # # Efficiency correction
                             if mcordata == 'data' or not self.cfg('closure.use_matched'):
                                 self.logger.info("Efficiency correction: obs. %s, %s, ipt %d",
                                                  var, mcordata, ipt)
@@ -784,6 +785,10 @@ class AnalyzerJets(Analyzer):
                                 filename = (f'{method}/h_{label[1:]}_{method}_effscaled' +
                                             f'_{string_range_ptjet(range_ptjet)}.png')
                                 self._save_canvas(c, filename)
+
+                        # TODO: remove restriction on higher dimensions
+                        if var and '-' in var:
+                            continue
 
                         fh_sum_fdsub = fh_sum.Clone()
                         # Feed-down subtraction

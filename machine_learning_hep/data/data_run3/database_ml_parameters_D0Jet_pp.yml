@@ -721,13 +721,13 @@ D0Jet_pp:
                     bins_det_fix: [10, 0., 1.]
                     label: "#Delta#it{r}"
                 lntheta:
-                    bins_gen_fix: [10, 0., 5.]
-                    bins_det_fix: [10, 0., 5.]
+                    bins_gen_fix: [4, 1., 5.]
+                    bins_det_fix: [4, 1., 5.]
                     label: "#minusln(#it{#theta})"
                     arraycols: [3]
                 lnkt:
-                    bins_gen_fix: [10, -8., 2.]
-                    bins_det_fix: [10, -8., 2.]
+                    bins_gen_fix: [10, -4., 6.]
+                    bins_det_fix: [10, -4., 6.]
                     label: "ln(#it{k}_{T}/(GeV/#it{c}))"
                     arraycols: [3]
                 lntheta-lnkt:
