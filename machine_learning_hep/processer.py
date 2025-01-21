@@ -373,15 +373,11 @@ class Processer: # pylint: disable=too-many-instance-attributes
                         dfappend(df_name, df)
 
         for df_name, df_spec in self.df_read.items():
-            if dfuse(df_spec):
-                if dfs[df_name].empty:
-                    self.logger.warning("DF %s is empty", df_name)
-                else:
-                    self.logger.info("DF %s is filled", df_name)
+            if dfuse(df_spec) and not dfs[df_name].empty:
                 if 'extra' in df_spec:
-                    self.logger.info(' %s -> extra', df_name)
+                    self.logger.debug(' %s -> extra', df_name)
                     for col_name, col_val in df_spec['extra'].items():
-                        self.logger.info(' %s -> %s', col_name, col_val)
+                        self.logger.debug(' %s -> %s', col_name, col_val)
                         dfs[df_name][col_name] = dfs[df_name].eval(col_val)
                 if 'extract_component' in df_spec:
                     self.logger.debug(' %s -> extract_component', df_name)

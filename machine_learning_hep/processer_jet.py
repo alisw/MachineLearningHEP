@@ -325,11 +325,11 @@ class ProcesserJets(Processer):
 
         with TFile.Open(self.l_histoeff[index], "recreate") as rfile:
             # # TODO: avoid hard-coding values here (check if restriction is needed at all)
-            # cols = ['ismcprompt', 'ismcsignal', 'ismcfd', 'fPt', 'fEta', 'fPhi', 'fJetPt', 'fJetEta', 'fJetPhi',
-            #         'fPtLeading', 'fPtSubLeading', 'fTheta', 'fNSub2DR', 'fNSub1', 'fNSub2']
+            cols = ['ismcprompt', 'ismcsignal', 'ismcfd', 'fPt', 'fEta', 'fPhi', 'fJetPt', 'fJetEta', 'fJetPhi',
+                    'fPtLeading', 'fPtSubLeading', 'fTheta', 'fNSub2DR', 'fNSub1', 'fNSub2'] if self.cfg('hfjet', True) else None
 
             # read generator level
-            dfgen_orig = pd.concat(read_df(self.mptfiles_gensk[bin][index])
+            dfgen_orig = pd.concat(read_df(self.mptfiles_gensk[bin][index], columns=cols)
                                    for bin in self.active_bins_skim)
             df = self._calculate_variables(dfgen_orig)
             df = df.rename(lambda name: name + '_gen', axis=1)
@@ -340,10 +340,11 @@ class ProcesserJets(Processer):
                 dfgen = {'pr': df, 'np': df}
 
             # read detector level
-            # cols.extend(self.cfg('efficiency.extra_cols', []))
-            # if idx := self.cfg('efficiency.index_match'):
-            #     cols.append(idx)
-            df = pd.concat(read_df(self.mptfiles_recosk[bin][index])
+            if cols:
+                cols.extend(self.cfg('efficiency.extra_cols', []))
+                if idx := self.cfg('efficiency.index_match'):
+                    cols.append(idx)
+            df = pd.concat(read_df(self.mptfiles_recosk[bin][index], columns=cols)
                            for bin in self.active_bins_skim)
 
             # Custom skimming cuts
