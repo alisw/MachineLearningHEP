@@ -820,7 +820,6 @@ class AnalyzerJets(Analyzer):
                                             f'_{string_range_ptjet(range_ptjet)}.png')
                                 self._save_canvas(c, filename)
 
-                        # TODO: remove restriction on higher dimensions
                         if not var:
                             continue
                         axis_ptjet = get_axis(fh_sum_fdsub, 0)
@@ -830,11 +829,7 @@ class AnalyzerJets(Analyzer):
                             self._save_hist(
                                 hproj, f'uf/h_{var}_{method}_{mcordata}_{string_range_ptjet(range_ptjet)}.png')
                         # Unfolding
-                        if get_dim(fh_sum_fdsub) > 2:
-                            self.logger.info("No unfolding for 2d distributions: obs. %s, %s", var, mcordata)
-                            continue
-                        else:
-                            self.logger.info("Unfolding: obs. %s, %s", var, mcordata)
+                        self.logger.info("Unfolding: obs. %s, %s", var, mcordata)
                         fh_unfolded = self._unfold(fh_sum_fdsub, var, mcordata)
                         for i, h in enumerate(fh_unfolded):
                             self._save_hist(h, f'h_ptjet-{var}_{method}_unfolded_{mcordata}_{i}.png')
@@ -1091,18 +1086,17 @@ class AnalyzerJets(Analyzer):
 
 
     def _build_response_matrix(self, h_response, h_eff = None, frac_flat = 0.):
+        dim = (get_dim(h_response) - 1) // 2
+        self.logger.info("Building %i-dim response matrix from %s", dim, h_response)
         rm = ROOT.RooUnfoldResponse(
-            project_hist(h_response, [0, 1], {}), project_hist(h_response, [2, 3], {}))
-        h_gen = project_hist(h_response, [2, 3], {})
-        for hbin in itertools.product(
-            enumerate(list(get_axis(h_response, 0).GetXbins())[:-1], 1),
-            enumerate(list(get_axis(h_response, 1).GetXbins())[:-1], 1),
-            enumerate(list(get_axis(h_response, 2).GetXbins())[:-1], 1),
-            enumerate(list(get_axis(h_response, 3).GetXbins())[:-1], 1),
-            enumerate(list(get_axis(h_response, 4).GetXbins())[:-1], 1)):
+            project_hist(h_response, list(range(dim)), {}), project_hist(h_response, list(range(dim, 2 * dim)), {}))
+        h_gen = project_hist(h_response, list(range(dim, 2 * dim)), {})
+
+        x = (enumerate(list(get_axis(h_response, iaxis).GetXbins())[:-1], 1) for iaxis in range(2*dim+1))
+        for hbin in itertools.product(*x):
             n = h_response.GetBinContent(
-                np.asarray([hbin[0][0], hbin[1][0], hbin[2][0], hbin[3][0], hbin[4][0]], 'i'))
-            eff = h_eff.GetBinContent(hbin[4][0]) if h_eff else 1.
+                np.asarray([hbin[i][0] for i in range(2*dim+1)], 'i'))
+            eff = h_eff.GetBinContent(hbin[2*dim][0]) if h_eff else 1.
             if np.isclose(eff, 0.):
                 self.logger.error('efficiency 0 for %s', hbin[4])
                 continue
@@ -1111,7 +1105,7 @@ class AnalyzerJets(Analyzer):
                 if frac_flat > 0.:
                     fac += frac_flat * (1. / cnt_gen - 1.)
                 for _ in range(int(n)):
-                    rm.Fill(hbin[0][1], hbin[1][1], hbin[2][1], hbin[3][1], 1./eff * fac)
+                    rm.Fill(*(hbin[iaxis][1] for iaxis in range(2*dim)), 1./eff * fac)
         # rm.Mresponse().Print()
         return rm
 
@@ -1132,9 +1126,7 @@ class AnalyzerJets(Analyzer):
 
     #region unfolding
     def _unfold(self, hist, var, mcordata):
-        self.logger.debug('Unfolding for %s', var)
-        if get_dim(hist) > 2:
-            raise NotImplementedError
+        self.logger.info('Unfolding for %s', var)
         suffix = '_frac' if mcordata == 'mc' else ''
         with TFile(self.n_fileeff) as rfile:
             h_response = rfile.Get(f'h_response_pr_{var}{suffix}')
@@ -1165,7 +1157,7 @@ class AnalyzerJets(Analyzer):
             self._save_hist(h_effkine_gen, f'uf/h_effkine-ptjet-{var}_pr_gen_{mcordata}.png', 'text')
 
             # TODO: move, has nothing to do with unfolding
-            if mcordata == 'mc':
+            if mcordata == 'mc' and get_dim(hist) <= 2:
                 h_mctruth_pr = rfile.Get(f'h_ptjet-pthf-{var}_pr_gen')
                 if h_mctruth_pr:
                     h_mctruth_pr = project_hist(h_mctruth_pr, [0, 2], {})
@@ -1188,7 +1180,7 @@ class AnalyzerJets(Analyzer):
                 self._save_hist(fh_unfolding_output, f'uf/h_ptjet-{var}_{mcordata}_unfoldeffcorr{n}.png', 'texte')
                 h_unfolding_output.append(fh_unfolding_output)
 
-                if mcordata == 'mc':
+                if mcordata == 'mc' and get_dim(hist) <= 2:
                     if h_mctruth_pr:
                         h_mcunfolded = fh_unfolding_output.Clone()
                         h_mcunfolded.Divide(h_mctruth_pr)
