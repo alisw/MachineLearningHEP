@@ -1,0 +1,15 @@
+---
+# yamlfmt configuration
+# Reference: https://github.com/google/yamlfmt/blob/main/docs/config-file.md#configuration-1
+
+formatter:
+  type: basic
+  indent: 2
+  include_document_start: true
+  line_ending: lf
+  retain_line_breaks_single: true
+  max_line_length: 120
+  drop_merge_tag: true
+  pad_line_comments: 2
+  trim_trailing_whitespace: true
+  eof_newline: true
