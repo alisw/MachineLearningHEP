@@ -390,6 +390,14 @@ class ProcesserJets(Processer):
                     self.logger.error('No matching, could not fill matched detector-level histograms')
 
             for var, cat in itertools.product(observables, cats):
+                if cat in dfmatch and dfmatch[cat] is not None:
+                    self._prepare_response(dfmatch[cat], h_effkine, h_response, cat, var)
+                    f = self.cfg('frac_mcana', .2)
+                    _, df_mccorr = self.split_df(dfmatch[cat], f if f < 1. else 0.)
+                    self._prepare_response(df_mccorr, h_effkine_frac, h_response_frac, cat, var)
+                    if not '-' in var and not self.cfg(f'observables.{var}.arraycols'):
+                        self._prepare_response_fd(dfmatch[cat], h_effkine_fd, h_response_fd, var)
+
                 # TODO: add support for more complex observables
                 if '-' in var or self.cfg(f'observables.{var}.arraycols'):
                     continue
@@ -402,13 +410,6 @@ class ProcesserJets(Processer):
                     self.logger.debug('excluding feeddown gen')
                     dfquery(df_mcana, f, inplace=True)
                 fill_hist(h_mctruth[(cat, var)], df_mcana[['fJetPt_gen', 'fPt_gen', f'{var}_gen']])
-
-                if cat in dfmatch and dfmatch[cat] is not None:
-                    self._prepare_response(dfmatch[cat], h_effkine, h_response, cat, var)
-                    self._prepare_response_fd(dfmatch[cat], h_effkine_fd, h_response_fd, var)
-                    f = self.cfg('frac_mcana', .2)
-                    _, df_mccorr = self.split_df(dfmatch[cat], f if f < 1. else 0.)
-                    self._prepare_response(df_mccorr, h_effkine_frac, h_response_frac, cat, var)
 
             for name, obj in itertools.chain(h_eff.items(), h_effkine.items(), h_response.items(),
                                              h_effkine_fd.items(), h_response_fd.items(),
@@ -423,8 +424,18 @@ class ProcesserJets(Processer):
         dim = len(var) + 1
         axes_det = [get_axis(h_response[(cat, obs)], i) for i in range(dim)]
         axes_gen = [get_axis(h_response[(cat, obs)], i) for i in range(dim, 2 * dim)]
+        arraycols = [i - 3 for i in self.cfg(f'observables.{obs}').get('arraycols', [])]
 
         df = dfi
+        if arraycols:
+            self.logger.info("Exploding columns %s -> %s", arraycols, [var[icol] for icol in arraycols])
+            # only consider rows with corresponding det- and gen-level entries
+            df['length'] = [len(x) for x in df[var[0]]]
+            df['length_gen'] = [len(x) for x in df[var[0] + '_gen']]
+            df = df.loc[df.length == df.length_gen]
+            df = df.explode([var[icol] for icol in arraycols] + [var[icol] + '_gen' for icol in arraycols])
+        df.dropna(inplace=True)
+
         df = df.loc[(df.fJetPt >= axes_det[0].GetXmin()) & (df.fJetPt < axes_det[0].GetXmax())]
         for i, v in enumerate(var, 1):
             df = df.loc[(df[v] >= axes_det[i].GetXmin()) & (df[v] < axes_det[i].GetXmax())]
@@ -434,9 +445,17 @@ class ProcesserJets(Processer):
             df = df.loc[(df[f'{v}_gen'] >= axes_gen[i].GetXmin()) & (df[f'{v}_gen'] < axes_gen[i].GetXmax())]
         fill_hist(h_effkine[(cat, 'det', 'cut', obs)], df[['fJetPt', *var]])
 
+        # print(df[['fJetPt', *var, 'fJetPt_gen', *(f'{v}_gen' for v in var), 'fPt']].info(), flush=True)
         fill_hist(h_response[(cat, obs)], df[['fJetPt', *var, 'fJetPt_gen', *(f'{v}_gen' for v in var), 'fPt']])
 
         df = dfi
+        if arraycols:
+            self.logger.info("Exploding columns %s -> %s", arraycols, [var[icol] for icol in arraycols])
+            df['length'] = [len(x) for x in df[var[0]]]
+            df['length_gen'] = [len(x) for x in df[var[0] + '_gen']]
+            df = df.loc[df.length == df.length_gen]
+            df = df.explode([var[icol] for icol in arraycols] + [var[icol] + '_gen' for icol in arraycols])
+        df.dropna(inplace=True)
         df = df.loc[(df.fJetPt >= axes_gen[0].GetXmin()) & (df.fJetPt < axes_gen[0].GetXmax())]
         for i, v in enumerate(var, 1):
             df = df.loc[(df[f'{v}_gen'] >= axes_gen[i].GetXmin()) & (df[f'{v}_gen'] < axes_gen[i].GetXmax())]

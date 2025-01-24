@@ -183,7 +183,7 @@ def fill_hist(hist, dfi: pd.DataFrame, weights = None, arraycols = None, write =
     elif dim_hist > 3:
         assert weights is None, 'weights not supported'
         if not arraycols:
-            dfi.apply(lambda row: hist.Fill(*row), axis=1)
+            dfi.apply(lambda row: hist.Fill(np.array(row, 'd'), 1.), axis=1)
         else:
             m = [-1] * dim_hist
             idx = 0
