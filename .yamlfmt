@@ -10,6 +10,6 @@ formatter:
   retain_line_breaks_single: true
   max_line_length: 120
   drop_merge_tag: true
-  pad_line_comments: 2
+  pad_line_comments: 1
   trim_trailing_whitespace: true
   eof_newline: true
