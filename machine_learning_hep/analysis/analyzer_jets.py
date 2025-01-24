@@ -1100,7 +1100,7 @@ class AnalyzerJets(Analyzer):
             if np.isclose(eff, 0.):
                 self.logger.error('efficiency 0 for %s', hbin[4])
                 continue
-            if (cnt_gen := h_gen.GetBinContent(hbin[2][0], hbin[3][0])) > 0.:
+            if (cnt_gen := h_gen.GetBinContent(*(hbin[i][0] for i in range(dim, 2*dim)))) > 0.:
                 fac = 1.
                 if frac_flat > 0.:
                     fac += frac_flat * (1. / cnt_gen - 1.)
