@@ -61,7 +61,7 @@ class ProcesserJets(Processer):
         self.binarray_pthf = np.asarray(self.cfg('sel_an_binmin', []) + self.cfg('sel_an_binmax', [])[-1:], 'd')
         self.binarrays_obs = {'gen': {}, 'det': {}}
         self.binarrays_ptjet = {'gen': {}, 'det': {}}
-        for obs in self.cfg('observables'):
+        for obs in self.cfg('observables', {}):
             var = obs.split('-')
             for v in var:
                 if v in self.binarrays_obs:
@@ -265,7 +265,7 @@ class ProcesserJets(Processer):
     # - priors (reweight response matrix)
 
     # region efficiency
-    # pylint: disable=too-many-branches,too-many-statements
+    # pylint: disable=too-many-branches,too-many-statements,too-many-locals
     def process_efficiency_single(self, index):
         self.logger.info('Processing (efficiency) %s', self.l_evtorig[index])
 
@@ -273,7 +273,7 @@ class ProcesserJets(Processer):
         levels_eff = ['gen', 'det', 'genmatch', 'detmatch', 'detmatch_gencuts']
         levels_effkine = ['gen', 'det']
         cuts = ['nocuts', 'cut']
-        observables = self.cfg('observables', [])
+        observables = self.cfg('observables', {})
         observables.update({'fPt': {'label': 'p_{T}^{HF} (GeV/#it{c})'}})
         h_eff = {(cat, level): create_hist(f'h_ptjet-pthf_{cat}_{level}',
                                            ';p_{T}^{jet} (GeV/#it{c});p_{T}^{HF} (GeV/#it{c})',
@@ -282,7 +282,7 @@ class ProcesserJets(Processer):
         h_response = {}
         h_effkine = {}
         for cat in cats:
-            for obs, spec in self.cfg('observables', {}).items():
+            for obs in self.cfg('observables', {}):
                 self.logger.info('preparing response matrix for %s', obs)
                 var = obs.split('-')
                 dim = len(var) + 1

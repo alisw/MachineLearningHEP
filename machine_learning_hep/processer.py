@@ -23,6 +23,7 @@ import sys
 import tempfile
 from copy import deepcopy
 from functools import reduce
+from typing import TypeVar
 from pandas.api.types import is_numeric_dtype
 
 import numpy as np
@@ -288,7 +289,8 @@ class Processer: # pylint: disable=too-many-instance-attributes
         # Flag if they should be used
         self.do_custom_analysis_cuts = datap["analysis"][self.typean].get("use_cuts", False)
 
-    def cfg(self, param, default = None):
+    T = TypeVar("T")
+    def cfg(self, param: str, default: T = None) -> T:
         return reduce(lambda d, key: d.get(key, default) if isinstance(d, dict) else default,
                       param.split("."), self.datap['analysis'][self.typean])
 
