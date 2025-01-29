@@ -743,6 +743,17 @@ D0Jet_pp:
 
             corr_refl: true # systematics
             fit_levels: ["mcsig", "mcrefl", "mc", "data"]
+
+            pdf_names:
+                pdf_sig: "sig"
+                pdf_bkg: "bkg"
+            param_names:
+                mass: "m"
+                gauss_mean: "mean"
+                gauss_sigma: "sigma_g1"
+                double_gauss_sigma: "wide"
+                fraction_refl: "frac_refl"
+
             mass_roofit:
                 - level: mcsig
                   datasel: mcsig
@@ -760,9 +771,9 @@ D0Jet_pp:
                   range: [1.69, 2.04]
                   components:
                       refl_l:
-                          fn: "Gaussian::refl_l(m, mean_l[1.7,1.865], sigma_l[.01,.1])"
+                          fn: "Gaussian::refl_l(m, mean_l[1.7,1.865], sigma_l[.001,.1])"
                       refl_r:
-                          fn: "Gaussian::refl_r(m, mean_r[1.865,2.0], sigma_r[.01,.1])"
+                          fn: "Gaussian::refl_r(m, mean_r[1.865,2.0], sigma_r[.001,.1])"
                       model:
                           fn: "SUM::refl(frac_l[0.1,.9]*refl_l, refl_r)"
                 - level: mcrefl

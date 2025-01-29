@@ -20,12 +20,11 @@ main script for doing data processing, machine learning and analysis
 import math
 import array
 import numpy as np
+import pandas as pd
 from ROOT import TFile, TH1F
-from machine_learning_hep.bitwise import tag_bit_df
-from machine_learning_hep.utils.hist import fill_hist
-from machine_learning_hep.utilities import selectdfrunlist
 from machine_learning_hep.utilities import seldf_singlevar, read_df
-from machine_learning_hep.processer import Processer
+from machine_learning_hep.processer import Processer, dfquery
+from machine_learning_hep.utils.hist import bin_array, create_hist, fill_hist
 
 class ProcesserDhadrons(Processer): # pylint: disable=too-many-instance-attributes
     # Class Attribute
@@ -46,6 +45,8 @@ class ProcesserDhadrons(Processer): # pylint: disable=too-many-instance-attribut
 
         self.p_mass_fit_lim = datap["analysis"][self.typean]['mass_fit_lim']
         self.p_bin_width = datap["analysis"][self.typean]['bin_width']
+        limits_mass = datap["analysis"][self.typean]["mass_fit_lim"]
+        nbins_mass = int(round((limits_mass[1] - limits_mass[0]) / self.p_bin_width))
         self.p_num_bins = int(round((self.p_mass_fit_lim[1] - self.p_mass_fit_lim[0]) / \
                                     self.p_bin_width))
         self.s_presel_gen_eff = datap["analysis"][self.typean]['presel_gen_eff']
@@ -56,23 +57,15 @@ class ProcesserDhadrons(Processer): # pylint: disable=too-many-instance-attribut
         self.p_nptfinbins = len(self.lpt_finbinmin)
         self.bin_matching = datap["analysis"][self.typean]["binning_matching"]
         self.s_evtsel = datap["analysis"][self.typean]["evtsel"]
-        self.s_trigger = datap["analysis"][self.typean]["triggersel"][self.mcordata]
-        self.triggerbit = datap["analysis"][self.typean]["triggerbit"]
-        self.runlistrigger = runlisttrigger
         self.v_invmass = datap["variables"].get("var_inv_mass", "fM")
+        self.binarray_mass = bin_array(nbins_mass, limits_mass[0], limits_mass[1])
+        self.binarray_pthf = np.asarray(self.cfg('sel_an_binmin', []) + self.cfg('sel_an_binmax', [])[-1:], 'd')
 
     # pylint: disable=too-many-branches
     def process_histomass_single(self, index):
         myfile = TFile.Open(self.l_histomass[index], "recreate")
         dfevtorig = read_df(self.l_evtorig[index])
         neventsorig = len(dfevtorig)
-        if self.s_trigger is not None:
-            dfevtorig = dfevtorig.query(self.s_trigger)
-        neventsaftertrigger = len(dfevtorig)
-        if self.runlistrigger is not None:
-            dfevtorig = selectdfrunlist(dfevtorig, \
-                             self.run_param[self.runlistrigger], "run_number")
-        neventsafterrunsel = len(dfevtorig)
         if self.s_evtsel is not None:
             dfevtevtsel = dfevtorig.query(self.s_evtsel)
         else:
@@ -83,12 +76,8 @@ class ProcesserDhadrons(Processer): # pylint: disable=too-many-instance-attribut
         histonorm = TH1F("histonorm", "histonorm", 10, 0, 10)
         histonorm.SetBinContent(1, neventsorig)
         histonorm.GetXaxis().SetBinLabel(1, "tot events")
-        histonorm.SetBinContent(2, neventsaftertrigger)
-        histonorm.GetXaxis().SetBinLabel(2, "tot events after trigger")
-        histonorm.SetBinContent(3, neventsafterrunsel)
-        histonorm.GetXaxis().SetBinLabel(3, "tot events after run sel")
-        histonorm.SetBinContent(4, neventsafterevtsel)
-        histonorm.GetXaxis().SetBinLabel(4, "tot events after evt sel")
+        histonorm.SetBinContent(2, neventsafterevtsel)
+        histonorm.GetXaxis().SetBinLabel(2, "tot events after evt sel")
         histonorm.Write()
 
         myfile.cd()
@@ -100,16 +89,13 @@ class ProcesserDhadrons(Processer): # pylint: disable=too-many-instance-attribut
         hEvents.Write()
         hSelEvents.Write()
 
+        df_ptmerged = pd.DataFrame()
+
         for ipt in range(self.p_nptfinbins):
             bin_id = self.bin_matching[ipt]
             df = read_df(self.mptfiles_recoskmldec[bin_id][index])
             if self.s_evtsel is not None:
                 df = df.query(self.s_evtsel)
-            if self.s_trigger is not None:
-                df = df.query(self.s_trigger)
-            if self.runlistrigger is not None:
-                df = selectdfrunlist(df, \
-                    self.run_param[self.runlistrigger], "run_number")
 
             if self.doml is True:
                 df = df.query(self.l_selml[bin_id])
@@ -118,6 +104,8 @@ class ProcesserDhadrons(Processer): # pylint: disable=too-many-instance-attribut
 
             if self.do_custom_analysis_cuts:
                 df = self.apply_cuts_ptbin(df, ipt)
+
+            df_ptmerged = pd.concat([df_ptmerged, df], ignore_index=True)
 
             if self.mltype == "MultiClassification":
                 suffix = "%s%d_%d_%.2f%.2f%.2f" % \
@@ -137,24 +125,28 @@ class ProcesserDhadrons(Processer): # pylint: disable=too-many-instance-attribut
             h_invmass.Write()
 
             if self.mcordata == "mc":
-                df[self.v_ismcrefl] = np.array(tag_bit_df(df, self.v_bitvar,
-                                                          self.b_mcrefl), dtype=int)
                 df_sig = df[df[self.v_ismcsignal] == 1]
                 df_bkg = df[df[self.v_ismcbkg] == 1]
-                df_refl = df[df[self.v_ismcrefl] == 1]
                 h_invmass_sig = TH1F("hmass_sig" + suffix, "", self.p_num_bins,
                                      self.p_mass_fit_lim[0], self.p_mass_fit_lim[1])
                 h_invmass_bkg = TH1F("hmass_bkg" + suffix, "", self.p_num_bins,
                                      self.p_mass_fit_lim[0], self.p_mass_fit_lim[1])
-                h_invmass_refl = TH1F("hmass_refl" + suffix, "", self.p_num_bins,
-                                      self.p_mass_fit_lim[0], self.p_mass_fit_lim[1])
+
                 fill_hist(h_invmass_sig, df_sig[self.v_invmass])
                 fill_hist(h_invmass_bkg, df_bkg[self.v_invmass])
-                fill_hist(h_invmass_refl, df_refl[self.v_invmass])
+
                 myfile.cd()
                 h_invmass_sig.Write()
                 h_invmass_bkg.Write()
-                h_invmass_refl.Write()
+
+        for sel_name, sel_spec in self.cfg('data_selections', {}).items():
+            if sel_spec['level'] == self.mcordata:
+                df_sel = dfquery(df_ptmerged, sel_spec['query'])
+                h = create_hist(
+                    f'h_mass-pthf_{sel_name}',
+                    ';M (GeV/#it{c}^{2});p_{T}^{HF} (GeV/#it{c})',
+                    self.binarray_mass, self.binarray_pthf)
+                fill_hist(h, df_sel[['fM', 'fPt']], write=True)
 
     # pylint: disable=line-too-long
     def process_efficiency_single(self, index):
@@ -183,16 +175,8 @@ class ProcesserDhadrons(Processer): # pylint: disable=too-many-instance-attribut
             df_mc_reco = read_df(self.mptfiles_recoskmldec[bin_id][index])
             if self.s_evtsel is not None:
                 df_mc_reco = df_mc_reco.query(self.s_evtsel)
-            if self.s_trigger is not None:
-                df_mc_reco = df_mc_reco.query(self.s_trigger)
-            if self.runlistrigger is not None:
-                df_mc_reco = selectdfrunlist(df_mc_reco, \
-                         self.run_param[self.runlistrigger], "run_number")
             df_mc_gen = read_df(self.mptfiles_gensk[bin_id][index])
             df_mc_gen = df_mc_gen.query(self.s_presel_gen_eff)
-            if self.runlistrigger is not None:
-                df_mc_gen = selectdfrunlist(df_mc_gen, \
-                         self.run_param[self.runlistrigger], "run_number")
             df_mc_reco = seldf_singlevar(df_mc_reco, self.v_var_binning, \
                                  self.lpt_finbinmin[ipt], self.lpt_finbinmax[ipt])
             df_mc_gen = seldf_singlevar(df_mc_gen, self.v_var_binning, \

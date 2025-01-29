@@ -17,27 +17,26 @@ main script for doing final stage analysis
 """
 # pylint: disable=too-many-lines
 import os
+from pathlib import Path
+from array import array
+import numpy as np
 # pylint: disable=unused-wildcard-import, wildcard-import
-#from array import array
-#import itertools
 # pylint: disable=import-error, no-name-in-module, unused-import, consider-using-f-string
-# from root_numpy import hist2array, array2hist
-from ROOT import TFile, TH1F, TH2F, TCanvas, TPad, TF1, TH1D
+from ROOT import TFile, TH1F, TH2F, TCanvas, TPad, TF1, TH1
 from ROOT import gStyle, TLegend, TLine, TText, TPaveText, TArrow
 from ROOT import gROOT, TDirectory, TPaveLabel
-from ROOT import TStyle, kBlue, kGreen, kBlack, kRed, kOrange
-from ROOT import TLatex
 from ROOT import gInterpreter, gPad
+from ROOT import kBlue, kCyan
+from machine_learning_hep.fitting.roofitter import RooFitter, calc_signif
+from machine_learning_hep.fitting.roofitter import create_text_info, add_text_info_fit, add_text_info_perf
 # HF specific imports
 from machine_learning_hep.fitting.helpers import MLFitter
 from machine_learning_hep.logger import get_logger
-from machine_learning_hep.io import dump_yaml_from_dict
-from machine_learning_hep.utilities import folding, get_bins, make_latex_table, parallelizer
-from machine_learning_hep.root import save_root_object
-from machine_learning_hep.utilities_plot import plot_histograms
 from machine_learning_hep.analysis.analyzer import Analyzer
 from machine_learning_hep.hf_pt_spectrum import hf_pt_spectrum
+from machine_learning_hep.utils.hist import (get_dim, project_hist)
 # pylint: disable=too-few-public-methods, too-many-instance-attributes, too-many-statements, fixme
+# pylint: disable=consider-using-enumerate fixme
 
 
 class AnalyzerDhadrons(Analyzer):  # pylint: disable=invalid-name
@@ -61,7 +60,7 @@ class AnalyzerDhadrons(Analyzer):  # pylint: disable=invalid-name
         self.d_resultsallpmc = self.d_prefix_mc + dp["mc"]["results"][period] \
             if period is not None \
             else self.d_prefix_mc + dp["mc"]["resultsallp"]
-        self.d_resultsallpdata = self.d_prefix_data + dp["data"]["results"][period] \
+        self.d_resultsallpdata =  + dp["data"]["results"][period] \
             if period is not None \
             else self.d_prefix_data + dp["data"]["resultsallp"]
 
@@ -69,8 +68,7 @@ class AnalyzerDhadrons(Analyzer):  # pylint: disable=invalid-name
         self.n_filemass = os.path.join(self.d_resultsallpdata, n_filemass_name)
         self.n_filemass_mc = os.path.join(
             self.d_resultsallpmc, n_filemass_name)
-        self.p_mass_fit_lim = datap["analysis"][self.typean]['mass_fit_lim']
-
+        self.mltype = datap["ml"]["mltype"]
         # Output directories and filenames
         self.yields_filename = "yields"
         self.fits_dirname = os.path.join(
@@ -82,54 +80,11 @@ class AnalyzerDhadrons(Analyzer):  # pylint: disable=invalid-name
         self.n_fileff = datap["files_names"]["efffilename"]
         self.n_fileff = os.path.join(self.d_resultsallpmc, self.n_fileff)
         self.p_bin_width = datap["analysis"][self.typean]['bin_width']
-        self.p_num_bins = int(round((self.p_mass_fit_lim[1] - self.p_mass_fit_lim[0]) /
-                                    self.p_bin_width))
-        # parameter fitter
-        self.sig_fmap = {"kGaus": 0, "k2Gaus": 1, "kGausSigmaRatioPar": 2}
-        self.bkg_fmap = {"kExpo": 0, "kLin": 1,
-                         "Pol2": 2, "kNoBk": 3, "kPow": 4, "kPowEx": 5}
-        # For initial fit in integrated mult bin
-        self.init_fits_from = datap["analysis"][self.typean]["init_fits_from"]
-        self.p_sgnfunc = datap["analysis"][self.typean]["sgnfunc"]
-        self.p_bkgfunc = datap["analysis"][self.typean]["bkgfunc"]
-        self.p_masspeak = datap["analysis"][self.typean]["masspeak"]
-        self.p_massmin = datap["analysis"][self.typean]["massmin"]
-        self.p_massmax = datap["analysis"][self.typean]["massmax"]
-        self.rebins = datap["analysis"][self.typean]["rebin"]
+        self.p_rebin = datap["analysis"][self.typean]['n_rebin']
+        self.p_pdfnames = datap["analysis"][self.typean]['pdf_names']
+        self.p_param_names = datap["analysis"][self.typean]['param_names']
 
-        self.p_includesecpeaks = datap["analysis"][self.typean].get(
-            "includesecpeak", None)
-        self.p_masssecpeak = datap["analysis"][self.typean].get(
-            "masssecpeak", None)
-        self.p_fix_masssecpeaks = datap["analysis"][self.typean].get(
-            "fix_masssecpeak", None)
-        self.p_widthsecpeak = datap["analysis"][self.typean].get(
-            "widthsecpeak", None)
-        self.p_fix_widthsecpeak = datap["analysis"][self.typean].get(
-            "fix_widthsecpeak", None)
-        if self.p_includesecpeaks is None:
-            self.p_includesecpeaks = [False for ipt in range(self.p_nptbins)]
-            self.p_masssecpeak = None
-            self.p_fix_masssecpeaks = [False for ipt in range(self.p_nptbins)]
-            self.p_widthsecpeak = None
-            self.p_fix_widthsecpeak = None
-
-        self.p_fixedmean = datap["analysis"][self.typean]["FixedMean"]
-        self.p_use_user_gauss_sigma = datap["analysis"][self.typean]["SetInitialGaussianSigma"]
-        self.p_max_perc_sigma_diff = datap["analysis"][self.typean]["MaxPercSigmaDeviation"]
-        self.p_exclude_nsigma_sideband = datap["analysis"][self.typean]["exclude_nsigma_sideband"]
-        self.p_nsigma_signal = datap["analysis"][self.typean]["nsigma_signal"]
-        self.p_fixingaussigma = datap["analysis"][self.typean]["SetFixGaussianSigma"]
-        self.p_use_user_gauss_mean = datap["analysis"][self.typean]["SetInitialGaussianMean"]
-        self.p_dolike = datap["analysis"][self.typean]["dolikelihood"]
-        self.p_sigmaarray = datap["analysis"][self.typean]["sigmaarray"]
-        self.p_fixedsigma = datap["analysis"][self.typean]["FixedSigma"]
-        self.p_casefit = datap["analysis"][self.typean]["fitcase"]
         self.p_latexnhadron = datap["analysis"][self.typean]["latexnamehadron"]
-        self.p_dofullevtmerge = datap["dofullevtmerge"]
-        self.p_dodoublecross = datap["analysis"][self.typean]["dodoublecross"]
-        self.ptranges = self.lpt_finbinmin.copy()
-        self.ptranges.append(self.lpt_finbinmax[-1])
         self.p_dobkgfromsideband = datap["analysis"][self.typean].get(
             "dobkgfromsideband", None)
         if self.p_dobkgfromsideband is None:
@@ -138,9 +93,26 @@ class AnalyzerDhadrons(Analyzer):  # pylint: disable=invalid-name
         self.include_reflection = datap["analysis"][self.typean].get(
             "include_reflection", False)
 
-        self.p_nevents = datap["analysis"][self.typean]["nevents"]
         self.p_sigmamb = datap["analysis"]["sigmamb"]
         self.p_br = datap["ml"]["opt"]["BR"]
+
+        self.bins_candpt = np.asarray(self.cfg('sel_an_binmin', []) + self.cfg('sel_an_binmax', [])[-1:], 'd')
+        self.nbins = len(self.bins_candpt) - 1
+        self.fit_levels = self.cfg('fit_levels', ['mc', 'data'])
+        self.fit_sigma = {}
+        self.fit_mean = {}
+        self.fit_func_bkg = {}
+        self.fit_range = {}
+
+        self.path_fig = Path(f'fig/{self.case}/{self.typean}')
+        for folder in ['qa', 'fit', 'roofit', 'sideband', 'signalextr', 'fd', 'uf']:
+            (self.path_fig / folder).mkdir(parents=True, exist_ok=True)
+
+        self.rfigfile = TFile(str(self.path_fig / 'output.root'), 'recreate')
+
+        self.fitter = RooFitter()
+        self.roo_ws = {}
+        self.roows = {}
 
         # Systematics
         self.mt_syst_dict = datap["analysis"][self.typean].get(
@@ -159,33 +131,241 @@ class AnalyzerDhadrons(Analyzer):  # pylint: disable=invalid-name
         self.root_objects = []
 
         # Fitting
-        self.fitter = None
         self.p_performval = datap["analysis"].get(
             "event_cand_validation", None)
 
-    # pylint: disable=import-outside-toplevel
+
+    #region helpers
+    def _save_canvas(self, canvas, filename):
+        # folder = self.d_resultsallpmc if mcordata == 'mc' else self.d_resultsallpdata
+        canvas.SaveAs(f'fig/{self.case}/{self.typean}/{filename}')
+
+
+    def _save_hist(self, hist, filename, option = ''):
+        if not hist:
+            self.logger.error('no histogram for <%s>', filename)
+            # TODO: remove file if it exists?
+            return
+        c = TCanvas()
+        if isinstance(hist, TH1) and get_dim(hist) == 2 and 'texte' not in option:
+            option += 'texte'
+        hist.Draw(option)
+        self._save_canvas(c, filename)
+        rfilename = filename.split('/')[-1]
+        rfilename = rfilename.removesuffix('.png')
+        self.rfigfile.WriteObject(hist, rfilename)
+
+    #region fitting
+    def _roofit_mass(self, level, hist, ipt, pdfnames, param_names, fitcfg, roows = None, filename = None):
+        if fitcfg is None:
+            return None, None
+        res, ws, frame, residual_frame = self.fitter.fit_mass_new(hist, pdfnames, fitcfg, level, roows, True)
+        frame.SetTitle(f'inv. mass for p_{{T}} {self.bins_candpt[ipt]} - {self.bins_candpt[ipt+1]} GeV/c')
+        c = TCanvas()
+
+        textInfoRight = create_text_info(0.62, 0.68, 1.0, 0.89)
+        add_text_info_fit(textInfoRight, frame, ws, param_names)
+
+        textInfoLeft = create_text_info(0.12, 0.68, 0.6, 0.89)
+        if level == "data":
+            mean_sgn = ws.var(self.p_param_names["gauss_mean"])
+            sigma_sgn = ws.var(self.p_param_names["gauss_sigma"])
+            (sig, sig_err, bkg, bkg_err,
+            signif, signif_err, s_over_b, s_over_b_err
+            ) = calc_signif(ws, res, pdfnames, param_names, mean_sgn, sigma_sgn)
+
+            add_text_info_perf(textInfoLeft, sig, sig_err, bkg, bkg_err, s_over_b, s_over_b_err, signif, signif_err)
+
+        frame.Draw()
+        textInfoRight.Draw()
+        textInfoLeft.Draw()
+
+        if res.status() == 0:
+            self._save_canvas(c, filename)
+        else:
+            self.logger.warning('Invalid fit result for %s', hist.GetName())
+            # func_tot.Print('v')
+            filename = filename.replace('.png', '_invalid.png')
+            self._save_canvas(c, filename)
+
+        if level == "data":
+            residual_frame.SetTitle(f'inv. mass for p_{{T}} {self.bins_candpt[ipt]} - {self.bins_candpt[ipt+1]} GeV/c')
+            cres = TCanvas()
+            residual_frame.Draw()
+            filename = filename.replace('.png', '_residual.png')
+            self._save_canvas(cres, filename)
+
+        return res, ws
+
+
+    def _fit_mass(self, hist, filename = None):
+        if hist.GetEntries() == 0:
+            raise UserWarning('Cannot fit histogram with no entries')
+        fit_range = self.cfg('mass_fit.range')
+        func_sig = TF1('funcSig', self.cfg('mass_fit.func_sig'), *fit_range)
+        func_bkg = TF1('funcBkg', self.cfg('mass_fit.func_bkg'), *fit_range)
+        par_offset = func_sig.GetNpar()
+        func_tot = TF1('funcTot', f"{self.cfg('mass_fit.func_sig')} + {self.cfg('mass_fit.func_bkg')}({par_offset})")
+        func_tot.SetParameter(0, hist.GetMaximum()/3.) # TODO: better seeding?
+        for par, value in self.cfg('mass_fit.par_start', {}).items():
+            self.logger.debug('Setting par %i to %g', par, value)
+            func_tot.SetParameter(par, value)
+        for par, value in self.cfg('mass_fit.par_constrain', {}).items():
+            self.logger.debug('Constraining par %i to (%g, %g)', par, value[0], value[1])
+            func_tot.SetParLimits(par, value[0], value[1])
+        for par, value in self.cfg('mass_fit.par_fix', {}).items():
+            self.logger.debug('Fixing par %i to %g', par, value)
+            func_tot.FixParameter(par, value)
+        fit_res = hist.Fit(func_tot, "SQL", "", fit_range[0], fit_range[1])
+        if fit_res and fit_res.Get() and fit_res.IsValid():
+            # TODO: generalize
+            par = func_tot.GetParameters()
+            idx = 0
+            for i in range(func_sig.GetNpar()):
+                func_sig.SetParameter(i, par[idx])
+                idx += 1
+            for i in range(func_bkg.GetNpar()):
+                func_bkg.SetParameter(i, par[idx])
+                idx += 1
+            if filename:
+                c = TCanvas()
+                hist.Draw()
+                func_sig.SetLineColor(kBlue)
+                func_sig.Draw('lsame')
+                func_bkg.SetLineColor(kCyan)
+                func_bkg.Draw('lsame')
+                self._save_canvas(c, filename)
+        else:
+            self.logger.warning('Invalid fit result for %s', hist.GetName())
+            # func_tot.Print('v')
+            filename = filename.replace('.png', '_invalid.png')
+            self._save_hist(hist, filename)
+            # TODO: how to deal with this
+
+        return (fit_res, func_sig, func_bkg)
+
+
+    # pylint: disable=too-many-branches,too-many-statements
     def fit(self):
-        # Enable ROOT batch mode and reset in the end
-        tmp_is_root_batch = gROOT.IsBatch()
-        gROOT.SetBatch(True)
+        self.logger.info("Fitting inclusive mass distributions")
+        gStyle.SetOptFit(1111)
+        for level in self.fit_levels:
+            self.fit_mean[level] = [None] * self.nbins
+            self.fit_sigma[level] = [None] * self.nbins
+            self.fit_func_bkg[level] = [None] * self.nbins
+            self.fit_range[level] = [None] * self.nbins
+            self.roo_ws[level] = [None] * self.nbins
+            rfilename = self.n_filemass_mc if "mc" in level else self.n_filemass
+            fitcfg = None
 
-        self.fitter = MLFitter(self.case, self.datap, self.typean,
-                               self.n_filemass, self.n_filemass_mc)
-        self.fitter.perform_pre_fits()
-        self.fitter.perform_central_fits()
-        fileout_name = self.make_file_path(self.d_resultsallpdata, self.yields_filename, "root",
+            fileout_name = self.make_file_path(self.d_resultsallpdata, self.yields_filename, "root",
                                            None, [self.case, self.typean])
-        fileout = TFile(fileout_name, "RECREATE")
-        self.fitter.draw_fits(self.d_resultsallpdata, fileout)
-        fileout.Close()
+            fileout = TFile(fileout_name, "RECREATE")
 
-        if self.p_dobkgfromsideband:
-            self.fitter.bkg_fromsidebands(self.d_resultsallpdata, self.n_filemass,
-                                          self.p_mass_fit_lim, self.p_bkgfunc, self.p_masspeak)
+            yieldshistos = TH1F("hyields0", "", \
+                                len(self.lpt_finbinmin), array("d", self.bins_candpt))
+            meanhistos = TH1F("hmean0", "", \
+                                len(self.lpt_finbinmin), array("d", self.bins_candpt))
+            sigmahistos = TH1F("hsigmas0", "", \
+                                len(self.lpt_finbinmin), array("d", self.bins_candpt))
+            signifhistos = TH1F("hsignifs0", "", \
+                                len(self.lpt_finbinmin), array("d", self.bins_candpt))
+            soverbhistos = TH1F("hSoverB0", "", \
+                                len(self.lpt_finbinmin), array("d", self.bins_candpt))
 
-        self.fitter.save_fits(self.fits_dirname)
-        # Reset to former mode
-        gROOT.SetBatch(tmp_is_root_batch)
+            with TFile(rfilename) as rfile:
+                for ipt in range(len(self.lpt_finbinmin)):
+                    self.logger.debug('fitting %s - %i', level, ipt)
+                    roows = self.roows.get(ipt)
+                    if self.mltype == "MultiClassification":
+                        suffix = "%s%d_%d_%.2f%.2f%.2f" % \
+                         (self.v_var_binning, self.lpt_finbinmin[ipt],
+                          self.lpt_finbinmax[ipt], self.lpt_probcutfin[ipt][0],
+                          self.lpt_probcutfin[ipt][1], self.lpt_probcutfin[ipt][2])
+                    else:
+                        suffix = "%s%d_%d_%.2f" % \
+                         (self.v_var_binning, self.lpt_finbinmin[ipt],
+                          self.lpt_finbinmax[ipt], self.lpt_probcutfin[ipt])
+                    h_invmass = rfile.Get('hmass' + suffix)
+                    # Rebin
+                    h_invmass.Rebin(self.p_rebin[ipt])
+                    if h_invmass.GetEntries() < 100: # TODO: reconsider criterion
+                        self.logger.error('Not enough entries to fit for %s bin %d', level, ipt)
+                        continue
+                    ptrange = (self.bins_candpt[ipt], self.bins_candpt[ipt+1])
+
+                    if self.cfg('mass_fit'):
+                        fit_res, _, func_bkg = self._fit_mass(
+                            h_invmass,
+                            f'fit/h_mass_fitted_pthf-{ptrange[0]}-{ptrange[1]}_{level}.png')
+                        if fit_res and fit_res.Get() and fit_res.IsValid():
+                            self.fit_mean[level][ipt] = fit_res.Parameter(1)
+                            self.fit_sigma[level][ipt] = fit_res.Parameter(2)
+                            self.fit_func_bkg[level][ipt] = func_bkg
+                        else:
+                            self.logger.error('Fit failed for %s bin %d', level, ipt)
+
+                    if self.cfg('mass_roofit'):
+                        for entry in self.cfg('mass_roofit', []):
+                            if lvl := entry.get('level'):
+                                if lvl != level:
+                                    continue
+                            if ptspec := entry.get('ptrange'):
+                                if ptspec[0] > ptrange[0] or ptspec[1] < ptrange[1]:
+                                    continue
+                            fitcfg = entry
+                            break
+                        self.logger.debug("Using fit config for %i: %s", ipt, fitcfg)
+                        if datasel := fitcfg.get('datasel'):
+                            h = rfile.Get(f'h_mass-pthf_{datasel}')
+                            h_invmass = project_hist(h, [0], {1: (ipt+1, ipt+1)}) # TODO: under-/overflow for jets
+
+                        for fixpar in fitcfg.get('fix_params', []):
+                            if roows.var(fixpar):
+                                roows.var(fixpar).setConstant(True)
+                        if h_invmass.GetEntries() == 0:
+                            continue
+                        roo_res, roo_ws = self._roofit_mass(
+                            level, h_invmass, ipt, self.p_pdfnames, self.p_param_names, fitcfg, roows,
+                            f'roofit/h_mass_fitted_pthf-{ptrange[0]}-{ptrange[1]}_{level}.png')
+                        self.roo_ws[level][ipt] = roo_ws
+                        self.roows[ipt] = roo_ws
+                        if roo_res.status() == 0:
+                            if level in ('data', 'mc_sig'):
+                                self.fit_mean[level][ipt] = roo_ws.var(self.p_param_names["gauss_mean"]).getValV()
+                                self.fit_sigma[level][ipt] = roo_ws.var(self.p_param_names["gauss_sigma"]).getValV()
+                            var_m = fitcfg.get('var', 'm')
+                            pdf_bkg = roo_ws.pdf(self.p_pdfnames["pdf_bkg"])
+                            if pdf_bkg:
+                                self.fit_func_bkg[level][ipt] = pdf_bkg.asTF(roo_ws.var(var_m))
+                            self.fit_range[level][ipt] = (roo_ws.var(var_m).getMin('fit'), roo_ws.var(var_m).getMax('fit'))
+                        else:
+                            self.logger.error('RooFit failed for %s bin %d', level, ipt)
+
+                        if level == "data":
+                            mean_sgn = roo_ws.var(self.p_param_names["gauss_mean"])
+                            sigma_sgn = roo_ws.var(self.p_param_names["gauss_sigma"])
+                            (sig, sig_err, _, _,
+                                signif, signif_err, s_over_b, s_over_b_err
+                            ) = calc_signif(roo_ws, roo_res, self.p_pdfnames, self.p_param_names, mean_sgn, sigma_sgn)
+
+                            yieldshistos.SetBinContent(ipt+1, sig)
+                            yieldshistos.SetBinError(ipt+1, sig_err)
+                            meanhistos.SetBinContent(ipt+1, mean_sgn.getVal())
+                            meanhistos.SetBinError(ipt+1, mean_sgn.getError())
+                            sigmahistos.SetBinContent(ipt+1, sigma_sgn.getVal())
+                            sigmahistos.SetBinError(ipt+1, sigma_sgn.getError())
+                            signifhistos.SetBinContent(ipt+1, signif)
+                            signifhistos.SetBinError(ipt+1, signif_err)
+                            soverbhistos.SetBinContent(ipt+1, s_over_b)
+                            soverbhistos.SetBinError(ipt+1, s_over_b_err)
+                fileout.cd()
+                yieldshistos.Write()
+                meanhistos.Write()
+                sigmahistos.Write()
+                signifhistos.Write()
+                soverbhistos.Write()
+            fileout.Close()
 
     def yield_syst(self):
         # Enable ROOT batch mode and reset in the end

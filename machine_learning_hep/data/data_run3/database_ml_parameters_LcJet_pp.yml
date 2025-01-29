@@ -52,9 +52,10 @@ LcJet_pp:
                 level: all
                 index: fIndexHfLcCollBases
                 trees:
-                    O2hflccollbase: [fNumContrib]
+                    O2hflccollbase: [fNumContrib, fCentFT0M, fMultZeqNTracksPV]
                 extra:
                     fIsEventReject: 0
+
             collcnt:
                 trees:
                     O2collcount:
@@ -260,9 +261,10 @@ LcJet_pp:
                 filter: "fPt >= 1. and abs(fY) <= 0.8 and abs(fJetEta) < (.9 - (fJetR / 100.))" # TODO: check jet eta cut
 
         merge:
-            # - {base: jetgen, ref: collgen}
-            - { base: jetdet, ref: colldet }
-            - { base: jetdata, ref: colldata }
+            #- {base: jetgen, ref: collgen}
+            - { base: jetdet, ref: colldet}
+            - { base: jetdata, ref: colldata}
+            - { base: jetdata, ref: evtorig}
 
         write:
             jetgen:
@@ -591,10 +593,10 @@ LcJet_pp:
         dir_general_plots: "/data2/${USER}/data/analysis_plots"
 
         jet_obs: &jet_default
-            sel_an_binmin: [3, 4, 5, 6, 7, 8, 10, 12, 16] # hadron pt bins (sel_an_binmin bins)
-            sel_an_binmax: [4, 5, 6, 7, 8, 10, 12, 16, 24] # hadron pt bins (sel_an_binmin bins)
-            bins_ptjet: [5, 7, 15, 30, 50] # systematics, TODO: split rec and gen binning
-            bins_ptjet_eff: [2, 5, 7, 15, 30, 50, 70] # systematics, TODO: split rec and gen binning
+            sel_an_binmin: [2, 3, 4, 5, 6, 7, 8, 10, 12, 16] # hadron pt bins (sel_an_binmin bins)
+            sel_an_binmax: [3, 4, 5, 6, 7, 8, 10, 12, 16, 24] # hadron pt bins (sel_an_binmin bins)
+            bins_ptjet: [5, 7, 15, 30] # systematics, TODO: split rec and gen binning
+            bins_ptjet_eff: [2, 5, 7, 15, 30, 50] # systematics, TODO: split rec and gen binning
             cand_collidx: fIndexHfLcCollBases
             counter_read_data: fReadCountsWithTVXAndZVertexAndSel8
             counter_read_mc: fReadCountsWithTVXAndZVertexAndSelMC
@@ -622,8 +624,8 @@ LcJet_pp:
                 zpar:
                     # bins_gen_fix: [10, 0., 1.]
                     # bins_det_fix: [10, 0., 1.]
-                    bins_gen_var: [0.4, 0.6, 0.7, 0.8, 0.9, 1.]
-                    bins_det_var: [0.4, 0.6, 0.7, 0.8, 0.9, 1.]
+                    bins_gen_var: [0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.]
+                    bins_det_var: [0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.]
                     label: "#it{z}_{#parallel}"
                     label_y: "(1/#it{N}_{jet ch}) d#it{N}/d#it{z}_{#parallel}"
                 dr:
@@ -642,6 +644,17 @@ LcJet_pp:
                     arraycols: [3]
                 lntheta-lnkt:
                     arraycols: [3, 4]
+
+            #n_rebin: [4,4,5,5,6,6,7,7,9,9]
+            pdf_names:
+                pdf_sig: "sig"
+                pdf_bkg: "bkg"
+            param_names:
+                mass: "m"
+                gauss_mean: "mean"
+                gauss_sigma: "sigma_g1"
+                double_gauss_sigma: "wide"
+                fraction_refl: "frac_refl"
 
             mass_roofit:
                 - level: mc
@@ -769,10 +782,11 @@ LcJet_pp:
                 <<: *mc_out_default
 
             # simple fitter START
-            sgnfunc: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0] # kGaus=0, k2Gaus=1, k2GausSigmaRatioPar=2 (sel_an_binmin bins)
-            bkgfunc: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0] # kExpo=0, kLin=1, kPol2=2, kNoBk=3, kPow=4, kPowEx=5 (sel_an_binmin bins)
+            sgnfunc: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0] # kGaus=0, k2Gaus=1, k2GausSigmaRatioPar=2 (sel_an_binmin bins)
+            bkgfunc: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0] # kExpo=0, kLin=1, kPol2=2, kNoBk=3, kPow=4, kPowEx=5 (sel_an_binmin bins)
             masspeak: 2.286
             massmin: [
+                    1.66,
                     1.66,
                     1.66,
                     1.66,
@@ -797,9 +811,11 @@ LcJet_pp:
                     2.06,
                     2.06,
                     2.06,
+                    2.06,
                 ] # sel_an_binmin bins, fit region of the invariant mass distribution [GeV/c^2]
-            rebin: [6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6] # sel_an_binmin bins
+            rebin: [6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6] # sel_an_binmin bins
             fix_mean: [
+                    false,
                     false,
                     false,
                     false,
@@ -816,8 +832,9 @@ LcJet_pp:
 
             # If SetArraySigma true: sigma_initial is taken from sigmaarray; false: sigma_initial is taken from MC
             # If SetFixGaussianSigma true: sigma fixed to sigma_initial
-            # SetFixGaussianSigma: [false, false, false, false, false, false, false, false, false, false, false] # sel_an_binmin bins
+            # SetFixGaussianSigma: [false, false, false, false, false, false, false, false, false, false, false, false] # sel_an_binmin bins
             SetFixGaussianSigma: [
+                    true,
                     true,
                     true,
                     true,
@@ -830,6 +847,7 @@ LcJet_pp:
                     true,
                 ] # sel_an_binmin bins
             SetArraySigma: [
+                    false,
                     false,
                     false,
                     false,
@@ -854,10 +872,12 @@ LcJet_pp:
                     0.01,
                     0.01,
                     0.01,
+                    0.01,
                 ] # initial sigma (sel_an_binmin bins)
 
-            fix_sigmasec: [true, true, true, true, true, true, true, true, true] # sel_an_binmin bins
+            fix_sigmasec: [true, true, true, true, true, true, true, true, true, true] # sel_an_binmin bins
             sigmaarraysec: [
+                    0.007497,
                     0.007497,
                     0.01,
                     0.01,
@@ -915,16 +935,30 @@ LcJet_pp:
             # Additional cuts applied before mass histogram is filled
             use_cuts: True
             cuts: [
-                    "mlPromptScore > 0.97",
-                    "mlPromptScore > 0.9",
-                    "mlPromptScore > 0.9",
-                    "mlPromptScore > 0.85",
-                    "mlPromptScore > 0.85",
-                    "mlPromptScore > 0.8",
-                    "mlPromptScore > 0.8",
-                    "mlPromptScore > 0.6",
-                    "mlPromptScore > 0.6",
-                ] # (sel_an_binmin bins) systematics FIXME: Update for new model.
+                   "mlPromptScore > 0.97 and fCentFT0M >= 70 and fCentFT0M <= 100",
+                   "mlPromptScore > 0.97 and fCentFT0M >= 70 and fCentFT0M <= 100",
+                   "mlPromptScore > 0.9 and fCentFT0M >= 70 and fCentFT0M <= 100",
+                   "mlPromptScore > 0.9 and fCentFT0M >= 70 and fCentFT0M <= 100",
+                   "mlPromptScore > 0.85 and fCentFT0M >= 70 and fCentFT0M <= 100",
+                   "mlPromptScore > 0.85 and fCentFT0M >= 70 and fCentFT0M <= 100",
+                   "mlPromptScore > 0.8 and fCentFT0M >= 70 and fCentFT0M <= 100",
+                   "mlPromptScore > 0.8 and fCentFT0M >= 70 and fCentFT0M <= 100",
+                   "mlPromptScore > 0.6 and fCentFT0M >= 70 and fCentFT0M <= 100",
+                   "mlPromptScore > 0.6 and fCentFT0M >= 70 and fCentFT0M <= 100",
+               ] # (sel_an_binmin bins) systematics FIXME: Update for new model.
+
+            #cuts: [
+            #        "mlPromptScore > 0.97",
+            #        "mlPromptScore > 0.97",
+            #        "mlPromptScore > 0.9",
+            #        "mlPromptScore > 0.9",
+            #        "mlPromptScore > 0.85",
+            #        "mlPromptScore > 0.85",
+            #        "mlPromptScore > 0.8",
+            #        "mlPromptScore > 0.8",
+            #        "mlPromptScore > 0.6",
+            #        "mlPromptScore > 0.6",
+            #    ] # (sel_an_binmin bins) systematics FIXME: Update for new model.
 
     systematics: # used in machine_learning_hep/analysis/systematics.py
         probvariation:

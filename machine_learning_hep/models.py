@@ -150,10 +150,23 @@ def apply(ml_type, names_, trainedmodels_, test_set_, mylistvariables_, labels_=
 
     if len(test_set_[mylistvariables_]) == 0:
         logger.warning("Empty dataframe provided.")
-        for name in names_:
-            test_set_[f"y_test_prediction{name}"]=0
-            test_set_[f"y_test_prob{name}"]=0
-        return test_set_
+        if  ml_type == "BinaryClassification":
+            for name in names_:
+                test_set_[f"y_test_prediction{name}"]=0
+                test_set_[f"y_test_prob{name}"]=0
+            return test_set_
+        elif ml_type == "MultiClassification":
+            for name in names_:
+                for pred, lab in enumerate(labels_):
+                    safe_lab = lab.replace('-', '_')
+                    if pred == 0:
+                        # bkg cuts work differently
+                        test_set_[f"y_test_prediction{name}{safe_lab}"] = 1.1
+                        test_set_[f"y_test_prob{name}{safe_lab}"] = 1.1
+                    else:
+                        test_set_[f"y_test_prediction{name}{safe_lab}"] = -1
+                        test_set_[f"y_test_prob{name}{safe_lab}"] = -1
+            return test_set_
 
     x_values = test_set_[mylistvariables_]
     for name, model in zip(names_, trainedmodels_):
