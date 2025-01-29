@@ -425,7 +425,8 @@ class Processer: # pylint: disable=too-many-instance-attributes
                         dfs[out] = dfmerge(dfs[base], dfs[ref], left_on=['df', on], right_index=True)
                         dfs[out].index.name = 'MergedIndex'
                         dfs[out] = dfs[out].reset_index()
-                        dfs[out] = dfs[out].sort_values('fMultZeqNTracksPV', ascending=False).drop_duplicates('MergedIndex')
+                        sorted_df = dfs[out].sort_values('fMultZeqNTracksPV', ascending=False)
+                        dfs[out] = sorted_df.drop_duplicates('MergedIndex')
                         dfs[out] = dfs[out].sort_values('MergedIndex', ascending=True)
                     else:
                         var = self.df_read[ref]['index']

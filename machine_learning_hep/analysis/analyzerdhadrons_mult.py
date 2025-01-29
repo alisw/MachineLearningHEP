@@ -370,7 +370,8 @@ class AnalyzerDhadrons_mult(Analyzer): # pylint: disable=invalid-name
                                 pdf_bkg = roo_ws.pdf(self.p_pdfnames["pdf_bkg"])
                                 if pdf_bkg:
                                     self.fit_func_bkg[level][ipt] = pdf_bkg.asTF(roo_ws.var(var_m))
-                                self.fit_range[level][ipt] = (roo_ws.var(var_m).getMin('fit'), roo_ws.var(var_m).getMax('fit'))
+                                self.fit_range[level][ipt] = (roo_ws.var(var_m).getMin('fit'), \
+                                                              roo_ws.var(var_m).getMax('fit'))
                             else:
                                 self.logger.error('RooFit failed for %s bin %d', level, ipt)
 
@@ -639,7 +640,7 @@ class AnalyzerDhadrons_mult(Analyzer): # pylint: disable=invalid-name
             # pylint: disable=logging-not-lazy
             self.logger.warning("Number of events %d for mult bin %d" % (norm, imult))
 
-            if self.p_fprompt_from_mb: 
+            if self.p_fprompt_from_mb:
                 if imult == 0:
                     fileoutcrossmb = "%s/finalcross%s%smult0.root" % \
                                         (self.d_resultsallpdata, self.case, self.typean)

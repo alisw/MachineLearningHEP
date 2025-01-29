@@ -17,6 +17,7 @@ Methods to: choose, train and apply ML models
             load and save ML models
             obtain control plots
 """
+# pylint: disable=too-many-branches
 from os.path import exists
 import pickle
 import pandas as pd
@@ -155,7 +156,7 @@ def apply(ml_type, names_, trainedmodels_, test_set_, mylistvariables_, labels_=
                 test_set_[f"y_test_prediction{name}"]=0
                 test_set_[f"y_test_prob{name}"]=0
             return test_set_
-        elif ml_type == "MultiClassification":
+        else:
             for name in names_:
                 for pred, lab in enumerate(labels_):
                     safe_lab = lab.replace('-', '_')
