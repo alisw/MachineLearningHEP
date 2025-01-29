@@ -292,7 +292,7 @@ class Processer: # pylint: disable=too-many-instance-attributes
         return reduce(lambda d, key: d.get(key, default) if isinstance(d, dict) else default,
                       param.split("."), self.datap['analysis'][self.typean])
 
-    def unpack(self, file_index, max_no_keys = None): # pylint: disable=too-many-branches
+    def unpack(self, file_index, max_no_keys = None): # pylint: disable=too-many-branches, too-many-locals
         def dfread(rdir, trees, cols, idx_name=None):
             """Read DF from multiple (joinable) O2 tables"""
             try:

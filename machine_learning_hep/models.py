@@ -156,7 +156,7 @@ def apply(ml_type, names_, trainedmodels_, test_set_, mylistvariables_, labels_=
                 test_set_[f"y_test_prediction{name}"]=0
                 test_set_[f"y_test_prob{name}"]=0
             return test_set_
-        else:
+        if  ml_type == "MultiClassification":
             for name in names_:
                 for pred, lab in enumerate(labels_):
                     safe_lab = lab.replace('-', '_')
