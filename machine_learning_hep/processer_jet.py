@@ -131,6 +131,7 @@ class ProcesserJets(Processer):
             df['lntheta'] = None
             return df
         df['nsub21'] = df.fNSub2 / df.fNSub1
+        # TODO: catch nsub1 == 0
         self.logger.debug('zg')
         df['zg_array'] = np.array(.5 - abs(df.fPtSubLeading / (df.fPtLeading + df.fPtSubLeading) - .5))
         zcut = self.cfg('zcut', .1)
@@ -144,6 +145,10 @@ class ProcesserJets(Processer):
             (lambda ar: np.log(ar.fPtSubLeading * np.sin(ar.fTheta))), axis=1)
         df['lntheta'] = df['fTheta'].apply(lambda x: -np.log(x))
         # df['lntheta'] = np.array(-np.log(df.fTheta))
+
+        self.logger.info('EEC')
+        df['eecweight'] = df[['fPairPt', 'fJetPt']].apply(
+            (lambda ar: ar.fPairPt / ar.fJetPt**2), axis=1)
 
         if self.cfg('hfjet', True):
             df['dr'] = np.sqrt((df.fJetEta - df.fEta)**2 + ((df.fJetPhi - df.fPhi + math.pi) % math.tau - math.pi)**2)
@@ -245,7 +250,7 @@ class ProcesserJets(Processer):
             self._calculate_variables(df)
 
             for obs, spec in self.cfg('observables', {}).items():
-                self.logger.debug('preparing histograms for %s', obs)
+                self.logger.info('preparing histograms for %s', obs)
                 var = obs.split('-')
                 if not all(v in df for v in var):
                     self.logger.error('dataframe does not contain %s', var)
@@ -312,7 +317,7 @@ class ProcesserJets(Processer):
                         self.binarray_pthf,
                         *[self.binarrays_obs['gen'][v] for v in var])
                 h_response_fd[obs] = create_hist(
-                        f'h_response_fd_{var}',
+                        f'h_response_fd_{obs}',
                         f";response matrix fd {obs}",
                         self.binarrays_ptjet['det'][var[0]],
                         self.binarrays_obs['det']['fPt'],
@@ -338,7 +343,7 @@ class ProcesserJets(Processer):
             # TODO: avoid hard-coding values here (check if restriction is needed at all)
             cols = ['ismcprompt', 'ismcsignal', 'ismcfd',
                     'fPt', 'fEta', 'fPhi', 'fJetPt', 'fJetEta', 'fJetPhi', 'fPtLeading', 'fPtSubLeading', 'fTheta',
-                    'fNSub2DR', 'fNSub1', 'fNSub2'] if self.cfg('hfjet', True) else None
+                    'fNSub2DR', 'fNSub1', 'fNSub2', 'fJetNConstituents', 'fEnergyMother', 'fPairTheta', 'fPairPt'] if self.cfg('hfjet', True) else None
 
             # read generator level
             dfgen_orig = pd.concat(read_df(self.mptfiles_gensk[bin][index], columns=cols)
@@ -413,7 +418,7 @@ class ProcesserJets(Processer):
 
                 arraycols = [i - 3 for i in self.cfg(f'observables.{obs}.arraycols', [])]
                 var = obs.split('-')
-                self.logger.info("Observable %s has arraycols %s -> %s", obs, arraycols, [var[icol] for icol in arraycols])
+                self.logger.debug("Observable %s has arraycols %s -> %s", obs, arraycols, [var[icol] for icol in arraycols])
                 df_mcana = self._explode_arraycols(df_mcana, [var[icol] for icol in arraycols])
                 fill_hist(h_mctruth[(cat, obs)], df_mcana[['fJetPt_gen', 'fPt_gen', *(f'{v}_gen' for v in var)]])
 
@@ -427,7 +432,7 @@ class ProcesserJets(Processer):
 
     def _explode_arraycols(self, df: pd.DataFrame, arraycols: "list[str]") -> pd.DataFrame:
         if len(arraycols) > 0:
-            self.logger.info("Exploding columns %s", arraycols)
+            self.logger.debug("Exploding columns %s", arraycols)
             # only consider rows with corresponding det- and gen-level entries
             df['length'] = [len(x) for x in df[arraycols[0]]]
             df['length_gen'] = [len(x) for x in df[arraycols[0] + '_gen']]
@@ -482,9 +487,7 @@ class ProcesserJets(Processer):
         # TODO: the first cut should be taken care of by under-/overflow bins, check their usage in analyzer
         df = df.loc[(df.fJetPt >= axes_det[0].GetXmin()) & (df.fJetPt < axes_det[0].GetXmax()) &
                     (df.fPt >= axes_det[1].GetXmin()) & (df.fPt < axes_det[1].GetXmax())]
-        self.logger.info('cutting for %s -> %s', obs, var)
         for i, v in enumerate(var, 2):
-            self.logger.info('%i: %s', i, v)
             df = df.loc[(df[v] >= axes_det[i].GetXmin()) & (df[v] < axes_det[i].GetXmax())]
         fill_hist(h_effkine[('det', 'nocuts', obs)], df[['fJetPt', 'fPt', *var]])
         df = df.loc[(df.fJetPt_gen >= axes_gen[0].GetXmin()) & (df.fJetPt_gen < axes_gen[0].GetXmax()) &

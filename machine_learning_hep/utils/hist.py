@@ -123,7 +123,7 @@ def create_hist(name, title, *bin_specs):
     var_bins = [hasattr(spec, '__len__') for spec in bin_specs]
     assert all(var_bins) or not any(var_bins), f'either all bins must be variable or fixed width: {bin_specs=}'
     dim = len(bin_specs) if all(var_bins) else len(bin_specs) / 3
-    assert dim in range(1, 10), 'only dimensions from 1 to 10 are supported'
+    assert dim in range(1, 12), 'only dimensions from 1 to 10 are supported'
 
     if all(var_bins):
         nbins = list(map(lambda a: len(a) - 1, bin_specs))
@@ -154,7 +154,7 @@ def fill_hist(hist, dfi: pd.DataFrame, weights = None, arraycols = None, write =
     """
     dim_hist = hist.GetDimension() if isinstance(hist, ROOT.TH1) else hist.GetNdimensions()
     dim_df = dfi.shape[1] if dfi.ndim > 1 else dfi.ndim
-    assert dim_df in range(1, 10), f'{dim_df} not supported'
+    assert dim_df in range(1, 12), f'{dim_df} not supported'
     assert dim_df == dim_hist, 'dimensions of df and histogram do not match'
     if len(dfi) == 0:
         return

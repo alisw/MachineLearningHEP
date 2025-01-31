@@ -21,6 +21,7 @@ import random as rd
 import re
 import sys
 import tempfile
+import traceback
 from copy import deepcopy
 from functools import reduce
 from typing import TypeVar
@@ -494,6 +495,7 @@ class Processer: # pylint: disable=too-many-instance-attributes
     @staticmethod
     def callback(ex):
         get_logger().exception('Error callback: %s', ex)
+        traceback.print_stack()
         raise ex
 
     def parallelizer(self, function, argument_list, maxperchunk):

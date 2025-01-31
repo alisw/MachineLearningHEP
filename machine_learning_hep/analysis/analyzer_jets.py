@@ -851,7 +851,7 @@ class AnalyzerJets(Analyzer):
                                     self._save_hist(
                                         hproj,
                                         f'uf/h_{var}_{method}_unfolded_{mcordata}_' +
-                                        f'{string_range_ptjet(range_ptjet)}_sel.png')
+                                        f'{string_range_ptjet(range_ptjet)}_sel.png', "colz")
                                     # Save also the self-normalised version.
                                     if not empty:
                                         hproj_sel = hproj.Clone(f"{hproj.GetName()}_selfnorm")
@@ -939,6 +939,7 @@ class AnalyzerJets(Analyzer):
         df = pd.read_parquet(self.cfg('fd_parquet'))
         col_mapping = {'dr': 'delta_r_jet', 'zpar': 'z'} # TODO: check mapping
 
+        # TODO: generalize to higher dimensions
         for var in self.observables['all']:
             bins_ptjet = np.asarray(self.cfg('bins_ptjet'), 'd')
             # TODO: generalize or derive from histogram?
@@ -960,6 +961,7 @@ class AnalyzerJets(Analyzer):
             if f'{colname}' not in df:
                 if var is not None:
                     self.logger.error('No feeddown information for %s (%s), cannot estimate feeddown', var, colname)
+                    print(df.info(), flush=True)
                 continue
 
             # TODO: derive histogram
@@ -990,6 +992,10 @@ class AnalyzerJets(Analyzer):
                     rfile.Get(f'h_effkine_fd_det_nocuts_{var}'),
                     rfile.Get(f'h_effkine_fd_det_cut_{var}'))
                 h_response = rfile.Get(f'h_response_fd_{var}')
+                if not h_response:
+                    self.logger.error("Could not find response matrix for fd estimation of %s", var)
+                    rfile.ls()
+                    continue
                 h_response_norm = norm_response(h_response, 3)
                 h3_fd_gen.Multiply(h_effkine_gen)
                 self._save_hist(project_hist(h3_fd_gen, [0, 2], {}), f'fd/h_ptjet-{var}_fdnew_gen_genkine.png')
