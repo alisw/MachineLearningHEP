@@ -341,9 +341,9 @@ class ProcesserJets(Processer):
 
         with TFile.Open(self.l_histoeff[index], "recreate") as rfile:
             # TODO: avoid hard-coding values here (check if restriction is needed at all)
-            cols = ['ismcprompt', 'ismcsignal', 'ismcfd',
+            cols = None if not self.cfg('hfjet', True) else ['ismcprompt', 'ismcsignal', 'ismcfd',
                     'fPt', 'fEta', 'fPhi', 'fJetPt', 'fJetEta', 'fJetPhi', 'fPtLeading', 'fPtSubLeading', 'fTheta',
-                    'fNSub2DR', 'fNSub1', 'fNSub2', 'fJetNConstituents', 'fEnergyMother', 'fPairTheta', 'fPairPt'] if self.cfg('hfjet', True) else None
+                    'fNSub2DR', 'fNSub1', 'fNSub2', 'fJetNConstituents', 'fEnergyMother', 'fPairTheta', 'fPairPt']
 
             # read generator level
             dfgen_orig = pd.concat(read_df(self.mptfiles_gensk[bin][index], columns=cols)
@@ -418,7 +418,8 @@ class ProcesserJets(Processer):
 
                 arraycols = [i - 3 for i in self.cfg(f'observables.{obs}.arraycols', [])]
                 var = obs.split('-')
-                self.logger.debug("Observable %s has arraycols %s -> %s", obs, arraycols, [var[icol] for icol in arraycols])
+                self.logger.debug("Observable %s has arraycols %s -> %s",
+                                  obs, arraycols, [var[icol] for icol in arraycols])
                 df_mcana = self._explode_arraycols(df_mcana, [var[icol] for icol in arraycols])
                 fill_hist(h_mctruth[(cat, obs)], df_mcana[['fJetPt_gen', 'fPt_gen', *(f'{v}_gen' for v in var)]])
 
