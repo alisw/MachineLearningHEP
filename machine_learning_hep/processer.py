@@ -115,6 +115,7 @@ class Processer: # pylint: disable=too-many-instance-attributes
         self.n_evtorig = datap["files_names"].get("namefile_evtorig")
         self.n_evt_count_ml = datap["files_names"].get("namefile_evt_count", "evtcount.yaml")
         self.n_gen = datap["files_names"]["namefile_gen"]
+        self.n_gen_sl = datap["files_names"].get("namefile_gen_sl", "")
         self.n_filemass = datap["files_names"]["histofilename"]
         self.n_fileeff = datap["files_names"]["efffilename"]
         self.n_fileresp = datap["files_names"]["respfilename"]
@@ -170,7 +171,8 @@ class Processer: # pylint: disable=too-many-instance-attributes
 
         if self.mcordata == "mc":
             self.l_gen = createlist(self.d_pkl, self.l_path, self.n_gen)
-
+            if self.n_gen_sl:
+                self.l_gen_sl = createlist(self.d_pkl, self.l_path, self.n_gen_sl)
         self.f_totevt = os.path.join(self.d_pkl, self.n_evt)
         self.f_totevtorig = os.path.join(self.d_pkl, self.n_evtorig)
 
@@ -232,6 +234,7 @@ class Processer: # pylint: disable=too-many-instance-attributes
         self.d_pkl_dec = d_pkl_dec
         self.mptfiles_recosk = []
         self.mptfiles_gensk = []
+        self.mptfiles_gensk_sl = []
 
         self.d_pkl_decmerged = d_pkl_decmerged
         self.n_filemass = os.path.join(self.d_results, self.n_filemass)
@@ -249,6 +252,12 @@ class Processer: # pylint: disable=too-many-instance-attributes
         self.lpt_gen_ml = [os.path.join(self.d_pkl_ml, self.lpt_gensk[ipt]) \
                             for ipt in range(self.p_nptbins)]
         self.f_evt_count_ml = os.path.join(self.d_pkl_ml, self.n_evt_count_ml)
+
+        if self.n_gen_sl:
+            self.lpt_gensk_sl = [self.n_gen_sl.replace(".p", "_%s%d_%d.p" % \
+                          (self.v_var_binning, self.lpt_anbinmin[i], self.lpt_anbinmax[i])) \
+                          for i in range(self.p_nptbins)]
+
         self.lpt_recodec = None
         if self.doml is True:
             if self.mltype == "MultiClassification":
@@ -277,6 +286,10 @@ class Processer: # pylint: disable=too-many-instance-attributes
                                     self.lpt_gensk[ipt]) for ipt in range(self.p_nptbins)]
             self.lpt_gendecmerged = [os.path.join(self.d_pkl_decmerged, self.lpt_gensk[ipt])
                                      for ipt in range(self.p_nptbins)]
+            if self.n_gen_sl:
+                self.mptfiles_gensk_sl = [createlist(self.d_pklsk, self.l_path, \
+                                           self.lpt_gensk_sl[ipt]) for ipt in range(self.p_nptbins)]
+
         # self.triggerbit = datap["analysis"][self.typean]["triggerbit"]
         self.runlistrigger = runlisttrigger
 
@@ -405,6 +418,10 @@ class Processer: # pylint: disable=too-many-instance-attributes
                             dfs[df_name][var] = np.logical_and(dfs[df_name][var] == 1, swapped)
                 self.logger.debug(' %s -> done', df_name)
 
+                if 'rename' in df_spec:
+                    spec = df_spec['rename']
+                    dfs[df_name] = dfs[df_name].rename(columns={spec['old']: spec['new']})
+
 
         if self.df_merge:
             for m_spec in self.df_merge:
@@ -421,14 +438,9 @@ class Processer: # pylint: disable=too-many-instance-attributes
                         self.logger.info('merging %s with %s on %s into %s', base, ref, on, out)
                         if not is_numeric_dtype(dfs[base][on]):
                             self.logger.info('exploding dataframe %s on variable %s', base, on)
-                            dfs[base] = dfs[base].explode(on)
-                        dfs[out] = dfmerge(dfs[base], dfs[ref], left_on=['df', on], right_index=True)
-                        if not is_numeric_dtype(dfs[base][on]):
-                            dfs[out].index.name = 'MergedIndex'
-                            dfs[out] = dfs[out].reset_index()
-                            sorted_df = dfs[out].sort_values('fMultZeqNTracksPV', ascending=False)
-                            dfs[out] = sorted_df.drop_duplicates('MergedIndex')
-                            dfs[out] = dfs[out].sort_values('MergedIndex', ascending=True)
+                            dfs[out] = dfmerge(dfs[base].explode(on), dfs[ref], left_on=['df', on], right_index=True)
+                        else:
+                            dfs[out] = dfmerge(dfs[base], dfs[ref], left_on=['df', on], right_index=True)
                     else:
                         var = self.df_read[ref]['index']
                         self.logger.info('merging %s with %s on %s (default) into %s', base, ref, var, out)
@@ -451,6 +463,9 @@ class Processer: # pylint: disable=too-many-instance-attributes
         dfreco = read_df(self.l_reco[file_index])
         dfgen = read_df(self.l_gen[file_index]) if self.mcordata == 'mc' else None
 
+        if self.n_gen_sl:
+            dfgen_sl = read_df(self.l_gen_sl[file_index]) if self.mcordata == 'mc' else None
+
         for ipt in range(self.p_nptbins):
             dfrecosk = seldf_singlevar(dfreco, self.v_var_binning,
                                        self.lpt_anbinmin[ipt], self.lpt_anbinmax[ipt])
@@ -462,6 +477,12 @@ class Processer: # pylint: disable=too-many-instance-attributes
                                           self.lpt_anbinmin[ipt], self.lpt_anbinmax[ipt])
                 dfgensk = dfquery(dfgensk, self.s_gen_skim[ipt])
                 write_df(dfgensk, self.mptfiles_gensk[ipt][file_index])
+
+            if dfgen_sl is not None:
+                dfgensk_sl = seldf_singlevar(dfgen_sl, self.v_var_binning,
+                                          self.lpt_anbinmin[ipt], self.lpt_anbinmax[ipt])
+                dfgensk_sl = dfquery(dfgensk_sl, self.s_gen_skim[ipt])
+                write_df(dfgensk_sl, self.mptfiles_gensk_sl[ipt][file_index])
 
     def applymodel(self, file_index):
         for ipt in range(self.p_nptbins):

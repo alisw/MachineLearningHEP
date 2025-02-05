@@ -61,9 +61,10 @@ LcpKpi:
         level: gen
         index: fIndexHFLCMCCOLLBASES
         trees:
-          O2hflcmccollbase: [fPosX, fPosY, fPosZ]
+          O2hflcmccollbase: [fPosX, fPosY, fPosZ, fCentFT0M]
           O2hflcmcrcollid: [fIndexArrayHFLCCOLLBASES]
-          
+        rename: {old: fCentFT0M, new: fCentFT0Mmc}
+
       reco:
         level: all
         index: fIndexHfLcBases
@@ -107,7 +108,7 @@ LcpKpi:
     merge:
        - {base: reco, ref: evtorig , extra: {fMultZeqNTracksPV_sub: fMultZeqNTracksPV - fNProngsContributorsPV}}
        - {base: gen, ref: evtoriggen}
-       - {base: gen, ref: evtorig, left_on: fIndexArrayHFLCCOLLBASES}
+       - {base: gen, ref: evtorig, left_on: fIndexArrayHFLCCOLLBASES, out: genrec}
 
     write:
       evtorig:
@@ -117,10 +118,17 @@ LcpKpi:
         level: all
         source: evtorig
         file: AnalysisResultsEvt.parquet
+      evtmc:
+        level: mc
+        source: evtoriggen
+        file: AnalysisResultsEvtGen.parquet
       reco:
         level: all
         file: AnalysisResultsReco.parquet
       gen:
+        level: mc
+        file: AnalysisResultsGenSl.parquet
+      genrec:
         level: mc
         file: AnalysisResultsGen.parquet
 
@@ -398,9 +406,11 @@ LcpKpi:
       sel_binmin2: [0, 85, 70, 50, 30, 10, 1, 0] #list of var2 splittng nbins
       sel_binmax2: [100, 100, 85, 70, 50, 30, 10, 1]
       var_binning2: fCentFT0M
-      var_binning2_gen: fCentFT0M
+      var_binning2_gen: fCentFT0Mmc
       var_binning2_weights: fMultZeqNTracksPV
       mc_cut_on_binning2: false
+      signal_loss: true
+      signal_loss_idx: fIndexArrayHFLCCOLLBASES
       nbinshisto: 100
       minvaluehisto: -0.0005
       maxvaluehisto: 100.0005

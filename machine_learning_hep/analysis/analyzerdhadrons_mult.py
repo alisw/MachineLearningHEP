@@ -51,6 +51,7 @@ class AnalyzerDhadrons_mult(Analyzer): # pylint: disable=invalid-name
         self.p_nptbins = len(self.lpt_finbinmin)
         self.lpt_probcutfin = datap["mlapplication"]["probcutoptimal"]
 
+        self.signal_loss = datap["analysis"][self.typean].get("signal_loss", "")
         self.lvar2_binmin = datap["analysis"][self.typean]["sel_binmin2"]
         self.lvar2_binmax = datap["analysis"][self.typean]["sel_binmax2"]
         self.v_var2_binning = datap["analysis"][self.typean]["var_binning2"]
@@ -421,35 +422,90 @@ class AnalyzerDhadrons_mult(Analyzer): # pylint: disable=invalid-name
         cEff.SetWindowSize(500, 500)
         cEff.SetLogy()
 
-        legeff = TLegend(.5, .25, .7, .45)
+        legeff = TLegend(.5, .20, .7, .45)
         legeff.SetBorderSize(0)
         legeff.SetFillColor(0)
         legeff.SetFillStyle(0)
         legeff.SetTextFont(42)
         legeff.SetTextSize(0.035)
 
+        if self.signal_loss:
+            cSl = TCanvas('cSl', 'The Fit Canvas')
+            cSl.SetCanvasSize(1900, 1500)
+            cSl.SetWindowSize(500, 500)
+            legsl = TLegend(.5, .20, .7, .45)
+            legsl.SetBorderSize(0)
+            legsl.SetFillColor(0)
+            legsl.SetFillStyle(0)
+            legsl.SetTextFont(42)
+            legsl.SetTextSize(0.035)
+
         for imult in range(self.p_nbin2):
-            stringbin2 = "_%s_%.2f_%.2f" % (self.v_var2_binning_gen, \
+            stringbin2 = "_%s_%.2f_%.2f" % (self.v_var2_binning, \
                                             self.lvar2_binmin[imult], \
                                             self.lvar2_binmax[imult])
+            legeffstring = "%.1f #leq %s < %.1f" % \
+                    (self.lvar2_binmin[imult], self.p_latexbin2var, self.lvar2_binmax[imult])
+
+            if self.signal_loss:
+                h_gen_pr_sl = lfileeff.Get("h_signal_loss_gen_pr" + stringbin2)
+                h_sel_pr_sl = lfileeff.Get("h_signal_loss_rec_pr" + stringbin2)
+                h_sel_pr_sl.Divide(h_sel_pr_sl, h_gen_pr_sl, 1.0, 1.0, "B")
+                h_sel_pr_sl.SetLineColor(imult+1)
+                h_sel_pr_sl.SetMarkerColor(imult+1)
+                h_sel_pr_sl.SetMarkerStyle(21)
+                cSl.cd()
+                h_sel_pr_sl.Draw("same")
+                fileouteff.cd()
+                h_sel_pr_sl.SetName("signal_loss_pr_mult%d" % imult)
+                h_sel_pr_sl.Write()
+
+                legsl.AddEntry(h_sel_pr_sl, legeffstring, "LEP")
+                h_sel_pr_sl.GetXaxis().SetTitle("#it{p}_{T} (GeV/#it{c})")
+                h_sel_pr_sl.GetYaxis().SetTitle("Signal loss (prompt) %s" \
+                        % (self.p_latexnhadron))
+                h_sel_pr_sl.SetMinimum(0.7)
+                h_sel_pr_sl.SetMaximum(1.0)
+
             h_gen_pr = lfileeff.Get("h_gen_pr" + stringbin2)
             h_sel_pr = lfileeff.Get("h_sel_pr" + stringbin2)
             h_sel_pr.Divide(h_sel_pr, h_gen_pr, 1.0, 1.0, "B")
+
+            if self.signal_loss:
+                h_sel_pr.Multiply(h_sel_pr_sl)
+
             h_sel_pr.SetLineColor(imult+1)
             h_sel_pr.SetMarkerColor(imult+1)
             h_sel_pr.SetMarkerStyle(21)
+            cEff.cd()
             h_sel_pr.Draw("same")
             fileouteff.cd()
             h_sel_pr.SetName("eff_mult%d" % imult)
             h_sel_pr.Write()
-            legeffstring = "%.1f #leq %s < %.1f" % \
-                    (self.lvar2_binmin[imult], self.p_latexbin2var, self.lvar2_binmax[imult])
             legeff.AddEntry(h_sel_pr, legeffstring, "LEP")
             h_sel_pr.GetXaxis().SetTitle("#it{p}_{T} (GeV/#it{c})")
-            h_sel_pr.GetYaxis().SetTitle("Acc x efficiency (prompt) %s (1/GeV)" \
+            h_sel_pr.GetYaxis().SetTitle("Acc x efficiency (prompt) %s" \
                     % (self.p_latexnhadron))
             h_sel_pr.SetMinimum(0.0004)
             h_sel_pr.SetMaximum(0.4)
+
+        if self.signal_loss:
+            cSl.cd()
+            legsl.Draw()
+            cSl.SaveAs("%s/SignalLoss%s%s.eps" % (self.d_resultsallpmc,
+                                        self.case, self.typean))
+
+            cSlFD = TCanvas('cSlFD', 'The Fit Canvas')
+            cSlFD.SetCanvasSize(1900, 1500)
+            cSlFD.SetWindowSize(500, 500)
+            legslFD = TLegend(.5, .20, .7, .45)
+            legslFD.SetBorderSize(0)
+            legslFD.SetFillColor(0)
+            legslFD.SetFillStyle(0)
+            legslFD.SetTextFont(42)
+            legslFD.SetTextSize(0.035)
+
+        cEff.cd()
         legeff.Draw()
         cEff.SaveAs("%s/Eff%s%s.eps" % (self.d_resultsallpmc,
                                         self.case, self.typean))
@@ -458,7 +514,7 @@ class AnalyzerDhadrons_mult(Analyzer): # pylint: disable=invalid-name
         cEffFD.SetCanvasSize(1900, 1500)
         cEffFD.SetWindowSize(500, 500)
         cEffFD.SetLogy()
-        legeffFD = TLegend(.5, .25, .7, .45)
+        legeffFD = TLegend(.5, .20, .7, .45)
         legeffFD.SetBorderSize(0)
         legeffFD.SetFillColor(0)
         legeffFD.SetFillStyle(0)
@@ -466,30 +522,63 @@ class AnalyzerDhadrons_mult(Analyzer): # pylint: disable=invalid-name
         legeffFD.SetTextSize(0.035)
 
         for imult in range(self.p_nbin2):
-            stringbin2 = "_%s_%.2f_%.2f" % (self.v_var2_binning_gen, \
+            stringbin2 = "_%s_%.2f_%.2f" % (self.v_var2_binning, \
                                             self.lvar2_binmin[imult], \
                                             self.lvar2_binmax[imult])
+            legeffFDstring = "%.1f #leq %s < %.1f" % \
+                    (self.lvar2_binmin[imult], self.p_latexbin2var, self.lvar2_binmax[imult])
+
+            if self.signal_loss:
+                h_gen_fd_sl = lfileeff.Get("h_signal_loss_gen_fd" + stringbin2)
+                h_sel_fd_sl = lfileeff.Get("h_signal_loss_rec_fd" + stringbin2)
+                h_sel_fd_sl.Divide(h_sel_fd_sl, h_gen_fd_sl, 1.0, 1.0, "B")
+                h_sel_fd_sl.SetLineColor(imult+1)
+                h_sel_fd_sl.SetMarkerColor(imult+1)
+                h_sel_fd_sl.SetMarkerStyle(21)
+                cSlFD.cd()
+                h_sel_fd_sl.Draw("same")
+                fileouteff.cd()
+                h_sel_fd_sl.SetName("signal_loss_fd_mult%d" % imult)
+                h_sel_fd_sl.Write()
+
+                legslFD.AddEntry(h_sel_fd_sl, legeffstring, "LEP")
+                h_sel_fd_sl.GetXaxis().SetTitle("#it{p}_{T} (GeV/#it{c})")
+                h_sel_fd_sl.GetYaxis().SetTitle("Signal loss (feeddown) %s" \
+                        % (self.p_latexnhadron))
+                h_sel_fd_sl.SetMinimum(0.7)
+                h_sel_fd_sl.SetMaximum(1.0)
+
             h_gen_fd = lfileeff.Get("h_gen_fd" + stringbin2)
             h_sel_fd = lfileeff.Get("h_sel_fd" + stringbin2)
             h_sel_fd.Divide(h_sel_fd, h_gen_fd, 1.0, 1.0, "B")
+
+            if self.signal_loss:
+                h_sel_fd.Multiply(h_sel_fd_sl)
+
             h_sel_fd.SetLineColor(imult+1)
             h_sel_fd.SetMarkerColor(imult+1)
             h_sel_fd.SetMarkerStyle(21)
+            cEffFD.cd()
             h_sel_fd.Draw("same")
             fileouteff.cd()
             h_sel_fd.SetName("eff_fd_mult%d" % imult)
             h_sel_fd.Write()
-            legeffFDstring = "%.1f #leq %s < %.1f" % \
-                    (self.lvar2_binmin[imult], self.p_latexbin2var, self.lvar2_binmax[imult])
             legeffFD.AddEntry(h_sel_fd, legeffFDstring, "LEP")
             h_sel_fd.GetXaxis().SetTitle("#it{p}_{T} (GeV/#it{c})")
-            h_sel_fd.GetYaxis().SetTitle("Acc x efficiency feed-down %s (1/GeV)" \
+            h_sel_fd.GetYaxis().SetTitle("Acc x efficiency feed-down %s" \
                     % (self.p_latexnhadron))
             h_sel_fd.SetMinimum(0.0004)
             h_sel_fd.SetMaximum(0.4)
+
+        cEffFD.cd()
         legeffFD.Draw()
         cEffFD.SaveAs("%s/EffFD%s%s.eps" % (self.d_resultsallpmc,
                                             self.case, self.typean))
+        if self.signal_loss:
+            cSlFD.cd()
+            legslFD.Draw()
+            cSlFD.SaveAs("%s/SignalLossFD%s%s.eps" % (self.d_resultsallpmc,
+                                        self.case, self.typean))
 
 
     def plotter(self):

@@ -82,6 +82,12 @@ class ProcesserDhadrons_mult(Processer):
         self.event_weighting_mc = self.event_weighting_mc.get(self.period, {})
         self.v_var2_binning_weigths = datap["analysis"][self.typean].get("var_binning2_weights")
 
+        # Signal loss estimation
+        self.signal_loss = datap["analysis"][self.typean].get("signal_loss", "")
+        self.signal_loss_idx = datap["analysis"][self.typean].get("signal_loss_idx", "")
+        if "signal_loss" not in datap["analysis"][self.typean]:
+            self.signal_loss = False
+
     @staticmethod
     def make_weights(col, func, hist, use_func):
         """Helper function to extract weights
@@ -127,7 +133,7 @@ class ProcesserDhadrons_mult(Processer):
         histonorm.SetBinContent(2, neventsafterevtsel)
         histonorm.GetXaxis().SetBinLabel(2, "tot events after evt sel")
         for ibin2, _ in enumerate(self.lvar2_binmin):
-            binneddf = seldf_singlevar_inclusive(dfevtevtsel, self.v_var2_binning_gen, \
+            binneddf = seldf_singlevar_inclusive(dfevtevtsel, self.v_var2_binning, \
                 self.lvar2_binmin[ibin2], self.lvar2_binmax[ibin2])
             histonorm.SetBinContent(3 + ibin2, len(binneddf))
             histonorm.GetXaxis().SetBinLabel(3 + ibin2, \
@@ -192,10 +198,10 @@ class ProcesserDhadrons_mult(Processer):
                     h_invmass_sig.Write()
 
         if self.event_cand_validation is True:
-            label = "h%s" % self.v_var2_binning_gen
+            label = "h%s" % self.v_var2_binning
             histomult = TH1F(label, label, self.nbinshisto,
                              self.minvaluehisto, self.maxvaluehisto)
-            fill_hist(histomult, dfevtevtsel[self.v_var2_binning_gen])
+            fill_hist(histomult, dfevtevtsel[self.v_var2_binning])
             histomult.Write()
 
             if self.v_var2_binning_weigths is not None:
@@ -204,11 +210,11 @@ class ProcesserDhadrons_mult(Processer):
                              self.minvaluehisto, self.maxvaluehisto)
                 fill_hist(histomult_weigths, dfevtevtsel[self.v_var2_binning_weigths])
 
-                label = "h%s_%s" % (self.v_var2_binning_weigths, self.v_var2_binning_gen)
+                label = "h%s_%s" % (self.v_var2_binning_weigths, self.v_var2_binning)
                 histomult_weigths_2d = TH2F(label, label,
                                             self.nbinshisto, self.minvaluehisto, self.maxvaluehisto,
                                             self.nbinshisto, self.minvaluehisto, self.maxvaluehisto)
-                fill_hist(histomult_weigths_2d, dfevtevtsel[[self.v_var2_binning_weigths, self.v_var2_binning_gen]])
+                fill_hist(histomult_weigths_2d, dfevtevtsel[[self.v_var2_binning_weigths, self.v_var2_binning]])
 
                 histomult_weigths.Write()
                 histomult_weigths_2d.Write()
@@ -258,7 +264,7 @@ class ProcesserDhadrons_mult(Processer):
                     "Compute unweighted values...")
             return no_weights(dfsel)
 
-        weight_according_to = event_weighting_mc.get("according_to", self.v_var2_binning_gen)
+        weight_according_to = event_weighting_mc.get("according_to", self.v_var2_binning)
 
         w = [weights.GetBinContent(weights.FindBin(v)) for v in
              dfsel[weight_according_to]]
@@ -273,7 +279,7 @@ class ProcesserDhadrons_mult(Processer):
         out_file = TFile.Open(self.l_histoeff[index], "recreate")
         h_list = []
         for ibin2, _ in enumerate(self.lvar2_binmin):
-            stringbin2 = "_%s_%.2f_%.2f" % (self.v_var2_binning_gen,
+            stringbin2 = "_%s_%.2f_%.2f" % (self.v_var2_binning,
                                             self.lvar2_binmin[ibin2],
                                             self.lvar2_binmax[ibin2])
             n_bins = len(self.lpt_finbinmin)
@@ -301,6 +307,15 @@ class ProcesserDhadrons_mult(Processer):
                                      "FD Reco in acc |#eta|<0.8 and sel")
             h_sel_fd = make_histo("h_sel_fd",
                                   "FD Reco and sel in acc |#eta|<0.8 and sel")
+            if self.signal_loss:
+                h_signal_loss_gen_pr = make_histo("h_signal_loss_gen_pr",
+                                                "Gen Prompt signal loss in acceptance |y|<0.5")
+                h_signal_loss_rec_pr = make_histo("h_signal_loss_rec_pr",
+                                                "Rec Prompt signal loss in acceptance |y|<0.5")
+                h_signal_loss_gen_fd = make_histo("h_signal_loss_gen_fd",
+                                                "Gen Feeddown signal loss in acceptance |y|<0.5")
+                h_signal_loss_rec_fd = make_histo("h_signal_loss_rec_fd",
+                                                "Rec Feeddown signal loss in acceptance |y|<0.5")
 
             bincounter = 0
             for ipt in range(self.p_nptfinbins):
@@ -316,11 +331,36 @@ class ProcesserDhadrons_mult(Processer):
                                      self.lpt_finbinmin[ipt], self.lpt_finbinmax[ipt])
                 df_mc_gen = seldf_singlevar(df_mc_gen, self.v_var_binning, \
                                      self.lpt_finbinmin[ipt], self.lpt_finbinmax[ipt])
+
+                # Whether or not to calculate the signal loss
+                if self.signal_loss:
+                    df_mc_gen_sl = read_df(self.mptfiles_gensk_sl[bin_id][index])
+
+                    df_mc_gen_sl = df_mc_gen_sl.query(self.s_presel_gen_eff)
+                    if self.s_evtsel is not None:
+                        df_mc_gen_sl = df_mc_gen_sl.query(self.s_evtsel)
+
+                    df_mc_gen_sl = seldf_singlevar_inclusive(df_mc_gen_sl, self.v_var2_binning_gen, \
+                                                             self.lvar2_binmin[ibin2], self.lvar2_binmax[ibin2])
+
+                    df_gen_pr_sl = df_mc_gen_sl.loc[(df_mc_gen_sl.ismcprompt == 1) & (df_mc_gen_sl.ismcsignal == 1)]
+                    gen_tot_pr = len(df_gen_pr_sl)
+                    gen_rec_pr = len(df_gen_pr_sl[df_gen_pr_sl[self.signal_loss_idx].apply(len) > 0])
+
+                    df_gen_fd_sl = df_mc_gen_sl.loc[(df_mc_gen_sl.ismcfd == 1) & (df_mc_gen_sl.ismcsignal == 1)]
+                    gen_tot_fd = len(df_gen_fd_sl)
+                    gen_rec_fd = len(df_gen_fd_sl[df_gen_fd_sl[self.signal_loss_idx].apply(len) > 0])
+
+                    h_signal_loss_gen_pr.SetBinContent(bincounter + 1, gen_tot_pr)
+                    h_signal_loss_rec_pr.SetBinContent(bincounter + 1, gen_rec_pr)
+                    h_signal_loss_gen_fd.SetBinContent(bincounter + 1, gen_tot_fd)
+                    h_signal_loss_rec_fd.SetBinContent(bincounter + 1, gen_rec_fd)
+
                 # Whether or not to cut on the 2nd binning variable
                 if self.mc_cut_on_binning2:
-                    df_mc_reco = seldf_singlevar_inclusive(df_mc_reco, self.v_var2_binning_gen, \
+                    df_mc_reco = seldf_singlevar_inclusive(df_mc_reco, self.v_var2_binning, \
                                                  self.lvar2_binmin[ibin2], self.lvar2_binmax[ibin2])
-                    df_mc_gen = seldf_singlevar_inclusive(df_mc_gen, self.v_var2_binning_gen, \
+                    df_mc_gen = seldf_singlevar_inclusive(df_mc_gen, self.v_var2_binning, \
                                                 self.lvar2_binmin[ibin2], self.lvar2_binmax[ibin2])
                 df_gen_sel_pr = df_mc_gen.loc[(df_mc_gen.ismcprompt == 1) & (df_mc_gen.ismcsignal == 1)]
                 df_reco_presel_pr = df_mc_reco.loc[(df_mc_reco.ismcprompt == 1) & (df_mc_reco.ismcsignal == 1)]
@@ -377,9 +417,11 @@ class ProcesserDhadrons_mult(Processer):
             else:
                 print("Not reweighting efficiencies for bin", ibin2)
             if self.mc_cut_on_binning2 is True:
-                print("Computing efficiencies selecting on", self.v_var2_binning_gen)
+                print("Computing efficiencies selecting on", self.v_var2_binning)
             else:
-                print("Not computing efficiencies selecting on", self.v_var2_binning_gen)
+                print("Not computing efficiencies selecting on", self.v_var2_binning)
+            if self.signal_loss is True:
+                print("Computing signal loss for mult interval ", ibin2)
 
         create_folder_struc(self.d_results, self.l_path)
         arguments = [(i,) for i in range(len(self.l_root))]
