@@ -760,7 +760,7 @@ D0Jet_pp:
                   range: [1.69, 2.04] # systematics? or propagate bg fit uncertainty directly?
                   components:
                       sig:
-                          fn: "Gaussian::peak(m[1.,5.], mean[1.85,1.89], sigma_g1[.01,.08])"
+                          fn: "Gaussian::peak(m[1.,5.], mean[1.85,1.89], sigma_g1[.01,.06])"
                       bkg:
                           fn: "Gaussian::wide(m, mean, sigma_wide[.05,1.])"
                       model:
