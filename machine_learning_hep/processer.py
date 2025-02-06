@@ -478,7 +478,7 @@ class Processer: # pylint: disable=too-many-instance-attributes
                 dfgensk = dfquery(dfgensk, self.s_gen_skim[ipt])
                 write_df(dfgensk, self.mptfiles_gensk[ipt][file_index])
 
-            if dfgen_sl is not None:
+            if self.n_gen_sl:
                 dfgensk_sl = seldf_singlevar(dfgen_sl, self.v_var_binning,
                                           self.lpt_anbinmin[ipt], self.lpt_anbinmax[ipt])
                 dfgensk_sl = dfquery(dfgensk_sl, self.s_gen_skim[ipt])
