@@ -20,7 +20,8 @@ import ROOT
 from ROOT import TF1, TCanvas, TFile, gStyle
 
 from machine_learning_hep.analysis.analyzer import Analyzer
-from machine_learning_hep.fitting.roofitter import RooFitter
+from machine_learning_hep.fitting.roofitter import RooFitter, calc_signif
+from machine_learning_hep.fitting.roofitter import create_text_info, add_text_info_fit, add_text_info_perf
 from machine_learning_hep.utilities import folding, make_message_notfound
 from machine_learning_hep.utils.hist import (bin_array, create_hist, norm_response, fold_hist,
                                              fill_hist_fast, get_axis, get_dim, get_bin_limits,
@@ -71,6 +72,8 @@ class AnalyzerJets(Analyzer):
         self.n_fileresp = os.path.join(self.d_resultsallpmc_proc, self.n_fileresp)
         file_result_name = datap["files_names"]["resultfilename"]
         self.n_fileresult = os.path.join(self.d_resultsallpdata, file_result_name)
+        self.p_pdfnames = datap["analysis"][self.typean]['pdf_names']
+        self.p_param_names = datap["analysis"][self.typean]['param_names']
 
         self.observables = {
             'qa': ['zg', 'rg', 'nsd', 'zpar', 'dr', 'lntheta', 'lnkt', 'lntheta-lnkt'],
@@ -228,7 +231,7 @@ class AnalyzerJets(Analyzer):
                 self._save_canvas(c, f'eff/h_ptjet-pthf_eff_{cat}_ptjet.png')
 
             # Run 3 efficiencies
-            for cat in cats:
+            for icat, cat in enumerate(cats):
                 # gen-level efficiency for feeddown estimation
                 h_eff_gen = h_genmatch[cat].Clone()
                 h_eff_gen.Divide(h_gen[cat])
@@ -267,12 +270,23 @@ class AnalyzerJets(Analyzer):
                 eff = h_det[cat].Clone(f'h_effnew_{cat}')
                 ensure_sumw2(eff)
                 eff.Divide(h_out)
+
+                if eff_corr := self.cfg('efficiency.reweight'):
+                    for iptjet in range(get_nbins(eff, 0)):
+                        for ipt in range(get_nbins(eff, 1)):
+                            scale_bin(eff, eff_corr[ipt][icat], iptjet+1, ipt+1)
+
                 self._save_hist(eff, f'eff/h_ptjet-pthf_effnew_{cat}.png')
                 self.h_effnew_ptjet_pthf[cat] = eff
 
                 eff_avg = project_hist(h_det[cat], [1], {0: bins_ptjet})
                 ensure_sumw2(eff_avg)
                 eff_avg.Divide(project_hist(h_out, [1], {0: bins_ptjet}))
+
+                if eff_corr := self.cfg('efficiency.reweight'):
+                    for ipt in range(get_nbins(eff_avg, 0)):
+                        scale_bin(eff_avg, eff_corr[ipt][icat], ipt+1)
+
                 self._save_hist(eff_avg, f'eff/h_pthf_effnew_{cat}.png')
                 self.h_effnew_pthf[cat] = eff_avg
 
@@ -341,17 +355,41 @@ class AnalyzerJets(Analyzer):
 
 
     #region fitting
-    def _roofit_mass(self, hist, ipt, fitcfg, roows = None, filename = None):
+    def _roofit_mass(self, level, hist, ipt, pdfnames, param_names, fitcfg, roows = None, filename = None):
         if fitcfg is None:
             return None, None
-        res, ws, frame = self.fitter.fit_mass_new(hist, fitcfg, roows, True)
+        res, ws, frame, residual_frame = self.fitter.fit_mass_new(hist, pdfnames, fitcfg, level, roows, True)
         frame.SetTitle(f'inv. mass for p_{{T}} {self.bins_candpt[ipt]} - {self.bins_candpt[ipt+1]} GeV/c')
         c = TCanvas()
+
+        textInfoRight = create_text_info(0.62, 0.68, 1.0, 0.89)
+        add_text_info_fit(textInfoRight, frame, ws, param_names)
+
+        textInfoLeft = create_text_info(0.12, 0.68, 0.6, 0.89)
+        if level == "data":
+            mean_sgn = ws.var(self.p_param_names["gauss_mean"])
+            sigma_sgn = ws.var(self.p_param_names["gauss_sigma"])
+            (sig, sig_err, bkg, bkg_err,
+            signif, signif_err, s_over_b, s_over_b_err
+            ) = calc_signif(ws, res, pdfnames, param_names, mean_sgn, sigma_sgn)
+
+            add_text_info_perf(textInfoLeft, sig, sig_err, bkg, bkg_err, s_over_b, s_over_b_err, signif, signif_err)
+
         frame.Draw()
+        textInfoRight.Draw()
+        textInfoLeft.Draw()
         if res.status() != 0:
             self.logger.warning('Invalid fit result for %s', hist.GetName())
             filename = filename.replace('.png', '_invalid.png')
         self._save_canvas(c, filename)
+
+        if level == "data":
+            residual_frame.SetTitle(f'inv. mass for p_{{T}} {self.bins_candpt[ipt]} - {self.bins_candpt[ipt+1]} GeV/c')
+            cres = TCanvas()
+            residual_frame.Draw()
+            filename = filename.replace('.png', '_residual.png')
+            self._save_canvas(cres, filename)
+
         return res, ws
 
 
@@ -493,7 +531,7 @@ class AnalyzerJets(Analyzer):
                                 if var := roows.var(par):
                                     var.setConstant(True)
                         roo_res, roo_ws = self._roofit_mass(
-                            h_invmass, ipt, fitcfg, roows,
+                            level, h_invmass, ipt, self.p_pdfnames, self.p_param_names, fitcfg, roows,
                             f'roofit/h_mass_fitted{jetptlabel}_{string_range_pthf(range_pthf)}_{level}.png')
                         if roo_res.status() != 0:
                             self.logger.error('RooFit failed for %s iptjet %s ipt %d', level, iptjet, ipt)
@@ -514,8 +552,8 @@ class AnalyzerJets(Analyzer):
                                 self.roo_ws_ptjet[level][jptjet][ipt] = roo_ws.Clone()
                             # TODO: take parameter names from DB
                             if level in ('data', 'mc'):
-                                varname_mean = fitcfg.get('var_mean', 'mean')
-                                varname_sigma = fitcfg.get('var_sigma', 'sigma_g1')
+                                varname_mean = fitcfg.get('var_mean', self.p_param_names["gauss_mean"])
+                                varname_sigma = fitcfg.get('var_sigma', self.p_param_names["gauss_sigma"])
                                 self.fit_mean[level][ipt] = roo_ws.var(varname_mean).getValV()
                                 self.fit_sigma[level][ipt] = roo_ws.var(varname_sigma).getValV()
                             varname_m = fitcfg.get('var', 'm')

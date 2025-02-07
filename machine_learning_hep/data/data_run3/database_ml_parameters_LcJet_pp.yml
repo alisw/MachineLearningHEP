@@ -19,10 +19,10 @@ LcJet_pp:
     sel_cen_unp: null
     sel_good_evt_unp: null # "fIsEventReject == 0"
     # sel_reco_skim: ["mlPromptScore > 0.96", "mlPromptScore > 0.97", "mlPromptScore > 0.9", "mlPromptScore > 0.85", "mlPromptScore > 0.8", "mlPromptScore > 0.6", null]  # (sel_skim_binmin bins)
-    sel_reco_skim: [null, null, null, null, null, null, null] # (sel_skim_binmin bins)
-    sel_gen_skim: [null, null, null, null, null, null, null] # (sel_skim_binmin bins)
-    sel_skim_binmin: [1, 2, 4, 6, 8, 12, 24] # skimming pt bins (sel_skim_binmin bins)
-    sel_skim_binmax: [2, 4, 6, 8, 12, 24, 48] # skimming pt bins (sel_skim_binmin bins)
+    sel_reco_skim: [null, null, null, null, null, null, null, null, null, null, null] # (sel_skim_binmin bins)
+    sel_gen_skim: [null, null, null, null, null, null, null, null, null, null, null] # (sel_skim_binmin bins)
+    sel_skim_binmin: [1, 2, 3, 4, 5, 6, 7, 8, 10, 12] # skimming pt bins (sel_skim_binmin bins)
+    sel_skim_binmax: [2, 3, 4, 5, 6, 7, 8, 10, 12, 24] # skimming pt bins (sel_skim_binmin bins)
     var_binning: fPt
     dofullevtmerge: false
     var_cand: fCandidateSelFlag
@@ -52,9 +52,10 @@ LcJet_pp:
                 level: all
                 index: fIndexHfLcCollBases
                 trees:
-                    O2hflccollbase: [fNumContrib]
+                    O2hflccollbase: [fNumContrib, fCentFT0M, fMultZeqNTracksPV]
                 extra:
                     fIsEventReject: 0
+
             collcnt:
                 trees:
                     O2collcount:
@@ -192,7 +193,8 @@ LcJet_pp:
                     ismcprompt: { var: fOriginMcRec, req: [[0], []] }
                     ismcfd: { var: fOriginMcRec, req: [[1], []] }
                 extract_component:
-                    - { var: fMlScores, newvar: mlPromptScore, component: 1 }
+                    - { var: fMlScores, newvar: mlBkgScore, component: 0 }
+                    #- { var: fMlScores, newvar: mlPromptScore, component: 1 }
                 filter: "fPt >= 1. and abs(fY) <= 0.8 and abs(fJetEta) < (.9 - (fJetR / 100.))" # TODO: check jet eta cut
                 # swap: {cand: fCandidateSelFlag, var_swap: fIsCandidateSwapped, vars: [ismcsignal, ismcprompt, icmcfd]}
 
@@ -256,13 +258,15 @@ LcJet_pp:
                             fNSub2,
                         ]
                 extract_component:
-                    - { var: fMlScores, newvar: mlPromptScore, component: 1 }
+                    - { var: fMlScores, newvar: mlBkgScore, component: 0 }
+                    #- { var: fMlScores, newvar: mlPromptScore, component: 1 }
                 filter: "fPt >= 1. and abs(fY) <= 0.8 and abs(fJetEta) < (.9 - (fJetR / 100.))" # TODO: check jet eta cut
 
         merge:
-            # - {base: jetgen, ref: collgen}
-            - { base: jetdet, ref: colldet }
-            - { base: jetdata, ref: colldata }
+            #- {base: jetgen, ref: collgen}
+            - { base: jetdet, ref: colldet}
+            - { base: jetdata, ref: colldata}
+            - { base: jetdata, ref: evtorig}
 
         write:
             jetgen:
@@ -478,7 +482,7 @@ LcJet_pp:
             chunksizeskim: [100] #list of periods
             fracmerge: [1.] #list of periods
             seedmerge: [12] #list of periods
-            period: [LHC22o] #list of periods
+            period: [LHC23] #list of periods
             select_period: [1]
             prefix_dir: /data2/MLhep/real/train_318625/
             unmerged_tree_dir: [alice] #list of periods
@@ -495,7 +499,7 @@ LcJet_pp:
             chunksizeskim: [1000] #list of periods
             fracmerge: [1.] #list of periods
             seedmerge: [12] #list of periods
-            period: [LHC24d3b] #list of periods
+            period: [LHC24h1] #list of periods
             select_period: [1]
             prefix_dir: /data2/MLhep/sim/train_316964/
             unmerged_tree_dir: [alice]
@@ -512,29 +516,27 @@ LcJet_pp:
             data: null
             mc: null
 
-        nbkg: 500000
-        nsig: 500000
+        nclasses: [200000, 200000, 200000]
         mult_bkg: [1, 1, 1, 1, 1, 1, 1]
         nclasses: [20000, 20000]
-        sampletags: [0, 1]
+        sampletags: [0, 1, 1]
         equalise_sig_bkg: True
         # sampletagforsignal: 1
         # sampletagforbkg: 0
-        sel_ml: [fM < 2.22 or fM > 2.35, ismcsignal == 1 and ismcprompt == 1]
-        sel_bkg: fM < 2.22 or fM > 2.35
-        class_labels: [bkg, sig]
+        sel_ml: [fM < 2.22 or fM > 2.35, ismcsignal == 1 and ismcprompt == 1, ismcsignal == 1 and ismcfd == 1]
+        class_labels: [bkg, prompt, non-prompt]
         nkfolds: 5
         rnd_shuffle: 12
         rnd_splt: 12
         rnd_all: 12
         test_frac: 0.2
-        binmin: [1, 2, 4, 6, 8, 12, 24] # must be equal to sel_skim_binmin (sel_skim_binmin bins)
-        binmax: [2, 4, 6, 8, 12, 24, 36] # must be equal to sel_skim_binmax (sel_skim_binmin bins)
-        mltype: BinaryClassification
+        binmin: [1, 2, 3, 4, 5, 6, 7, 8, 10, 12, 24] # must be equal to sel_skim_binmin (sel_skim_binmin bins)
+        binmax: [2, 3, 4, 5, 6, 7, 8, 10, 12, 24, 36] # must be equal to sel_skim_binmax (sel_skim_binmin bins)
+        mltype: MultiClassification
         ncorescrossval: 10
         prefix_dir_ml: "/data2/${USER}/MLhep/"
-        mlplot: mlplot
-        mlout: mlout
+        mlplot: mlplot # to be removed
+        mlout: mlout # to be removed
 
         opt:
             isFONLLfromROOT: true
@@ -550,36 +552,39 @@ LcJet_pp:
             num_steps: 111 # number of steps used in efficiency and signif. estimation
             bkg_function: pol2 # fit function for bkg (among TH1 predefined fit functions, e.g. expo, pol1, pol2, ...)
             save_fit: True # save bkg fits with the various cuts on ML output
-            raahp: [1, 1, 1, 1, 1, 1, 1] # sel_skim_binmin bins
+            raahp: [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1] # sel_skim_binmin bins
             presel_gen_eff: "fPt > 0. and abs(fY) < 0.8"
 
     mlapplication:
         data:
             prefix_dir_app: "/data2/${USER}/"
-            pkl_skimmed_dec: [LHC22pp/MLapplication/prod_LHC22o/skpkldecdata] #list of periods
+            pkl_skimmed_dec: [LHC23pp/MLapplication/prod_LHC23/skpkldecdata] #list of periods
             pkl_skimmed_decmerged: [
-                    LHC22pp/MLapplication/prod_LHC22o/skpkldecdatamerged,
+                    LHC23pp/MLapplication/prod_LHC23/skpkldecdatamerged,
                 ] #list of periods
         mc:
             prefix_dir_app: "/data2/${USER}/"
-            pkl_skimmed_dec: [LHC22pp_mc/MLapplication/prod_LHC24d3b/skpkldecmc] #list of periods
+            pkl_skimmed_dec: [LHC23pp_mc/MLapplication/prod_LHC24h1/skpkldecmc] #list of periods
             pkl_skimmed_decmerged: [
-                    LHC22pp_mc/MLapplication/prod_LHC24d3b/skpkldecmcmerged,
+                    LHC23pp_mc/MLapplication/prod_LHC24h1/skpkldecmcmerged,
                 ] #list of periods
         modelname: xgboost
         modelsperptbin: [
                 xgboost_classifierLcpKpi_dfselection_fPt_1.0_2.0.sav,
-                xgboost_classifierLcpKpi_dfselection_fPt_2.0_4.0.sav,
-                xgboost_classifierLcpKpi_dfselection_fPt_4.0_6.0.sav,
-                xgboost_classifierLcpKpi_dfselection_fPt_6.0_8.0.sav,
-                xgboost_classifierLcpKpi_dfselection_fPt_8.0_12.0.sav,
-                xgboost_classifierLcpKpi_dfselection_fPt_12.0_24.0.sav,
-                xgboost_classifierLcpKpi_dfselection_fPt_12.0_24.0.sav,
+                xgboost_classifierLcpKpi_dfselection_fPt_2.0_3.0.sav,
+                xgboost_classifierLcpKpi_dfselection_fPt_3.0_4.0.sav,
+                xgboost_classifierLcpKpi_dfselection_fPt_4.0_5.0.sav,
+                xgboost_classifierLcpKpi_dfselection_fPt_5.0_6.0.sav,
+                xgboost_classifierLcpKpi_dfselection_fPt_6.0_7.0.sav,
+                xgboost_classifierLcpKpi_dfselection_fPt_7.0_8.0.sav,
+                xgboost_classifierLcpKpi_dfselection_fPt_8.0_10.0.sav,
+                xgboost_classifierLcpKpi_dfselection_fPt_10.0_12.0.sav,
+                xgboost_classifierLcpKpi_dfselection_fPt_12.0_24.0.sav
             ] # sel_skim_binmin bins
         probcutpresel:
-            data: [0.70, 0.70, 0.60, 0.60, 0.40, 0.40, 0.] # sel_skim_binmin bins
-            mc: [0.70, 0.70, 0.60, 0.60, 0.40, 0.40, 0.] # sel_skim_binmin bins
-        probcutoptimal: [0.96, 0.97, 0.90, 0.85, 0.80, 0.60, 0.] # sel_skim_binmin bins
+            data: [[0.02, 0.0, 0.0], [0.03, 0.0, 0.0], [0.04, 0.0, 0.0], [0.07, 0.0, 0.0], [0.09, 0.0, 0.0], [0.11, 0.0, 0.0], [0.15, 0.0, 0.0], [0.18, 0.0, 0.0], [0.25, 0.0, 0.0], [0.35, 0.0, 0.0]] #list of nbins
+            mc: [[0.02, 0.0, 0.0], [0.03, 0.0, 0.0], [0.04, 0.0, 0.0], [0.07, 0.0, 0.0], [0.09, 0.0, 0.0], [0.11, 0.0, 0.0], [0.15, 0.0, 0.0], [0.18, 0.0, 0.0], [0.25, 0.0, 0.0], [0.35, 0.0, 0.0]] #list of nbins
+        probcutoptimal: [[0.02, 0.0, 0.0], [0.03, 0.0, 0.0], [0.04, 0.0, 0.0], [0.07, 0.0, 0.0], [0.09, 0.0, 0.0], [0.11, 0.0, 0.0], [0.15, 0.0, 0.0], [0.18, 0.0, 0.0], [0.25, 0.0, 0.0], [0.35, 0.0, 0.0]] #list of nbins
 
     #region analysis
     analysis:
@@ -591,10 +596,10 @@ LcJet_pp:
         dir_general_plots: "/data2/${USER}/data/analysis_plots"
 
         jet_obs: &jet_default
-            sel_an_binmin: [3, 4, 5, 6, 7, 8, 10, 12, 16] # hadron pt bins (sel_an_binmin bins)
-            sel_an_binmax: [4, 5, 6, 7, 8, 10, 12, 16, 24] # hadron pt bins (sel_an_binmin bins)
-            bins_ptjet: [5, 7, 15, 30, 50] # systematics, TODO: split rec and gen binning
-            bins_ptjet_eff: [2, 5, 7, 15, 30, 50, 70] # systematics, TODO: split rec and gen binning
+            sel_an_binmin: [2, 3, 4, 5, 6, 7, 8, 10, 12, 16] # hadron pt bins (sel_an_binmin bins)
+            sel_an_binmax: [3, 4, 5, 6, 7, 8, 10, 12, 16, 24] # hadron pt bins (sel_an_binmin bins)
+            bins_ptjet: [2, 5, 7, 10, 15, 30] # systematics, TODO: split rec and gen binning
+            bins_ptjet_eff: [2, 5, 7, 15, 30, 50] # systematics, TODO: split rec and gen binning
             cand_collidx: fIndexHfLcCollBases
             counter_read_data: fReadCountsWithTVXAndZVertexAndSel8
             counter_read_mc: fReadCountsWithTVXAndZVertexAndSelMC
@@ -622,8 +627,8 @@ LcJet_pp:
                 zpar:
                     # bins_gen_fix: [10, 0., 1.]
                     # bins_det_fix: [10, 0., 1.]
-                    bins_gen_var: [0.4, 0.6, 0.7, 0.8, 0.9, 1.]
-                    bins_det_var: [0.4, 0.6, 0.7, 0.8, 0.9, 1.]
+                    bins_gen_var: [0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.]
+                    bins_det_var: [0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.]
                     label: "#it{z}_{#parallel}"
                     label_y: "(1/#it{N}_{jet ch}) d#it{N}/d#it{z}_{#parallel}"
                 dr:
@@ -642,6 +647,17 @@ LcJet_pp:
                     arraycols: [3]
                 lntheta-lnkt:
                     arraycols: [3, 4]
+
+            #n_rebin: [4,4,5,5,6,6,7,7,9,9]
+            pdf_names:
+                pdf_sig: "sig"
+                pdf_bkg: "bkg"
+            param_names:
+                mass: "m"
+                gauss_mean: "mean"
+                gauss_sigma: "sigma_g1"
+                double_gauss_sigma: "wide"
+                fraction_refl: "frac_refl"
 
             mass_roofit:
                 - level: mc
@@ -705,7 +721,8 @@ LcJet_pp:
             n_rebin: 3 # number of mass bins to merge
             efficiency:
                 index_match: fIndexArrayLCCMCPJETOS_hf
-                extra_cols: ["mlPromptScore"]
+                #extra_cols: ["mlPromptScore"]
+                extra_cols: ["mlBkgScore"]
                 correction_method: run3
 
             unfolding_iterations: 8 # used, maximum iteration
@@ -769,10 +786,11 @@ LcJet_pp:
                 <<: *mc_out_default
 
             # simple fitter START
-            sgnfunc: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0] # kGaus=0, k2Gaus=1, k2GausSigmaRatioPar=2 (sel_an_binmin bins)
-            bkgfunc: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0] # kExpo=0, kLin=1, kPol2=2, kNoBk=3, kPow=4, kPowEx=5 (sel_an_binmin bins)
+            sgnfunc: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0] # kGaus=0, k2Gaus=1, k2GausSigmaRatioPar=2 (sel_an_binmin bins)
+            bkgfunc: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0] # kExpo=0, kLin=1, kPol2=2, kNoBk=3, kPow=4, kPowEx=5 (sel_an_binmin bins)
             masspeak: 2.286
             massmin: [
+                    1.66,
                     1.66,
                     1.66,
                     1.66,
@@ -797,9 +815,11 @@ LcJet_pp:
                     2.06,
                     2.06,
                     2.06,
+                    2.06,
                 ] # sel_an_binmin bins, fit region of the invariant mass distribution [GeV/c^2]
-            rebin: [6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6] # sel_an_binmin bins
+            rebin: [6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6] # sel_an_binmin bins
             fix_mean: [
+                    false,
                     false,
                     false,
                     false,
@@ -816,8 +836,9 @@ LcJet_pp:
 
             # If SetArraySigma true: sigma_initial is taken from sigmaarray; false: sigma_initial is taken from MC
             # If SetFixGaussianSigma true: sigma fixed to sigma_initial
-            # SetFixGaussianSigma: [false, false, false, false, false, false, false, false, false, false, false] # sel_an_binmin bins
+            # SetFixGaussianSigma: [false, false, false, false, false, false, false, false, false, false, false, false] # sel_an_binmin bins
             SetFixGaussianSigma: [
+                    true,
                     true,
                     true,
                     true,
@@ -830,6 +851,7 @@ LcJet_pp:
                     true,
                 ] # sel_an_binmin bins
             SetArraySigma: [
+                    false,
                     false,
                     false,
                     false,
@@ -854,10 +876,12 @@ LcJet_pp:
                     0.01,
                     0.01,
                     0.01,
+                    0.01,
                 ] # initial sigma (sel_an_binmin bins)
 
-            fix_sigmasec: [true, true, true, true, true, true, true, true, true] # sel_an_binmin bins
+            fix_sigmasec: [true, true, true, true, true, true, true, true, true, true] # sel_an_binmin bins
             sigmaarraysec: [
+                    0.007497,
                     0.007497,
                     0.01,
                     0.01,
@@ -915,15 +939,16 @@ LcJet_pp:
             # Additional cuts applied before mass histogram is filled
             use_cuts: True
             cuts: [
-                    "mlPromptScore > 0.97",
-                    "mlPromptScore > 0.9",
-                    "mlPromptScore > 0.9",
-                    "mlPromptScore > 0.85",
-                    "mlPromptScore > 0.85",
-                    "mlPromptScore > 0.8",
-                    "mlPromptScore > 0.8",
-                    "mlPromptScore > 0.6",
-                    "mlPromptScore > 0.6",
+                    "mlBkgScore < 0.03",
+                    "mlBkgScore < 0.04",
+                    "mlBkgScore < 0.07",
+                    "mlBkgScore < 0.09",
+                    "mlBkgScore < 0.11",
+                    "mlBkgScore < 0.15",
+                    "mlBkgScore < 0.18",
+                    "mlBkgScore < 0.25",
+                    "mlBkgScore < 0.35",
+                    "mlBkgScore < 0.35"
                 ] # (sel_an_binmin bins) systematics FIXME: Update for new model.
 
     systematics: # used in machine_learning_hep/analysis/systematics.py

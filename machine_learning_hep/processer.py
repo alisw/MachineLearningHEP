@@ -115,6 +115,7 @@ class Processer: # pylint: disable=too-many-instance-attributes
         self.n_evtorig = datap["files_names"].get("namefile_evtorig")
         self.n_evt_count_ml = datap["files_names"].get("namefile_evt_count", "evtcount.yaml")
         self.n_gen = datap["files_names"]["namefile_gen"]
+        self.n_gen_sl = datap["files_names"].get("namefile_gen_sl", "")
         self.n_filemass = datap["files_names"]["histofilename"]
         self.n_fileeff = datap["files_names"]["efffilename"]
         self.n_fileresp = datap["files_names"]["respfilename"]
@@ -170,7 +171,8 @@ class Processer: # pylint: disable=too-many-instance-attributes
 
         if self.mcordata == "mc":
             self.l_gen = createlist(self.d_pkl, self.l_path, self.n_gen)
-
+            if self.n_gen_sl:
+                self.l_gen_sl = createlist(self.d_pkl, self.l_path, self.n_gen_sl)
         self.f_totevt = os.path.join(self.d_pkl, self.n_evt)
         self.f_totevtorig = os.path.join(self.d_pkl, self.n_evtorig)
 
@@ -187,9 +189,6 @@ class Processer: # pylint: disable=too-many-instance-attributes
         # Potentially mask certain values (e.g. nsigma TOF of -999)
         self.p_mask_values = datap["ml"].get("mask_values", None)
 
-        self.lpt_probcutpre = datap["mlapplication"]["probcutpresel"][self.mcordata]
-        self.lpt_probcutfin = datap["analysis"][self.typean].get("probcuts", None)
-
         self.bins_skimming = np.array(list(zip(self.lpt_anbinmin, self.lpt_anbinmax)), 'd')
         self.bins_analysis = np.array(list(zip(self.lpt_finbinmin, self.lpt_finbinmax)), 'd')
         bin_matching = [
@@ -197,23 +196,21 @@ class Processer: # pylint: disable=too-many-instance-attributes
             for bin in self.bins_analysis
         ]
 
-        # Make it backwards-compatible
-        if not self.lpt_probcutfin:
-            lpt_probcutfin_tmp = datap["mlapplication"]["probcutoptimal"]
-            self.lpt_probcutfin = []
-            for i in range(self.p_nptfinbins):
-                bin_id = bin_matching[i]
-                self.lpt_probcutfin.append(lpt_probcutfin_tmp[bin_id])
+        self.lpt_probcutpre = datap["mlapplication"]["probcutpresel"][self.mcordata]
+        lpt_probcutfin_tmp = datap["mlapplication"]["probcutoptimal"]
+        self.lpt_probcutfin = [lpt_probcutfin_tmp[bin_matching[ibin]]
+            for ibin in range(self.p_nptfinbins)]
 
-        if self.mltype == "MultiClassification":
-            for probcutfin, probcutpre in zip(self.lpt_probcutfin, self.lpt_probcutpre):
+        for ibin, probcutfin in enumerate(self.lpt_probcutfin):
+            probcutpre = self.lpt_probcutpre[bin_matching[ibin]]
+            if self.mltype == "MultiClassification":
                 if probcutfin[0] > probcutpre[0] or probcutfin[1] < probcutpre[1] or probcutfin[2] < probcutpre[2]:
                     self.logger.fatal("Probability cut final: %s must be tighter than presel %s!\n" \
                             "Verify that bkg prob presel > final, and other cuts presel < final",
                             self.lpt_probcutfin, self.lpt_probcutpre)
-        elif self.lpt_probcutfin < self.lpt_probcutpre:
-            self.logger.fatal("Probability cut final: %s must be tighter (smaller values) than presel %s!",
-                    self.lpt_probcutfin, self.lpt_probcutpre)
+            elif probcutfin < probcutpre:
+                self.logger.fatal("Probability cut final: %s must be tighter (smaller values) than presel %s!",
+                        self.lpt_probcutfin, self.lpt_probcutpre)
 
         if self.mltype == "MultiClassification":
             self.l_selml = []
@@ -232,6 +229,7 @@ class Processer: # pylint: disable=too-many-instance-attributes
         self.d_pkl_dec = d_pkl_dec
         self.mptfiles_recosk = []
         self.mptfiles_gensk = []
+        self.mptfiles_gensk_sl = []
 
         self.d_pkl_decmerged = d_pkl_decmerged
         self.n_filemass = os.path.join(self.d_results, self.n_filemass)
@@ -249,6 +247,11 @@ class Processer: # pylint: disable=too-many-instance-attributes
         self.lpt_gen_ml = [os.path.join(self.d_pkl_ml, self.lpt_gensk[ipt]) \
                             for ipt in range(self.p_nptbins)]
         self.f_evt_count_ml = os.path.join(self.d_pkl_ml, self.n_evt_count_ml)
+
+          self.lpt_gensk_sl = [self.n_gen_sl.replace(".p", "_%s%d_%d.p" %
+                        (self.v_var_binning, self.lpt_anbinmin[i], self.lpt_anbinmax[i]))
+                        for i in range(self.p_nptbins)] if self.n_gen_sl else None
+
         self.lpt_recodec = None
         if self.doml is True:
             if self.mltype == "MultiClassification":
@@ -277,6 +280,9 @@ class Processer: # pylint: disable=too-many-instance-attributes
                                     self.lpt_gensk[ipt]) for ipt in range(self.p_nptbins)]
             self.lpt_gendecmerged = [os.path.join(self.d_pkl_decmerged, self.lpt_gensk[ipt])
                                      for ipt in range(self.p_nptbins)]
+              self.mptfiles_gensk_sl = [createlist(self.d_pklsk, self.l_path,
+                                         self.lpt_gensk_sl[ipt]) for ipt in range(self.p_nptbins)] if self.lpt_gensk_sl else None
+
         # self.triggerbit = datap["analysis"][self.typean]["triggerbit"]
         self.runlistrigger = runlisttrigger
 
@@ -292,7 +298,7 @@ class Processer: # pylint: disable=too-many-instance-attributes
         return reduce(lambda d, key: d.get(key, default) if isinstance(d, dict) else default,
                       param.split("."), self.datap['analysis'][self.typean])
 
-    def unpack(self, file_index, max_no_keys = None): # pylint: disable=too-many-branches
+    def unpack(self, file_index, max_no_keys = None): # pylint: disable=too-many-branches, too-many-locals
         def dfread(rdir, trees, cols, idx_name=None):
             """Read DF from multiple (joinable) O2 tables"""
             try:
@@ -416,17 +422,22 @@ class Processer: # pylint: disable=too-many-instance-attributes
                         self.logger.info('merging %s with %s on %s into %s', base, ref, on, out)
                         if not isinstance(on, list) or 'df' not in on:
                             on = ['df', on]
-                        dfs[out] = dfmerge(dfs[base], dfs[ref], on=on)
+                        dfs[out] = dfmerge(dfs[base], dfs[ref], suffixes=(f'_{base}', None), on=on)
                     elif (on := m_spec.get('left_on', None)) is not None:
                         self.logger.info('merging %s with %s on %s into %s', base, ref, on, out)
                         if not is_numeric_dtype(dfs[base][on]):
                             self.logger.info('exploding dataframe %s on variable %s', base, on)
-                            dfs[base] = dfs[base].explode(on)
-                        dfs[out] = dfmerge(dfs[base], dfs[ref], left_on=['df', on], right_index=True)
+                            dfs[out] = dfmerge(
+                                dfs[base].explode(on), dfs[ref], left_on=['df', on], suffixes=(f'_{base}', None),
+                                right_index=True)
+                        else:
+                            dfs[out] = dfmerge(
+                                dfs[base], dfs[ref], left_on=['df', on], suffixes=(f'_{base}', None), right_index=True)
                     else:
                         var = self.df_read[ref]['index']
                         self.logger.info('merging %s with %s on %s (default) into %s', base, ref, var, out)
-                        dfs[out] = dfmerge(dfs[base], dfs[ref], left_on=['df', var], right_index=True)
+                        dfs[out] = dfmerge(
+                            dfs[base], dfs[ref], left_on=['df', var], suffixes=(f'_{base}', None), right_index=True)
                     if 'extra' in m_spec:
                         self.logger.debug(' %s -> extra', out)
                         for col_name, col_val in m_spec['extra'].items():
@@ -444,6 +455,7 @@ class Processer: # pylint: disable=too-many-instance-attributes
     def skim(self, file_index):
         dfreco = read_df(self.l_reco[file_index])
         dfgen = read_df(self.l_gen[file_index]) if self.mcordata == 'mc' else None
+        dfgen_sl = read_df(self.l_gen_sl[file_index]) if self.n_gen_sl and self.mcordata == 'mc' else None
 
         for ipt in range(self.p_nptbins):
             dfrecosk = seldf_singlevar(dfreco, self.v_var_binning,
@@ -456,6 +468,12 @@ class Processer: # pylint: disable=too-many-instance-attributes
                                           self.lpt_anbinmin[ipt], self.lpt_anbinmax[ipt])
                 dfgensk = dfquery(dfgensk, self.s_gen_skim[ipt])
                 write_df(dfgensk, self.mptfiles_gensk[ipt][file_index])
+
+            if dfgen_sl is not None:
+                dfgensk_sl = seldf_singlevar(dfgen_sl, self.v_var_binning,
+                                          self.lpt_anbinmin[ipt], self.lpt_anbinmax[ipt])
+                dfgensk_sl = dfquery(dfgensk_sl, self.s_gen_skim[ipt])
+                write_df(dfgensk_sl, self.mptfiles_gensk_sl[ipt][file_index])
 
     def applymodel(self, file_index):
         for ipt in range(self.p_nptbins):

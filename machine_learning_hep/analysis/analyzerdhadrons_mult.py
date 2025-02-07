@@ -16,28 +16,27 @@
 main script for doing final stage analysis
 """
 # pylint: disable=too-many-lines
-import os
 # pylint: disable=unused-wildcard-import, wildcard-import
+import os
 from array import array
-import itertools
+from pathlib import Path
+import numpy as np
 # pylint: disable=import-error, no-name-in-module, unused-import, consider-using-f-string
-# from root_numpy import hist2array, array2hist
-from ROOT import TFile, TH1F, TH2F, TCanvas, TPad, TF1, TH1D
+from ROOT import TFile, TH1, TH1F, TH2F, TCanvas, TPad, TF1, TH1D
 from ROOT import gStyle, TLegend, TLine, TText, TPaveText, TArrow
 from ROOT import gROOT, TDirectory, TPaveLabel
-from ROOT import TStyle, kBlue, kGreen, kBlack, kRed, kOrange
-from ROOT import TLatex
+from ROOT import TStyle, kBlue,  kCyan
 from ROOT import gInterpreter, gPad
 # HF specific imports
-from machine_learning_hep.fitting.helpers import MLFitter
+from machine_learning_hep.fitting.roofitter import RooFitter, calc_signif
+from machine_learning_hep.fitting.roofitter import create_text_info, add_text_info_fit, add_text_info_perf
 from machine_learning_hep.logger import get_logger
-from machine_learning_hep.io import dump_yaml_from_dict
-from machine_learning_hep.utilities import folding, get_bins, make_latex_table, parallelizer
 from machine_learning_hep.root import save_root_object
-from machine_learning_hep.utilities_plot import plot_histograms
 from machine_learning_hep.analysis.analyzer import Analyzer
 from machine_learning_hep.hf_pt_spectrum import hf_pt_spectrum
+from machine_learning_hep.utils.hist import (get_dim, project_hist)
 # pylint: disable=too-few-public-methods, too-many-instance-attributes, too-many-statements, fixme
+# pylint: disable=consider-using-enumerate, fixme
 class AnalyzerDhadrons_mult(Analyzer): # pylint: disable=invalid-name
     species = "analyzer"
     def __init__(self, datap, case, typean, period):
@@ -52,11 +51,11 @@ class AnalyzerDhadrons_mult(Analyzer): # pylint: disable=invalid-name
         self.p_nptbins = len(self.lpt_finbinmin)
         self.lpt_probcutfin = datap["mlapplication"]["probcutoptimal"]
 
+        self.signal_loss = datap["analysis"][self.typean].get("signal_loss", "")
         self.lvar2_binmin = datap["analysis"][self.typean]["sel_binmin2"]
         self.lvar2_binmax = datap["analysis"][self.typean]["sel_binmax2"]
         self.v_var2_binning = datap["analysis"][self.typean]["var_binning2"]
         self.v_var2_binning_gen = datap["analysis"][self.typean]["var_binning2_gen"]
-        self.triggerbit = datap["analysis"][self.typean]["triggerbit"]
         self.p_nbin2 = len(self.lvar2_binmin)
 
         dp = datap["analysis"][typean]
@@ -70,74 +69,26 @@ class AnalyzerDhadrons_mult(Analyzer): # pylint: disable=invalid-name
         n_filemass_name = datap["files_names"]["histofilename"]
         self.n_filemass = os.path.join(self.d_resultsallpdata, n_filemass_name)
         self.n_filemass_mc = os.path.join(self.d_resultsallpmc, n_filemass_name)
+        self.mltype = datap["ml"]["mltype"]
         self.n_filecross = datap["files_names"]["crossfilename"]
         self.p_mass_fit_lim = datap["analysis"][self.typean]['mass_fit_lim']
 
         # Output directories and filenames
         self.yields_filename = "yields"
         self.fits_dirname = os.path.join(self.d_resultsallpdata, f"fits_{case}_{typean}")
-        self.yields_syst_filename = "yields_syst"
         self.efficiency_filename = "efficiencies"
         self.sideband_subtracted_filename = "sideband_subtracted"
 
         self.n_fileff = datap["files_names"]["efffilename"]
         self.n_fileff = os.path.join(self.d_resultsallpmc, self.n_fileff)
         self.p_bin_width = datap["analysis"][self.typean]['bin_width']
-        self.p_num_bins = int(round((self.p_mass_fit_lim[1] - self.p_mass_fit_lim[0]) / \
-                                    self.p_bin_width))
-        #parameter fitter
-        self.sig_fmap = {"kGaus": 0, "k2Gaus": 1, "kGausSigmaRatioPar": 2}
-        self.bkg_fmap = {"kExpo": 0, "kLin": 1, "Pol2": 2, "kNoBk": 3, "kPow": 4, "kPowEx": 5}
-        # For initial fit in integrated mult bin
-        self.init_fits_from = datap["analysis"][self.typean]["init_fits_from"]
-        self.p_sgnfunc = datap["analysis"][self.typean]["sgnfunc"]
-        self.p_bkgfunc = datap["analysis"][self.typean]["bkgfunc"]
-        self.p_masspeak = datap["analysis"][self.typean]["masspeak"]
-        self.p_massmin = datap["analysis"][self.typean]["massmin"]
-        self.p_massmax = datap["analysis"][self.typean]["massmax"]
-        # Enable rebinning per pT and multiplicity
-        # Note that this is not a deepcopy in case it's already a list of lists
-        self.rebins = datap["analysis"][self.typean]["rebin"].copy()
-        if not isinstance(self.rebins[0], list):
-            self.rebins = [self.rebins for _ in range(self.p_nbin2)]
 
-        self.p_includesecpeaks = datap["analysis"][self.typean].get("includesecpeak", None)
-        if self.p_includesecpeaks is None:
-            self.p_includesecpeaks = [False for ipt in range(self.p_nptbins)]
-        # Now we have a list, either the one given by the user or the default one just filled above
-        self.p_includesecpeaks = self.p_includesecpeaks.copy()
-        if not isinstance(self.p_includesecpeaks[0], list):
-            self.p_inculdesecpeaks = [self.p_includesecpeaks for _ in range(self.p_nbin2)]
+        self.p_rebin = datap["analysis"][self.typean]['n_rebin']
+        self.p_pdfnames = datap["analysis"][self.typean]['pdf_names']
+        self.p_param_names = datap["analysis"][self.typean]['param_names']
 
-        self.p_masssecpeak = datap["analysis"][self.typean].get("masssecpeak", None)
-
-        self.p_fix_masssecpeaks = datap["analysis"][self.typean].get("fix_masssecpeak", None)
-        if self.p_fix_masssecpeaks is None:
-            self.p_fix_masssecpeaks = [False for ipt in range(self.p_nptbins)]
-        # Now we have a list, either the one given by the user or the default one just filled above
-        self.p_fix_masssecpeaks = self.p_fix_masssecpeaks.copy()
-        if not isinstance(self.p_fix_masssecpeaks[0], list):
-            self.p_fix_masssecpeaks = [self.p_fix_masssecpeaks for _ in range(self.p_nbin2)]
-
-        self.p_widthsecpeak = datap["analysis"][self.typean].get("widthsecpeak", None)
-        self.p_fix_widthsecpeak = datap["analysis"][self.typean].get("fix_widthsecpeak", None)
-        self.p_fixedmean = datap["analysis"][self.typean]["FixedMean"]
-        self.p_use_user_gauss_sigma = datap["analysis"][self.typean]["SetInitialGaussianSigma"]
-        self.p_max_perc_sigma_diff = datap["analysis"][self.typean]["MaxPercSigmaDeviation"]
-        self.p_exclude_nsigma_sideband = datap["analysis"][self.typean]["exclude_nsigma_sideband"]
-        self.p_nsigma_signal = datap["analysis"][self.typean]["nsigma_signal"]
-        self.p_fixingaussigma = datap["analysis"][self.typean]["SetFixGaussianSigma"]
-        self.p_use_user_gauss_mean = datap["analysis"][self.typean]["SetInitialGaussianMean"]
-        self.p_dolike = datap["analysis"][self.typean]["dolikelihood"]
-        self.p_sigmaarray = datap["analysis"][self.typean]["sigmaarray"]
-        self.p_fixedsigma = datap["analysis"][self.typean]["FixedSigma"]
-        self.p_casefit = datap["analysis"][self.typean]["fitcase"]
         self.p_latexnhadron = datap["analysis"][self.typean]["latexnamehadron"]
         self.p_latexbin2var = datap["analysis"][self.typean]["latexbin2var"]
-        self.p_dofullevtmerge = datap["dofullevtmerge"]
-        self.p_dodoublecross = datap["analysis"][self.typean]["dodoublecross"]
-        self.ptranges = self.lpt_finbinmin.copy()
-        self.ptranges.append(self.lpt_finbinmax[-1])
         self.var2ranges = self.lvar2_binmin.copy()
         self.var2ranges.append(self.lvar2_binmax[-1])
         # More specific fit options
@@ -150,21 +101,30 @@ class AnalyzerDhadrons_mult(Analyzer): # pylint: disable=invalid-name
         self.p_sigmamb = datap["ml"]["opt"]["sigma_MB"]
         self.p_br = datap["ml"]["opt"]["BR"]
 
-        # Systematics
-        self.mt_syst_dict = datap["analysis"][self.typean].get("systematics", None)
-        self.d_mt_results_path = os.path.join(self.d_resultsallpdata, "multi_trial")
+        # Roofit
+        self.bins_candpt = np.asarray(self.cfg('sel_an_binmin', []) + self.cfg('sel_an_binmax', [])[-1:], 'd')
+        self.nbins = len(self.bins_candpt) - 1
+        self.fit_levels = self.cfg('fit_levels', ['mc', 'data'])
+        self.fit_sigma = {}
+        self.fit_mean = {}
+        self.fit_func_bkg = {}
+        self.fit_range = {}
+
+        self.path_fig = Path(f'fig/{self.case}/{self.typean}')
+        for folder in ['qa', 'fit', 'roofit', 'sideband', 'signalextr', 'fd', 'uf']:
+            (self.path_fig / folder).mkdir(parents=True, exist_ok=True)
+
+        self.rfigfile = TFile(str(self.path_fig / 'output.root'), 'recreate')
+
+        self.fitter = RooFitter()
+        self.roo_ws = {}
+        self.roows = {}
 
         self.p_anahpt = datap["analysis"]["anahptspectrum"]
         self.p_fd_method = datap["analysis"]["fd_method"]
         self.p_cctype = datap["analysis"]["cctype"]
         self.p_sigmamb = datap["analysis"]["sigmamb"]
         self.p_inputfonllpred = datap["analysis"]["inputfonllpred"]
-        self.p_triggereff = datap["analysis"][self.typean].get("triggereff", [1] * 10)
-        self.p_triggereffunc = datap["analysis"][self.typean].get("triggereffunc", [0] * 10)
-
-        self.apply_weights = \
-                datap["analysis"][self.typean]["triggersel"].get("usetriggcorrfunc", None) \
-                is not None
         self.root_objects = []
 
         self.get_crossmb_from_path = datap["analysis"][self.typean].get("get_crossmb_from_path", \
@@ -190,50 +150,258 @@ class AnalyzerDhadrons_mult(Analyzer): # pylint: disable=invalid-name
                               "Make sure lists \"path_eff\" and \"mult_bin_eff\" have the same " \
                               "length as the number of those bins (%i).", self.p_nbin2)
 
-        # Fitting
-        self.fitter = None
         self.p_performval = datap["analysis"].get("event_cand_validation", None)
 
     # pylint: disable=import-outside-toplevel
+    #region helpers
+    def _save_canvas(self, canvas, filename):
+        # folder = self.d_resultsallpmc if mcordata == 'mc' else self.d_resultsallpdata
+        canvas.SaveAs(f'fig/{self.case}/{self.typean}/{filename}')
+
+
+    def _save_hist(self, hist, filename, option = ''):
+        if not hist:
+            self.logger.error('no histogram for <%s>', filename)
+            # TODO: remove file if it exists?
+            return
+        c = TCanvas()
+        if isinstance(hist, TH1) and get_dim(hist) == 2 and 'texte' not in option:
+            option += 'texte'
+        hist.Draw(option)
+        self._save_canvas(c, filename)
+        rfilename = filename.split('/')[-1]
+        rfilename = rfilename.removesuffix('.png')
+        self.rfigfile.WriteObject(hist, rfilename)
+
+    #region fitting
+    def _roofit_mass(self, level, hist, ipt, pdfnames, param_names, fitcfg, roows = None, filename = None):
+        if fitcfg is None:
+            return None, None
+        res, ws, frame, residual_frame = self.fitter.fit_mass_new(hist, pdfnames, fitcfg, level, roows, True)
+        frame.SetTitle(f'inv. mass for p_{{T}} {self.bins_candpt[ipt]} - {self.bins_candpt[ipt+1]} GeV/c')
+        c = TCanvas()
+
+        textInfoRight = create_text_info(0.62, 0.68, 1.0, 0.89)
+        add_text_info_fit(textInfoRight, frame, ws, param_names)
+
+        textInfoLeft = create_text_info(0.12, 0.68, 0.6, 0.89)
+        if level == "data":
+            mean_sgn = ws.var(self.p_param_names["gauss_mean"])
+            sigma_sgn = ws.var(self.p_param_names["gauss_sigma"])
+            (sig, sig_err, bkg, bkg_err,
+            signif, signif_err, s_over_b, s_over_b_err
+            ) = calc_signif(ws, res, pdfnames, param_names, mean_sgn, sigma_sgn)
+
+            add_text_info_perf(textInfoLeft, sig, sig_err, bkg, bkg_err, s_over_b, s_over_b_err, signif, signif_err)
+
+        frame.Draw()
+        textInfoRight.Draw()
+        textInfoLeft.Draw()
+
+        if res.status() == 0:
+            self._save_canvas(c, filename)
+        else:
+            self.logger.warning('Invalid fit result for %s', hist.GetName())
+            # func_tot.Print('v')
+            filename = filename.replace('.png', '_invalid.png')
+            self._save_canvas(c, filename)
+
+        if level == "data":
+            residual_frame.SetTitle(f'inv. mass for p_{{T}} {self.bins_candpt[ipt]} - {self.bins_candpt[ipt+1]} GeV/c')
+            cres = TCanvas()
+            residual_frame.Draw()
+            filename = filename.replace('.png', '_residual.png')
+            self._save_canvas(cres, filename)
+
+        return res, ws
+
+
+    def _fit_mass(self, hist, filename = None):
+        if hist.GetEntries() == 0:
+            raise UserWarning('Cannot fit histogram with no entries')
+        fit_range = self.cfg('mass_fit.range')
+        func_sig = TF1('funcSig', self.cfg('mass_fit.func_sig'), *fit_range)
+        func_bkg = TF1('funcBkg', self.cfg('mass_fit.func_bkg'), *fit_range)
+        par_offset = func_sig.GetNpar()
+        func_tot = TF1('funcTot', f"{self.cfg('mass_fit.func_sig')} + {self.cfg('mass_fit.func_bkg')}({par_offset})")
+        func_tot.SetParameter(0, hist.GetMaximum()/3.) # TODO: better seeding?
+        for par, value in self.cfg('mass_fit.par_start', {}).items():
+            self.logger.debug('Setting par %i to %g', par, value)
+            func_tot.SetParameter(par, value)
+        for par, value in self.cfg('mass_fit.par_constrain', {}).items():
+            self.logger.debug('Constraining par %i to (%g, %g)', par, value[0], value[1])
+            func_tot.SetParLimits(par, value[0], value[1])
+        for par, value in self.cfg('mass_fit.par_fix', {}).items():
+            self.logger.debug('Fixing par %i to %g', par, value)
+            func_tot.FixParameter(par, value)
+        fit_res = hist.Fit(func_tot, "SQL", "", fit_range[0], fit_range[1])
+        if fit_res and fit_res.Get() and fit_res.IsValid():
+            # TODO: generalize
+            par = func_tot.GetParameters()
+            idx = 0
+            for i in range(func_sig.GetNpar()):
+                func_sig.SetParameter(i, par[idx])
+                idx += 1
+            for i in range(func_bkg.GetNpar()):
+                func_bkg.SetParameter(i, par[idx])
+                idx += 1
+            if filename:
+                c = TCanvas()
+                hist.Draw()
+                func_sig.SetLineColor(kBlue)
+                func_sig.Draw('lsame')
+                func_bkg.SetLineColor(kCyan)
+                func_bkg.Draw('lsame')
+                self._save_canvas(c, filename)
+        else:
+            self.logger.warning('Invalid fit result for %s', hist.GetName())
+            # func_tot.Print('v')
+            filename = filename.replace('.png', '_invalid.png')
+            self._save_hist(hist, filename)
+            # TODO: how to deal with this
+
+        return (fit_res, func_sig, func_bkg)
+
+
+    # pylint: disable=too-many-branches,too-many-statements,too-many-nested-blocks
     def fit(self):
-        # Enable ROOT batch mode and reset in the end
-        tmp_is_root_batch = gROOT.IsBatch()
-        gROOT.SetBatch(True)
-
-        self.fitter = MLFitter(self.case, self.datap, self.typean,
-                               self.n_filemass, self.n_filemass_mc)
-        self.fitter.perform_pre_fits()
-        self.fitter.perform_central_fits()
-        fileout_name = self.make_file_path(self.d_resultsallpdata, self.yields_filename, "root",
+        self.logger.info("Fitting inclusive mass distributions")
+        gStyle.SetOptFit(1111)
+        for level in self.fit_levels:
+            self.fit_mean[level] = [None] * self.nbins
+            self.fit_sigma[level] = [None] * self.nbins
+            self.fit_func_bkg[level] = [None] * self.nbins
+            self.fit_range[level] = [None] * self.nbins
+            self.roo_ws[level] = [None] * self.nbins
+            rfilename = self.n_filemass_mc if "mc" in level else self.n_filemass
+            fitcfg = None
+            fileout_name = self.make_file_path(self.d_resultsallpdata, self.yields_filename, "root",
                                            None, [self.case, self.typean])
-        fileout = TFile(fileout_name, "RECREATE")
-        self.fitter.draw_fits(self.d_resultsallpdata, fileout)
-        fileout.Close()
-        self.fitter.save_fits(self.fits_dirname)
-        # Reset to former mode
-        gROOT.SetBatch(tmp_is_root_batch)
+            fileout = TFile(fileout_name, "RECREATE")
+            with TFile(rfilename) as rfile:
+                for ibin2 in range(len(self.lvar2_binmin)):
 
+                    yieldshistos = TH1F("hyields%d" % (ibin2), "", \
+                                        len(self.lpt_finbinmin), array("d", self.bins_candpt))
+                    meanhistos = TH1F("hmean%d" % (ibin2), "", \
+                                        len(self.lpt_finbinmin), array("d", self.bins_candpt))
+                    sigmahistos = TH1F("hsigmas%d" % (ibin2), "", \
+                                        len(self.lpt_finbinmin), array("d", self.bins_candpt))
+                    signifhistos = TH1F("hsignifs%d" % (ibin2), "", \
+                                        len(self.lpt_finbinmin), array("d", self.bins_candpt))
+                    soverbhistos = TH1F("hSoverB%d" % (ibin2), "", \
+                                        len(self.lpt_finbinmin), array("d", self.bins_candpt))
 
-    def yield_syst(self):
-        # Enable ROOT batch mode and reset in the end
-        tmp_is_root_batch = gROOT.IsBatch()
-        gROOT.SetBatch(True)
-        if not self.fitter:
-            self.fitter = MLFitter(self.case, self.datap, self.typean,
-                                   self.n_filemass, self.n_filemass_mc)
-            if not self.fitter.load_fits(self.fits_dirname):
-                self.logger.error("Cannot load fits from dir %s", self.fits_dirname)
-                return
+                    for ipt in range(len(self.lpt_finbinmin)):
+                        self.logger.debug('fitting %s - %i - %i', level, ipt, ibin2)
+                        roows = self.roows.get(ipt)
+                        if self.mltype == "MultiClassification":
+                            suffix = "%s%d_%d_%.2f%.2f%s_%.2f_%.2f" % \
+                                    (self.v_var_binning, self.lpt_finbinmin[ipt],
+                                    self.lpt_finbinmax[ipt], self.lpt_probcutfin[ipt][0],
+                                    self.lpt_probcutfin[ipt][1], self.v_var2_binning,
+                                    self.lvar2_binmin[ibin2], self.lvar2_binmax[ibin2])
+                        else:
+                            suffix = "%s%d_%d_%.2f%s_%.2f_%.2f" % \
+                                    (self.v_var_binning, self.lpt_finbinmin[ipt],
+                                    self.lpt_finbinmax[ipt], self.lpt_probcutfin[ipt],
+                                    self.v_var2_binning,
+                                    self.lvar2_binmin[ibin2], self.lvar2_binmax[ibin2])
+                        h_invmass = rfile.Get('hmass' + suffix)
+                        # Rebin
+                        h_invmass.Rebin(self.p_rebin[ipt])
+                        if h_invmass.GetEntries() < 100: # TODO: reconsider criterion
+                            self.logger.error('Not enough entries to fit for %s, pt bin %d, mult bin %d', \
+                                              level, ipt, ibin2)
+                            continue
+                        ptrange = (self.bins_candpt[ipt], self.bins_candpt[ipt+1])
+                        multrange = (self.lvar2_binmin[ibin2], self.lvar2_binmax[ibin2])
 
-        # Additional directory needed where the intermediate results of the multi trial are
-        # written to
-        dir_yield_syst = os.path.join(self.d_resultsallpdata, "multi_trial")
-        self.fitter.perform_syst(dir_yield_syst)
-        # Directory of intermediate results and plot output directory are the same here
-        self.fitter.draw_syst(dir_yield_syst, dir_yield_syst)
+                        if self.cfg('mass_fit'):
+                            fit_res, _, func_bkg = self._fit_mass(
+                                h_invmass,
+                                f'fit/h_mass_fitted_pthf-{ptrange[0]}-{ptrange[1]}'
+                                f'_{self.v_var2_binning}-{multrange[0]}-{multrange[1]}_{level}.png')
+                            if fit_res and fit_res.Get() and fit_res.IsValid():
+                                self.fit_mean[level][ipt] = fit_res.Parameter(1)
+                                self.fit_sigma[level][ipt] = fit_res.Parameter(2)
+                                self.fit_func_bkg[level][ipt] = func_bkg
+                            else:
+                                self.logger.error('Fit failed for %s bin %d', level, ipt)
 
-        # Reset to former mode
-        gROOT.SetBatch(tmp_is_root_batch)
+                        if self.cfg('mass_roofit'):
+                            for entry in self.cfg('mass_roofit', []):
+                                if lvl := entry.get('level'):
+                                    if lvl != level:
+                                        continue
+                                if ptspec := entry.get('ptrange'):
+                                    if ptspec[0] > ptrange[0] or ptspec[1] < ptrange[1]:
+                                        continue
+                                fitcfg = entry
+                                break
+                            self.logger.debug("Using fit config for %i: %s", ipt, fitcfg)
+                            if datasel := fitcfg.get('datasel'):
+                                h = rfile.Get(f'h_mass-pthf_{datasel}')
+                                h_invmass = project_hist(h, [0], {1: (ipt+1, ipt+1)})
+
+                            for fixpar in fitcfg.get('fix_params', []):
+                                if roows.var(fixpar):
+                                    roows.var(fixpar).setConstant(True)
+                            if h_invmass.GetEntries() == 0:
+                                continue
+
+                            directory_path = Path(f'{self.path_fig}/roofit/mult_{multrange[0]}-{multrange[1]}')
+                            # Create the directory if it doesn't exist
+                            directory_path.mkdir(parents=True, exist_ok=True)
+
+                            roo_res, roo_ws = self._roofit_mass(
+                                level, h_invmass, ipt, self.p_pdfnames, self.p_param_names, fitcfg, roows,
+                                f'roofit/mult_{multrange[0]}-{multrange[1]}/'
+                                f'h_mass_fitted_pthf-{ptrange[0]}-{ptrange[1]}'\
+                                f'_{self.v_var2_binning}-{multrange[0]}-{multrange[1]}_{level}.png')
+                            # if level == 'mc':
+                            #     roo_ws.Print()
+                            self.roo_ws[level][ipt] = roo_ws
+                            self.roows[ipt] = roo_ws
+                            if roo_res.status() == 0:
+                                if level in ('data', 'mc_sig'):
+                                    self.fit_mean[level][ipt] = roo_ws.var(self.p_param_names["gauss_mean"]).getValV()
+                                    self.fit_sigma[level][ipt] = roo_ws.var(self.p_param_names["gauss_sigma"]).getValV()
+                                var_m = fitcfg.get('var', 'm')
+                                pdf_bkg = roo_ws.pdf(self.p_pdfnames["pdf_bkg"])
+                                if pdf_bkg:
+                                    self.fit_func_bkg[level][ipt] = pdf_bkg.asTF(roo_ws.var(var_m))
+                                self.fit_range[level][ipt] = (roo_ws.var(var_m).getMin('fit'), \
+                                                              roo_ws.var(var_m).getMax('fit'))
+                            else:
+                                self.logger.error('RooFit failed for %s bin %d', level, ipt)
+
+                            if level == "data":
+                                mean_sgn = roo_ws.var(self.p_param_names["gauss_mean"])
+                                sigma_sgn = roo_ws.var(self.p_param_names["gauss_sigma"])
+                                (sig, sig_err, _, _,
+                                    signif, signif_err, s_over_b, s_over_b_err
+                                ) = calc_signif(roo_ws, roo_res, self.p_pdfnames, \
+                                                self.p_param_names, mean_sgn, sigma_sgn)
+
+                                yieldshistos.SetBinContent(ipt+1, sig)
+                                yieldshistos.SetBinError(ipt+1, sig_err)
+                                meanhistos.SetBinContent(ipt+1, mean_sgn.getVal())
+                                meanhistos.SetBinError(ipt+1, mean_sgn.getError())
+                                sigmahistos.SetBinContent(ipt+1, sigma_sgn.getVal())
+                                sigmahistos.SetBinError(ipt+1, sigma_sgn.getError())
+                                signifhistos.SetBinContent(ipt+1, signif)
+                                signifhistos.SetBinError(ipt+1, signif_err)
+                                soverbhistos.SetBinContent(ipt+1, s_over_b)
+                                soverbhistos.SetBinError(ipt+1, s_over_b_err)
+                    fileout.cd()
+                    yieldshistos.Write()
+                    meanhistos.Write()
+                    sigmahistos.Write()
+                    signifhistos.Write()
+                    soverbhistos.Write()
+                fileout.Close()
+
 
 
     def get_efficiency(self, ibin1, ibin2):
@@ -254,35 +422,90 @@ class AnalyzerDhadrons_mult(Analyzer): # pylint: disable=invalid-name
         cEff.SetWindowSize(500, 500)
         cEff.SetLogy()
 
-        legeff = TLegend(.5, .25, .7, .45)
+        legeff = TLegend(.5, .20, .7, .45)
         legeff.SetBorderSize(0)
         legeff.SetFillColor(0)
         legeff.SetFillStyle(0)
         legeff.SetTextFont(42)
         legeff.SetTextSize(0.035)
 
+        if self.signal_loss:
+            cSl = TCanvas('cSl', 'The Fit Canvas')
+            cSl.SetCanvasSize(1900, 1500)
+            cSl.SetWindowSize(500, 500)
+            legsl = TLegend(.5, .20, .7, .45)
+            legsl.SetBorderSize(0)
+            legsl.SetFillColor(0)
+            legsl.SetFillStyle(0)
+            legsl.SetTextFont(42)
+            legsl.SetTextSize(0.035)
+
         for imult in range(self.p_nbin2):
-            stringbin2 = "_%s_%.2f_%.2f" % (self.v_var2_binning_gen, \
+            stringbin2 = "_%s_%.2f_%.2f" % (self.v_var2_binning, \
                                             self.lvar2_binmin[imult], \
                                             self.lvar2_binmax[imult])
+            legeffstring = "%.1f #leq %s < %.1f" % \
+                    (self.lvar2_binmin[imult], self.p_latexbin2var, self.lvar2_binmax[imult])
+
+            if self.signal_loss:
+                h_gen_pr_sl = lfileeff.Get("h_signal_loss_gen_pr" + stringbin2)
+                h_sel_pr_sl = lfileeff.Get("h_signal_loss_rec_pr" + stringbin2)
+                h_sel_pr_sl.Divide(h_sel_pr_sl, h_gen_pr_sl, 1.0, 1.0, "B")
+                h_sel_pr_sl.SetLineColor(imult+1)
+                h_sel_pr_sl.SetMarkerColor(imult+1)
+                h_sel_pr_sl.SetMarkerStyle(21)
+                cSl.cd()
+                h_sel_pr_sl.Draw("same")
+                fileouteff.cd()
+                h_sel_pr_sl.SetName("signal_loss_pr_mult%d" % imult)
+                h_sel_pr_sl.Write()
+
+                legsl.AddEntry(h_sel_pr_sl, legeffstring, "LEP")
+                h_sel_pr_sl.GetXaxis().SetTitle("#it{p}_{T} (GeV/#it{c})")
+                h_sel_pr_sl.GetYaxis().SetTitle("Signal loss (prompt) %s" \
+                        % (self.p_latexnhadron))
+                h_sel_pr_sl.SetMinimum(0.7)
+                h_sel_pr_sl.SetMaximum(1.0)
+
             h_gen_pr = lfileeff.Get("h_gen_pr" + stringbin2)
             h_sel_pr = lfileeff.Get("h_sel_pr" + stringbin2)
             h_sel_pr.Divide(h_sel_pr, h_gen_pr, 1.0, 1.0, "B")
+
+            if self.signal_loss:
+                h_sel_pr.Multiply(h_sel_pr_sl)
+
             h_sel_pr.SetLineColor(imult+1)
             h_sel_pr.SetMarkerColor(imult+1)
             h_sel_pr.SetMarkerStyle(21)
+            cEff.cd()
             h_sel_pr.Draw("same")
             fileouteff.cd()
             h_sel_pr.SetName("eff_mult%d" % imult)
             h_sel_pr.Write()
-            legeffstring = "%.1f #leq %s < %.1f" % \
-                    (self.lvar2_binmin[imult], self.p_latexbin2var, self.lvar2_binmax[imult])
             legeff.AddEntry(h_sel_pr, legeffstring, "LEP")
             h_sel_pr.GetXaxis().SetTitle("#it{p}_{T} (GeV/#it{c})")
-            h_sel_pr.GetYaxis().SetTitle("Acc x efficiency (prompt) %s (1/GeV)" \
+            h_sel_pr.GetYaxis().SetTitle("Acc x efficiency (prompt) %s" \
                     % (self.p_latexnhadron))
             h_sel_pr.SetMinimum(0.0004)
             h_sel_pr.SetMaximum(0.4)
+
+        if self.signal_loss:
+            cSl.cd()
+            legsl.Draw()
+            cSl.SaveAs("%s/SignalLoss%s%s.eps" % (self.d_resultsallpmc,
+                                        self.case, self.typean))
+
+            cSlFD = TCanvas('cSlFD', 'The Fit Canvas')
+            cSlFD.SetCanvasSize(1900, 1500)
+            cSlFD.SetWindowSize(500, 500)
+            legslFD = TLegend(.5, .20, .7, .45)
+            legslFD.SetBorderSize(0)
+            legslFD.SetFillColor(0)
+            legslFD.SetFillStyle(0)
+            legslFD.SetTextFont(42)
+            legslFD.SetTextSize(0.035)
+
+        cEff.cd()
         legeff.Draw()
         cEff.SaveAs("%s/Eff%s%s.eps" % (self.d_resultsallpmc,
                                         self.case, self.typean))
@@ -291,7 +514,7 @@ class AnalyzerDhadrons_mult(Analyzer): # pylint: disable=invalid-name
         cEffFD.SetCanvasSize(1900, 1500)
         cEffFD.SetWindowSize(500, 500)
         cEffFD.SetLogy()
-        legeffFD = TLegend(.5, .25, .7, .45)
+        legeffFD = TLegend(.5, .20, .7, .45)
         legeffFD.SetBorderSize(0)
         legeffFD.SetFillColor(0)
         legeffFD.SetFillStyle(0)
@@ -299,30 +522,63 @@ class AnalyzerDhadrons_mult(Analyzer): # pylint: disable=invalid-name
         legeffFD.SetTextSize(0.035)
 
         for imult in range(self.p_nbin2):
-            stringbin2 = "_%s_%.2f_%.2f" % (self.v_var2_binning_gen, \
+            stringbin2 = "_%s_%.2f_%.2f" % (self.v_var2_binning, \
                                             self.lvar2_binmin[imult], \
                                             self.lvar2_binmax[imult])
+            legeffFDstring = "%.1f #leq %s < %.1f" % \
+                    (self.lvar2_binmin[imult], self.p_latexbin2var, self.lvar2_binmax[imult])
+
+            if self.signal_loss:
+                h_gen_fd_sl = lfileeff.Get("h_signal_loss_gen_fd" + stringbin2)
+                h_sel_fd_sl = lfileeff.Get("h_signal_loss_rec_fd" + stringbin2)
+                h_sel_fd_sl.Divide(h_sel_fd_sl, h_gen_fd_sl, 1.0, 1.0, "B")
+                h_sel_fd_sl.SetLineColor(imult+1)
+                h_sel_fd_sl.SetMarkerColor(imult+1)
+                h_sel_fd_sl.SetMarkerStyle(21)
+                cSlFD.cd()
+                h_sel_fd_sl.Draw("same")
+                fileouteff.cd()
+                h_sel_fd_sl.SetName("signal_loss_fd_mult%d" % imult)
+                h_sel_fd_sl.Write()
+
+                legslFD.AddEntry(h_sel_fd_sl, legeffstring, "LEP")
+                h_sel_fd_sl.GetXaxis().SetTitle("#it{p}_{T} (GeV/#it{c})")
+                h_sel_fd_sl.GetYaxis().SetTitle("Signal loss (feeddown) %s" \
+                        % (self.p_latexnhadron))
+                h_sel_fd_sl.SetMinimum(0.7)
+                h_sel_fd_sl.SetMaximum(1.0)
+
             h_gen_fd = lfileeff.Get("h_gen_fd" + stringbin2)
             h_sel_fd = lfileeff.Get("h_sel_fd" + stringbin2)
             h_sel_fd.Divide(h_sel_fd, h_gen_fd, 1.0, 1.0, "B")
+
+            if self.signal_loss:
+                h_sel_fd.Multiply(h_sel_fd_sl)
+
             h_sel_fd.SetLineColor(imult+1)
             h_sel_fd.SetMarkerColor(imult+1)
             h_sel_fd.SetMarkerStyle(21)
+            cEffFD.cd()
             h_sel_fd.Draw("same")
             fileouteff.cd()
             h_sel_fd.SetName("eff_fd_mult%d" % imult)
             h_sel_fd.Write()
-            legeffFDstring = "%.1f #leq %s < %.1f" % \
-                    (self.lvar2_binmin[imult], self.p_latexbin2var, self.lvar2_binmax[imult])
             legeffFD.AddEntry(h_sel_fd, legeffFDstring, "LEP")
             h_sel_fd.GetXaxis().SetTitle("#it{p}_{T} (GeV/#it{c})")
-            h_sel_fd.GetYaxis().SetTitle("Acc x efficiency feed-down %s (1/GeV)" \
+            h_sel_fd.GetYaxis().SetTitle("Acc x efficiency feed-down %s" \
                     % (self.p_latexnhadron))
             h_sel_fd.SetMinimum(0.0004)
             h_sel_fd.SetMaximum(0.4)
+
+        cEffFD.cd()
         legeffFD.Draw()
         cEffFD.SaveAs("%s/EffFD%s%s.eps" % (self.d_resultsallpmc,
                                             self.case, self.typean))
+        if self.signal_loss:
+            cSlFD.cd()
+            legslFD.Draw()
+            cSlFD.SaveAs("%s/SignalLossFD%s%s.eps" % (self.d_resultsallpmc,
+                                        self.case, self.typean))
 
 
     def plotter(self):
@@ -407,13 +663,8 @@ class AnalyzerDhadrons_mult(Analyzer): # pylint: disable=invalid-name
                 hcrossvsvar2[ipt].SetLineColor(ipt+1)
                 hcrossvsvar2[ipt].GetXaxis().SetTitle("%s" % self.p_latexbin2var)
                 hcrossvsvar2[ipt].GetYaxis().SetTitle(self.p_latexnhadron)
-                binmulrange = self.var2ranges[imult+1]-self.var2ranges[imult]
-                if self.p_dodoublecross is True:
-                    hcrossvsvar2[ipt].SetBinContent(imult+1, listvalues[imult][ipt]/binmulrange)
-                    hcrossvsvar2[ipt].SetBinError(imult+1, listvalueserr[imult][ipt]/binmulrange)
-                else:
-                    hcrossvsvar2[ipt].SetBinContent(imult+1, listvalues[imult][ipt])
-                    hcrossvsvar2[ipt].SetBinError(imult+1, listvalueserr[imult][ipt])
+                hcrossvsvar2[ipt].SetBinContent(imult+1, listvalues[imult][ipt])
+                hcrossvsvar2[ipt].SetBinError(imult+1, listvalueserr[imult][ipt])
 
                 hcrossvsvar2[ipt].GetYaxis().SetRangeUser(1e4, 1e10)
             legvsvar2endstring = "%.1f < %s < %.1f GeV/#it{c}" % \
@@ -472,9 +723,6 @@ class AnalyzerDhadrons_mult(Analyzer): # pylint: disable=invalid-name
             nameyield = "hyields%d" % imult
             fileoutcrossmult = "%s/finalcross%s%smult%d.root" % \
                 (self.d_resultsallpdata, self.case, self.typean, imult)
-            labeltrigger = "hbit%svs%s" % (self.triggerbit, self.v_var2_binning_gen)
-            if self.apply_weights is True:
-                labeltrigger = labeltrigger + "_weight"
 
             #Bin1 is all events. Bin2 is all sel events. Mult bins start from Bin3.
             norm = histonorm.GetBinContent(imult + 3)
@@ -486,6 +734,9 @@ class AnalyzerDhadrons_mult(Analyzer): # pylint: disable=invalid-name
                     fileoutcrossmb = "%s/finalcross%s%smult0.root" % \
                                         (self.d_resultsallpdata, self.case, self.typean)
                     output_prompt = []
+                    if self.p_nevents is not None:
+                        norm = self.p_nevents
+                    self.logger.warning("Corrected Number of events %d for mult bin %d" % (norm, imult))
                     hf_pt_spectrum(self.p_anahpt,
                                    self.p_br,
                                    self.p_inputfonllpred,
@@ -585,126 +836,4 @@ class AnalyzerDhadrons_mult(Analyzer): # pylint: disable=invalid-name
         cCrossvsvar1.SaveAs("%s/CorrectedYieldsNorm%s%sVs%s.eps" % (self.d_resultsallpdata,
                                                                     self.case, self.typean,
                                                                     self.v_var_binning))
-    def plottervalidation(self):
-        if self.p_performval is False:
-            self.logger.fatal(
-                "The validation step was set to false. You dont \
-                                have produced the histograms you need for the \
-                                validation stage. Please rerun the histomass \
-                                step"
-            )
-        self.logger.info("I AM RUNNING THE PLOTTER VALIDATION STEP")
-        # You can find all the input files in the self.n_filemass. At the
-        # moment we dont do tests for the MC file that would be in any case
-        # self.n_filemass_mc. This function will be run on only the single
-        # merged LHC16,LHC17, LHC18 file or also on the separate years
-        # depending on how you set the option doperperiod in the
-        # default_complete.yml database.
-
-        def do_validation_plots(input_file_name,
-                                output_path,
-                                ismc=False,
-                                pileup_fraction=True,
-                                tpc_tof_me=True):
-            gROOT.SetBatch(True)
-
-            input_file = TFile(input_file_name, "READ")
-            if not input_file or not input_file.IsOpen():
-                self.logger.fatal("Did not find file %s", input_file.GetName())
-
-            def get_histo(namex, namey=None, tag="", strictly_require=True):
-                """
-                Gets a histogram from a file
-                """
-                h_name = f"hVal_{namex}"
-                if namey:
-                    h_name += f"_vs_{namey}"
-                h_name += tag
-                h = input_file.Get(h_name)
-                if not h:
-                    if strictly_require:
-                        input_file.ls()
-                        self.logger.fatal(
-                            "Did not find %s in file %s", h_name, input_file.GetName()
-                        )
-                    else:
-                        self.logger.warning(
-                            "Did not find %s in file %s", h_name, input_file.GetName()
-                        )
-                        return None
-                return h
-
-            def do_plot(histo):
-                """
-                Plots the histogram in a new canvas, if it is a TH2, it also plots the profile.
-                The canvas has the same name as the histogram and it is saved to the output_path
-                """
-                canvas = TCanvas(histo.GetName(), histo.GetName())
-                profile = None
-                histo.Draw("COLZ")
-                if "TH2" in histo.ClassName():
-                    if "nsig" in histo.GetYaxis().GetTitle():
-                        histo.GetYaxis().SetRangeUser(-100, 100)
-                    profile = histo.ProfileX(histo.GetName() + "_profile")
-                    profile.SetLineWidth(2)
-                    profile.SetLineColor(2)
-                    profile.Draw("same")
-                gPad.SetLogz()
-                gPad.Update()
-                save_root_object(canvas, path=output_path)
-
-            # Fraction of pileup events
-            if pileup_fraction:
-                hnum = get_histo("n_tracklets_corr", tag="pileup", strictly_require=False)
-                if hnum is not None:
-                    hnum.SetName(hnum.GetName() + "_eventfraction")
-                    hden = get_histo("n_tracklets_corr", tag="_EvtSel")
-                    hnum.Divide(hnum, hden)
-                    hnum.GetYaxis().SetTitle("Fraction of events")
-                    do_plot(hnum)
-
-            def plot_tpc_tof_me(tag):
-                # Compute TPC-TOF matching efficiency
-                if tpc_tof_me:
-                    to_plot = [["Pi", "K", "Pr"],
-                               ["0", "1"],
-                               ["p_prong0", "pt_prong0", "pt_cand"]
-                               ]
-                    for spec, prong, observable in itertools.product(*to_plot):
-                        hname = [f"{observable}",
-                                 f"nsigTOF_{spec}_{prong}", tag]
-                        hnum = get_histo(*hname,
-                                         strictly_require=False)
-                        if hnum is None:
-                            continue
-                        hnum = hnum.ProjectionX(
-                            hnum.GetName() + "_num", 2, -1)
-                        hden = get_histo(*hname)
-                        hden = hden.ProjectionX(
-                            hden.GetName() + "_den")
-                        hnum.Divide(hnum, hden, 1, 1, "B")
-                        hnum.SetName(
-                            hnum.GetName().replace(
-                                "_num", "_TPC-TOF_MatchingEfficiency"
-                            )
-                        )
-                        hnum.GetYaxis().SetTitle("TPC-TOF_MatchingEfficiency")
-                        do_plot(hnum)
-
-            plot_tpc_tof_me(tag="")
-            # Part dedicated to MC Checks
-            if ismc:
-                plot_tpc_tof_me(tag="MC")
-
-            # Plot all other validation histogram
-            for i in range(0, input_file.GetListOfKeys().GetEntries()):
-                key_name = input_file.GetListOfKeys().At(i).GetName()
-                if not key_name.startswith("hVal_"):
-                    continue
-                do_plot(input_file.Get(key_name))
-
-            input_file.Close()
-
-        do_validation_plots(self.n_filemass, self.d_resultsallpdata)
-        do_validation_plots(self.n_filemass_mc,
-                            self.d_resultsallpmc, ismc=True)
+        fileoutcrosstot.Close()
