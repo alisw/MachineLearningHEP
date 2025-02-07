@@ -430,7 +430,7 @@ class Processer: # pylint: disable=too-many-instance-attributes
                         if not is_numeric_dtype(dfs[base][on]):
                             self.logger.info('exploding dataframe %s on variable %s', base, on)
                             dfs[out] = dfmerge(
-                                exploded_df, dfs[ref], left_on=['df', on], suffixes=(f'_{base}', None), right_index=True)
+                                dfs[base].explode(on), dfs[ref], left_on=['df', on], suffixes=(f'_{base}', None), right_index=True)
                         else:
                             dfs[out] = dfmerge(
                                 dfs[base], dfs[ref], left_on=['df', on], suffixes=(f'_{base}', None), right_index=True)
