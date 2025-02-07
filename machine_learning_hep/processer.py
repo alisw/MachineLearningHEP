@@ -280,9 +280,8 @@ class Processer: # pylint: disable=too-many-instance-attributes
                                     self.lpt_gensk[ipt]) for ipt in range(self.p_nptbins)]
             self.lpt_gendecmerged = [os.path.join(self.d_pkl_decmerged, self.lpt_gensk[ipt])
                                      for ipt in range(self.p_nptbins)]
-            if self.n_gen_sl:
-                self.mptfiles_gensk_sl = [createlist(self.d_pklsk, self.l_path, \
-                                           self.lpt_gensk_sl[ipt]) for ipt in range(self.p_nptbins)]
+              self.mptfiles_gensk_sl = [createlist(self.d_pklsk, self.l_path,
+                                         self.lpt_gensk_sl[ipt]) for ipt in range(self.p_nptbins)] if self.lpt_gensk_sl else None
 
         # self.triggerbit = datap["analysis"][self.typean]["triggerbit"]
         self.runlistrigger = runlisttrigger
