@@ -269,7 +269,7 @@ class AnalyzerJets(Analyzer):
 
                 eff = h_det[cat].Clone(f'h_effnew_{cat}')
                 ensure_sumw2(eff)
-                eff.Divide(h_out) #apply correction here. 2 axes pt hf
+                eff.Divide(h_out)
 
                 if eff_corr := self.cfg('efficiency.reweight'):
                     for iptjet in range(get_nbins(eff, 0)):
