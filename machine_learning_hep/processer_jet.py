@@ -21,7 +21,7 @@ from ROOT import TH1F, TFile
 
 from machine_learning_hep.processer import Processer
 from machine_learning_hep.utilities import dfquery, read_df
-from machine_learning_hep.utils.hist import bin_array, create_hist, fill_hist, get_axis, get_range
+from machine_learning_hep.utils.hist import bin_array, create_hist, fill_hist, get_axis, get_range, project_hist
 
 
 # pylint: disable=too-many-instance-attributes, too-many-statements
@@ -61,7 +61,7 @@ class ProcesserJets(Processer):
         self.binarray_pthf = np.asarray(self.cfg('sel_an_binmin', []) + self.cfg('sel_an_binmax', [])[-1:], 'd')
         self.binarrays_obs = {'gen': {}, 'det': {}}
         self.binarrays_ptjet = {'gen': {}, 'det': {}}
-        for obs in self.cfg('observables'):
+        for obs in self.cfg('observables', {}):
             var = obs.split('-')
             for v in var:
                 if v in self.binarrays_obs:
@@ -131,6 +131,7 @@ class ProcesserJets(Processer):
             df['lntheta'] = None
             return df
         df['nsub21'] = df.fNSub2 / df.fNSub1
+        # TODO: catch nsub1 == 0
         self.logger.debug('zg')
         df['zg_array'] = np.array(.5 - abs(df.fPtSubLeading / (df.fPtLeading + df.fPtSubLeading) - .5))
         zcut = self.cfg('zcut', .1)
@@ -144,6 +145,10 @@ class ProcesserJets(Processer):
             (lambda ar: np.log(ar.fPtSubLeading * np.sin(ar.fTheta))), axis=1)
         df['lntheta'] = df['fTheta'].apply(lambda x: -np.log(x))
         # df['lntheta'] = np.array(-np.log(df.fTheta))
+
+        self.logger.info('EEC')
+        df['eecweight'] = df[['fPairPt', 'fJetPt']].apply(
+            (lambda ar: ar.fPairPt / ar.fJetPt**2), axis=1)
 
         if self.cfg('hfjet', True):
             df['dr'] = np.sqrt((df.fJetEta - df.fEta)**2 + ((df.fJetPhi - df.fPhi + math.pi) % math.tau - math.pi)**2)
@@ -245,7 +250,7 @@ class ProcesserJets(Processer):
             self._calculate_variables(df)
 
             for obs, spec in self.cfg('observables', {}).items():
-                self.logger.debug('preparing histograms for %s', obs)
+                self.logger.info('preparing histograms for %s', obs)
                 var = obs.split('-')
                 if not all(v in df for v in var):
                     self.logger.error('dataframe does not contain %s', var)
@@ -265,7 +270,7 @@ class ProcesserJets(Processer):
     # - priors (reweight response matrix)
 
     # region efficiency
-    # pylint: disable=too-many-branches,too-many-statements
+    # pylint: disable=too-many-branches,too-many-statements,too-many-locals
     def process_efficiency_single(self, index):
         self.logger.info('Processing (efficiency) %s', self.l_evtorig[index])
 
@@ -273,50 +278,60 @@ class ProcesserJets(Processer):
         levels_eff = ['gen', 'det', 'genmatch', 'detmatch', 'detmatch_gencuts']
         levels_effkine = ['gen', 'det']
         cuts = ['nocuts', 'cut']
-        observables = self.cfg('observables', [])
+        observables = self.cfg('observables', {})
         observables.update({'fPt': {'label': 'p_{T}^{HF} (GeV/#it{c})'}})
         h_eff = {(cat, level): create_hist(f'h_ptjet-pthf_{cat}_{level}',
                                            ';p_{T}^{jet} (GeV/#it{c});p_{T}^{HF} (GeV/#it{c})',
                                            self.binarrays_ptjet['det']['fPt'], self.binarray_pthf)
                                            for cat in cats for level in levels_eff}
-        # TODO: extend to multi-dimensional observables
-        h_response = {
-            (cat, var): create_hist(
-                f'h_response_{cat}_{var}',
-                f";p_{{T}}^{{jet}} (GeV/#it{{c}});{var};p_{{T}}^{{jet}} (GeV/#it{{c}});{var};p_{{T}} (GeV/#it{{c}})",
-                self.binarrays_ptjet['det'][var], self.binarrays_obs['det'][var],
-                self.binarrays_ptjet['gen'][var], self.binarrays_obs['gen'][var],
-                self.binarray_pthf)
-            for (cat, var) in itertools.product(cats, observables)
-            if not '-' in var}
-        h_response_fd = {var:
-            create_hist(
-                f'h_response_fd_{var}',
-                f";p_{{T}}^{{jet}} (GeV/#it{{c}});{var};p_{{T}}^{{jet}} (GeV/#it{{c}});{var};p_{{T}} (GeV/#it{{c}})",
-                self.binarrays_ptjet['det'][var], self.binarrays_obs['det']['fPt'], self.binarrays_obs['det'][var],
-                self.binarrays_ptjet['gen'][var], self.binarrays_obs['gen']['fPt'], self.binarrays_obs['gen'][var])
-            for var in self.cfg('observables', []) if not '-' in var}
-        # TODO: derive bins from response histogram
-        h_effkine = {(cat, level, cut, var):
-                        create_hist(f'h_effkine_{cat}_{level}_{cut}_{var}',
-                                    f";p_{{T}}^{{jet}} (GeV/#it{{c}});{var_spec['label']}",
-                                    self.binarrays_ptjet[level][var], self.binarrays_obs[level][var])
-                        for (var, var_spec), level, cat, cut
-                        in itertools.product(observables.items(), levels_effkine, cats, cuts)
-                        if not '-' in var}
-        h_effkine_fd = {(level, cut, var): create_hist(f'h_effkine_fd_{level}_{cut}_{var}',
-                f";p_{{T}}^{{jet}} (GeV/#it{{c}});{var_spec['label']}",
-                self.binarrays_ptjet[level][var], self.binarrays_obs[level]['fPt'], self.binarrays_obs[level][var])
-                for (var, var_spec), level, cut
-                in itertools.product(self.cfg('observables', {}).items(), levels_effkine, cuts)
-                if not '-' in var}
-        h_mctruth = {
-            (cat, var): create_hist(
-                f'h_ptjet-pthf-{var}_{cat}_gen',
-                f";p_{{T}}^{{jet}} (GeV/#it{{c}});p_{{T}}^{{HF}} (GeV/#it{{c}});{var}",
-                self.binarrays_ptjet['gen'][var], self.binarray_pthf, self.binarrays_obs['gen'][var])
-            for (cat, var) in itertools.product(cats, observables)
-            if not '-' in var}
+        h_response = {}
+        h_effkine = {}
+        h_response_fd = {}
+        h_effkine_fd = {}
+        h_mctruth = {}
+        for cat in cats:
+            for obs in self.cfg('observables', {}):
+                self.logger.info('preparing response matrix for %s', obs)
+                var = obs.split('-')
+                dim = len(var) + 1
+                h_response[(cat, obs)] = h = create_hist(
+                    f'h_response_{cat}_{obs}', f"response matrix {obs}",
+                    self.binarrays_ptjet['det'][var[0]], *[self.binarrays_obs['det'][v] for v in var],
+                    self.binarrays_ptjet['gen'][var[0]], *[self.binarrays_obs['gen'][v] for v in var],
+                    self.binarray_pthf)
+                get_axis(h, 0).SetTitle("p_{T}^{jet} (GeV/#it{c})")
+                get_axis(h, dim).SetTitle("p_{T}^{jet} (GeV/#it{c})")
+                get_axis(h, 2*dim).SetTitle("p_{T}^{HF} (GeV/#it{c})")
+                for i, v in enumerate(var, 1):
+                    get_axis(h, i).SetTitle(self.cfg(f'observables.{v}.label', v))
+                    get_axis(h, i+dim).SetTitle(self.cfg(f'observables.{v}.label', v))
+                for cut in cuts:
+                    h_effkine[(cat, 'det', cut, obs)] = he = project_hist(h, list(range(dim)), {}).Clone()
+                    he.SetName(f'h_effkine_{cat}_det_{cut}_{obs}')
+                    h_effkine[(cat, 'gen', cut, obs)] = he = project_hist(h, list(range(dim, 2*dim)), {}).Clone()
+                    he.SetName(f'h_effkine_{cat}_gen_{cut}_{obs}')
+                h_mctruth[(cat, obs)] = create_hist(
+                        f'h_ptjet-pthf-{obs}_{cat}_gen',
+                        f";p_{{T}}^{{jet}} (GeV/#it{{c}});p_{{T}}^{{HF}} (GeV/#it{{c}});{obs}",
+                        self.binarrays_ptjet['gen'][var[0]],
+                        self.binarray_pthf,
+                        *[self.binarrays_obs['gen'][v] for v in var])
+                h_response_fd[obs] = create_hist(
+                        f'h_response_fd_{obs}',
+                        f";response matrix fd {obs}",
+                        self.binarrays_ptjet['det'][var[0]],
+                        self.binarrays_obs['det']['fPt'],
+                        *[self.binarrays_obs['det'][v] for v in var],
+                        self.binarrays_ptjet['gen'][var[0]],
+                        self.binarrays_obs['gen']['fPt'],
+                        *[self.binarrays_obs['gen'][v] for v in var])
+                for level, cut in itertools.product(levels_effkine, cuts):
+                    h_effkine_fd[(level, cut, obs)] = create_hist(
+                            f'h_effkine_fd_{level}_{cut}_{obs}',
+                            f"effkine {obs}",
+                            self.binarrays_ptjet[level][var[0]],
+                            self.binarrays_obs[level]['fPt'],
+                            *[self.binarrays_obs[level][v] for v in var])
 
         # create partial versions for closure testing
         h_effkine_frac = copy.deepcopy(h_effkine)
@@ -326,9 +341,9 @@ class ProcesserJets(Processer):
 
         with TFile.Open(self.l_histoeff[index], "recreate") as rfile:
             # TODO: avoid hard-coding values here (check if restriction is needed at all)
-            cols = ['ismcprompt', 'ismcsignal', 'ismcfd',
+            cols = None if not self.cfg('hfjet', True) else ['ismcprompt', 'ismcsignal', 'ismcfd',
                     'fPt', 'fEta', 'fPhi', 'fJetPt', 'fJetEta', 'fJetPhi', 'fPtLeading', 'fPtSubLeading', 'fTheta',
-                    'fNSub2DR', 'fNSub1', 'fNSub2'] if self.cfg('hfjet', True) else None
+                    'fNSub2DR', 'fNSub1', 'fNSub2', 'fJetNConstituents', 'fEnergyMother', 'fPairTheta', 'fPairPt']
 
             # read generator level
             dfgen_orig = pd.concat(read_df(self.mptfiles_gensk[bin][index], columns=cols)
@@ -383,10 +398,15 @@ class ProcesserJets(Processer):
                 else:
                     self.logger.error('No matching, could not fill matched detector-level histograms')
 
-            for var, cat in itertools.product(observables, cats):
-                # TODO: add support for more complex observables
-                if '-' in var or self.cfg(f'observables.{var}.arraycols'):
-                    continue
+            for obs, cat in itertools.product(observables, cats):
+                if cat in dfmatch and dfmatch[cat] is not None:
+                    self._prepare_response(dfmatch[cat], h_effkine, h_response, cat, obs)
+                    f = self.cfg('frac_mcana', .2)
+                    _, df_mccorr = self.split_df(dfmatch[cat], f if f < 1. else 0.)
+                    self._prepare_response(df_mccorr, h_effkine_frac, h_response_frac, cat, obs)
+                    self._prepare_response_fd(dfmatch[cat], h_effkine_fd, h_response_fd, obs)
+
+                # TODO: move outside of loop?
                 if self.cfg('closure.use_matched'):
                     self.logger.info('using matched for truth')
                     df_mcana, _ = self.split_df(dfmatch[cat], self.cfg('frac_mcana', .2))
@@ -395,14 +415,13 @@ class ProcesserJets(Processer):
                 if f := self.cfg('closure.exclude_feeddown_gen'):
                     self.logger.debug('excluding feeddown gen')
                     dfquery(df_mcana, f, inplace=True)
-                fill_hist(h_mctruth[(cat, var)], df_mcana[['fJetPt_gen', 'fPt_gen', f'{var}_gen']])
 
-                if cat in dfmatch and dfmatch[cat] is not None:
-                    self._prepare_response(dfmatch[cat], h_effkine, h_response, cat, var)
-                    self._prepare_response_fd(dfmatch[cat], h_effkine_fd, h_response_fd, var)
-                    f = self.cfg('frac_mcana', .2)
-                    _, df_mccorr = self.split_df(dfmatch[cat], f if f < 1. else 0.)
-                    self._prepare_response(df_mccorr, h_effkine_frac, h_response_frac, cat, var)
+                arraycols = [i - 3 for i in self.cfg(f'observables.{obs}.arraycols', [])]
+                var = obs.split('-')
+                self.logger.debug("Observable %s has arraycols %s -> %s",
+                                  obs, arraycols, [var[icol] for icol in arraycols])
+                df_mcana = self._explode_arraycols(df_mcana, [var[icol] for icol in arraycols])
+                fill_hist(h_mctruth[(cat, obs)], df_mcana[['fJetPt_gen', 'fPt_gen', *(f'{v}_gen' for v in var)]])
 
             for name, obj in itertools.chain(h_eff.items(), h_effkine.items(), h_response.items(),
                                              h_effkine_fd.items(), h_response_fd.items(),
@@ -412,59 +431,83 @@ class ProcesserJets(Processer):
                 except Exception as ex: # pylint: disable=broad-exception-caught
                     self.logger.error('Writing of <%s> (%s) failed: %s', name, str(obj), str(ex))
 
-    def _prepare_response(self, dfi, h_effkine, h_response, cat, var):
-        axis_ptjet_det = get_axis(h_response[(cat, var)], 0)
-        axis_var_det = get_axis(h_response[(cat, var)], 1)
-        axis_ptjet_gen = get_axis(h_response[(cat, var)], 2)
-        axis_var_gen = get_axis(h_response[(cat, var)], 3)
+    def _explode_arraycols(self, df: pd.DataFrame, arraycols: "list[str]") -> pd.DataFrame:
+        if len(arraycols) > 0:
+            self.logger.debug("Exploding columns %s", arraycols)
+            # only consider rows with corresponding det- and gen-level entries
+            df['length'] = [len(x) for x in df[arraycols[0]]]
+            df['length_gen'] = [len(x) for x in df[arraycols[0] + '_gen']]
+            df = df.loc[df.length == df.length_gen]
+            df = df.explode(arraycols + [col + '_gen' for col in arraycols])
+            df.dropna(inplace=True)
+        return df
+
+    def _prepare_response(self, dfi, h_effkine, h_response, cat, obs):
+        var = obs.split('-')
+        dim = len(var) + 1
+        axes_det = [get_axis(h_response[(cat, obs)], i) for i in range(dim)]
+        axes_gen = [get_axis(h_response[(cat, obs)], i) for i in range(dim, 2 * dim)]
+        arraycols = [i - 3 for i in self.cfg(f'observables.{obs}', {}).get('arraycols', [])]
 
         df = dfi
+        df = self._explode_arraycols(df, [var[icol] for icol in arraycols])
+
+        df = df.loc[(df.fJetPt >= axes_det[0].GetXmin()) & (df.fJetPt < axes_det[0].GetXmax())]
+        for i, v in enumerate(var, 1):
+            df = df.loc[(df[v] >= axes_det[i].GetXmin()) & (df[v] < axes_det[i].GetXmax())]
+        fill_hist(h_effkine[(cat, 'det', 'nocuts', obs)], df[['fJetPt', *var]])
+        df = df.loc[(df.fJetPt >= axes_gen[0].GetXmin()) & (df.fJetPt < axes_gen[0].GetXmax())]
+        for i, v in enumerate(var, 1):
+            df = df.loc[(df[f'{v}_gen'] >= axes_gen[i].GetXmin()) & (df[f'{v}_gen'] < axes_gen[i].GetXmax())]
+        fill_hist(h_effkine[(cat, 'det', 'cut', obs)], df[['fJetPt', *var]])
+
+        # print(df[['fJetPt', *var, 'fJetPt_gen', *(f'{v}_gen' for v in var), 'fPt']].info(), flush=True)
+        fill_hist(h_response[(cat, obs)], df[['fJetPt', *var, 'fJetPt_gen', *(f'{v}_gen' for v in var), 'fPt']])
+
+        df = dfi
+        df = self._explode_arraycols(df, [var[icol] for icol in arraycols])
+        df = df.loc[(df.fJetPt >= axes_gen[0].GetXmin()) & (df.fJetPt < axes_gen[0].GetXmax())]
+        for i, v in enumerate(var, 1):
+            df = df.loc[(df[f'{v}_gen'] >= axes_gen[i].GetXmin()) & (df[f'{v}_gen'] < axes_gen[i].GetXmax())]
+        fill_hist(h_effkine[(cat, 'gen', 'nocuts', obs)], df[['fJetPt_gen', *(f'{v}_gen' for v in var)]])
+        df = df.loc[(df.fJetPt >= axes_det[0].GetXmin()) & (df.fJetPt < axes_det[0].GetXmax())]
+        for i, v in enumerate(var, 1):
+            df = df.loc[(df[v] >= axes_det[i].GetXmin()) & (df[v] < axes_det[i].GetXmax())]
+        fill_hist(h_effkine[(cat, 'gen', 'cut', obs)], df[['fJetPt_gen', *(f'{v}_gen' for v in var)]])
+
+
+    def _prepare_response_fd(self, dfi, h_effkine, h_response, obs):
+        var = obs.split('-')
+        dim = len(var) + 2
+        axes_det = [get_axis(h_response[obs], i) for i in range(dim)]
+        axes_gen = [get_axis(h_response[obs], i) for i in range(dim, 2 * dim)]
+        arraycols = [i - 3 for i in self.cfg(f'observables.{obs}', {}).get('arraycols', [])]
+
+        df = dfi
+        df = self._explode_arraycols(df, [var[icol] for icol in arraycols])
         # TODO: the first cut should be taken care of by under-/overflow bins, check their usage in analyzer
-        df = df.loc[(df.fJetPt >= axis_ptjet_det.GetXmin()) & (df.fJetPt < axis_ptjet_det.GetXmax()) &
-                    (df[var] >= axis_var_det.GetXmin()) & (df[var] < axis_var_det.GetXmax())]
-        fill_hist(h_effkine[(cat, 'det', 'nocuts', var)], df[['fJetPt', var]])
-        df = df.loc[(df.fJetPt_gen >= axis_ptjet_gen.GetXmin()) & (df.fJetPt_gen < axis_ptjet_gen.GetXmax()) &
-                    (df[f'{var}_gen'] >= axis_var_gen.GetXmin()) & (df[f'{var}_gen'] < axis_var_gen.GetXmax())]
-        fill_hist(h_effkine[(cat, 'det', 'cut', var)], df[['fJetPt', var]])
+        df = df.loc[(df.fJetPt >= axes_det[0].GetXmin()) & (df.fJetPt < axes_det[0].GetXmax()) &
+                    (df.fPt >= axes_det[1].GetXmin()) & (df.fPt < axes_det[1].GetXmax())]
+        for i, v in enumerate(var, 2):
+            df = df.loc[(df[v] >= axes_det[i].GetXmin()) & (df[v] < axes_det[i].GetXmax())]
+        fill_hist(h_effkine[('det', 'nocuts', obs)], df[['fJetPt', 'fPt', *var]])
+        df = df.loc[(df.fJetPt_gen >= axes_gen[0].GetXmin()) & (df.fJetPt_gen < axes_gen[0].GetXmax()) &
+                    (df.fPt_gen >= axes_gen[1].GetXmin()) & (df.fPt_gen < axes_gen[1].GetXmax())]
+        for i, v in enumerate(var, 2):
+            df = df.loc[(df[f'{v}_gen'] >= axes_gen[i].GetXmin()) & (df[f'{v}_gen'] < axes_gen[i].GetXmax())]
+        fill_hist(h_effkine[('det', 'cut', obs)], df[['fJetPt', 'fPt', *var]])
 
-        fill_hist(h_response[(cat, var)], df[['fJetPt', f'{var}', 'fJetPt_gen', f'{var}_gen', 'fPt']])
-
-        df = dfi
-        df = df.loc[(df.fJetPt_gen >= axis_ptjet_gen.GetXmin()) & (df.fJetPt_gen < axis_ptjet_gen.GetXmax()) &
-                    (df[f'{var}_gen'] >= axis_var_gen.GetXmin()) & (df[f'{var}_gen'] < axis_var_gen.GetXmax())]
-        fill_hist(h_effkine[(cat, 'gen', 'nocuts', var)], df[['fJetPt_gen', f'{var}_gen']])
-        df = df.loc[(df.fJetPt >= axis_ptjet_det.GetXmin()) & (df.fJetPt < axis_ptjet_det.GetXmax()) &
-                    (df[f'{var}'] >= axis_var_det.GetXmin()) & (df[f'{var}'] < axis_var_det.GetXmax())]
-        fill_hist(h_effkine[(cat, 'gen', 'cut', var)], df[['fJetPt_gen', f'{var}_gen']])
-
-
-    def _prepare_response_fd(self, dfi, h_effkine, h_response, var):
-        axis_ptjet_det = get_axis(h_response[var], 0)
-        axis_pthf_det = get_axis(h_response[var], 1)
-        axis_var_det = get_axis(h_response[var], 2)
-        axis_ptjet_gen = get_axis(h_response[var], 3)
-        axis_pthf_gen = get_axis(h_response[var], 4)
-        axis_var_gen = get_axis(h_response[var], 5)
+        fill_hist(h_response[obs], df[['fJetPt', 'fPt', *var, 'fJetPt_gen', 'fPt_gen', *(f'{v}_gen' for v in var)]])
 
         df = dfi
-        # TODO: the first cut should be taken care of by under-/overflow bins, check their usage in analyzer
-        df = df.loc[(df.fJetPt >= axis_ptjet_det.GetXmin()) & (df.fJetPt < axis_ptjet_det.GetXmax()) &
-                    (df.fPt >= axis_pthf_det.GetXmin()) & (df.fPt < axis_pthf_det.GetXmax()) &
-                    (df[var] >= axis_var_det.GetXmin()) & (df[var] < axis_var_det.GetXmax())]
-        fill_hist(h_effkine[('det', 'nocuts', var)], df[['fJetPt', 'fPt', var]])
-        df = df.loc[(df.fJetPt_gen >= axis_ptjet_gen.GetXmin()) & (df.fJetPt_gen < axis_ptjet_gen.GetXmax()) &
-                    (df.fPt_gen >= axis_pthf_gen.GetXmin()) & (df.fPt_gen < axis_pthf_gen.GetXmax()) &
-                    (df[f'{var}_gen'] >= axis_var_gen.GetXmin()) & (df[f'{var}_gen'] < axis_var_gen.GetXmax())]
-        fill_hist(h_effkine[('det', 'cut', var)], df[['fJetPt', 'fPt', var]])
-
-        fill_hist(h_response[var], df[['fJetPt', 'fPt', f'{var}', 'fJetPt_gen', 'fPt_gen', f'{var}_gen']])
-
-        df = dfi
-        df = df.loc[(df.fJetPt_gen >= axis_ptjet_gen.GetXmin()) & (df.fJetPt_gen < axis_ptjet_gen.GetXmax()) &
-                    (df.fPt_gen >= axis_pthf_gen.GetXmin()) & (df.fPt_gen < axis_pthf_gen.GetXmax()) &
-                    (df[f'{var}_gen'] >= axis_var_gen.GetXmin()) & (df[f'{var}_gen'] < axis_var_gen.GetXmax())]
-        fill_hist(h_effkine[('gen', 'nocuts', var)], df[['fJetPt_gen', 'fPt', f'{var}_gen']])
-        df = df.loc[(df.fJetPt >= axis_ptjet_det.GetXmin()) & (df.fJetPt < axis_ptjet_det.GetXmax()) &
-                    (df.fPt >= axis_pthf_det.GetXmin()) & (df.fPt < axis_pthf_det.GetXmax()) &
-                    (df[f'{var}'] >= axis_var_det.GetXmin()) & (df[f'{var}'] < axis_var_det.GetXmax())]
-        fill_hist(h_effkine[('gen', 'cut', var)], df[['fJetPt_gen', 'fPt', f'{var}_gen']])
+        df = self._explode_arraycols(df, [var[icol] for icol in arraycols])
+        df = df.loc[(df.fJetPt_gen >= axes_gen[0].GetXmin()) & (df.fJetPt_gen < axes_gen[0].GetXmax()) &
+                    (df.fPt_gen >= axes_gen[1].GetXmin()) & (df.fPt_gen < axes_gen[1].GetXmax())]
+        for i, v in enumerate(var, 2):
+            df = df.loc[(df[f'{v}_gen'] >= axes_gen[i].GetXmin()) & (df[f'{v}_gen'] < axes_gen[i].GetXmax())]
+        fill_hist(h_effkine[('gen', 'nocuts', obs)], df[['fJetPt_gen', 'fPt', *(f'{v}_gen' for v in var)]])
+        df = df.loc[(df.fJetPt >= axes_det[0].GetXmin()) & (df.fJetPt < axes_det[0].GetXmax()) &
+                    (df.fPt >= axes_det[1].GetXmin()) & (df.fPt < axes_det[1].GetXmax())]
+        for i, v in enumerate(var, 2):
+            df = df.loc[(df[v] >= axes_det[i].GetXmin()) & (df[v] < axes_det[i].GetXmax())]
+        fill_hist(h_effkine[('gen', 'cut', obs)], df[['fJetPt_gen', 'fPt', *(f'{v}_gen' for v in var)]])

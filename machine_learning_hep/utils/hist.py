@@ -123,7 +123,7 @@ def create_hist(name, title, *bin_specs):
     var_bins = [hasattr(spec, '__len__') for spec in bin_specs]
     assert all(var_bins) or not any(var_bins), f'either all bins must be variable or fixed width: {bin_specs=}'
     dim = len(bin_specs) if all(var_bins) else len(bin_specs) / 3
-    assert dim in range(1, 10), 'only dimensions from 1 to 10 are supported'
+    assert dim in range(1, 12), 'only dimensions from 1 to 10 are supported'
 
     if all(var_bins):
         nbins = list(map(lambda a: len(a) - 1, bin_specs))
@@ -154,7 +154,7 @@ def fill_hist(hist, dfi: pd.DataFrame, weights = None, arraycols = None, write =
     """
     dim_hist = hist.GetDimension() if isinstance(hist, ROOT.TH1) else hist.GetNdimensions()
     dim_df = dfi.shape[1] if dfi.ndim > 1 else dfi.ndim
-    assert dim_df in range(1, 10), f'{dim_df} not supported'
+    assert dim_df in range(1, 12), f'{dim_df} not supported'
     assert dim_df == dim_hist, 'dimensions of df and histogram do not match'
     if len(dfi) == 0:
         return
@@ -183,7 +183,7 @@ def fill_hist(hist, dfi: pd.DataFrame, weights = None, arraycols = None, write =
     elif dim_hist > 3:
         assert weights is None, 'weights not supported'
         if not arraycols:
-            dfi.apply(lambda row: hist.Fill(*row), axis=1)
+            dfi.apply(lambda row: hist.Fill(np.array(row, 'd'), 1.), axis=1)
         else:
             m = [-1] * dim_hist
             idx = 0
@@ -252,8 +252,15 @@ def sum_hists(hists, name = None):
 
 
 def ensure_sumw2(hist):
-    if hist.GetSumw2N() < 1:
-        hist.Sumw2()
+    if isinstance(hist, ROOT.TH1):
+        if hist.GetSumw2N() < 1:
+            hist.Sumw2()
+    elif isinstance(hist, ROOT.THn):
+        if hist.GetSumw2() < 0.:
+            hist.Sumw2()
+    else:
+        raise NotImplementedError
+
 
 
 def get_bin_val(hist, hbin):

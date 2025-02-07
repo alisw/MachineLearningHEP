@@ -77,8 +77,7 @@ class AnalyzerJets(Analyzer):
 
         self.observables = {
             'qa': ['zg', 'rg', 'nsd', 'zpar', 'dr', 'lntheta', 'lnkt', 'lntheta-lnkt'],
-            'all': [var for var, spec in self.cfg('observables', {}).items()
-                    if '-' not in var and 'arraycols' not in spec],
+            'all': [*self.cfg('observables', {})],
         }
 
         self.bins_candpt = np.asarray(self.cfg('sel_an_binmin', []) + self.cfg('sel_an_binmax', [])[-1:], 'd')
@@ -780,7 +779,7 @@ class AnalyzerJets(Analyzer):
                             self.logger.info("Signal extraction (method %s): obs. %s, %s, ipt %d",
                                              method, var, mcordata, ipt)
                             if not self.cfg('hfjet', True):
-                                h = project_hist(h_in, axes_proj[1:], {})
+                                h = project_hist(h_in, list(range(1, get_dim(h_in))), {})
                             elif method == 'sidesub':
                                 h = self._subtract_sideband(h_in, var, mcordata, ipt)
                             elif method == 'sigextr':
@@ -789,8 +788,10 @@ class AnalyzerJets(Analyzer):
                                 self.logger.critical('invalid method %s', method)
                             self._save_hist(h, f'h_ptjet{label}_{method}_noeff_{mcordata}_pt{ipt}.png')
                             if mcordata == 'mc':
-                                h_proj = project_hist(h_in, axes_proj[1:], {})
-                                h_proj_lim = project_hist(h_in, axes_proj[1:], {0: (1, get_nbins(h_in, 0))})
+                                self.logger.info('projecting %s onto axes: %s', h_in, axes_proj[1:])
+                                h_proj = project_hist(h_in, list(range(1, get_dim(h_in))), {})
+                                h_proj_lim = project_hist(h_in, list(range(1, get_dim(h_in))),
+                                                          {0: (1, get_nbins(h_in, 0))})
                                 self._save_hist(h_proj, f'h_ptjet{label}_proj_noeff_{mcordata}_pt{ipt}.png')
                                 if h and h_proj:
                                     self.logger.debug('signal loss %s-%i: %g, fraction in under-/overflow: %g',
@@ -831,7 +832,7 @@ class AnalyzerJets(Analyzer):
                         self._clip_neg(fh_sum_fdsub)
                         self._save_hist(fh_sum_fdsub, f'h_ptjet{label}_{method}_{mcordata}.png')
 
-                        if get_dim(fh_sum) > 1:
+                        if get_dim(fh_sum) == 2:
                             axes = list(range(get_dim(fh_sum)))
                             axis_ptjet = get_axis(fh_sum, 0)
                             for iptjet in range(get_nbins(fh_sum, 0)):
@@ -861,8 +862,7 @@ class AnalyzerJets(Analyzer):
                             continue
                         axis_ptjet = get_axis(fh_sum_fdsub, 0)
                         for j in range(get_nbins(fh_sum_fdsub, 0)):
-                            # TODO: generalize to higher dimensions
-                            hproj = project_hist(fh_sum_fdsub, [1], {0: [j+1, j+1]})
+                            hproj = project_hist(fh_sum_fdsub, list(range(1, get_dim(fh_sum_fdsub))), {0: [j+1, j+1]})
                             range_ptjet = get_bin_limits(axis_ptjet, j + 1)
                             self._save_hist(
                                 hproj, f'uf/h_{var}_{method}_{mcordata}_{string_range_ptjet(range_ptjet)}.png')
@@ -875,7 +875,7 @@ class AnalyzerJets(Analyzer):
                             range_ptjet = get_bin_limits(axis_ptjet, j + 1)
                             c = TCanvas()
                             for i, h in enumerate(fh_unfolded):
-                                hproj = project_hist(h, [1], {0: (j+1, j+1)})
+                                hproj = project_hist(h, list(range(1, get_dim(h))), {0: (j+1, j+1)})
                                 empty = hproj.Integral() < 1.e-7
                                 if empty and i == 0:
                                     self.logger.error("Projection %s %s %s is empty.", var, mcordata,
@@ -889,7 +889,7 @@ class AnalyzerJets(Analyzer):
                                     self._save_hist(
                                         hproj,
                                         f'uf/h_{var}_{method}_unfolded_{mcordata}_' +
-                                        f'{string_range_ptjet(range_ptjet)}_sel.png')
+                                        f'{string_range_ptjet(range_ptjet)}_sel.png', "colz")
                                     # Save also the self-normalised version.
                                     if not empty:
                                         hproj_sel = hproj.Clone(f"{hproj.GetName()}_selfnorm")
@@ -977,6 +977,7 @@ class AnalyzerJets(Analyzer):
         df = pd.read_parquet(self.cfg('fd_parquet'))
         col_mapping = {'dr': 'delta_r_jet', 'zpar': 'z'} # TODO: check mapping
 
+        # TODO: generalize to higher dimensions
         for var in self.observables['all']:
             bins_ptjet = np.asarray(self.cfg('bins_ptjet'), 'd')
             # TODO: generalize or derive from histogram?
@@ -998,6 +999,7 @@ class AnalyzerJets(Analyzer):
             if f'{colname}' not in df:
                 if var is not None:
                     self.logger.error('No feeddown information for %s (%s), cannot estimate feeddown', var, colname)
+                    print(df.info(), flush=True)
                 continue
 
             # TODO: derive histogram
@@ -1028,6 +1030,10 @@ class AnalyzerJets(Analyzer):
                     rfile.Get(f'h_effkine_fd_det_nocuts_{var}'),
                     rfile.Get(f'h_effkine_fd_det_cut_{var}'))
                 h_response = rfile.Get(f'h_response_fd_{var}')
+                if not h_response:
+                    self.logger.error("Could not find response matrix for fd estimation of %s", var)
+                    rfile.ls()
+                    continue
                 h_response_norm = norm_response(h_response, 3)
                 h3_fd_gen.Multiply(h_effkine_gen)
                 self._save_hist(project_hist(h3_fd_gen, [0, 2], {}), f'fd/h_ptjet-{var}_fdnew_gen_genkine.png')
@@ -1124,27 +1130,26 @@ class AnalyzerJets(Analyzer):
 
 
     def _build_response_matrix(self, h_response, h_eff = None, frac_flat = 0.):
+        dim = (get_dim(h_response) - 1) // 2
+        self.logger.info("Building %i-dim response matrix from %s", dim, h_response)
         rm = ROOT.RooUnfoldResponse(
-            project_hist(h_response, [0, 1], {}), project_hist(h_response, [2, 3], {}))
-        h_gen = project_hist(h_response, [2, 3], {})
-        for hbin in itertools.product(
-            enumerate(list(get_axis(h_response, 0).GetXbins())[:-1], 1),
-            enumerate(list(get_axis(h_response, 1).GetXbins())[:-1], 1),
-            enumerate(list(get_axis(h_response, 2).GetXbins())[:-1], 1),
-            enumerate(list(get_axis(h_response, 3).GetXbins())[:-1], 1),
-            enumerate(list(get_axis(h_response, 4).GetXbins())[:-1], 1)):
+            project_hist(h_response, list(range(dim)), {}), project_hist(h_response, list(range(dim, 2 * dim)), {}))
+        h_gen = project_hist(h_response, list(range(dim, 2 * dim)), {})
+
+        x = (enumerate(list(get_axis(h_response, iaxis).GetXbins())[:-1], 1) for iaxis in range(2*dim+1))
+        for hbin in itertools.product(*x):
             n = h_response.GetBinContent(
-                np.asarray([hbin[0][0], hbin[1][0], hbin[2][0], hbin[3][0], hbin[4][0]], 'i'))
-            eff = h_eff.GetBinContent(hbin[4][0]) if h_eff else 1.
+                np.asarray([hbin[i][0] for i in range(2*dim+1)], 'i'))
+            eff = h_eff.GetBinContent(hbin[2*dim][0]) if h_eff else 1.
             if np.isclose(eff, 0.):
                 self.logger.error('efficiency 0 for %s', hbin[4])
                 continue
-            if (cnt_gen := h_gen.GetBinContent(hbin[2][0], hbin[3][0])) > 0.:
+            if (cnt_gen := h_gen.GetBinContent(*(hbin[i][0] for i in range(dim, 2*dim)))) > 0.:
                 fac = 1.
                 if frac_flat > 0.:
                     fac += frac_flat * (1. / cnt_gen - 1.)
                 for _ in range(int(n)):
-                    rm.Fill(hbin[0][1], hbin[1][1], hbin[2][1], hbin[3][1], 1./eff * fac)
+                    rm.Fill(*(hbin[iaxis][1] for iaxis in range(2*dim)), 1./eff * fac)
         # rm.Mresponse().Print()
         return rm
 
@@ -1165,7 +1170,7 @@ class AnalyzerJets(Analyzer):
 
     #region unfolding
     def _unfold(self, hist, var, mcordata):
-        self.logger.debug('Unfolding for %s', var)
+        self.logger.info('Unfolding for %s', var)
         suffix = '_frac' if mcordata == 'mc' else ''
         with TFile(self.n_fileeff) as rfile:
             h_response = rfile.Get(f'h_response_pr_{var}{suffix}')
@@ -1196,7 +1201,7 @@ class AnalyzerJets(Analyzer):
             self._save_hist(h_effkine_gen, f'uf/h_effkine-ptjet-{var}_pr_gen_{mcordata}.png', 'text')
 
             # TODO: move, has nothing to do with unfolding
-            if mcordata == 'mc':
+            if mcordata == 'mc' and get_dim(hist) <= 2:
                 h_mctruth_pr = rfile.Get(f'h_ptjet-pthf-{var}_pr_gen')
                 if h_mctruth_pr:
                     h_mctruth_pr = project_hist(h_mctruth_pr, [0, 2], {})
@@ -1219,7 +1224,7 @@ class AnalyzerJets(Analyzer):
                 self._save_hist(fh_unfolding_output, f'uf/h_ptjet-{var}_{mcordata}_unfoldeffcorr{n}.png', 'texte')
                 h_unfolding_output.append(fh_unfolding_output)
 
-                if mcordata == 'mc':
+                if mcordata == 'mc' and get_dim(hist) <= 2:
                     if h_mctruth_pr:
                         h_mcunfolded = fh_unfolding_output.Clone()
                         h_mcunfolded.Divide(h_mctruth_pr)

@@ -509,7 +509,7 @@ D0Jet_pp:
     multi:
         data:
             nprocessesparallel: 80
-            maxfiles: [-1] #list of periods
+            maxfiles: [1] #list of periods
             chunksizeunp: [100] #list of periods
             chunksizeskim: [100] #list of periods
             fracmerge: [.1] #list of periods
@@ -532,7 +532,7 @@ D0Jet_pp:
             mcreweights: [../Analyses] #list of periods
         mc:
             nprocessesparallel: 80
-            maxfiles: [-1] #list of periods
+            maxfiles: [1] #list of periods
             chunksizeunp: [100] #list of periods
             chunksizeskim: [1000] #list of periods
             fracmerge: [1.] #list of periods
@@ -721,16 +721,38 @@ D0Jet_pp:
                     bins_det_fix: [10, 0., 1.]
                     label: "#Delta#it{r}"
                 lntheta:
-                    bins_gen_fix: [10, 0., 5.]
-                    bins_det_fix: [10, 0., 5.]
+                    bins_gen_fix: [8, 1., 5.]
+                    bins_det_fix: [8, 1., 5.]
                     label: "#minusln(#it{#theta})"
                     arraycols: [3]
                 lnkt:
-                    bins_gen_fix: [10, -8., 2.]
-                    bins_det_fix: [10, -8., 2.]
+                    bins_gen_fix: [8, -4., 4.]
+                    bins_det_fix: [8, -4., 4.]
                     label: "ln(#it{k}_{T}/(GeV/#it{c}))"
                     arraycols: [3]
                 lntheta-lnkt:
+                    arraycols: [3, 4]
+                # new variables
+                fEnergyMother:
+                    bins_gen_fix: [1, 0., 100.]
+                    bins_det_fix: [1, 0., 100.]
+                    arraycols: [3]
+                # lntheta-lnkt-fEnergyMother:
+                #     arraycols: [3, 4, 5]
+                fJetNConstituents:
+                    bins_gen_fix: [5, 0., 20.]
+                    bins_det_fix: [5, 0., 20.]
+                zpar-fJetNConstituents: {}
+                nsub21:
+                    # TODO: check for 1-track jets
+                    bins_gen_fix: [11, -1., 1.]
+                    bins_det_fix: [11, -1., 1.]
+                eecweight:
+                    # TODO: adjust binning
+                    bins_gen_fix: [10, 0., 1.]
+                    bins_det_fix: [10, 0., 1.]
+                    arraycols: [3]
+                fPairTheta-eecweight:
                     arraycols: [3, 4]
 
             data_selections:
