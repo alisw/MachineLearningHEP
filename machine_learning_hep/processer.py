@@ -429,13 +429,16 @@ class Processer: # pylint: disable=too-many-instance-attributes
                         self.logger.info('merging %s with %s on %s into %s', base, ref, on, out)
                         if not is_numeric_dtype(dfs[base][on]):
                             self.logger.info('exploding dataframe %s on variable %s', base, on)
-                            dfs[out] = dfmerge(dfs[base].explode(on), dfs[ref], left_on=['df', on], suffixes=(f'_{base}', None), right_index=True)
+                            dfs[out] = dfmerge(
+                                exploded_df, dfs[ref], left_on=['df', on], suffixes=(f'_{base}', None), right_index=True)
                         else:
-                            dfs[out] = dfmerge(dfs[base], dfs[ref], left_on=['df', on], suffixes=(f'_{base}', None), right_index=True)
+                            dfs[out] = dfmerge(
+                                dfs[base], dfs[ref], left_on=['df', on], suffixes=(f'_{base}', None), right_index=True)
                     else:
                         var = self.df_read[ref]['index']
                         self.logger.info('merging %s with %s on %s (default) into %s', base, ref, var, out)
-                        dfs[out] = dfmerge(dfs[base], dfs[ref], left_on=['df', var], suffixes=(f'_{base}', None), right_index=True)
+                        dfs[out] = dfmerge(
+                            dfs[base], dfs[ref], left_on=['df', var], suffixes=(f'_{base}', None), right_index=True)
                     if 'extra' in m_spec:
                         self.logger.debug(' %s -> extra', out)
                         for col_name, col_val in m_spec['extra'].items():

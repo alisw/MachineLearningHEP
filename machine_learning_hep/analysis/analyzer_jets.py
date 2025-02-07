@@ -284,8 +284,8 @@ class AnalyzerJets(Analyzer):
                 eff_avg.Divide(project_hist(h_out, [1], {0: bins_ptjet}))
 
                 if eff_corr := self.cfg('efficiency.reweight'):
-                        for ipt in range(get_nbins(eff_avg, 0)):
-                            scale_bin(eff_avg, eff_corr[ipt][icat], ipt+1)
+                    for ipt in range(get_nbins(eff_avg, 0)):
+                        scale_bin(eff_avg, eff_corr[ipt][icat], ipt+1)
 
                 self._save_hist(eff_avg, f'eff/h_pthf_effnew_{cat}.png')
                 self.h_effnew_pthf[cat] = eff_avg
