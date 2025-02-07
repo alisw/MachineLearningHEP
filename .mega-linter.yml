@@ -14,12 +14,14 @@ DISABLE_LINTERS:
   - BASH_EXEC
   - BASH_SHFMT
   - JSON_PRETTIER
+  - PYTHON_BLACK
+  - PYTHON_FLAKE8
+  - PYTHON_ISORT
   - REPOSITORY_DEVSKIM
   - REPOSITORY_GRYPE
   - REPOSITORY_KICS
   - REPOSITORY_SECRETLINT
   - REPOSITORY_TRIVY
-  - YAML_YAMLLINT
   - YAML_PRETTIER
   - YAML_V8R
 DISABLE_ERRORS_LINTERS: # If errors are found by these linters, they will be considered as non blocking.
@@ -34,5 +36,7 @@ FLAVOR_SUGGESTIONS: false # Don't show suggestions about different MegaLinter fl
 PYTHON_ISORT_CONFIG_FILE: pyproject.toml
 PYTHON_PYRIGHT_CONFIG_FILE: pyproject.toml
 PYTHON_RUFF_CONFIG_FILE: pyproject.toml
-CPP_CPPLINT_FILE_EXTENSIONS: [".C", ".c", ".c++", ".cc", ".cl", ".cpp", ".cu", ".cuh", ".cxx", ".cxx.in", ".h", ".h++", ".hh", ".h.in", ".hpp", ".hxx", ".inc", ".inl", ".macro"]
-CPP_CLANG_FORMAT_FILE_EXTENSIONS: [".C", ".c", ".c++", ".cc", ".cl", ".cpp", ".cu", ".cuh", ".cxx", ".cxx.in", ".h", ".h++", ".hh", ".h.in", ".hpp", ".hxx", ".inc", ".inl", ".macro"]
+CPP_CPPLINT_FILE_EXTENSIONS: [".C", ".c", ".c++", ".cc", ".cl", ".cpp", ".cu", ".cuh", ".cxx", ".cxx.in", ".h", ".h++", ".hh",
+  ".h.in", ".hpp", ".hxx", ".inc", ".inl", ".macro"]
+CPP_CLANG_FORMAT_FILE_EXTENSIONS: [".C", ".c", ".c++", ".cc", ".cl", ".cpp", ".cu", ".cuh", ".cxx", ".cxx.in", ".h", ".h++",
+  ".hh", ".h.in", ".hpp", ".hxx", ".inc", ".inl", ".macro"]

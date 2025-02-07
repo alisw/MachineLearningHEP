@@ -1,0 +1,15 @@
+---
+# yamllint configuration
+# Reference: https://yamllint.readthedocs.io/en/stable/rules.html
+
+extends: default
+rules:
+  line-length:
+    max: 120
+    level: warning
+  indentation:
+    spaces: 2
+    level: warning
+  comments:
+    require-starting-space: true
+    min-spaces-from-content: 1
