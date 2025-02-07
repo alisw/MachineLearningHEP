@@ -248,10 +248,9 @@ class Processer: # pylint: disable=too-many-instance-attributes
                             for ipt in range(self.p_nptbins)]
         self.f_evt_count_ml = os.path.join(self.d_pkl_ml, self.n_evt_count_ml)
 
-        if self.n_gen_sl:
-            self.lpt_gensk_sl = [self.n_gen_sl.replace(".p", "_%s%d_%d.p" % \
-                          (self.v_var_binning, self.lpt_anbinmin[i], self.lpt_anbinmax[i])) \
-                          for i in range(self.p_nptbins)]
+          self.lpt_gensk_sl = [self.n_gen_sl.replace(".p", "_%s%d_%d.p" %
+                        (self.v_var_binning, self.lpt_anbinmin[i], self.lpt_anbinmax[i]))
+                        for i in range(self.p_nptbins)] if self.n_gen_sl else None
 
         self.lpt_recodec = None
         if self.doml is True:
