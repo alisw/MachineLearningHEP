@@ -63,7 +63,6 @@ LcpKpi:
         trees:
           O2hflcmccollbase: [fPosX, fPosY, fPosZ, fCentFT0M]
           O2hflcmcrcollid: [fIndexArrayHFLCCOLLBASES]
-        rename: {old: fCentFT0M, new: fCentFT0Mmc}
 
       reco:
         level: all

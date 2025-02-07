@@ -231,7 +231,7 @@ class AnalyzerJets(Analyzer):
                 self._save_canvas(c, f'eff/h_ptjet-pthf_eff_{cat}_ptjet.png')
 
             # Run 3 efficiencies
-            for cat in cats:
+            for icat, cat in enumerate(cats):
                 # gen-level efficiency for feeddown estimation
                 h_eff_gen = h_genmatch[cat].Clone()
                 h_eff_gen.Divide(h_gen[cat])
@@ -269,13 +269,24 @@ class AnalyzerJets(Analyzer):
 
                 eff = h_det[cat].Clone(f'h_effnew_{cat}')
                 ensure_sumw2(eff)
-                eff.Divide(h_out)
+                eff.Divide(h_out) #apply correction here. 2 axes pt hf
+
+                if eff_corr := self.cfg('efficiency.reweight'):
+                    for iptjet in range(get_nbins(eff, 0)):
+                        for ipt in range(get_nbins(eff, 1)):
+                            scale_bin(eff, eff_corr[ipt][icat], iptjet+1, ipt+1)
+
                 self._save_hist(eff, f'eff/h_ptjet-pthf_effnew_{cat}.png')
                 self.h_effnew_ptjet_pthf[cat] = eff
 
                 eff_avg = project_hist(h_det[cat], [1], {0: bins_ptjet})
                 ensure_sumw2(eff_avg)
                 eff_avg.Divide(project_hist(h_out, [1], {0: bins_ptjet}))
+
+                if eff_corr := self.cfg('efficiency.reweight'):
+                        for ipt in range(get_nbins(eff_avg, 0)):
+                            scale_bin(eff_avg, eff_corr[ipt][icat], ipt+1)
+
                 self._save_hist(eff_avg, f'eff/h_pthf_effnew_{cat}.png')
                 self.h_effnew_pthf[cat] = eff_avg
 

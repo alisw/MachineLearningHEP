@@ -21,7 +21,7 @@ LcJet_pp:
     # sel_reco_skim: ["mlPromptScore > 0.96", "mlPromptScore > 0.97", "mlPromptScore > 0.9", "mlPromptScore > 0.85", "mlPromptScore > 0.8", "mlPromptScore > 0.6", null]  # (sel_skim_binmin bins)
     sel_reco_skim: [null, null, null, null, null, null, null, null, null, null, null] # (sel_skim_binmin bins)
     sel_gen_skim: [null, null, null, null, null, null, null, null, null, null, null] # (sel_skim_binmin bins)
-    sel_skim_binmin: [1, 2, 3, 4, 5, 6, 7, 8, 10, 12,] # skimming pt bins (sel_skim_binmin bins)
+    sel_skim_binmin: [1, 2, 3, 4, 5, 6, 7, 8, 10, 12] # skimming pt bins (sel_skim_binmin bins)
     sel_skim_binmax: [2, 3, 4, 5, 6, 7, 8, 10, 12, 24] # skimming pt bins (sel_skim_binmin bins)
     var_binning: fPt
     dofullevtmerge: false
@@ -582,8 +582,8 @@ LcJet_pp:
                 xgboost_classifierLcpKpi_dfselection_fPt_12.0_24.0.sav
             ] # sel_skim_binmin bins
         probcutpresel:
-            data: [[0.05, 0.0, 0.0], [0.05, 0.0, 0.0], [0.08, 0.0, 0.0], [0.1, 0.0, 0.0], [0.2, 0.0, 0.0], [0.2, 0.0, 0.0], [0.2, 0.0, 0.0], [0.25, 0.0, 0.0], [0.35, 0.0, 0.0], [0.4, 0.0, 0.0]] #list of nbins
-            mc: [[0.05, 0.0, 0.0], [0.05, 0.0, 0.0], [0.08, 0.0, 0.0], [0.1, 0.0, 0.0], [0.2, 0.0, 0.0], [0.2, 0.0, 0.0], [0.2, 0.0, 0.0], [0.25, 0.0, 0.0], [0.35, 0.0, 0.0], [0.4, 0.0, 0.0]] #list of nbins
+            data: [[0.02, 0.0, 0.0], [0.03, 0.0, 0.0], [0.04, 0.0, 0.0], [0.07, 0.0, 0.0], [0.09, 0.0, 0.0], [0.11, 0.0, 0.0], [0.15, 0.0, 0.0], [0.18, 0.0, 0.0], [0.25, 0.0, 0.0], [0.35, 0.0, 0.0]] #list of nbins
+            mc: [[0.02, 0.0, 0.0], [0.03, 0.0, 0.0], [0.04, 0.0, 0.0], [0.07, 0.0, 0.0], [0.09, 0.0, 0.0], [0.11, 0.0, 0.0], [0.15, 0.0, 0.0], [0.18, 0.0, 0.0], [0.25, 0.0, 0.0], [0.35, 0.0, 0.0]] #list of nbins
         probcutoptimal: [[0.02, 0.0, 0.0], [0.03, 0.0, 0.0], [0.04, 0.0, 0.0], [0.07, 0.0, 0.0], [0.09, 0.0, 0.0], [0.11, 0.0, 0.0], [0.15, 0.0, 0.0], [0.18, 0.0, 0.0], [0.25, 0.0, 0.0], [0.35, 0.0, 0.0]] #list of nbins
 
     #region analysis

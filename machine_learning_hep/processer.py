@@ -189,9 +189,6 @@ class Processer: # pylint: disable=too-many-instance-attributes
         # Potentially mask certain values (e.g. nsigma TOF of -999)
         self.p_mask_values = datap["ml"].get("mask_values", None)
 
-        self.lpt_probcutpre = datap["mlapplication"]["probcutpresel"][self.mcordata]
-        self.lpt_probcutfin = datap["analysis"][self.typean].get("probcuts", None)
-
         self.bins_skimming = np.array(list(zip(self.lpt_anbinmin, self.lpt_anbinmax)), 'd')
         self.bins_analysis = np.array(list(zip(self.lpt_finbinmin, self.lpt_finbinmax)), 'd')
         bin_matching = [
@@ -199,23 +196,21 @@ class Processer: # pylint: disable=too-many-instance-attributes
             for bin in self.bins_analysis
         ]
 
-        # Make it backwards-compatible
-        if not self.lpt_probcutfin:
-            lpt_probcutfin_tmp = datap["mlapplication"]["probcutoptimal"]
-            self.lpt_probcutfin = []
-            for i in range(self.p_nptfinbins):
-                bin_id = bin_matching[i]
-                self.lpt_probcutfin.append(lpt_probcutfin_tmp[bin_id])
+        self.lpt_probcutpre = datap["mlapplication"]["probcutpresel"][self.mcordata]
+        lpt_probcutfin_tmp = datap["mlapplication"]["probcutoptimal"]
+        self.lpt_probcutfin = [lpt_probcutfin_tmp[bin_matching[ibin]]
+            for ibin in range(self.p_nptfinbins)]
 
-        if self.mltype == "MultiClassification":
-            for probcutfin, probcutpre in zip(self.lpt_probcutfin, self.lpt_probcutpre):
+        for ibin, probcutfin in enumerate(self.lpt_probcutfin):
+            probcutpre = self.lpt_probcutpre[bin_matching[ibin]]
+            if self.mltype == "MultiClassification":
                 if probcutfin[0] > probcutpre[0] or probcutfin[1] < probcutpre[1] or probcutfin[2] < probcutpre[2]:
                     self.logger.fatal("Probability cut final: %s must be tighter than presel %s!\n" \
                             "Verify that bkg prob presel > final, and other cuts presel < final",
                             self.lpt_probcutfin, self.lpt_probcutpre)
-        elif self.lpt_probcutfin < self.lpt_probcutpre:
-            self.logger.fatal("Probability cut final: %s must be tighter (smaller values) than presel %s!",
-                    self.lpt_probcutfin, self.lpt_probcutpre)
+            elif probcutfin < probcutpre:
+                self.logger.fatal("Probability cut final: %s must be tighter (smaller values) than presel %s!",
+                        self.lpt_probcutfin, self.lpt_probcutpre)
 
         if self.mltype == "MultiClassification":
             self.l_selml = []
@@ -418,10 +413,6 @@ class Processer: # pylint: disable=too-many-instance-attributes
                             dfs[df_name][var] = np.logical_and(dfs[df_name][var] == 1, swapped)
                 self.logger.debug(' %s -> done', df_name)
 
-                if 'rename' in df_spec:
-                    spec = df_spec['rename']
-                    dfs[df_name] = dfs[df_name].rename(columns={spec['old']: spec['new']})
-
 
         if self.df_merge:
             for m_spec in self.df_merge:
@@ -433,18 +424,18 @@ class Processer: # pylint: disable=too-many-instance-attributes
                         self.logger.info('merging %s with %s on %s into %s', base, ref, on, out)
                         if not isinstance(on, list) or 'df' not in on:
                             on = ['df', on]
-                        dfs[out] = dfmerge(dfs[base], dfs[ref], on=on)
+                        dfs[out] = dfmerge(dfs[base], dfs[ref], suffixes=(f'_{base}', None), on=on)
                     elif (on := m_spec.get('left_on', None)) is not None:
                         self.logger.info('merging %s with %s on %s into %s', base, ref, on, out)
                         if not is_numeric_dtype(dfs[base][on]):
                             self.logger.info('exploding dataframe %s on variable %s', base, on)
-                            dfs[out] = dfmerge(dfs[base].explode(on), dfs[ref], left_on=['df', on], right_index=True)
+                            dfs[out] = dfmerge(dfs[base].explode(on), dfs[ref], left_on=['df', on], suffixes=(f'_{base}', None), right_index=True)
                         else:
-                            dfs[out] = dfmerge(dfs[base], dfs[ref], left_on=['df', on], right_index=True)
+                            dfs[out] = dfmerge(dfs[base], dfs[ref], left_on=['df', on], suffixes=(f'_{base}', None), right_index=True)
                     else:
                         var = self.df_read[ref]['index']
                         self.logger.info('merging %s with %s on %s (default) into %s', base, ref, var, out)
-                        dfs[out] = dfmerge(dfs[base], dfs[ref], left_on=['df', var], right_index=True)
+                        dfs[out] = dfmerge(dfs[base], dfs[ref], left_on=['df', var], suffixes=(f'_{base}', None), right_index=True)
                     if 'extra' in m_spec:
                         self.logger.debug(' %s -> extra', out)
                         for col_name, col_val in m_spec['extra'].items():
@@ -462,9 +453,7 @@ class Processer: # pylint: disable=too-many-instance-attributes
     def skim(self, file_index):
         dfreco = read_df(self.l_reco[file_index])
         dfgen = read_df(self.l_gen[file_index]) if self.mcordata == 'mc' else None
-
-        if self.n_gen_sl:
-            dfgen_sl = read_df(self.l_gen_sl[file_index]) if self.mcordata == 'mc' else None
+        dfgen_sl = read_df(self.l_gen_sl[file_index]) if self.n_gen_sl and self.mcordata == 'mc' else None
 
         for ipt in range(self.p_nptbins):
             dfrecosk = seldf_singlevar(dfreco, self.v_var_binning,
@@ -478,7 +467,7 @@ class Processer: # pylint: disable=too-many-instance-attributes
                 dfgensk = dfquery(dfgensk, self.s_gen_skim[ipt])
                 write_df(dfgensk, self.mptfiles_gensk[ipt][file_index])
 
-            if self.n_gen_sl:
+            if dfgen_sl is not None:
                 dfgensk_sl = seldf_singlevar(dfgen_sl, self.v_var_binning,
                                           self.lpt_anbinmin[ipt], self.lpt_anbinmax[ipt])
                 dfgensk_sl = dfquery(dfgensk_sl, self.s_gen_skim[ipt])
