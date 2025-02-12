@@ -15,7 +15,8 @@
 """
 Metrics for (ML) optimisation
 """
-from sklearn.metrics import make_scorer, roc_auc_score, accuracy_score
+
+from sklearn.metrics import accuracy_score, make_scorer, roc_auc_score
 
 
 def get_scorers(score_names):

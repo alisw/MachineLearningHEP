@@ -17,40 +17,81 @@
 """
 main script for doing data processing, machine learning and analysis
 """
-import math
+
 import array
+import math
+
 import numpy as np
 import pandas as pd
-from ROOT import TFile, TH1F
-from machine_learning_hep.utilities import seldf_singlevar, read_df
+from ROOT import TH1F, TFile
+
 from machine_learning_hep.processer import Processer, dfquery
+from machine_learning_hep.utilities import read_df, seldf_singlevar
 from machine_learning_hep.utils.hist import bin_array, create_hist, fill_hist
 
-class ProcesserDhadrons(Processer): # pylint: disable=too-many-instance-attributes
+
+class ProcesserDhadrons(Processer):  # pylint: disable=too-many-instance-attributes
     # Class Attribute
-    species = 'processer'
+    species = "processer"
 
     # Initializer / Instance Attributes
     # pylint: disable=too-many-statements, too-many-arguments
-    def __init__(self, case, datap, run_param, mcordata, p_maxfiles,
-                 d_root, d_pkl, d_pklsk, d_pkl_ml, p_period, i_period,
-                 p_chunksizeunp, p_chunksizeskim, p_maxprocess,
-                 p_frac_merge, p_rd_merge, d_pkl_dec, d_pkl_decmerged,
-                 d_results, typean, runlisttrigger, d_mcreweights):
-        super().__init__(case, datap, run_param, mcordata, p_maxfiles,
-                         d_root, d_pkl, d_pklsk, d_pkl_ml, p_period, i_period,
-                         p_chunksizeunp, p_chunksizeskim, p_maxprocess,
-                         p_frac_merge, p_rd_merge, d_pkl_dec, d_pkl_decmerged,
-                         d_results, typean, runlisttrigger, d_mcreweights)
+    def __init__(
+        self,
+        case,
+        datap,
+        run_param,
+        mcordata,
+        p_maxfiles,
+        d_root,
+        d_pkl,
+        d_pklsk,
+        d_pkl_ml,
+        p_period,
+        i_period,
+        p_chunksizeunp,
+        p_chunksizeskim,
+        p_maxprocess,
+        p_frac_merge,
+        p_rd_merge,
+        d_pkl_dec,
+        d_pkl_decmerged,
+        d_results,
+        typean,
+        runlisttrigger,
+        d_mcreweights,
+    ):
+        super().__init__(
+            case,
+            datap,
+            run_param,
+            mcordata,
+            p_maxfiles,
+            d_root,
+            d_pkl,
+            d_pklsk,
+            d_pkl_ml,
+            p_period,
+            i_period,
+            p_chunksizeunp,
+            p_chunksizeskim,
+            p_maxprocess,
+            p_frac_merge,
+            p_rd_merge,
+            d_pkl_dec,
+            d_pkl_decmerged,
+            d_results,
+            typean,
+            runlisttrigger,
+            d_mcreweights,
+        )
 
-        self.p_mass_fit_lim = datap["analysis"][self.typean]['mass_fit_lim']
-        self.p_bin_width = datap["analysis"][self.typean]['bin_width']
+        self.p_mass_fit_lim = datap["analysis"][self.typean]["mass_fit_lim"]
+        self.p_bin_width = datap["analysis"][self.typean]["bin_width"]
         limits_mass = datap["analysis"][self.typean]["mass_fit_lim"]
         nbins_mass = int(round((limits_mass[1] - limits_mass[0]) / self.p_bin_width))
-        self.p_num_bins = int(round((self.p_mass_fit_lim[1] - self.p_mass_fit_lim[0]) / \
-                                    self.p_bin_width))
-        self.s_presel_gen_eff = datap["analysis"][self.typean]['presel_gen_eff']
-
+        self.p_num_bins = int(round((self.p_mass_fit_lim[1] - self.p_mass_fit_lim[0]) / self.p_bin_width))
+        self.s_presel_gen_eff = datap["analysis"][self.typean]["presel_gen_eff"]
 
         self.lpt_finbinmin = datap["analysis"][self.typean]["sel_an_binmin"]
         self.lpt_finbinmax = datap["analysis"][self.typean]["sel_an_binmax"]
@@ -59,7 +100,7 @@ class ProcesserDhadrons(Processer): # pylint: disable=too-many-instance-attribut
         self.s_evtsel = datap["analysis"][self.typean]["evtsel"]
         self.v_invmass = datap["variables"].get("var_inv_mass", "fM")
         self.binarray_mass = bin_array(nbins_mass, limits_mass[0], limits_mass[1])
-        self.binarray_pthf = np.asarray(self.cfg('sel_an_binmin', []) + self.cfg('sel_an_binmax', [])[-1:], 'd')
+        self.binarray_pthf = np.asarray(self.cfg("sel_an_binmin", []) + self.cfg("sel_an_binmax", [])[-1:], "d")
 
     # pylint: disable=too-many-branches
     def process_histomass_single(self, index):
@@ -72,7 +113,7 @@ class ProcesserDhadrons(Processer): # pylint: disable=too-many-instance-attribut
             dfevtevtsel = dfevtorig
         neventsafterevtsel = len(dfevtevtsel)
 
-        #validation plot for event selection
+        # validation plot for event selection
         histonorm = TH1F("histonorm", "histonorm", 10, 0, 10)
         histonorm.SetBinContent(1, neventsorig)
         histonorm.GetXaxis().SetBinLabel(1, "tot events")
@@ -81,8 +122,8 @@ class ProcesserDhadrons(Processer): # pylint: disable=too-many-instance-attribut
         histonorm.Write()
 
         myfile.cd()
-        hEvents = TH1F('all_events', 'all_events', 1, -0.5, 0.5)
-        hSelEvents = TH1F('sel_events', 'sel_events', 1, -0.5, 0.5)
+        hEvents = TH1F("all_events", "all_events", 1, -0.5, 0.5)
+        hSelEvents = TH1F("sel_events", "sel_events", 1, -0.5, 0.5)
         hEvents.SetBinContent(1, len(dfevtorig))
         hSelEvents.SetBinContent(1, len(dfevtevtsel))
 
@@ -99,8 +140,7 @@ class ProcesserDhadrons(Processer): # pylint: disable=too-many-instance-attribut
 
             if self.doml is True:
                 df = df.query(self.l_selml[bin_id])
-            df = seldf_singlevar(df, self.v_var_binning, \
-                                 self.lpt_finbinmin[ipt], self.lpt_finbinmax[ipt])
+            df = seldf_singlevar(df, self.v_var_binning, self.lpt_finbinmin[ipt], self.lpt_finbinmax[ipt])
 
             if self.do_custom_analysis_cuts:
                 df = self.apply_cuts_ptbin(df, ipt)
@@ -108,17 +148,23 @@ class ProcesserDhadrons(Processer): # pylint: disable=too-many-instance-attribut
             df_ptmerged = pd.concat([df_ptmerged, df], ignore_index=True)
 
             if self.mltype == "MultiClassification":
-                suffix = "%s%d_%d_%.2f%.2f%.2f" % \
-                         (self.v_var_binning, self.lpt_finbinmin[ipt],
-                          self.lpt_finbinmax[ipt], self.lpt_probcutfin[ipt][0],
-                          self.lpt_probcutfin[ipt][1], self.lpt_probcutfin[ipt][2])
+                suffix = "%s%d_%d_%.2f%.2f%.2f" % (
+                    self.v_var_binning,
+                    self.lpt_finbinmin[ipt],
+                    self.lpt_finbinmax[ipt],
+                    self.lpt_probcutfin[ipt][0],
+                    self.lpt_probcutfin[ipt][1],
+                    self.lpt_probcutfin[ipt][2],
+                )
             else:
-                suffix = "%s%d_%d_%.2f" % \
-                         (self.v_var_binning, self.lpt_finbinmin[ipt],
-                          self.lpt_finbinmax[ipt], self.lpt_probcutfin[ipt])
+                suffix = "%s%d_%d_%.2f" % (
+                    self.v_var_binning,
+                    self.lpt_finbinmin[ipt],
+                    self.lpt_finbinmax[ipt],
+                    self.lpt_probcutfin[ipt],
+                )
 
-            h_invmass = TH1F("hmass" + suffix, "", self.p_num_bins,
-                             self.p_mass_fit_lim[0], self.p_mass_fit_lim[1])
+            h_invmass = TH1F("hmass" + suffix, "", self.p_num_bins, self.p_mass_fit_lim[0], self.p_mass_fit_lim[1])
 
             fill_hist(h_invmass, df[self.v_invmass])
             myfile.cd()
@@ -127,10 +173,12 @@ class ProcesserDhadrons(Processer): # pylint: disable=too-many-instance-attribut
             if self.mcordata == "mc":
                 df_sig = df[df[self.v_ismcsignal] == 1]
                 df_bkg = df[df[self.v_ismcbkg] == 1]
-                h_invmass_sig = TH1F("hmass_sig" + suffix, "", self.p_num_bins,
-                                     self.p_mass_fit_lim[0], self.p_mass_fit_lim[1])
-                h_invmass_bkg = TH1F("hmass_bkg" + suffix, "", self.p_num_bins,
-                                     self.p_mass_fit_lim[0], self.p_mass_fit_lim[1])
+                h_invmass_sig = TH1F(
+                    "hmass_sig" + suffix, "", self.p_num_bins, self.p_mass_fit_lim[0], self.p_mass_fit_lim[1]
+                )
+                h_invmass_bkg = TH1F(
+                    "hmass_bkg" + suffix, "", self.p_num_bins, self.p_mass_fit_lim[0], self.p_mass_fit_lim[1]
+                )
 
                 fill_hist(h_invmass_sig, df_sig[self.v_invmass])
                 fill_hist(h_invmass_bkg, df_bkg[self.v_invmass])
@@ -139,35 +187,31 @@ class ProcesserDhadrons(Processer): # pylint: disable=too-many-instance-attribut
                 h_invmass_sig.Write()
                 h_invmass_bkg.Write()
 
-        for sel_name, sel_spec in self.cfg('data_selections', {}).items():
-            if sel_spec['level'] == self.mcordata:
-                df_sel = dfquery(df_ptmerged, sel_spec['query'])
+        for sel_name, sel_spec in self.cfg("data_selections", {}).items():
+            if sel_spec["level"] == self.mcordata:
+                df_sel = dfquery(df_ptmerged, sel_spec["query"])
                 h = create_hist(
-                    f'h_mass-pthf_{sel_name}',
-                    ';M (GeV/#it{c}^{2});p_{T}^{HF} (GeV/#it{c})',
-                    self.binarray_mass, self.binarray_pthf)
-                fill_hist(h, df_sel[['fM', 'fPt']], write=True)
+                    f"h_mass-pthf_{sel_name}",
+                    ";M (GeV/#it{c}^{2});p_{T}^{HF} (GeV/#it{c})",
+                    self.binarray_mass,
+                    self.binarray_pthf,
+                )
+                fill_hist(h, df_sel[["fM", "fPt"]], write=True)
 
     # pylint: disable=line-too-long
     def process_efficiency_single(self, index):
-        #TO UPDATE TO DHADRON_MULT VERSION
+        # TO UPDATE TO DHADRON_MULT VERSION
         out_file = TFile.Open(self.l_histoeff[index], "recreate")
         n_bins = len(self.lpt_finbinmin)
         analysis_bin_lims_temp = self.lpt_finbinmin.copy()
-        analysis_bin_lims_temp.append(self.lpt_finbinmax[n_bins-1])
-        analysis_bin_lims = array.array('f', analysis_bin_lims_temp)
-        h_gen_pr = TH1F("h_gen_pr", "Prompt Generated in acceptance |y|<0.5", \
-                        n_bins, analysis_bin_lims)
-        h_presel_pr = TH1F("h_presel_pr", "Prompt Reco in acc |#eta|<0.8 and sel", \
-                           n_bins, analysis_bin_lims)
-        h_sel_pr = TH1F("h_sel_pr", "Prompt Reco and sel in acc |#eta|<0.8 and sel", \
-                        n_bins, analysis_bin_lims)
-        h_gen_fd = TH1F("h_gen_fd", "FD Generated in acceptance |y|<0.5", \
-                        n_bins, analysis_bin_lims)
-        h_presel_fd = TH1F("h_presel_fd", "FD Reco in acc |#eta|<0.8 and sel", \
-                           n_bins, analysis_bin_lims)
-        h_sel_fd = TH1F("h_sel_fd", "FD Reco and sel in acc |#eta|<0.8 and sel", \
-                        n_bins, analysis_bin_lims)
+        analysis_bin_lims_temp.append(self.lpt_finbinmax[n_bins - 1])
+        analysis_bin_lims = array.array("f", analysis_bin_lims_temp)
+        h_gen_pr = TH1F("h_gen_pr", "Prompt Generated in acceptance |y|<0.5", n_bins, analysis_bin_lims)
+        h_presel_pr = TH1F("h_presel_pr", "Prompt Reco in acc |#eta|<0.8 and sel", n_bins, analysis_bin_lims)
+        h_sel_pr = TH1F("h_sel_pr", "Prompt Reco and sel in acc |#eta|<0.8 and sel", n_bins, analysis_bin_lims)
+        h_gen_fd = TH1F("h_gen_fd", "FD Generated in acceptance |y|<0.5", n_bins, analysis_bin_lims)
+        h_presel_fd = TH1F("h_presel_fd", "FD Reco in acc |#eta|<0.8 and sel", n_bins, analysis_bin_lims)
+        h_sel_fd = TH1F("h_sel_fd", "FD Reco and sel in acc |#eta|<0.8 and sel", n_bins, analysis_bin_lims)
 
         bincounter = 0
         for ipt in range(self.p_nptfinbins):
@@ -177,10 +221,10 @@ class ProcesserDhadrons(Processer): # pylint: disable=too-many-instance-attribut
                 df_mc_reco = df_mc_reco.query(self.s_evtsel)
             df_mc_gen = read_df(self.mptfiles_gensk[bin_id][index])
             df_mc_gen = df_mc_gen.query(self.s_presel_gen_eff)
-            df_mc_reco = seldf_singlevar(df_mc_reco, self.v_var_binning, \
-                                 self.lpt_finbinmin[ipt], self.lpt_finbinmax[ipt])
-            df_mc_gen = seldf_singlevar(df_mc_gen, self.v_var_binning, \
-                                 self.lpt_finbinmin[ipt], self.lpt_finbinmax[ipt])
+            df_mc_reco = seldf_singlevar(
+                df_mc_reco, self.v_var_binning, self.lpt_finbinmin[ipt], self.lpt_finbinmax[ipt]
+            )
+            df_mc_gen = seldf_singlevar(df_mc_gen, self.v_var_binning, self.lpt_finbinmin[ipt], self.lpt_finbinmax[ipt])
             df_gen_sel_pr = df_mc_gen.loc[(df_mc_gen.ismcprompt == 1) & (df_mc_gen.ismcsignal == 1)]
             df_reco_presel_pr = df_mc_reco.loc[(df_mc_reco.ismcprompt == 1) & (df_mc_reco.ismcsignal == 1)]
             df_reco_sel_pr = None

@@ -12,57 +12,53 @@
 ##   along with this program. if not, see <https://www.gnu.org/licenses/>. ##
 #############################################################################
 
-import sys
-from os.path import join
-from numbers import Number
-from copy import copy
 import pickle
-import numpy as np
-import matplotlib.pyplot as plt
-from matplotlib.lines import Line2D
-import matplotlib
+import sys
+from copy import copy
+from numbers import Number
+from os.path import join
 
+import matplotlib
+import matplotlib.pyplot as plt
+import numpy as np
+from hyperopt import STATUS_OK, fmin, tpe
+from matplotlib.lines import Line2D
+from sklearn.model_selection import cross_validate
 from yaml.representer import RepresenterError
 
-from sklearn.model_selection import cross_validate
-
-from hyperopt import fmin, tpe, STATUS_OK
-
 # from shap.plots.colors import red_blue as shap_cmap_red_blue
-
-from machine_learning_hep.io import dump_yaml_from_dict, parse_yaml, dict_yamlable
+from machine_learning_hep.io import dict_yamlable, dump_yaml_from_dict, parse_yaml
 
 # Change to that backend to not have problems with saving fgures
 # when X11 connection got lost
 matplotlib.use("agg")
 
 
-class BayesianOpt: #pylint: disable=too-many-instance-attributes
+class BayesianOpt:  # pylint: disable=too-many-instance-attributes
     """Base/utilitiy class for Bayesian model optimisation
 
-        This class utilises the hyperopt package to perform Bayesian model optimisation independent
-        of the concrete ML model.
-        The central method is "optimise" which soleyly relies on getting a model configured with
-        the new parameters. A method method to obtain a new model can either be implemented by
-        deriving this class and overwrite "yield_model_" or by passing a lambda as the
-        "yield_model" argument when calling "optimise".
-        Additionally, the best model is automatically saved when either "save_model_" is
-        overwritten or a lambda is passed to the "save_model" argument in optimise.
+    This class utilises the hyperopt package to perform Bayesian model optimisation independent
+    of the concrete ML model.
+    The central method is "optimise" which soleyly relies on getting a model configured with
+    the new parameters. A method method to obtain a new model can either be implemented by
+    deriving this class and overwrite "yield_model_" or by passing a lambda as the
+    "yield_model" argument when calling "optimise".
+    Additionally, the best model is automatically saved when either "save_model_" is
+    overwritten or a lambda is passed to the "save_model" argument in optimise.
 
-        Optimisation is done "self.n_trials" times and for each trial a Cross Validation is done
-        with "self.nkfolds" folds.
+    Optimisation is done "self.n_trials" times and for each trial a Cross Validation is done
+    with "self.nkfolds" folds.
 
-        Scoring functions can be freely defined in contained in the dictionary "self.scoring" and
-        the optimisation is done according to the scoring function with key "self.scoring_opt".
-        Note, that the underlying optimisation procedure is a minimisation. Hence, when a maximum
-        score is the best one, "self.low_is_better" must be set to False.
+    Scoring functions can be freely defined in contained in the dictionary "self.scoring" and
+    the optimisation is done according to the scoring function with key "self.scoring_opt".
+    Note, that the underlying optimisation procedure is a minimisation. Hence, when a maximum
+    score is the best one, "self.low_is_better" must be set to False.
 
-        All parameters and scores can be written to a YAML file and the field "best_index"
-        specifies the best model wrt the best test score.
+    All parameters and scores can be written to a YAML file and the field "best_index"
+    specifies the best model wrt the best test score.
     """
 
     def __init__(self, model_config, space):
-
         # Train samples
         self.x_train = None
         self.y_train = None
@@ -119,10 +115,8 @@ class BayesianOpt: #pylint: disable=too-many-instance-attributes
         self.fit_pool = []
         self.trial_id = 0
 
-
     def reset(self):
-        """Reset to default
-        """
+        """Reset to default"""
 
         self.min_score = None
         self.results = []
@@ -134,8 +128,7 @@ class BayesianOpt: #pylint: disable=too-many-instance-attributes
         self.best_scores = None
         self.trial_id = 0
 
-
-    def yield_model_(self, model_config, space): # pylint: disable=unused-argument, useless-return, no-self-use
+    def yield_model_(self, model_config, space):  # pylint: disable=unused-argument, useless-return, no-self-use
         """Yield next model
 
         Next model constructed from space. To be overwritten for concrete implementation
@@ -148,7 +141,6 @@ class BayesianOpt: #pylint: disable=too-many-instance-attributes
         """
         print("yield_model_ not implemented...")
         return None, None
-
 
     def next_params(self, space_drawn):
         """Yield next set of parameters
@@ -164,7 +156,6 @@ class BayesianOpt: #pylint: disable=too-many-instance-attributes
                 if key not in config:
                     config[key] = value
         return config
-
 
     def trial_(self, space_drawn):
         """Default single trial
@@ -185,17 +176,23 @@ class BayesianOpt: #pylint: disable=too-many-instance-attributes
         if self.yield_model_custom:
             model, params = self.yield_model_custom(self.model_config, space_drawn)
         else:
-            model, params = self.yield_model_(self.model_config, space_drawn) # pylint: disable=assignment-from-none
+            model, params = self.yield_model_(self.model_config, space_drawn)  # pylint: disable=assignment-from-none
 
         # Collect parameters
-        #self.params.append(params)
+        # self.params.append(params)
 
         # Do cross validation for this model
-        res = cross_validate(model, self.x_train, self.y_train, cv=self.nkfolds,
-                             scoring=self.scoring, n_jobs=self.ncores, return_train_score=True)
+        res = cross_validate(
+            model,
+            self.x_train,
+            self.y_train,
+            cv=self.nkfolds,
+            scoring=self.scoring,
+            n_jobs=self.ncores,
+            return_train_score=True,
+        )
 
         return res, model, params
-
 
     def trial(self, space_drawn):
         """One trial
@@ -214,7 +211,7 @@ class BayesianOpt: #pylint: disable=too-many-instance-attributes
         # Collect results
         res_tmp = {}
         for t in ("train", "test"):
-            for sc in self.scoring: # pylint: disable=not-an-iterable
+            for sc in self.scoring:  # pylint: disable=not-an-iterable
                 res_tmp[f"{t}_{sc}"] = float(np.mean(res[f"{t}_{sc}"]))
                 res_tmp[f"{t}_{sc}_std"] = float(np.std(res[f"{t}_{sc}"]))
         self.results.append(res_tmp)
@@ -230,12 +227,10 @@ class BayesianOpt: #pylint: disable=too-many-instance-attributes
         if not self.low_is_better:
             score = -score
 
-
         if self.min_score is None or score < self.min_score:
-
-            if self.score_train_test_diff is None or \
-                    (self.score_train_test_diff > 0. and \
-                     rel_train_test < self.score_train_test_diff):
+            if self.score_train_test_diff is None or (
+                self.score_train_test_diff > 0.0 and rel_train_test < self.score_train_test_diff
+            ):
                 self.min_score = score
                 self.best = model
                 self.best_index = len(self.params) - 1
@@ -244,10 +239,8 @@ class BayesianOpt: #pylint: disable=too-many-instance-attributes
 
         return {"loss": score, "status": STATUS_OK}
 
-
     def finalise(self):
-        """Finalising...
-        """
+        """Finalising..."""
 
         # Reset number of cores
         self.ncores = 20
@@ -256,7 +249,6 @@ class BayesianOpt: #pylint: disable=too-many-instance-attributes
         if self.best:
             print("Fit best model to whole dataset")
             self.best.fit(self.x_train, self.y_train)
-
 
     def optimise(self, yield_model=None, save_model=None, space=None, ncores=None):
         """Do Bayesian optimisation
@@ -307,21 +299,20 @@ class BayesianOpt: #pylint: disable=too-many-instance-attributes
         else:
             self.finalise()
 
-
     def make_results(self):
-        """Helper function to make dictionary of parameters and results
-        """
+        """Helper function to make dictionary of parameters and results"""
         params_tmp = [dict_yamlable(p) for p in self.params]
-        return {"cv": self.results,
-                "params": params_tmp,
-                "best_index": self.best_index,
-                "best_params": dict_yamlable(self.best_params),
-                "best_scores": self.best_scores,
-                "score_names": list(self.scoring.keys()),
-                "score_opt_name": self.scoring_opt}
+        return {
+            "cv": self.results,
+            "params": params_tmp,
+            "best_index": self.best_index,
+            "best_params": dict_yamlable(self.best_params),
+            "best_scores": self.best_scores,
+            "score_names": list(self.scoring.keys()),
+            "score_opt_name": self.scoring_opt,
+        }
 
-
-    def save_model_(self, model, out_dir): # pylint: disable=unused-argument, no-self-use
+    def save_model_(self, model, out_dir):  # pylint: disable=unused-argument, no-self-use
         """Save a model
 
         Routine to save a model, to be implemented for concrete model
@@ -329,10 +320,8 @@ class BayesianOpt: #pylint: disable=too-many-instance-attributes
         """
         print("save_model_  not implemented")
 
-
     def save(self, out_dir, best_only=True):
-        """Save paramaters/results and best model
-        """
+        """Save paramaters/results and best model"""
 
         results = self.make_results()
         try:
@@ -342,9 +331,8 @@ class BayesianOpt: #pylint: disable=too-many-instance-attributes
 
         try:
             pickle.dump(results, open(join(out_dir, "results.pkl"), "wb"))
-        except Exception: #pylint: disable=broad-except
+        except Exception:  # pylint: disable=broad-except
             print("Cannot pickle optimisation results")
-
 
         save_func = self.save_model_
         print(f"Save best model from Bayesian opt at {out_dir}")
@@ -358,9 +346,7 @@ class BayesianOpt: #pylint: disable=too-many-instance-attributes
                 out_dir_model = join(out_dir, f"model_{i}")
                 save_func(m, out_dir_model)
 
-
-    def __extract_param_evolution(self): # pylint: disable=too-many-branches
-
+    def __extract_param_evolution(self):  # pylint: disable=too-many-branches
         def __extract_branches(search, branch_list, __branch=None):
             """helper function to collect all branches in dictionary
 
@@ -382,7 +368,6 @@ class BayesianOpt: #pylint: disable=too-many-instance-attributes
                 elif branch_tmp not in branch_list:
                     branch_list.append(branch_tmp)
 
-
         # First, actually collect all parameters
         param_fields = []
         for p in self.params:
@@ -392,14 +377,12 @@ class BayesianOpt: #pylint: disable=too-many-instance-attributes
         # more complex values
         params_tmp = [dict_yamlable(p) for p in self.params]
 
-
         # Collect parameters as
         # [{"branch": branch, "iterations": iterations, "values": values, "mapping": mapping}, ...]
         params_extracted = []
 
         # Go through all branches
         for pf in param_fields:
-
             x_axis_vals = []
             y_axis_vals = []
 
@@ -424,9 +407,7 @@ class BayesianOpt: #pylint: disable=too-many-instance-attributes
                 x_axis_vals.append(i)
                 y_axis_vals.append(curr_val)
 
-            params_extracted.append({"branch": pf,
-                                     "iterations": x_axis_vals,
-                                     "values": y_axis_vals})
+            params_extracted.append({"branch": pf, "iterations": x_axis_vals, "values": y_axis_vals})
 
             if not x_axis_vals:
                 # Usually, that should not happen and at least one value should have been found
@@ -458,7 +439,6 @@ class BayesianOpt: #pylint: disable=too-many-instance-attributes
 
         return params_extracted
 
-
     def __plot_parameter_violins(self, out_dir):
         """plot violin for each parameter
 
@@ -478,7 +458,6 @@ class BayesianOpt: #pylint: disable=too-many-instance-attributes
             return lower_adjacent_value, upper_adjacent_value
 
         for p in self.__extract_param_evolution():
-
             if not p["iterations"]:
                 # nothing to plot
                 continue
@@ -492,22 +471,25 @@ class BayesianOpt: #pylint: disable=too-many-instance-attributes
 
             # violin plot, based on
             # https://matplotlib.org/3.1.0/gallery/statistics/customized_violin.html
-            parts = ax.violinplot([y_axis_vals], showmeans=False, showmedians=False,
-                                  showextrema=False)
-            for pc in parts['bodies']:
-                pc.set_facecolor('#00DDFF')
-                pc.set_edgecolor('#0C00BA')
+            parts = ax.violinplot([y_axis_vals], showmeans=False, showmedians=False, showextrema=False)
+            for pc in parts["bodies"]:
+                pc.set_facecolor("#00DDFF")
+                pc.set_edgecolor("#0C00BA")
                 pc.set_alpha(0.2)
 
             quartile1, medians, quartile3 = np.percentile([y_axis_vals], [25, 50, 75], axis=1)
-            whiskers = np.array([__adjacent_values(vals_array, q1, q3) \
-                    for vals_array, q1, q3 in zip([y_axis_vals], quartile1, quartile3)])
+            whiskers = np.array(
+                [
+                    __adjacent_values(vals_array, q1, q3)
+                    for vals_array, q1, q3 in zip([y_axis_vals], quartile1, quartile3)
+                ]
+            )
             whiskers_min, whiskers_max = whiskers[:, 0], whiskers[:, 1]
 
             inds = np.arange(1, len(medians) + 1)
-            ax.scatter(inds, medians, marker='o', color='white', s=40, zorder=3)
-            ax.vlines(inds, quartile1, quartile3, color='k', linestyle='-', lw=6)
-            ax.vlines(inds, whiskers_min, whiskers_max, color='k', linestyle='-', lw=3)
+            ax.scatter(inds, medians, marker="o", color="white", s=40, zorder=3)
+            ax.vlines(inds, quartile1, quartile3, color="k", linestyle="-", lw=6)
+            ax.vlines(inds, whiskers_min, whiskers_max, color="k", linestyle="-", lw=3)
 
             ax.set_xlabel(name, fontsize=20)
             ax.set_ylabel("values", fontsize=20)
@@ -521,7 +503,6 @@ class BayesianOpt: #pylint: disable=too-many-instance-attributes
             fig.savefig(out_file)
             plt.close(fig)
 
-
     def __plot_parameters_shap_like(self, out_dir):
         # Compute optimal score average and range
         test_scores = [r[f"test_{self.scoring_opt}"] for r in self.results]
@@ -533,7 +514,7 @@ class BayesianOpt: #pylint: disable=too-many-instance-attributes
 
         def __map_value(old_value, old_min, old_max, new_min=0, new_max=1):
             if old_min == old_max:
-                return (new_max - new_min) / 2.
+                return (new_max - new_min) / 2.0
             return (((old_value - old_min) * (new_max - new_min)) / (old_max - old_min)) + new_min
 
         param_evolution = self.__extract_param_evolution()
@@ -549,8 +530,17 @@ class BayesianOpt: #pylint: disable=too-many-instance-attributes
 
             mapped_vals = [__map_value(v, val_min, val_max) for v in pe["values"]]
 
-            ax.scatter(x_vals, [i] * len(x_vals), s=markersize, alpha=0.5, cmap=shap_cmap_red_blue,
-                       c=mapped_vals, zorder=3, lw=0, rasterized=len(mapped_vals) > 100)
+            ax.scatter(
+                x_vals,
+                [i] * len(x_vals),
+                s=markersize,
+                alpha=0.5,
+                cmap=shap_cmap_red_blue,
+                c=mapped_vals,
+                zorder=3,
+                lw=0,
+                rasterized=len(mapped_vals) > 100,
+            )
 
         # draw line for average score
         ax.axvline(np.mean(test_scores), color="gray")
@@ -570,7 +560,6 @@ class BayesianOpt: #pylint: disable=too-many-instance-attributes
         fig.savefig(out_file)
         plt.close(fig)
 
-
     def __plot_parameter_evolutions(self, out_dir):
         """plot evolution of all parameters
 
@@ -585,7 +574,6 @@ class BayesianOpt: #pylint: disable=too-many-instance-attributes
         params_evolution = self.__extract_param_evolution()
 
         for p in params_evolution:
-
             if not p["iterations"]:
                 # nothing to plot
                 continue
@@ -625,8 +613,7 @@ class BayesianOpt: #pylint: disable=too-many-instance-attributes
             fig.savefig(out_file)
             plt.close(fig)
 
-
-    def __plot_summary(self, out_dir, from_yaml=None, from_pickle=None):# pylint: disable=too-many-statements
+    def __plot_summary(self, out_dir, from_yaml=None, from_pickle=None):  # pylint: disable=too-many-statements
         """Plot results
 
         Results are plotted to out_dir/results.png
@@ -654,7 +641,6 @@ class BayesianOpt: #pylint: disable=too-many-instance-attributes
             scores_tmp = read_yaml["score_names"]
             score_opt_tmp = read_yaml["score_opt_name"]
 
-
         # Re-arrange such that always the optimisation score is on top
         score_names = list(scores_tmp)
         del score_names[score_names.index(score_opt_tmp)]
@@ -662,8 +648,7 @@ class BayesianOpt: #pylint: disable=too-many-instance-attributes
 
         # Prepare figrue and axes
         figsize = (35, 18 * len(score_names))
-        fig, axes = plt.subplots(len(score_names), 1, sharex=True, gridspec_kw={"hspace": 0.05},
-                                 figsize=figsize)
+        fig, axes = plt.subplots(len(score_names), 1, sharex=True, gridspec_kw={"hspace": 0.05}, figsize=figsize)
 
         # If only one score is given, need to make it iterable
         try:
@@ -683,20 +668,27 @@ class BayesianOpt: #pylint: disable=too-many-instance-attributes
                 markerstyle = markerstyles[i % len(markerstyles)]
                 means[tt] = [r[f"{tt}_{sn}"] for r in results_tmp]
                 stds = [r[f"{tt}_{sn}_std"] for r in results_tmp]
-                ax.errorbar(range(len(means[tt])), means[tt], yerr=stds, ls="",
-                            marker=markerstyle, markersize=markersize, label=f"{sn} ({tt})")
+                ax.errorbar(
+                    range(len(means[tt])),
+                    means[tt],
+                    yerr=stds,
+                    ls="",
+                    marker=markerstyle,
+                    markersize=markersize,
+                    label=f"{sn} ({tt})",
+                )
 
             # Relative deviations between test and train
             index_high_score = means["test"].index(max(means["test"]))
-            dev_high_score = \
-                    abs(means["test"][index_high_score] - means["train"][index_high_score]) \
-                    / means["test"][index_high_score]
+            dev_high_score = (
+                abs(means["test"][index_high_score] - means["train"][index_high_score])
+                / means["test"][index_high_score]
+            )
             index_low_score = means["test"].index(min(means["test"]))
-            dev_low_score = \
-                    abs(means["test"][index_low_score] - means["train"][index_low_score]) \
-                    / means["test"][index_low_score]
-            dev_min = [abs(test - train) / test \
-                    for train, test in zip(means["train"], means["test"])]
+            dev_low_score = (
+                abs(means["test"][index_low_score] - means["train"][index_low_score]) / means["test"][index_low_score]
+            )
+            dev_min = [abs(test - train) / test for train, test in zip(means["train"], means["test"])]
             index_min = dev_min.index(min(dev_min))
             dev_min = min(dev_min)
 
@@ -714,12 +706,22 @@ class BayesianOpt: #pylint: disable=too-many-instance-attributes
             if axi == 0:
                 # Add another legend for highest, lowest score and min. rel. deviation between
                 # test and train score
-                handles = [Line2D([0], [0], color="red"),
-                           Line2D([0], [0], color="blue"),
-                           Line2D([0], [0], color="green")]
+                handles = [
+                    Line2D([0], [0], color="red"),
+                    Line2D([0], [0], color="blue"),
+                    Line2D([0], [0], color="green"),
+                ]
                 labels = ["highest test score", "lowest test score", "min. rel deviation"]
-                ax.legend(handles, labels, bbox_to_anchor=(0., 1.02, 1., .102), loc='lower left',
-                          ncol=3, mode="expand", borderaxespad=0., fontsize=20)
+                ax.legend(
+                    handles,
+                    labels,
+                    bbox_to_anchor=(0.0, 1.02, 1.0, 0.102),
+                    loc="lower left",
+                    ncol=3,
+                    mode="expand",
+                    borderaxespad=0.0,
+                    fontsize=20,
+                )
                 # Add back first legend
                 ax.add_artist(leg)
 
@@ -732,8 +734,6 @@ class BayesianOpt: #pylint: disable=too-many-instance-attributes
         out_file = join(out_dir, "results.png")
         fig.savefig(out_file)
         plt.close(fig)
-
-
 
     def plot(self, out_dir, from_yaml=None, from_pickle=None):
         """Plot results

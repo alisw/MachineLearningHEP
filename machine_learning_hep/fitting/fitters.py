@@ -19,32 +19,50 @@ Definition of FitBase, FitAliHF, FitROOT classes
 
 # pylint: disable=too-many-lines
 
-from copy import deepcopy
 from array import array
-from math import sqrt
+from copy import deepcopy
 from ctypes import c_double
+from math import sqrt
 
 # pylint: disable=import-error, no-name-in-module, unused-import, f-string-without-interpolation
 try:
-    from ROOT import AliHFInvMassFitter, AliVertexingHFUtils, AliHFInvMassMultiTrialFit
+    from ROOT import AliHFInvMassFitter, AliHFInvMassMultiTrialFit, AliVertexingHFUtils
 except ImportError:
     pass
-from ROOT import TFile, TH1F, TH1D, TF1, TPaveText, TLine, TLegend, TLatex
-from ROOT import kBlue, kRed, kGreen, kMagenta, kOrange, kPink, kCyan, kYellow, kBlack
+from ROOT import (
+    TF1,
+    TH1D,
+    TH1F,
+    TFile,
+    TLatex,
+    TLegend,
+    TLine,
+    TPaveText,
+    kBlack,
+    kBlue,
+    kCyan,
+    kGreen,
+    kMagenta,
+    kOrange,
+    kPink,
+    kRed,
+    kYellow,
+)
 
-from machine_learning_hep.logger import get_logger
 from machine_learning_hep.fitting.utils import construct_rebinning
+from machine_learning_hep.logger import get_logger
 
 # single or double Gaussian
 TYPE_GAUSS_1 = "kGaus"
 TYPE_GAUSS_2 = "k2Gaus"
 
-class FitBase: # pylint: disable=too-many-instance-attributes
+
+class FitBase:  # pylint: disable=too-many-instance-attributes
     """
     Common base class for FitAliHF and FitROOT.
     """
 
-    def __init__(self, init_pars, **kwargs): # pylint: disable=unused-argument
+    def __init__(self, init_pars, **kwargs):  # pylint: disable=unused-argument
         self.logger = get_logger()
         # If nit/fitting attempt was made
         self.has_attempt = False
@@ -54,22 +72,23 @@ class FitBase: # pylint: disable=too-many-instance-attributes
         self.user_init_pars = deepcopy(init_pars)
         self.init_pars = None
         # Default init parameters (to be modified for deriving classes)
-        self.default_init_pars = {"mean": None,
-                                  "fix_mean": False,
-                                  "sigma": None,
-                                  "fix_sigma": False,
-                                  "rebin": None,
-                                  "fit_range_low": None,
-                                  "fit_range_up": None,
-                                  "likelihood": True,
-                                  "n_sigma_sideband": None,
-                                  "sig_func_name": None,
-                                  "bkg_func_name": None}
+        self.default_init_pars = {
+            "mean": None,
+            "fix_mean": False,
+            "sigma": None,
+            "fix_sigma": False,
+            "rebin": None,
+            "fit_range_low": None,
+            "fit_range_up": None,
+            "likelihood": True,
+            "n_sigma_sideband": None,
+            "sig_func_name": None,
+            "bkg_func_name": None,
+        }
         # Fitted parameters (to be modified for deriving classes)
         self.fit_pars = {}
         # The fit kernel
         self.kernel = None
-
 
     def make_default_init_pars(self):
         """
@@ -79,7 +98,6 @@ class FitBase: # pylint: disable=too-many-instance-attributes
         """
 
         return deepcopy(self.default_init_pars)
-
 
     def get_fit_pars(self):
         """
@@ -95,7 +113,6 @@ class FitBase: # pylint: disable=too-many-instance-attributes
             if par in self.user_init_pars:
                 self.user_init_pars[par] = val
 
-
     def init_fit(self):
         """
         Common initialisation steps
@@ -109,20 +126,19 @@ class FitBase: # pylint: disable=too-many-instance-attributes
         self.init_pars = self.make_default_init_pars()
 
         # Collect key which haven't changed
-        #pars_not_changed = []
+        # pars_not_changed = []
         for k in list(self.init_pars.keys()):
             if k in self.user_init_pars:
                 self.init_pars[k] = self.user_init_pars.pop(k)
         #        continue
         #    pars_not_changed.append(k)
 
-        #self.logger.debug("Following default parameters are used")
-        #for p in pars_not_changed:
-            #print(p)
+        # self.logger.debug("Following default parameters are used")
+        # for p in pars_not_changed:
+        # print(p)
         if self.success:
             return True
         return self.init_kernel()
-
 
     def init_kernel(self):
         """
@@ -132,7 +148,6 @@ class FitBase: # pylint: disable=too-many-instance-attributes
         self.logger.debug("Init kernel")
         return True
 
-
     def fit_kernel(self):
         """
         Fit the fit kernel. To be overwritten by the deriving class
@@ -141,12 +156,10 @@ class FitBase: # pylint: disable=too-many-instance-attributes
         self.logger.debug("Fit kernel")
         return True
 
-
     def set_fit_pars(self):
         """
         Set final fitted parameters. To be overwritten by the deriving class
         """
-
 
     def fit(self):
         """
@@ -161,7 +174,6 @@ class FitBase: # pylint: disable=too-many-instance-attributes
             if self.success:
                 self.set_fit_pars()
         self.has_attempt = True
-
 
     def draw(self, root_pad, **draw_args):
         """
@@ -189,8 +201,7 @@ class FitBase: # pylint: disable=too-many-instance-attributes
 
         self.draw_kernel(root_pad, **draw_args)
 
-
-    def draw_kernel(self, root_pad, root_objects=[], **draw_args): # pylint: disable=unused-argument, dangerous-default-value
+    def draw_kernel(self, root_pad, root_objects=[], **draw_args):  # pylint: disable=unused-argument, dangerous-default-value
         """
         Draw method specific to the used kernel. To be overwritten by the derivin class
         Args:
@@ -201,7 +212,6 @@ class FitBase: # pylint: disable=too-many-instance-attributes
         """
 
         self.logger.debug("Draw kernel")
-
 
     @staticmethod
     def add_text_helper_(pave, line, color=None):
@@ -234,17 +244,14 @@ class FitBase: # pylint: disable=too-many-instance-attributes
         pave = TPaveText(x_min, y_min, x_max, y_max, opt)
         pave.SetBorderSize(0)
         pave.SetFillStyle(0)
-        pave.SetMargin(0.)
+        pave.SetMargin(0.0)
         return pave
 
 
-class FitROOT(FitBase): # pylint: enable=too-many-instance-attributes
-
-
+class FitROOT(FitBase):  # pylint: enable=too-many-instance-attributes
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.root_objects = None
-
 
     def set_root_objects(self, root_objects):
         self.root_objects = root_objects
@@ -253,12 +260,13 @@ class FitROOT(FitBase): # pylint: enable=too-many-instance-attributes
     def update_root_objects(self):
         pass
 
-
     def __str__(self):
-        string = f"--------------------------------\n" \
-                 f"Class: {self.__class__.__name__}\n" \
-                 f"Kernel: {self.kernel.__class__.__name__}, {self.kernel}\n" \
-                 f"Init parameters:\n"
+        string = (
+            f"--------------------------------\n"
+            f"Class: {self.__class__.__name__}\n"
+            f"Kernel: {self.kernel.__class__.__name__}, {self.kernel}\n"
+            f"Init parameters:\n"
+        )
         string += str(self.init_pars)
         string += "\nROOT objects\n"
         for name, obj in self.root_objects.items():
@@ -271,6 +279,7 @@ class FitAliHF(FitROOT):
     """
     Class with AliHFMassFitter as core fitting utility
     """
+
     def __init__(self, *args, histo=None, histo_mc=None, histo_reflections=None, **base_args):
         super().__init__(*args, **base_args)
         self.histo = histo
@@ -278,33 +287,33 @@ class FitAliHF(FitROOT):
         self.histo_reflections = histo_reflections
         # AliHF fitter
 
-        self.default_init_pars = {"mean": None,
-                                  "fix_mean": False,
-                                  "sigma": None,
-                                  "fix_sigma": False,
-                                  "include_sec_peak": False,
-                                  "sec_mean": None,
-                                  "fix_sec_mean": False,
-                                  "sec_sigma": None,
-                                  "fix_sec_sigma": False,
-                                  "use_sec_peak_rel_sigma": True,
-                                  "include_reflections": False,
-                                  "fix_reflections_s_over_b": True,
-                                  "rebin": None,
-                                  "fit_range_low": None,
-                                  "fit_range_up": None,
-                                  "likelihood": True,
-                                  "n_sigma_sideband": None,
-                                  "rel_sigma_bound": None,
-                                  "sig_func_name": None,
-                                  "bkg_func_name": None}
+        self.default_init_pars = {
+            "mean": None,
+            "fix_mean": False,
+            "sigma": None,
+            "fix_sigma": False,
+            "include_sec_peak": False,
+            "sec_mean": None,
+            "fix_sec_mean": False,
+            "sec_sigma": None,
+            "fix_sec_sigma": False,
+            "use_sec_peak_rel_sigma": True,
+            "include_reflections": False,
+            "fix_reflections_s_over_b": True,
+            "rebin": None,
+            "fit_range_low": None,
+            "fit_range_up": None,
+            "likelihood": True,
+            "n_sigma_sideband": None,
+            "rel_sigma_bound": None,
+            "sig_func_name": None,
+            "bkg_func_name": None,
+        }
         # Fitted parameters (to be modified for deriving classes)
         # Only those corresponding to init parameters are here. Specific parameters/values
         # provided by the kernel have to be extracted from that directly.
-        self.fit_pars = {"mean": None,
-                         "sigma": None}
+        self.fit_pars = {"mean": None, "sigma": None}
         self.update_root_objects()
-
 
     def update_root_objects(self):
         if self.root_objects is None:
@@ -317,9 +326,7 @@ class FitAliHF(FitROOT):
         self.root_objects["histo_mc"] = self.histo_mc
         self.root_objects["histo_reflections"] = self.histo_reflections
 
-
     def init_kernel(self):
-
         self.update_root_objects()
 
         rebin = construct_rebinning(self.histo, self.init_pars["rebin"])
@@ -332,12 +339,13 @@ class FitAliHF(FitROOT):
         else:
             self.histo = self.histo.Clone(f"{self.histo.GetName()}_fit_histo")
 
-
-        self.kernel = AliHFInvMassFitter(self.histo,
-                                         self.init_pars["fit_range_low"],
-                                         self.init_pars["fit_range_up"],
-                                         self.init_pars["bkg_func_name"],
-                                         self.init_pars["sig_func_name"])
+        self.kernel = AliHFInvMassFitter(
+            self.histo,
+            self.init_pars["fit_range_low"],
+            self.init_pars["fit_range_up"],
+            self.init_pars["bkg_func_name"],
+            self.init_pars["sig_func_name"],
+        )
         self.kernel.SetCheckSignalCountsAfterFirstFit(False)
         if self.init_pars["likelihood"]:
             self.kernel.SetUseLikelihoodFit()
@@ -351,47 +359,50 @@ class FitAliHF(FitROOT):
             self.kernel.SetFixGaussianSigma(self.init_pars["sigma"])
 
         if self.init_pars["include_reflections"]:
-
-            self.histo_reflections = AliVertexingHFUtils.AdaptTemplateRangeAndBinning( \
-                    self.histo_reflections, self.histo, self.init_pars["fit_range_low"],
-                    self.init_pars["fit_range_up"])
-            self.histo_mc = AliVertexingHFUtils.AdaptTemplateRangeAndBinning( \
-                    self.histo_mc, self.histo, self.init_pars["fit_range_low"],
-                    self.init_pars["fit_range_up"])
+            self.histo_reflections = AliVertexingHFUtils.AdaptTemplateRangeAndBinning(
+                self.histo_reflections, self.histo, self.init_pars["fit_range_low"], self.init_pars["fit_range_up"]
+            )
+            self.histo_mc = AliVertexingHFUtils.AdaptTemplateRangeAndBinning(
+                self.histo_mc, self.histo, self.init_pars["fit_range_low"], self.init_pars["fit_range_up"]
+            )
             self.histo_mc.SetName(f"{self.histo_mc.GetName()}_fit_histo")
             self.histo_reflections.SetName(f"{self.histo_reflections.GetName()}_fit_histo")
 
             if self.init_pars["fix_reflections_s_over_b"]:
                 r_over_s = self.histo_mc.Integral(
                     self.histo_mc.FindBin(self.init_pars["fit_range_low"] * 1.0001),
-                    self.histo_mc.FindBin(self.init_pars["fit_range_up"] * 0.999))
-                if r_over_s > 0.:
-                    r_over_s = self.histo_reflections.Integral(
-                        self.histo_reflections.FindBin(self.init_pars["fit_range_low"] * 1.0001),
-                        self.histo_reflections.FindBin(self.init_pars["fit_range_up"] * 0.999)) \
-                                / r_over_s
+                    self.histo_mc.FindBin(self.init_pars["fit_range_up"] * 0.999),
+                )
+                if r_over_s > 0.0:
+                    r_over_s = (
+                        self.histo_reflections.Integral(
+                            self.histo_reflections.FindBin(self.init_pars["fit_range_low"] * 1.0001),
+                            self.histo_reflections.FindBin(self.init_pars["fit_range_up"] * 0.999),
+                        )
+                        / r_over_s
+                    )
                     self.kernel.SetFixReflOverS(r_over_s)
             if self.histo_reflections.Integral() > 0:
-                self.kernel.SetTemplateReflections(self.histo_reflections, "1gaus",
-                                                   self.init_pars["fit_range_low"],
-                                                   self.init_pars["fit_range_up"])
+                self.kernel.SetTemplateReflections(
+                    self.histo_reflections, "1gaus", self.init_pars["fit_range_low"], self.init_pars["fit_range_up"]
+                )
 
         if self.init_pars["include_sec_peak"]:
-            sec_sigma = self.init_pars["sigma"] * self.init_pars["sec_sigma"] \
-                    if self.init_pars["use_sec_peak_rel_sigma"] \
-                    else self.init_pars["sec_sigma"]
-            self.kernel.IncludeSecondGausPeak(self.init_pars["sec_mean"],
-                                              self.init_pars["fix_sec_mean"],
-                                              sec_sigma,
-                                              self.init_pars["fix_sec_sigma"])
+            sec_sigma = (
+                self.init_pars["sigma"] * self.init_pars["sec_sigma"]
+                if self.init_pars["use_sec_peak_rel_sigma"]
+                else self.init_pars["sec_sigma"]
+            )
+            self.kernel.IncludeSecondGausPeak(
+                self.init_pars["sec_mean"], self.init_pars["fix_sec_mean"], sec_sigma, self.init_pars["fix_sec_sigma"]
+            )
 
         return True
-
 
     def fit_kernel(self):
         success = self.kernel.MassFitter(False)
         if success:
-            if self.kernel.GetRawYield() < 0.:
+            if self.kernel.GetRawYield() < 0.0:
                 return False
             if self.init_pars["rel_sigma_bound"]:
                 fit_sigma = self.kernel.GetSigma()
@@ -400,24 +411,21 @@ class FitAliHF(FitROOT):
                 return min_sigma < fit_sigma < max_sigma
         return success
 
-
     def set_fit_pars(self):
         self.fit_pars["mean"] = self.kernel.GetMean()
         self.fit_pars["sigma"] = self.kernel.GetSigma()
 
-
-    def draw_kernel(self, root_pad, root_objects=[], **draw_args): # pylint: disable=too-many-locals, too-many-statements, dangerous-default-value
-
+    def draw_kernel(self, root_pad, root_objects=[], **draw_args):  # pylint: disable=too-many-locals, too-many-statements, dangerous-default-value
         n_sigma_signal = draw_args.pop("sigma_signal", 3)
         mean_dim = draw_args.pop("mean_dim", "GeV/#it{c}^{2}")
-        mean_scale = draw_args.pop("mean_scale", 1.)
+        mean_scale = draw_args.pop("mean_scale", 1.0)
         sigma_dim = draw_args.pop("sigma_dim", "MeV/#it{c}^{2}")
-        sigma_scale = draw_args.pop("sigma_scale", 1000.)
+        sigma_scale = draw_args.pop("sigma_scale", 1000.0)
         title = draw_args.pop("title", "")
         x_axis_label = draw_args.pop("x_axis_label", "#it{M}_{inv} (GeV/#it{c}^{2})")
-        y_axis_label = draw_args.pop("y_axis_label",
-                                     f"Entries/({self.histo.GetBinWidth(1) * 1000:.0f} " \
-                                     "MeV/#it{c}^{2})")
+        y_axis_label = draw_args.pop(
+            "y_axis_label", f"Entries/({self.histo.GetBinWidth(1) * 1000:.0f} MeV/#it{{c}}^{{2}})"
+        )
 
         add_root_objects = draw_args.pop("add_root_objects", None)
 
@@ -451,13 +459,11 @@ class FitAliHF(FitROOT):
             # Could either be None or a nullptr
             draw_objects.append(refl_func)
             draw_options.append("")
-        sec_peak_func = self.kernel.GetSecondPeakFunc() \
-                if self.init_pars["include_sec_peak"] else None
+        sec_peak_func = self.kernel.GetSecondPeakFunc() if self.init_pars["include_sec_peak"] else None
         if sec_peak_func:
             # Could either be None or a nullptr
             draw_objects.append(sec_peak_func)
             draw_options.append("")
-
 
         y_plot_max = self.histo.GetMaximum()
         y_plot_min = self.histo.GetMinimum()
@@ -480,15 +486,16 @@ class FitAliHF(FitROOT):
         y_max = y_plot_max + y_rel_header_range * y_full_range
 
         root_pad.SetLeftMargin(0.12)
-        frame = root_pad.cd().DrawFrame(self.init_pars["fit_range_low"], y_min,
-                                        self.init_pars["fit_range_up"], y_max,
-                                        f"{title} ; " \
-                                        f"{x_axis_label} ; " \
-                                        f"{y_axis_label}")
+        frame = root_pad.cd().DrawFrame(
+            self.init_pars["fit_range_low"],
+            y_min,
+            self.init_pars["fit_range_up"],
+            y_max,
+            f"{title} ; {x_axis_label} ; {y_axis_label}",
+        )
 
         frame.GetYaxis().SetTitleOffset(1.7)
         frame.GetYaxis().SetMaxDigits(4)
-
 
         sig = self.kernel.GetRawYield()
         sig_err = self.kernel.GetRawYieldError()
@@ -502,33 +509,34 @@ class FitAliHF(FitROOT):
         bkg_err = bkg_err.value
         signif = signif.value
         signif_err = signif_err.value
-        sig_o_bkg = sig / bkg if bkg > 0. else -1.
+        sig_o_bkg = sig / bkg if bkg > 0.0 else -1.0
 
         root_objects.append(self.add_pave_helper_(0.15, 0.7, 0.48, 0.89, "NDC"))
         self.add_text_helper_(root_objects[-1], f"S = {sig:.0f} #pm {sig_err:.0f}")
-        self.add_text_helper_(root_objects[-1],
-                              f"B({n_sigma_signal}#sigma) = {bkg:.0f} " \
-                              f"#pm {bkg_err:.0f}")
+        self.add_text_helper_(root_objects[-1], f"B({n_sigma_signal}#sigma) = {bkg:.0f} #pm {bkg_err:.0f}")
         self.add_text_helper_(root_objects[-1], f"S/B({n_sigma_signal}#sigma) = {sig_o_bkg:.4f}")
-        self.add_text_helper_(root_objects[-1],
-                              f"Signif({n_sigma_signal}#sigma) = " \
-                              f"{signif:.1f} #pm {signif_err:.1f}")
+        self.add_text_helper_(root_objects[-1], f"Signif({n_sigma_signal}#sigma) = {signif:.1f} #pm {signif_err:.1f}")
         root_objects[-1].Draw()
 
         root_objects.append(self.add_pave_helper_(0.55, 0.75, 0.89, 0.89, "NDC"))
-        self.add_text_helper_(root_objects[-1],
-                              f"#chi/ndf = {self.kernel.GetReducedChiSquare():.4f}", color_sig)
-        self.add_text_helper_(root_objects[-1],
-                              f"#mu = {self.kernel.GetMean()*mean_scale:.4f} " \
-                              f"#pm " \
-                              f"{self.kernel.GetMeanUncertainty()*mean_scale:.4f} " \
-                              f"{mean_dim}", color_sig)
-        self.add_text_helper_(root_objects[-1],
-                              f"#sigma = " \
-                              f"{self.kernel.GetSigma()*sigma_scale:.4f} " \
-                              f"#pm " \
-                              f"{self.kernel.GetSigmaUncertainty()*sigma_scale:.4f} " \
-                              f"{sigma_dim}", color_sig)
+        self.add_text_helper_(root_objects[-1], f"#chi/ndf = {self.kernel.GetReducedChiSquare():.4f}", color_sig)
+        self.add_text_helper_(
+            root_objects[-1],
+            f"#mu = {self.kernel.GetMean() * mean_scale:.4f} "
+            f"#pm "
+            f"{self.kernel.GetMeanUncertainty() * mean_scale:.4f} "
+            f"{mean_dim}",
+            color_sig,
+        )
+        self.add_text_helper_(
+            root_objects[-1],
+            f"#sigma = "
+            f"{self.kernel.GetSigma() * sigma_scale:.4f} "
+            f"#pm "
+            f"{self.kernel.GetSigmaUncertainty() * sigma_scale:.4f} "
+            f"{sigma_dim}",
+            color_sig,
+        )
         root_objects[-1].Draw()
 
         x_min_add = 0.45
@@ -538,22 +546,23 @@ class FitAliHF(FitROOT):
             sec_peak_func.SetLineColor(color_sec_peak)
             sec_mean = sec_peak_func.GetParameter(1)
             sec_sigma = sec_peak_func.GetParameter(2)
-            root_objects.append(self.add_pave_helper_(x_min_add, y_min_tmp, 0.89,
-                                                      y_min_tmp + y_delta, "NDC"))
-            self.add_text_helper_(root_objects[-1], f"#mu_{{sec}} = {sec_mean*mean_scale:.4f} " \
-                                                    f"{mean_dim}, #sigma_{{sec}} = " \
-                                                    f"{sec_sigma*sigma_scale:.4f} " \
-                                                    f"{sigma_dim}", color_sec_peak)
+            root_objects.append(self.add_pave_helper_(x_min_add, y_min_tmp, 0.89, y_min_tmp + y_delta, "NDC"))
+            self.add_text_helper_(
+                root_objects[-1],
+                f"#mu_{{sec}} = {sec_mean * mean_scale:.4f} "
+                f"{mean_dim}, #sigma_{{sec}} = "
+                f"{sec_sigma * sigma_scale:.4f} "
+                f"{sigma_dim}",
+                color_sec_peak,
+            )
             root_objects[-1].Draw()
             y_min_tmp += y_delta
         if refl_func:
             refl_func.SetLineColor(color_refl)
             refl = self.kernel.GetReflOverSig()
             refl_err = self.kernel.GetReflOverSigUncertainty()
-            root_objects.append(self.add_pave_helper_(x_min_add, y_min_tmp, 0.89,
-                                                      y_min_tmp + y_delta, "NDC"))
-            self.add_text_helper_(root_objects[-1], f"Refl/S = {refl:.4f} #pm {refl_err:.4f}",
-                                  color_refl)
+            root_objects.append(self.add_pave_helper_(x_min_add, y_min_tmp, 0.89, y_min_tmp + y_delta, "NDC"))
+            self.add_text_helper_(root_objects[-1], f"Refl/S = {refl:.4f} #pm {refl_err:.4f}", color_refl)
             root_objects[-1].Draw()
             y_min_tmp += y_delta
 
@@ -566,32 +575,31 @@ class FitAliHF(FitROOT):
                 aro.Draw("same")
 
 
-class FitROOTGauss(FitROOT): # pylint: disable=too-many-instance-attributes
+class FitROOTGauss(FitROOT):  # pylint: disable=too-many-instance-attributes
     """
     Class with specific ROOT TF1 as core fitting utility
     """
 
-    def __init__(self, pars, histo=None, type_gauss=TYPE_GAUSS_1,
-                 **base_args):
+    def __init__(self, pars, histo=None, type_gauss=TYPE_GAUSS_1, **base_args):
         super().__init__(pars, **base_args)
         self.histo = histo
         self.type_gauss = type_gauss
 
-        self.default_init_pars = {"rebin": None,
-                                  "use_user_fit_range": False,
-                                  "fit_range_low": None,
-                                  "fit_range_up": None,
-                                  "n_rms_fix": None,
-                                  "n_rms_start": 3.,
-                                  "n_rms_stepping": 0.10,
-                                  "n_rms_steps": 20,
-                                  "likelihood": False}
+        self.default_init_pars = {
+            "rebin": None,
+            "use_user_fit_range": False,
+            "fit_range_low": None,
+            "fit_range_up": None,
+            "n_rms_fix": None,
+            "n_rms_start": 3.0,
+            "n_rms_stepping": 0.10,
+            "n_rms_steps": 20,
+            "likelihood": False,
+        }
         # Fitted parameters (to be modified for deriving classes)
         # Only those corresponding to init parameters are here. Specific parameters/values
         # provided by the kernel have to be extracted from that directly.
-        self.fit_pars = {"mean": None,
-                         "sigma": None,
-                         "second_sigma": None}
+        self.fit_pars = {"mean": None, "sigma": None, "second_sigma": None}
 
         # Fit range finally used for MC fit
         self.fit_range_low = None
@@ -606,9 +614,7 @@ class FitROOTGauss(FitROOT): # pylint: disable=too-many-instance-attributes
         self.histo = self.root_objects.get("histo", self.histo)
         self.root_objects["histo"] = self.histo
 
-
     def init_kernel(self):
-
         self.update_root_objects()
 
         rebin = construct_rebinning(self.histo, self.init_pars["rebin"])
@@ -624,23 +630,19 @@ class FitROOTGauss(FitROOT): # pylint: disable=too-many-instance-attributes
 
         return True
 
-
     def __fit_kernel(self, mean_init, sigma_init, int_init, fit_range_low, fit_range_up):
-
-
         func_string = "[0]/TMath::Sqrt(2.*TMath::Pi())/[2]*TMath::Exp(-(x-[1])*(x-[1])/2./[2]/[2])"
         if self.type_gauss == TYPE_GAUSS_2:
-            func_string = "(1.-[3])/TMath::Sqrt(2.*TMath::Pi()) / " \
-                    "[2]*TMath::Exp(-(x-[1])*(x-[1])/2./[2]/[2])"
-            func_string = f"[0] * ({func_string} + " \
-                    "[3]/TMath::Sqrt(2.*TMath::Pi())/[4]*TMath::Exp(-(x-[1])*(x-[1])/2./[4]/[4]))"
+            func_string = "(1.-[3])/TMath::Sqrt(2.*TMath::Pi()) / [2]*TMath::Exp(-(x-[1])*(x-[1])/2./[2]/[2])"
+            func_string = (
+                f"[0] * ({func_string} + [3]/TMath::Sqrt(2.*TMath::Pi())/[4]*TMath::Exp(-(x-[1])*(x-[1])/2./[4]/[4]))"
+            )
 
         fit_func = TF1("fit_func", func_string, fit_range_low, fit_range_up)
 
         fit_func.SetParameter(0, int_init * sqrt(6) * sigma_init)
         fit_func.SetParameter(1, mean_init)
         fit_func.SetParameter(2, sigma_init)
-
 
         if self.type_gauss == TYPE_GAUSS_2:
             fit_func.SetParameter(3, 0.5)
@@ -656,45 +658,59 @@ class FitROOTGauss(FitROOT): # pylint: disable=too-many-instance-attributes
         mean_fit = fit_func.GetParameter(1)
         sigma_fit = abs(fit_func.GetParameter(2))
         chi2ndf = fit_func.GetNDF()
-        chi2ndf = fit_func.GetChisquare() / chi2ndf if chi2ndf > 0. else 0.
+        chi2ndf = fit_func.GetChisquare() / chi2ndf if chi2ndf > 0.0 else 0.0
 
         success = True
-        if int_fit * sigma_fit < 0. \
-                or mean_init - sigma_init > mean_fit or mean_fit > mean_init + sigma_init \
-                or 1.1 * sigma_init < sigma_fit or chi2ndf <= 0.:
+        if (
+            int_fit * sigma_fit < 0.0
+            or mean_init - sigma_init > mean_fit
+            or mean_fit > mean_init + sigma_init
+            or 1.1 * sigma_init < sigma_fit
+            or chi2ndf <= 0.0
+        ):
             success = False
 
         return fit_func, success
-
 
     def fit_kernel(self):
         guess_mean = self.histo.GetMean()
         guess_sigma = self.histo.GetRMS()
 
         if self.init_pars["use_user_fit_range"] and self.type_gauss == TYPE_GAUSS_1:
-            guess_int = self.histo.Integral(self.histo.FindBin(self.init_pars["fit_range_low"]),
-                                            self.histo.FindBin(self.init_pars["fit_range_up"]),
-                                            "width")
-            self.kernel, success = self.__fit_kernel(guess_mean, guess_sigma, guess_int,
-                                                     self.init_pars["fit_range_low"],
-                                                     self.init_pars["fit_range_up"])
+            guess_int = self.histo.Integral(
+                self.histo.FindBin(self.init_pars["fit_range_low"]),
+                self.histo.FindBin(self.init_pars["fit_range_up"]),
+                "width",
+            )
+            self.kernel, success = self.__fit_kernel(
+                guess_mean, guess_sigma, guess_int, self.init_pars["fit_range_low"], self.init_pars["fit_range_up"]
+            )
 
             self.fit_range_low = self.init_pars["fit_range_low"]
             self.fit_range_up = self.init_pars["fit_range_up"]
             return success
 
-        for r in [self.init_pars["n_rms_start"] + i * self.init_pars["n_rms_stepping"] \
-                for i in range(self.init_pars["n_rms_steps"])]:
-            guess_fit_range_low = guess_mean - r * guess_sigma \
-                    if self.type_gauss == TYPE_GAUSS_1 else self.init_pars["fit_range_low"]
-            guess_fit_range_up = guess_mean + r * guess_sigma \
-                    if self.type_gauss == TYPE_GAUSS_1 else self.init_pars["fit_range_up"]
-            guess_sigma_tmp = guess_sigma if guess_sigma else 1.
-            guess_int = self.histo.Integral(self.histo.FindBin(guess_fit_range_low),
-                                            self.histo.FindBin(guess_fit_range_up),
-                                            "width") / guess_sigma_tmp / 2.5
-            self.kernel, success = self.__fit_kernel(guess_mean, guess_sigma, guess_int,
-                                                     guess_fit_range_low, guess_fit_range_up)
+        for r in [
+            self.init_pars["n_rms_start"] + i * self.init_pars["n_rms_stepping"]
+            for i in range(self.init_pars["n_rms_steps"])
+        ]:
+            guess_fit_range_low = (
+                guess_mean - r * guess_sigma if self.type_gauss == TYPE_GAUSS_1 else self.init_pars["fit_range_low"]
+            )
+            guess_fit_range_up = (
+                guess_mean + r * guess_sigma if self.type_gauss == TYPE_GAUSS_1 else self.init_pars["fit_range_up"]
+            )
+            guess_sigma_tmp = guess_sigma if guess_sigma else 1.0
+            guess_int = (
+                self.histo.Integral(
+                    self.histo.FindBin(guess_fit_range_low), self.histo.FindBin(guess_fit_range_up), "width"
+                )
+                / guess_sigma_tmp
+                / 2.5
+            )
+            self.kernel, success = self.__fit_kernel(
+                guess_mean, guess_sigma, guess_int, guess_fit_range_low, guess_fit_range_up
+            )
             # Save used fit range
             self.fit_range_low = guess_fit_range_low
             self.fit_range_up = guess_fit_range_up
@@ -702,8 +718,7 @@ class FitROOTGauss(FitROOT): # pylint: disable=too-many-instance-attributes
 
             # Require at least 5 points in fit range
             # Do this here to have at least a kernel which could be drawn later
-            if self.histo.FindBin(guess_fit_range_up) - \
-                    self.histo.FindBin(guess_fit_range_low) < 5:
+            if self.histo.FindBin(guess_fit_range_up) - self.histo.FindBin(guess_fit_range_low) < 5:
                 continue
 
             if success:
@@ -711,25 +726,22 @@ class FitROOTGauss(FitROOT): # pylint: disable=too-many-instance-attributes
 
         return False
 
-
     def set_fit_pars(self):
         self.fit_pars["mean"] = self.kernel.GetParameter(1)
         self.fit_pars["sigma"] = self.kernel.GetParameter(2)
         if self.type_gauss == TYPE_GAUSS_2:
             self.fit_pars["second_sigma"] = self.kernel.GetParameter(4)
 
-
-    def draw_kernel(self, root_pad, root_objects=[], **draw_args): # pylint: disable=too-many-statements, dangerous-default-value
-
+    def draw_kernel(self, root_pad, root_objects=[], **draw_args):  # pylint: disable=too-many-statements, dangerous-default-value
         title = draw_args.pop("title", "")
         x_axis_label = draw_args.pop("x_axis_label", "#it{M}_{inv} (GeV/#it{c}^{2})")
-        y_axis_label = draw_args.pop("y_axis_label",
-                                     f"Entries/({self.histo.GetBinWidth(1) * 1000:.0f} " \
-                                     "MeV/#it{c}^{2})")
+        y_axis_label = draw_args.pop(
+            "y_axis_label", f"Entries/({self.histo.GetBinWidth(1) * 1000:.0f} MeV/#it{{c}}^{{2}})"
+        )
         mean_dim = draw_args.pop("mean_dim", "GeV/#it{c}^{2}")
-        mean_scale = draw_args.pop("mean_scale", 1.)
+        mean_scale = draw_args.pop("mean_scale", 1.0)
         sigma_dim = draw_args.pop("sigma_dim", "MeV/#it{c}^{2}")
-        sigma_scale = draw_args.pop("sigma_scale", 1000.)
+        sigma_scale = draw_args.pop("sigma_scale", 1000.0)
 
         add_root_objects = draw_args.pop("add_root_objects", None)
 
@@ -755,8 +767,7 @@ class FitROOTGauss(FitROOT): # pylint: disable=too-many-instance-attributes
         self.kernel.SetLineColor(color_sig)
 
         root_pad.SetLeftMargin(0.12)
-        frame = root_pad.cd().DrawFrame(x_min, y_min, x_max, y_max,
-                                        f"{title} ; {x_axis_label} ; {y_axis_label}")
+        frame = root_pad.cd().DrawFrame(x_min, y_min, x_max, y_max, f"{title} ; {x_axis_label} ; {y_axis_label}")
 
         frame.GetYaxis().SetTitleOffset(1.7)
         frame.GetYaxis().SetMaxDigits(4)
@@ -769,51 +780,40 @@ class FitROOTGauss(FitROOT): # pylint: disable=too-many-instance-attributes
         self.histo.GetYaxis().SetTitle(y_axis_label)
 
         red_chisqu = self.kernel.GetNDF()
-        red_chisqu = self.kernel.GetChisquare() / red_chisqu if red_chisqu > 0. else 0.
+        red_chisqu = self.kernel.GetChisquare() / red_chisqu if red_chisqu > 0.0 else 0.0
         mean = self.kernel.GetParameter(1) * mean_scale
         mean_err = self.kernel.GetParError(1) * mean_scale
         sigma = self.kernel.GetParameter(2) * sigma_scale
         sigma_err = self.kernel.GetParError(2) * sigma_scale
 
         root_objects.append(self.add_pave_helper_(0.55, 0.7, 0.89, 0.89, "NDC"))
-        self.add_text_helper_(root_objects[-1],
-                              f"mean_{{histo}} = {self.histo.GetMean() * mean_scale:.4f}",
-                              color_histo)
-        self.add_text_helper_(root_objects[-1],
-                              f"RMS_{{histo}} = {self.histo.GetRMS() * sigma_scale:.4f}",
-                              color_histo)
-        self.add_text_helper_(root_objects[-1],
-                              f"fit range [{self.fit_range_low:.3f}, {self.fit_range_up:.3f}]",
-                              color_histo)
+        self.add_text_helper_(
+            root_objects[-1], f"mean_{{histo}} = {self.histo.GetMean() * mean_scale:.4f}", color_histo
+        )
+        self.add_text_helper_(root_objects[-1], f"RMS_{{histo}} = {self.histo.GetRMS() * sigma_scale:.4f}", color_histo)
+        self.add_text_helper_(
+            root_objects[-1], f"fit range [{self.fit_range_low:.3f}, {self.fit_range_up:.3f}]", color_histo
+        )
         if not self.init_pars["use_user_fit_range"] and self.type_gauss == TYPE_GAUSS_1:
-            self.add_text_helper_(root_objects[-1],
-                                  f"(corr. to {self.n_rms} #times RMS_{{histo}})",
-                                  color_histo)
+            self.add_text_helper_(root_objects[-1], f"(corr. to {self.n_rms} #times RMS_{{histo}})", color_histo)
         else:
-            self.add_text_helper_(root_objects[-1],
-                                  " ",
-                                  color_histo)
+            self.add_text_helper_(root_objects[-1], " ", color_histo)
 
         root_objects[-1].Draw()
         root_objects.append(self.add_pave_helper_(0.2, 0.7, 0.59, 0.89, "NDC"))
-        self.add_text_helper_(root_objects[-1],
-                              f"#mu = {mean:.4f} #pm {mean_err:.4f} {mean_dim}", color_sig)
-        self.add_text_helper_(root_objects[-1],
-                              f"#sigma = {sigma:.4f} #pm {sigma_err:.4f} {sigma_dim}", color_sig)
+        self.add_text_helper_(root_objects[-1], f"#mu = {mean:.4f} #pm {mean_err:.4f} {mean_dim}", color_sig)
+        self.add_text_helper_(root_objects[-1], f"#sigma = {sigma:.4f} #pm {sigma_err:.4f} {sigma_dim}", color_sig)
         if self.type_gauss == TYPE_GAUSS_2:
             # quote second sigma
             sigma = abs(self.kernel.GetParameter(4) * sigma_scale)
             sigma_err = self.kernel.GetParError(4) * sigma_scale
-            self.add_text_helper_(root_objects[-1],
-                                  f"#sigma_{{2}} = {sigma:.4f} #pm {sigma_err:.4f} {sigma_dim}",
-                                  color_sig)
+            self.add_text_helper_(
+                root_objects[-1], f"#sigma_{{2}} = {sigma:.4f} #pm {sigma_err:.4f} {sigma_dim}", color_sig
+            )
         else:
-            self.add_text_helper_(root_objects[-1],
-                                  " ", color_sig)
-        self.add_text_helper_(root_objects[-1],
-                              f"#chi/ndf = {red_chisqu:.4f}", color_sig)
+            self.add_text_helper_(root_objects[-1], " ", color_sig)
+        self.add_text_helper_(root_objects[-1], f"#chi/ndf = {red_chisqu:.4f}", color_sig)
         root_objects[-1].Draw()
-
 
         for dob in draw_objects:
             dob.Draw("same")
@@ -823,7 +823,8 @@ class FitROOTGauss(FitROOT): # pylint: disable=too-many-instance-attributes
                 root_objects.append(aro)
                 aro.Draw("same")
 
-class FitSystAliHF(FitROOT): # pylint: disable=too-many-instance-attributes
+
+class FitSystAliHF(FitROOT):  # pylint: disable=too-many-instance-attributes
     """
     Class with AliHFMassFitter as core fitting utility
     """
@@ -834,44 +835,45 @@ class FitSystAliHF(FitROOT): # pylint: disable=too-many-instance-attributes
         self.histo_mc = histo_mc
         self.histo_reflections = histo_reflections
 
-        self.default_init_pars = {"mean": None,
-                                  "sigma": None,
-                                  "second_sigma": None,
-                                  "include_sec_peak": False,
-                                  "sec_mean": None,
-                                  "fix_sec_mean": False,
-                                  "sec_sigma": None,
-                                  "fix_sec_sigma": False,
-                                  "use_sec_peak_rel_sigma": True,
-                                  "include_reflections": False,
-                                  "fix_reflections_s_over_b": True,
-                                  "mean_ref": None,
-                                  "sigma_ref": None,
-                                  "yield_ref": None,
-                                  "chi2_ref": None,
-                                  "signif_ref": None,
-                                  "rebin": None,
-                                  "fit_range_low": None,
-                                  "fit_range_up": None,
-                                  "likelihood": True,
-                                  "n_sigma_sideband": None,
-                                  "fit_range_low_syst": None,
-                                  "fit_range_up_syst": None,
-                                  "bin_count_sigma_syst": None,
-                                  "bkg_func_names_syst": None,
-                                  "rebin_syst": None,
-                                  "consider_free_sigma_syst": None,
-                                  "rel_var_sigma_up_syst": None,
-                                  "rel_var_sigma_down_syst": None,
-                                  "signif_min_syst": None,
-                                  "chi2_max_syst": None}
+        self.default_init_pars = {
+            "mean": None,
+            "sigma": None,
+            "second_sigma": None,
+            "include_sec_peak": False,
+            "sec_mean": None,
+            "fix_sec_mean": False,
+            "sec_sigma": None,
+            "fix_sec_sigma": False,
+            "use_sec_peak_rel_sigma": True,
+            "include_reflections": False,
+            "fix_reflections_s_over_b": True,
+            "mean_ref": None,
+            "sigma_ref": None,
+            "yield_ref": None,
+            "chi2_ref": None,
+            "signif_ref": None,
+            "rebin": None,
+            "fit_range_low": None,
+            "fit_range_up": None,
+            "likelihood": True,
+            "n_sigma_sideband": None,
+            "fit_range_low_syst": None,
+            "fit_range_up_syst": None,
+            "bin_count_sigma_syst": None,
+            "bkg_func_names_syst": None,
+            "rebin_syst": None,
+            "consider_free_sigma_syst": None,
+            "rel_var_sigma_up_syst": None,
+            "rel_var_sigma_down_syst": None,
+            "signif_min_syst": None,
+            "chi2_max_syst": None,
+        }
         # Fitted parameters (to be modified for deriving classes)
         # Only those corresponding to init parameters are here. Specific parameters/values
         # provided by the kernel have to be extracted from that directly.
         self.fit_pars = None
         self.results_path = base_args.get("results_path", None)
         self.update_root_objects()
-
 
     def update_root_objects(self):
         if self.root_objects is None:
@@ -884,9 +886,7 @@ class FitSystAliHF(FitROOT): # pylint: disable=too-many-instance-attributes
         self.root_objects["histo_mc"] = self.histo_mc
         self.root_objects["histo_reflections"] = self.histo_reflections
 
-
     def init_kernel(self):
-
         self.update_root_objects()
 
         self.histo = self.histo.Clone(f"{self.histo.GetName()}_fit_histo")
@@ -910,42 +910,37 @@ class FitSystAliHF(FitROOT): # pylint: disable=too-many-instance-attributes
         self.kernel.SetUsePowerLawTimesExpoBackground(False)
 
         # Relative sigma variation wrt nominal
-        rel_sigma_up = self.init_pars["rel_var_sigma_up_syst"] \
-                if self.init_pars["rel_var_sigma_up_syst"] else 0
-        rel_sigma_down = self.init_pars["rel_var_sigma_down_syst"] \
-                if self.init_pars["rel_var_sigma_down_syst"] else 0
+        rel_sigma_up = self.init_pars["rel_var_sigma_up_syst"] if self.init_pars["rel_var_sigma_up_syst"] else 0
+        rel_sigma_down = self.init_pars["rel_var_sigma_down_syst"] if self.init_pars["rel_var_sigma_down_syst"] else 0
         self.kernel.SetSigmaMCVariation(rel_sigma_up, rel_sigma_down)
 
         rebin = construct_rebinning(self.histo, self.init_pars["rebin"])
         if rebin:
-            rebin_steps = [rebin + rel_rb \
-                    if rebin + rel_rb > 0 \
-                    else 1 for rel_rb in self.init_pars["rebin_syst"]]
+            rebin_steps = [rebin + rel_rb if rebin + rel_rb > 0 else 1 for rel_rb in self.init_pars["rebin_syst"]]
             # To only have unique values and we don't care about the order we can just do
             rebin_steps = array("i", list(set(rebin_steps)))
             self.kernel.ConfigureRebinSteps(len(rebin_steps), rebin_steps)
         if self.init_pars["fit_range_low_syst"]:
             low_lim_steps = array("d", self.init_pars["fit_range_low_syst"])
-            self.kernel.ConfigureLowLimFitSteps(len(self.init_pars["fit_range_low_syst"]),
-                                                low_lim_steps)
+            self.kernel.ConfigureLowLimFitSteps(len(self.init_pars["fit_range_low_syst"]), low_lim_steps)
         if self.init_pars["fit_range_up_syst"]:
             up_lim_steps = array("d", self.init_pars["fit_range_up_syst"])
-            self.kernel.ConfigureUpLimFitSteps(len(self.init_pars["fit_range_up_syst"]),
-                                               up_lim_steps)
+            self.kernel.ConfigureUpLimFitSteps(len(self.init_pars["fit_range_up_syst"]), up_lim_steps)
 
         if self.init_pars["bin_count_sigma_syst"]:
-            self.kernel.ConfigurenSigmaBinCSteps(len(self.init_pars["bin_count_sigma_syst"]),
-                                                 array("d", self.init_pars["bin_count_sigma_syst"]))
+            self.kernel.ConfigurenSigmaBinCSteps(
+                len(self.init_pars["bin_count_sigma_syst"]), array("d", self.init_pars["bin_count_sigma_syst"])
+            )
 
-        if self.init_pars["include_reflections"] and self.histo_reflections.Integral() <= 0.:
+        if self.init_pars["include_reflections"] and self.histo_reflections.Integral() <= 0.0:
             self.logger.warning("Reflection requested but template is empty")
         elif self.init_pars["include_reflections"]:
             self.histo_reflections = AliVertexingHFUtils.AdaptTemplateRangeAndBinning(
-                self.histo_reflections, self.histo,
-                self.init_pars["fit_range_low"], self.init_pars["fit_range_up"])
+                self.histo_reflections, self.histo, self.init_pars["fit_range_low"], self.init_pars["fit_range_up"]
+            )
             self.histo_mc = AliVertexingHFUtils.AdaptTemplateRangeAndBinning(
-                self.histo_mc, self.histo,
-                self.init_pars["fit_range_low"], self.init_pars["fit_range_up"])
+                self.histo_mc, self.histo, self.init_pars["fit_range_low"], self.init_pars["fit_range_up"]
+            )
 
             self.kernel.SetTemplatesForReflections(self.histo_reflections, self.histo_mc)
             if not self.init_pars["fix_reflections_s_over_b"]:
@@ -954,19 +949,18 @@ class FitSystAliHF(FitROOT): # pylint: disable=too-many-instance-attributes
                 self.kernel.SetFixRefoS(-1)
 
         if self.init_pars["include_sec_peak"]:
-            #p_widthsecpeak to be fixed
-            sec_sigma = self.init_pars["sigma"] * self.init_pars["sec_sigma"] \
-                    if self.init_pars["use_sec_peak_rel_sigma"] \
-                    else self.init_pars["sec_sigma"]
-            self.kernel.IncludeSecondGausPeak(self.init_pars["sec_mean"],
-                                              self.init_pars["fix_sec_mean"],
-                                              sec_sigma,
-                                              self.init_pars["fix_sec_sigma"])
+            # p_widthsecpeak to be fixed
+            sec_sigma = (
+                self.init_pars["sigma"] * self.init_pars["sec_sigma"]
+                if self.init_pars["use_sec_peak_rel_sigma"]
+                else self.init_pars["sec_sigma"]
+            )
+            self.kernel.IncludeSecondGausPeak(
+                self.init_pars["sec_mean"], self.init_pars["fix_sec_mean"], sec_sigma, self.init_pars["fix_sec_sigma"]
+            )
         return True
 
-
     def fit_kernel(self):
-
         histo_double = TH1D()
         self.histo.Copy(histo_double)
         success = self.kernel.DoMultiTrials(histo_double)
@@ -974,15 +968,12 @@ class FitSystAliHF(FitROOT): # pylint: disable=too-many-instance-attributes
             self.kernel.SaveToRoot(self.results_path)
         return success
 
-
     def set_fit_pars(self):
         pass
-        #self.fit_pars["mean"] = self.kernel.GetMean()
-        #self.fit_pars["sigma"] = self.kernel.GetSigma()
+        # self.fit_pars["mean"] = self.kernel.GetMean()
+        # self.fit_pars["sigma"] = self.kernel.GetSigma()
 
-
-    def draw_kernel(self, root_pad, root_objects=[], **draw_args): #pylint: disable=dangerous-default-value, too-many-branches, too-many-statements, too-many-locals
-
+    def draw_kernel(self, root_pad, root_objects=[], **draw_args):  # pylint: disable=dangerous-default-value, too-many-branches, too-many-statements, too-many-locals
         if not self.results_path:
             self.logger.warning("Don't have a result file so cannot draw. Skip...")
             return
@@ -990,16 +981,20 @@ class FitSystAliHF(FitROOT): # pylint: disable=too-many-instance-attributes
         title = draw_args.pop("title", "")
 
         # Which background functions are used?
-        used_bkgs = array("b", ["kExpo" in self.init_pars["bkg_func_names_syst"],
-                                "kLin" in self.init_pars["bkg_func_names_syst"],
-                                "Pol2" in self.init_pars["bkg_func_names_syst"],
-                                "Pol3" in self.init_pars["bkg_func_names_syst"],
-                                "Pol4" in self.init_pars["bkg_func_names_syst"],
-                                "Pol5" in self.init_pars["bkg_func_names_syst"]])
+        used_bkgs = array(
+            "b",
+            [
+                "kExpo" in self.init_pars["bkg_func_names_syst"],
+                "kLin" in self.init_pars["bkg_func_names_syst"],
+                "Pol2" in self.init_pars["bkg_func_names_syst"],
+                "Pol3" in self.init_pars["bkg_func_names_syst"],
+                "Pol4" in self.init_pars["bkg_func_names_syst"],
+                "Pol5" in self.init_pars["bkg_func_names_syst"],
+            ],
+        )
 
         # Number of bin count variations
-        n_bins_bincount = len(self.init_pars["bin_count_sigma_syst"]) \
-                if self.init_pars["bin_count_sigma_syst"] else 0
+        n_bins_bincount = len(self.init_pars["bin_count_sigma_syst"]) if self.init_pars["bin_count_sigma_syst"] else 0
 
         # The following is just crazy
 
@@ -1022,12 +1017,14 @@ class FitSystAliHF(FitROOT): # pylint: disable=too-many-instance-attributes
         min_bc_range = 1
         max_bc_range = n_bins_bincount
         n_bc_ranges = n_bins_bincount
-        conf_case = ["FixedSigFreeMean",
-                     "FixedSigUpFreeMean",
-                     "FixedSigDwFreeMean",
-                     "FreeSigFreeMean",
-                     "FreeSigFixedMean",
-                     "FixedSigFixedMean"]
+        conf_case = [
+            "FixedSigFreeMean",
+            "FixedSigUpFreeMean",
+            "FixedSigDwFreeMean",
+            "FreeSigFreeMean",
+            "FreeSigFixedMean",
+            "FixedSigFixedMean",
+        ]
 
         # Names of background functions used internally
         bkg_func = ["Expo", "Lin", "Pol2", "Pol3", "Pol4", "Pol5"]
@@ -1035,27 +1032,26 @@ class FitSystAliHF(FitROOT): # pylint: disable=too-many-instance-attributes
         tot_cases = n_config_cases * n_back_func_cases
         # Mask to flag what's en/disabled
         # 0 => not used; 1 => used for fit; 2 => used also for bin count
-        mask = [0] * tot_cases #0,0,0,0,0,0,   // fixed sigma, free mean (Expo, Lin, Pol2,Pol3,Pol4)
-                               #0,0,0,0,0,0,   // fixed sigma upper
-                               #0,0,0,0,0,0,   // fixed sigma lower
-                               #0,0,0,0,0,0,   // free sigma, free mean
-                               #0,0,0,0,0,0,   // free sigma, fixed mean
-                               #0,0,0,0,0,0,   // fixed mean, fixed sigma
+        mask = [0] * tot_cases  # 0,0,0,0,0,0,   // fixed sigma, free mean (Expo, Lin, Pol2,Pol3,Pol4)
+        # 0,0,0,0,0,0,   // fixed sigma upper
+        # 0,0,0,0,0,0,   // fixed sigma lower
+        # 0,0,0,0,0,0,   // free sigma, free mean
+        # 0,0,0,0,0,0,   // free sigma, fixed mean
+        # 0,0,0,0,0,0,   // fixed mean, fixed sigma
 
         # Enable only the background cases we ran the multi trial with
         plot_case = 2 if max_bc_range >= min_bc_range else 1
         for i in range(6):
             if used_bkgs[i] > 0:
                 mask[i] = plot_case
-                mask[30+i] = plot_case
+                mask[30 + i] = plot_case
                 if self.init_pars["consider_free_sigma_syst"]:
-                    mask[18+i] = plot_case
-                    mask[24+i] = plot_case
+                    mask[18 + i] = plot_case
+                    mask[24 + i] = plot_case
                 if self.init_pars["rel_var_sigma_up_syst"]:
-
-                    mask[6+i] = plot_case
+                    mask[6 + i] = plot_case
                 if self.init_pars["rel_var_sigma_down_syst"]:
-                    mask[12+i] = plot_case
+                    mask[12 + i] = plot_case
 
         # Extract histograms from file
         histo6 = [None] * tot_cases
@@ -1069,7 +1065,6 @@ class FitSystAliHF(FitROOT): # pylint: disable=too-many-instance-attributes
                     mask[kjh] = 0
                 kjh += 1
 
-
         # Prepare variables for counting
         tot_trials = 0
         successful_trials = 0
@@ -1082,8 +1077,7 @@ class FitSystAliHF(FitROOT): # pylint: disable=too-many-instance-attributes
         last_bc0 = [0] * tot_cases
         first_bc1 = [0] * tot_cases
         last_bc1 = [0] * tot_cases
-        #tlabels = [None] * (tot_cases+1)
-
+        # tlabels = [None] * (tot_cases+1)
 
         for nc in range(tot_cases):
             if not mask[nc]:
@@ -1095,23 +1089,23 @@ class FitSystAliHF(FitROOT): # pylint: disable=too-many-instance-attributes
             tot_histos += 1
 
             # This we might include later
-            #ttt = histo6[nc].GetName()
-            #ttt = ttt.replace("hRawYieldTrial", "")
-            #if "FixedMean" in ttt:
+            # ttt = histo6[nc].GetName()
+            # ttt = ttt.replace("hRawYieldTrial", "")
+            # if "FixedMean" in ttt:
             #    ttt = "Fix #mu"
-            #elif "FixedSp20" in ttt:
+            # elif "FixedSp20" in ttt:
             #    ttt = "#sigma+"
-            #elif "fixedSm20" in ttt:
+            # elif "fixedSm20" in ttt:
             #    ttt = "#sigma-"
-            #elif "FreeS" in ttt:
+            # elif "FreeS" in ttt:
             #    ttt = "Free #sigma"
-            #ttt = ttt.replace("FixedS", "")
-            #if bkg_treat and bkg_treat in ttt:
+            # ttt = ttt.replace("FixedS", "")
+            # if bkg_treat and bkg_treat in ttt:
             #    ttt = ttt.replace(bkg_treat, "")
 
-            #tlabels[nc] = TLatex(first[nc] + 0.02 * tot_trials, 10, ttt)
-            #tlabels[nc].SetTextColor(kMagenta+2)
-            #tlabels[nc].SetTextColor(kMagenta+2)
+            # tlabels[nc] = TLatex(first[nc] + 0.02 * tot_trials, 10, ttt)
+            # tlabels[nc].SetTextColor(kMagenta+2)
+            # tlabels[nc].SetTextColor(kMagenta+2)
 
             # Extract bin count cases
             if mask[nc] == 2:
@@ -1145,104 +1139,112 @@ class FitSystAliHF(FitROOT): # pylint: disable=too-many-instance-attributes
                     continue
 
                 if bkg_func[i_bkg] in hmeanname:
-                    h_raw_yield_all_bkgs[bkg_func[i_bkg]] = \
-                            TH1F(f"hRawYieldAll_{bkg_func[i_bkg]}",
-                                 " ; Trial # ; raw yield", tot_trials, 0., tot_trials)
+                    h_raw_yield_all_bkgs[bkg_func[i_bkg]] = TH1F(
+                        f"hRawYieldAll_{bkg_func[i_bkg]}", " ; Trial # ; raw yield", tot_trials, 0.0, tot_trials
+                    )
                     h_raw_yield_all_bkgs[bkg_func[i_bkg]].SetLineColor(bkg_colors[i_bkg])
                     h_raw_yield_all_bkgs[bkg_func[i_bkg]].SetMarkerColor(bkg_colors[i_bkg])
                     h_raw_yield_all_bkgs[bkg_func[i_bkg]].SetStats(0)
 
-                    h_mean_all_bkgs[bkg_func[i_bkg]] = \
-                            TH1F(f"hMeanAll_{bkg_func[i_bkg]}",
-                                 " ; Trial # ; Gaussian mean", tot_trials, 0., tot_trials)
+                    h_mean_all_bkgs[bkg_func[i_bkg]] = TH1F(
+                        f"hMeanAll_{bkg_func[i_bkg]}", " ; Trial # ; Gaussian mean", tot_trials, 0.0, tot_trials
+                    )
                     h_mean_all_bkgs[bkg_func[i_bkg]].SetLineColor(bkg_colors[i_bkg])
                     h_mean_all_bkgs[bkg_func[i_bkg]].SetMarkerColor(bkg_colors[i_bkg])
                     h_mean_all_bkgs[bkg_func[i_bkg]].SetMinimum(0.8 * mean_ref)
                     h_mean_all_bkgs[bkg_func[i_bkg]].SetMaximum(1.2 * mean_ref)
                     h_mean_all_bkgs[bkg_func[i_bkg]].SetStats(0)
 
-                    h_sigma_all_bkgs[bkg_func[i_bkg]] = \
-                            TH1F(f"hSigmaAll_{bkg_func[i_bkg]}",
-                                 " ; Trial # ; Gaussian Sigma", tot_trials, 0., tot_trials)
+                    h_sigma_all_bkgs[bkg_func[i_bkg]] = TH1F(
+                        f"hSigmaAll_{bkg_func[i_bkg]}", " ; Trial # ; Gaussian Sigma", tot_trials, 0.0, tot_trials
+                    )
                     h_sigma_all_bkgs[bkg_func[i_bkg]].SetLineColor(bkg_colors[i_bkg])
                     h_sigma_all_bkgs[bkg_func[i_bkg]].SetMarkerColor(bkg_colors[i_bkg])
-                    h_sigma_all_bkgs[bkg_func[i_bkg]].SetMinimum(0.)
+                    h_sigma_all_bkgs[bkg_func[i_bkg]].SetMinimum(0.0)
                     h_sigma_all_bkgs[bkg_func[i_bkg]].SetMaximum(1.1 * sigma_ref)
                     h_sigma_all_bkgs[bkg_func[i_bkg]].SetStats(0)
 
-                    h_chi2_all_bkgs[bkg_func[i_bkg]] = \
-                            TH1F(f"hChi2All_{bkg_func[i_bkg]}",
-                                 " ; Trial # ; #Chi^{2}/ndf", tot_trials, 0., tot_trials)
+                    h_chi2_all_bkgs[bkg_func[i_bkg]] = TH1F(
+                        f"hChi2All_{bkg_func[i_bkg]}", " ; Trial # ; #Chi^{2}/ndf", tot_trials, 0.0, tot_trials
+                    )
                     h_chi2_all_bkgs[bkg_func[i_bkg]].SetLineColor(bkg_colors[i_bkg])
                     h_chi2_all_bkgs[bkg_func[i_bkg]].SetMarkerColor(bkg_colors[i_bkg])
                     h_chi2_all_bkgs[bkg_func[i_bkg]].SetMarkerStyle(7)
                     h_chi2_all_bkgs[bkg_func[i_bkg]].SetStats(0)
 
-                    h_signif_all_bkgs[bkg_func[i_bkg]] = \
-                            TH1F(f"hSignifAll_{bkg_func[i_bkg]}",
-                                 " ; Trial # ; Significance", tot_trials, 0., tot_trials)
+                    h_signif_all_bkgs[bkg_func[i_bkg]] = TH1F(
+                        f"hSignifAll_{bkg_func[i_bkg]}", " ; Trial # ; Significance", tot_trials, 0.0, tot_trials
+                    )
                     h_signif_all_bkgs[bkg_func[i_bkg]].SetLineColor(bkg_colors[i_bkg])
                     h_signif_all_bkgs[bkg_func[i_bkg]].SetMarkerColor(bkg_colors[i_bkg])
                     h_signif_all_bkgs[bkg_func[i_bkg]].SetMarkerStyle(7)
                     h_signif_all_bkgs[bkg_func[i_bkg]].SetStats(0)
 
-
         # Create histograms for fit and bin count yield to be plotted in the end
-        h_raw_yield_all_bc0 = TH1F(f"hRawYieldAllBC0", " ; Trial # ; raw yield BC0",
-                                   tot_trials_bc0 * n_bc_ranges, 0.,
-                                   tot_trials_bc0 * n_bc_ranges)
+        h_raw_yield_all_bc0 = TH1F(
+            f"hRawYieldAllBC0",
+            " ; Trial # ; raw yield BC0",
+            tot_trials_bc0 * n_bc_ranges,
+            0.0,
+            tot_trials_bc0 * n_bc_ranges,
+        )
 
-        h_raw_yield_all_bc1 = TH1F(f"hRawYieldAllBC1", " ; Trial # ; raw yield BC1",
-                                   tot_trials_bc1 * n_bc_ranges, 0.,
-                                   tot_trials_bc1 * n_bc_ranges)
-
-
+        h_raw_yield_all_bc1 = TH1F(
+            f"hRawYieldAllBC1",
+            " ; Trial # ; raw yield BC1",
+            tot_trials_bc1 * n_bc_ranges,
+            0.0,
+            tot_trials_bc1 * n_bc_ranges,
+        )
 
         lower_edge_yield_histos = yield_ref - 1.5 * yield_ref
-        lower_edge_yield_histos = max(0., lower_edge_yield_histos)
+        lower_edge_yield_histos = max(0.0, lower_edge_yield_histos)
 
         upper_edge_yield_histos = yield_ref + 1.5 * yield_ref
 
-        h_raw_yield_dist_all = TH1F("hRawYieldDistAll", "  ; raw yield", 200,
-                                    lower_edge_yield_histos, upper_edge_yield_histos)
+        h_raw_yield_dist_all = TH1F(
+            "hRawYieldDistAll", "  ; raw yield", 200, lower_edge_yield_histos, upper_edge_yield_histos
+        )
         h_raw_yield_dist_all.SetFillStyle(3003)
         h_raw_yield_dist_all.SetFillColor(kBlue + 1)
 
-        h_raw_yield_dist_all_bc0 = TH1F("hRawYieldDistAllBC0", "  ; raw yield", 200,
-                                        lower_edge_yield_histos, upper_edge_yield_histos)
-        h_raw_yield_dist_all_bc1 = TH1F("hRawYieldDistAllBC1", "  ; raw yield", 200,
-                                        lower_edge_yield_histos, upper_edge_yield_histos)
+        h_raw_yield_dist_all_bc0 = TH1F(
+            "hRawYieldDistAllBC0", "  ; raw yield", 200, lower_edge_yield_histos, upper_edge_yield_histos
+        )
+        h_raw_yield_dist_all_bc1 = TH1F(
+            "hRawYieldDistAllBC1", "  ; raw yield", 200, lower_edge_yield_histos, upper_edge_yield_histos
+        )
         h_raw_yield_dist_all_bc0.SetFillStyle(3004)
         h_raw_yield_dist_all_bc1.SetFillStyle(3004)
         # NOTE Note used at the moment
-        #TH1F* hStatErrDistAll=new TH1F("hStatErrDistAll","  ; Stat Unc on Yield",300,0,10000);
-        #TH1F* hRelStatErrDistAll=new TH1F("hRelStatErrDistAll",
+        # TH1F* hStatErrDistAll=new TH1F("hStatErrDistAll","  ; Stat Unc on Yield",300,0,10000);
+        # TH1F* hRelStatErrDistAll=new TH1F("hRelStatErrDistAll",
         #                                  "  ; Rel Stat Unc on Yield",100,0.,1.);
         #######################################################################
-        min_yield = 999999.
-        max_yield = 0.
-        sumy = [0.] * 4
-        sumwei = [0.] * 4
-        sumerr = [0.] * 4
-        counts = 0.
+        min_yield = 999999.0
+        max_yield = 0.0
+        sumy = [0.0] * 4
+        sumwei = [0.0] * 4
+        sumerr = [0.0] * 4
+        counts = 0.0
         wei = [None] * 4
 
         ##################
         # Extract yields #
         ##################
         # Cache min/max values for plotting later
-        sigma_max = 0.
-        sigma_min = 1.
-        mean_max = -1.
-        mean_min = 10000.
-        chi2_max = -1.
-        chi2_min = 10000.
-        signif_max = -1.
-        signif_min = 10000.
-        yields_fit_max = -1.
-        yields_fit_min = 10000.
-        yields_bc_max = -1.
-        yields_bc_min = 10000.
+        sigma_max = 0.0
+        sigma_min = 1.0
+        mean_max = -1.0
+        mean_min = 10000.0
+        chi2_max = -1.0
+        chi2_min = 10000.0
+        signif_max = -1.0
+        signif_min = 10000.0
+        yields_fit_max = -1.0
+        yields_fit_min = 10000.0
+        yields_bc_max = -1.0
+        yields_bc_min = 10000.0
         for nc in range(tot_cases):
             if not mask[nc]:
                 continue
@@ -1279,9 +1281,13 @@ class FitSystAliHF(FitROOT): # pylint: disable=too-many-instance-attributes
                 signif = hsignift6.GetBinContent(ib)
 
                 # Fill
-                if ry < 0.001 or (0.5 * ry) < ery or ery < (0.01 * ry) \
-                        or chi2 > self.init_pars["chi2_max_syst"] \
-                        or signif < self.init_pars["signif_min_syst"]:
+                if (
+                    ry < 0.001
+                    or (0.5 * ry) < ery
+                    or ery < (0.01 * ry)
+                    or chi2 > self.init_pars["chi2_max_syst"]
+                    or signif < self.init_pars["signif_min_syst"]
+                ):
                     continue
                 successful_trials += 1
                 # Get the right histograms to fill
@@ -1297,21 +1303,21 @@ class FitSystAliHF(FitROOT): # pylint: disable=too-many-instance-attributes
                 yields_fit_max = max(ry + ery, yields_fit_max, yield_ref)
                 yields_fit_min = min(ry - ery, yields_fit_min, yield_ref)
                 # NOTE Not used at the moment
-                #hStatErrDistAll->Fill(ery);
-                #hRelStatErrDistAll->Fill(ery/ry);
+                # hStatErrDistAll->Fill(ery);
+                # hRelStatErrDistAll->Fill(ery/ry);
                 min_yield = min(ry, min_yield)
                 max_yield = max(ry, max_yield)
 
-                wei[0] = 1.
-                wei[1] = 1. / (ery * ery)
-                wei[2] = 1. / (ery * ery / (ry * ry))
-                wei[3] = 1. / (ery * ery / ry)
+                wei[0] = 1.0
+                wei[1] = 1.0 / (ery * ery)
+                wei[2] = 1.0 / (ery * ery / (ry * ry))
+                wei[3] = 1.0 / (ery * ery / ry)
                 for kw in range(4):
                     sumy[kw] += wei[kw] * ry
                     sumerr[kw] += wei[kw] * wei[kw] * ery * ery
                     sumwei[kw] += wei[kw]
 
-                counts += 1.
+                counts += 1.0
                 h_sigma_all_bkgs[bkg_func_name].SetBinContent(first[nc] + ib, sig)
                 h_sigma_all_bkgs[bkg_func_name].SetBinError(first[nc] + ib, esig)
                 # Collect maximum and minimum for plotting later
@@ -1336,7 +1342,7 @@ class FitSystAliHF(FitROOT): # pylint: disable=too-many-instance-attributes
                         ebc = hbc2dt060.GetBinError(ib, iy)
                         bc_1 = hbc2dt060_bc1.GetBinContent(ib, iy)
                         ebc_1 = hbc2dt060_bc1.GetBinError(ib, iy)
-                        #if(bc>0.001 && ebc<0.5*bc && bc<5.*ry){
+                        # if(bc>0.001 && ebc<0.5*bc && bc<5.*ry){
                         if bc < 0.001:
                             continue
                         the_bin = iy + (first_bc0[nc] + ib - 1) * n_bc_ranges
@@ -1352,11 +1358,10 @@ class FitSystAliHF(FitROOT): # pylint: disable=too-many-instance-attributes
                         yields_bc_max = max(bc_1 + ebc_1, yields_bc_max, yield_ref)
                         yields_bc_min = min(bc_1 - ebc_1, yields_bc_min, yield_ref)
 
-
-        weiav = [0.] * 4
-        eweiav = [0.] * 4
+        weiav = [0.0] * 4
+        eweiav = [0.0] * 4
         for kw in range(4):
-            if sumwei[kw] > 0.:
+            if sumwei[kw] > 0.0:
                 weiav[kw] = sumy[kw] / sumwei[kw]
                 eweiav[kw] = sqrt(sumerr[kw]) / sumwei[kw]
 
@@ -1371,8 +1376,7 @@ class FitSystAliHF(FitROOT): # pylint: disable=too-many-instance-attributes
         h_raw_yield_dist_all_bc0.SetLineWidth(1)
         h_raw_yield_dist_all_bc0.SetLineStyle(1)
         if h_raw_yield_dist_all_bc0.GetEntries() > 0:
-            h_raw_yield_dist_all_bc0.Scale(\
-                    h_raw_yield_dist_all.GetEntries() / h_raw_yield_dist_all_bc0.GetEntries())
+            h_raw_yield_dist_all_bc0.Scale(h_raw_yield_dist_all.GetEntries() / h_raw_yield_dist_all_bc0.GetEntries())
 
         h_raw_yield_all_bc1.SetStats(0)
         h_raw_yield_all_bc1.SetMarkerColor(color_bc1)
@@ -1382,16 +1386,13 @@ class FitSystAliHF(FitROOT): # pylint: disable=too-many-instance-attributes
         h_raw_yield_dist_all_bc1.SetLineWidth(1)
         h_raw_yield_dist_all_bc1.SetLineStyle(1)
         if h_raw_yield_dist_all_bc1.GetEntries() > 0:
-            h_raw_yield_dist_all_bc1.Scale(\
-                    h_raw_yield_dist_all.GetEntries() / h_raw_yield_dist_all_bc1.GetEntries())
+            h_raw_yield_dist_all_bc1.Scale(h_raw_yield_dist_all.GetEntries() / h_raw_yield_dist_all_bc1.GetEntries())
 
         h_raw_yield_dist_all.SetStats(0)
         h_raw_yield_dist_all.SetLineWidth(1)
 
-
         def make_ref_line(x_low, y_low, x_up, y_up):
-            """Making a reference line
-            """
+            """Making a reference line"""
             line = TLine(x_low, y_low, x_up, y_up)
             line.SetLineColor(kRed)
             line.SetLineWidth(2)
@@ -1399,15 +1400,14 @@ class FitSystAliHF(FitROOT): # pylint: disable=too-many-instance-attributes
             return line
 
         def fill_pad(pad, ylims, histos, ref_line=None):
-            """Filling a pad
-            """
+            """Filling a pad"""
             pad.cd()
             pad.SetLeftMargin(0.13)
             pad.SetRightMargin(0.06)
             lim_delta = ylims[1] - ylims[0]
             lim_min = ylims[0] - 0.1 * lim_delta
             lim_max = ylims[1] + 0.1 * lim_delta
-            for h in  histos:
+            for h in histos:
                 h.GetYaxis().SetTitleOffset(1.7)
                 h.Draw("same")
                 h.GetYaxis().SetRangeUser(lim_min, lim_max)
@@ -1416,23 +1416,27 @@ class FitSystAliHF(FitROOT): # pylint: disable=too-many-instance-attributes
             if ref_line:
                 ref_line.Draw("same")
 
-
         root_pad.Divide(3, 2)
 
         # Sigmas
-        fill_pad(root_pad.cd(1), (sigma_min, sigma_max), h_sigma_all_bkgs.values(),
-                 make_ref_line(0., sigma_ref, tot_trials, sigma_ref))
+        fill_pad(
+            root_pad.cd(1),
+            (sigma_min, sigma_max),
+            h_sigma_all_bkgs.values(),
+            make_ref_line(0.0, sigma_ref, tot_trials, sigma_ref),
+        )
         # Means
         mean_pad = root_pad.cd(2)
-        fill_pad(mean_pad, (mean_min, mean_max), h_mean_all_bkgs.values(),
-                 make_ref_line(0., mean_ref, tot_trials, mean_ref))
+        fill_pad(
+            mean_pad, (mean_min, mean_max), h_mean_all_bkgs.values(), make_ref_line(0.0, mean_ref, tot_trials, mean_ref)
+        )
         # Legend
         bkg_func_legend = TLegend(0.2, 0.2, 0.5, 0.5)
         bkg_func_legend.SetTextSize(0.04)
         bkg_func_legend.SetBorderSize(0)
         bkg_func_legend.SetFillStyle(0)
         root_objects.append(bkg_func_legend)
-        for name, histo in  h_mean_all_bkgs.items():
+        for name, histo in h_mean_all_bkgs.items():
             bkg_func_legend.AddEntry(histo, name)
         bkg_func_legend.Draw("same")
 
@@ -1441,24 +1445,39 @@ class FitSystAliHF(FitROOT): # pylint: disable=too-many-instance-attributes
         chi2_signif_pad.Divide(1, 2)
 
         # Chi2
-        fill_pad(chi2_signif_pad.cd(1), (chi2_min, chi2_max), h_chi2_all_bkgs.values(),
-                 make_ref_line(0., chi2_ref, tot_trials, chi2_ref))
+        fill_pad(
+            chi2_signif_pad.cd(1),
+            (chi2_min, chi2_max),
+            h_chi2_all_bkgs.values(),
+            make_ref_line(0.0, chi2_ref, tot_trials, chi2_ref),
+        )
 
         # Significance
-        fill_pad(chi2_signif_pad.cd(2), (signif_min, signif_max), h_signif_all_bkgs.values(),
-                 make_ref_line(0., signif_ref, tot_trials, signif_ref))
+        fill_pad(
+            chi2_signif_pad.cd(2),
+            (signif_min, signif_max),
+            h_signif_all_bkgs.values(),
+            make_ref_line(0.0, signif_ref, tot_trials, signif_ref),
+        )
 
         # Fit yields and bin counts
         yield_pad = root_pad.cd(4)
         yield_pad.Divide(1, 2)
 
         # Fit yields
-        fill_pad(yield_pad.cd(1), (yields_fit_min, yields_fit_max), h_raw_yield_all_bkgs.values(),
-                 make_ref_line(0., yield_ref, tot_trials, yield_ref))
+        fill_pad(
+            yield_pad.cd(1),
+            (yields_fit_min, yields_fit_max),
+            h_raw_yield_all_bkgs.values(),
+            make_ref_line(0.0, yield_ref, tot_trials, yield_ref),
+        )
         # BC yields
-        fill_pad(yield_pad.cd(2), (yields_bc_min, yields_bc_max),
-                 (h_raw_yield_all_bc0, h_raw_yield_all_bc1),
-                 make_ref_line(0., yield_ref, tot_trials * n_bc_ranges, yield_ref))
+        fill_pad(
+            yield_pad.cd(2),
+            (yields_bc_min, yields_bc_max),
+            (h_raw_yield_all_bc0, h_raw_yield_all_bc1),
+            make_ref_line(0.0, yield_ref, tot_trials * n_bc_ranges, yield_ref),
+        )
 
         yield_pad = root_pad.cd(5)
         yield_pad.SetLeftMargin(0.14)
@@ -1476,29 +1495,27 @@ class FitSystAliHF(FitROOT): # pylint: disable=too-many-instance-attributes
         h_raw_yield_dist_all_bc1.Draw("sameshist")
         root_objects.append(h_raw_yield_dist_all_bc1)
         h_raw_yield_dist_all_bc1.SetDirectory(0)
-        make_ref_line(yield_ref, 0., yield_ref, h_raw_yield_dist_all.GetMaximum()).Draw("same")
+        make_ref_line(yield_ref, 0.0, yield_ref, h_raw_yield_dist_all.GetMaximum()).Draw("same")
         yield_pad.Update()
 
         # This might be taken care of later
-        #st = h_raw_yield_dist_all.GetListOfFunctions().FindObject("stats")
-        #st.SetY1NDC(0.71)
-        #st.SetY2NDC(0.9)
-        #stb0 = h_raw_yield_dist_all_bc0.GetListOfFunctions().FindObject("stats")
-        #stb0.SetY1NDC(0.51)
-        #stb0.SetY2NDC(0.7)
-        #stb0.SetTextColor(h_raw_yield_dist_all_bc0.GetLineColor())
-        perc = array("d", [0.15, 0.5, 0.85]) # quantiles for +-1 sigma
-        lim70 = array("d", [0.] * 3)
+        # st = h_raw_yield_dist_all.GetListOfFunctions().FindObject("stats")
+        # st.SetY1NDC(0.71)
+        # st.SetY2NDC(0.9)
+        # stb0 = h_raw_yield_dist_all_bc0.GetListOfFunctions().FindObject("stats")
+        # stb0.SetY1NDC(0.51)
+        # stb0.SetY2NDC(0.7)
+        # stb0.SetTextColor(h_raw_yield_dist_all_bc0.GetLineColor())
+        perc = array("d", [0.15, 0.5, 0.85])  # quantiles for +-1 sigma
+        lim70 = array("d", [0.0] * 3)
         h_raw_yield_dist_all.GetQuantiles(3, lim70, perc)
-
 
         #######################
         # Numbers and summary #
         #######################
 
         def make_latex(pos_x, pos_y, text, color=None, ndc=True):
-            """Helper to make TLatex
-            """
+            """Helper to make TLatex"""
             tlatex = TLatex(pos_x, pos_y, text)
             tlatex.SetTextSize(0.04)
             if ndc:
@@ -1508,7 +1525,6 @@ class FitSystAliHF(FitROOT): # pylint: disable=too-many-instance-attributes
             root_objects.append(tlatex)
             return tlatex
 
-
         sum_pad = root_pad.cd(6)
         sum_pad.SetLeftMargin(0.14)
         sum_pad.SetRightMargin(0.06)
@@ -1516,59 +1532,57 @@ class FitSystAliHF(FitROOT): # pylint: disable=too-many-instance-attributes
         yield_fit_color = h_raw_yield_dist_all.GetLineColor()
         yield_bc0_color = h_raw_yield_dist_all_bc0.GetLineColor()
         yield_bc1_color = h_raw_yield_dist_all_bc1.GetLineColor()
-        rel_succ_trials = successful_trials / tot_trials if tot_trials > 0 else 0.
-        make_latex(0.15, 0.93, f"succ. trials = {successful_trials} / {tot_trials} " \
-                f"({rel_succ_trials * 100.:.2f}%)").Draw("same")
+        rel_succ_trials = successful_trials / tot_trials if tot_trials > 0 else 0.0
+        make_latex(
+            0.15, 0.93, f"succ. trials = {successful_trials} / {tot_trials} ({rel_succ_trials * 100.0:.2f}%)"
+        ).Draw("same")
 
         make_latex(0.15, 0.87, f"mean = {aver:.3f}", color=yield_fit_color).Draw("same")
 
         make_latex(0.15, 0.81, f"median = {lim70[1]:.3f}", color=yield_fit_color).Draw("same")
 
         aver_bc0 = h_raw_yield_dist_all_bc0.GetMean()
-        make_latex(0.15, 0.75, f"mean(BinCount0) = {aver_bc0:.3f}",
-                   color=yield_bc0_color).Draw("same")
+        make_latex(0.15, 0.75, f"mean(BinCount0) = {aver_bc0:.3f}", color=yield_bc0_color).Draw("same")
 
         aver_bc1 = h_raw_yield_dist_all_bc1.GetMean()
-        make_latex(0.15, 0.69, f"mean(BinCount1) = {aver_bc1:.3f}",
-                   color=yield_bc1_color).Draw("same")
+        make_latex(0.15, 0.69, f"mean(BinCount1) = {aver_bc1:.3f}", color=yield_bc1_color).Draw("same")
 
         val = h_raw_yield_dist_all.GetRMS()
         val_rel = val / aver * 100 if aver != 0 else 0
-        make_latex(0.15, 0.60, f"rms = {val:.3f} ({val_rel:.2f}%)",
-                   color=yield_fit_color).Draw("same")
+        make_latex(0.15, 0.60, f"rms = {val:.3f} ({val_rel:.2f}%)", color=yield_fit_color).Draw("same")
 
         val = h_raw_yield_dist_all_bc0.GetRMS()
-        val_rel = val / aver_bc0 * 100. if aver_bc0 != 0 else 0
-        make_latex(0.15, 0.54, f"rms(BinCount0) = {val:.3f} ({val_rel:.2f}%)",
-                   color=yield_bc0_color).Draw("same")
+        val_rel = val / aver_bc0 * 100.0 if aver_bc0 != 0 else 0
+        make_latex(0.15, 0.54, f"rms(BinCount0) = {val:.3f} ({val_rel:.2f}%)", color=yield_bc0_color).Draw("same")
 
         val = h_raw_yield_dist_all_bc1.GetRMS()
-        val_rel = val / aver_bc1 * 100. if aver_bc1 != 0 else 0
-        make_latex(0.15, 0.48, f"rms(BinCount1) = {val:.3f} ({val_rel:.2f}%)",
-                   color=yield_bc1_color).Draw("same")
+        val_rel = val / aver_bc1 * 100.0 if aver_bc1 != 0 else 0
+        make_latex(0.15, 0.48, f"rms(BinCount1) = {val:.3f} ({val_rel:.2f}%)", color=yield_bc1_color).Draw("same")
 
-        make_latex(0.15, 0.39, f"min = {min_yield:.2f} ; max = {max_yield:.2f}",
-                   color=yield_fit_color).Draw("same")
+        make_latex(0.15, 0.39, f"min = {min_yield:.2f} ; max = {max_yield:.2f}", color=yield_fit_color).Draw("same")
 
         val = (max_yield - min_yield) / sqrt(12)
-        val_rel = val / aver * 100. if aver != 0 else 0
-        make_latex(0.15, 0.33,
-                   f"(max - min) / #sqrt{{12}} = {val:.3f} ({val_rel:.2f}%)",
-                   color=yield_fit_color).Draw("same")
+        val_rel = val / aver * 100.0 if aver != 0 else 0
+        make_latex(0.15, 0.33, f"(max - min) / #sqrt{{12}} = {val:.3f} ({val_rel:.2f}%)", color=yield_fit_color).Draw(
+            "same"
+        )
 
         make_latex(0.15, 0.27, f"ref = {yield_ref:.2f}", color=kRed).Draw("same")
 
         val_rel = 100 * (yield_ref - aver) / yield_ref if yield_ref != 0 else 0
-        make_latex(0.15, 0.21, f"ref - mean(fit) = {yield_ref - aver:.3f}  " \
-                               f"({val_rel:.2f}%)", color=yield_fit_color).Draw("same")
+        make_latex(
+            0.15, 0.21, f"ref - mean(fit) = {yield_ref - aver:.3f}  ({val_rel:.2f}%)", color=yield_fit_color
+        ).Draw("same")
 
         val_rel = 100 * (yield_ref - aver_bc0) / yield_ref if yield_ref != 0 else 0
-        make_latex(0.15, 0.15, f"ref - mean(BC0) = {yield_ref - aver_bc0:.3f}  " \
-                               f"({val_rel:.2f}%)", color=yield_bc0_color).Draw("same")
+        make_latex(
+            0.15, 0.15, f"ref - mean(BC0) = {yield_ref - aver_bc0:.3f}  ({val_rel:.2f}%)", color=yield_bc0_color
+        ).Draw("same")
 
         val_rel = 100 * (yield_ref - aver_bc1) / yield_ref if yield_ref != 0 else 0
-        make_latex(0.15, 0.09, f"ref - mean(BC1) = {yield_ref - aver_bc1:.3f}  " \
-                               f"({val_rel:.2f}%)", color=yield_bc1_color).Draw("same")
+        make_latex(
+            0.15, 0.09, f"ref - mean(BC1) = {yield_ref - aver_bc1:.3f}  ({val_rel:.2f}%)", color=yield_bc1_color
+        ).Draw("same")
 
         if draw_args:
             self.logger.warning("There are unknown draw arguments")

@@ -12,25 +12,27 @@
 ##   along with this program. if not, see <https://www.gnu.org/licenses/>. ##
 #############################################################################
 
-import sys
-import subprocess
-import os
 import errno
+import os
+import subprocess
+import sys
+from argparse import ArgumentParser
 from shutil import rmtree
 from tempfile import mkdtemp
-from argparse import ArgumentParser
 
 DEFAULT_DEST = "~/.machine_learning_hep/data/inputroot"
 SOURCE = "https://www.dropbox.com/sh/a9zviv7fz0dv7co/AABMNfZWzxUFUd8VszbAwlSRa?dl=1"
 
+
 def main():
     argp = ArgumentParser(description="Download or update input data for MachineLearningHEP")
-    argp.add_argument("--verbose", dest="verbose", default=False, action="store_true",
-                      help="Be verbose")
-    argp.add_argument("--clean", dest="clean", default=False, action="store_true",
-                      help="Remove old data before downloading")
-    argp.add_argument("--dest", dest="dest", default=DEFAULT_DEST,
-                      help=f"Where to download input data (defaults to {DEFAULT_DEST})")
+    argp.add_argument("--verbose", dest="verbose", default=False, action="store_true", help="Be verbose")
+    argp.add_argument(
+        "--clean", dest="clean", default=False, action="store_true", help="Remove old data before downloading"
+    )
+    argp.add_argument(
+        "--dest", dest="dest", default=DEFAULT_DEST, help=f"Where to download input data (defaults to {DEFAULT_DEST})"
+    )
     args = argp.parse_args()
 
     args.dest = os.path.expanduser(args.dest)

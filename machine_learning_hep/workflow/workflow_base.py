@@ -14,28 +14,35 @@
 
 from functools import reduce
 from os.path import join
+
 # pylint: disable=import-error, no-name-in-module
 from ROOT import gStyle
+
 # HF specific imports
 from machine_learning_hep.logger import get_logger
+
 
 # pylint: disable=too-few-public-methods
 class WorkflowBase:
     """
     Base class for all workflows related classes including systematics
     """
-    species = "workflow_base"
-    def __init__(self, datap, case, typean, period=None):
 
+    species = "workflow_base"
+
+    def __init__(self, datap, case, typean, period=None):
         self.logger = get_logger()
         self.datap = datap
         self.case = case
         self.typean = typean
         self.period = period
 
-    def cfg(self, param, default = None):
-        return reduce(lambda d, key: d.get(key, default) if isinstance(d, dict) else default,
-                      param.split("."), self.datap['analysis'][self.typean])
+    def cfg(self, param, default=None):
+        return reduce(
+            lambda d, key: d.get(key, default) if isinstance(d, dict) else default,
+            param.split("."),
+            self.datap["analysis"][self.typean],
+        )
 
     @staticmethod
     def loadstyle():
@@ -45,7 +52,6 @@ class WorkflowBase:
         gStyle.SetNumberContours(100)
         gStyle.SetCanvasColor(0)
         gStyle.SetFrameFillColor(0)
-
 
     @staticmethod
     def make_pre_suffix(args):
@@ -62,7 +68,6 @@ class WorkflowBase:
         args = [str(a) for a in args]
         return "_".join(args)
 
-
     @staticmethod
     def make_file_path(directory, filename, extension, prefix=None, suffix=None):
         if prefix is not None:
@@ -71,7 +76,6 @@ class WorkflowBase:
             filename = filename + "_" + WorkflowBase.make_pre_suffix(suffix)
         extension = extension.replace(".", "")
         return join(directory, filename + "." + extension)
-
 
     def step(self, step: str):
         """
@@ -82,13 +86,11 @@ class WorkflowBase:
             True if the step was found and executed, False otherwise
         """
         if not hasattr(self, step):
-            self.logger.error("Could not run workflow step %s for workflow %s", step,
-                              self.__class__.__name__)
+            self.logger.error("Could not run workflow step %s for workflow %s", step, self.__class__.__name__)
             return False
         self.logger.info("Run workflow step %s for workflow %s", step, self.__class__.__name__)
         getattr(self, step)()
         return True
-
 
     def get_after_burner(self):
         """

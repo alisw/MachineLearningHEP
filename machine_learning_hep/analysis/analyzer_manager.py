@@ -12,6 +12,7 @@
 
 from machine_learning_hep.logger import get_logger
 
+
 # pylint: disable=too-many-instance-attributes
 class AnalyzerManager:
     """
@@ -19,7 +20,6 @@ class AnalyzerManager:
     """
 
     def __init__(self, ana_class, database, case, typean, doperiodbyperiod, *args):
-
         self.ana_class = ana_class
         self.database = database
         self.case = case
@@ -36,7 +36,6 @@ class AnalyzerManager:
 
         self.is_initialized = False
 
-
     def get_analyzers(self, none_for_unused_period=True):
         self.initialize()
         if not none_for_unused_period:
@@ -49,7 +48,6 @@ class AnalyzerManager:
                 analyzers[a.period] = a
         analyzers[-1] = self.analyzers[-1]
         return analyzers
-
 
     def initialize(self):
         """
@@ -65,10 +63,8 @@ class AnalyzerManager:
 
         for ip, period in enumerate(useperiod):
             if self.doperiodbyperiod and period:
-                self.analyzers.append(self.ana_class(self.database, self.case, self.typean, ip,
-                                                     *self.add_args))
-        self.analyzers.append(self.ana_class(self.database, self.case, self.typean, None,
-                                             *self.add_args))
+                self.analyzers.append(self.ana_class(self.database, self.case, self.typean, ip, *self.add_args))
+        self.analyzers.append(self.ana_class(self.database, self.case, self.typean, None, *self.add_args))
 
         if self.doperiodbyperiod:
             # get after-burner, if any
@@ -79,7 +75,6 @@ class AnalyzerManager:
 
         self.is_initialized = True
 
-
     def analyze(self, ana_steps):
         """
         Gives a list of analyzers and analysis steps do each step for each analyzer
@@ -88,14 +83,16 @@ class AnalyzerManager:
         """
 
         if not ana_steps:
-            self.logger.info("No analysis steps to be done for Analyzer class %s. Return...",
-                             self.ana_class.__name__)
+            self.logger.info("No analysis steps to be done for Analyzer class %s. Return...", self.ana_class.__name__)
             return
 
         self.initialize()
 
-        self.logger.info("Run all registered analyzers of type %s for following analysis steps: %s",
-                         self.ana_class.__name__, ana_steps)
+        self.logger.info(
+            "Run all registered analyzers of type %s for following analysis steps: %s",
+            self.ana_class.__name__,
+            ana_steps,
+        )
 
         # Collect potentially failed systematic steps
         failed_steps = []

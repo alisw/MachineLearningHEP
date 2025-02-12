@@ -16,7 +16,7 @@
 Script containing validation histograms on the candidate granularity
 """
 
-from machine_learning_hep.utilities_plot import buildbinning, buildarray
+from machine_learning_hep.utilities_plot import buildarray, buildbinning
 from machine_learning_hep.validation.validation import ValidationCollection
 
 
@@ -56,14 +56,12 @@ def fill_validation_candidates(df_reco, tag=""):
                 val.make_and_fill(binning_phi, "phi_cand", *yaxis)
 
     # Invariant mass
-    val.make_and_fill(binning_inv_mass, "inv_mass",
-                      binning_v0m_perc, "perc_v0m")
-    val.make_and_fill(binning_inv_mass, "inv_mass",
-                      binning_ntrklt, "n_tracklets_corr")
+    val.make_and_fill(binning_inv_mass, "inv_mass", binning_v0m_perc, "perc_v0m")
+    val.make_and_fill(binning_inv_mass, "inv_mass", binning_ntrklt, "n_tracklets_corr")
     for i, j in enumerate(binning_pt[0:-1]):
         # Defining pT interval
         lower_pt = j
-        upper_pt = binning_pt[i+1]
+        upper_pt = binning_pt[i + 1]
         pt_interval = "_pt_cand_{:.1f}-{:.1f}".format(lower_pt, upper_pt)
         # Cutting the DF in the pT interval
         df_ptcut = df_reco[df_reco.pt_cand > lower_pt]
@@ -71,9 +69,7 @@ def fill_validation_candidates(df_reco, tag=""):
         # Resetting validation collection to use the pT cut DF
         val.reset_input(df_ptcut, tag=tag + pt_interval)
         # Filling histograms with inv mass and multiplicity
-        val.make_and_fill(binning_inv_mass, "inv_mass",
-                          binning_v0m_perc, "perc_v0m")
-        val.make_and_fill(binning_inv_mass, "inv_mass",
-                          binning_ntrklt, "n_tracklets_corr")
+        val.make_and_fill(binning_inv_mass, "inv_mass", binning_v0m_perc, "perc_v0m")
+        val.make_and_fill(binning_inv_mass, "inv_mass", binning_ntrklt, "n_tracklets_corr")
 
     return val

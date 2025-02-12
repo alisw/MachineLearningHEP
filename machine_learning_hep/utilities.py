@@ -14,6 +14,7 @@
 Script containing all helper functions
 e.g. processing files, creating objects, calculating physical quantities.
 """
+
 import bz2
 import gzip
 import lzma
@@ -208,6 +209,7 @@ def seldf_singlevar(dataframe, var, minval, maxval):
     Make projection on variable using [X,Y), e.g. pT or multiplicity
     """
     return dataframe.loc[(dataframe[var] >= minval) & (dataframe[var] < maxval)] if var is not None else dataframe
+
 
 def seldf_singlevar_inclusive(dataframe, var, minval, maxval):
     """

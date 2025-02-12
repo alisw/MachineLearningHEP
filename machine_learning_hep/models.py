@@ -17,26 +17,27 @@ Methods to: choose, train and apply ML models
             load and save ML models
             obtain control plots
 """
-# pylint: disable=too-many-branches
-from os.path import exists
-import pickle
-import pandas as pd
-import numpy as np
-import matplotlib.pyplot as plt
-import matplotlib as mpl
-from matplotlib.colors import ListedColormap
 
+# pylint: disable=too-many-branches
+import pickle
+from os.path import exists
+
+import matplotlib as mpl
+import matplotlib.pyplot as plt
+import numpy as np
+import pandas as pd
+import shap
+from matplotlib.colors import ListedColormap
 from sklearn.feature_extraction import DictVectorizer
 
-import shap
-
+from machine_learning_hep import templates_keras, templates_scikit, templates_xgboost
 from machine_learning_hep.logger import get_logger
 from machine_learning_hep.utilities_plot import prepare_fig
-from machine_learning_hep import templates_keras, templates_xgboost, templates_scikit
+
 pd.options.mode.chained_assignment = None
 
-def getclf_scikit(model_config):
 
+def getclf_scikit(model_config):
     logger = get_logger()
     logger.debug("Load scikit models")
 
@@ -56,8 +57,7 @@ def getclf_scikit(model_config):
                 c_bayesian = f"{c}_bayesian_opt"
                 bayes_opt = None
                 if hasattr(templates_scikit, c_bayesian):
-                    bayes_opt = getattr(templates_scikit, c_bayesian) \
-                            (model_config["scikit"][c]["central_params"])
+                    bayes_opt = getattr(templates_scikit, c_bayesian)(model_config["scikit"][c]["central_params"])
                 bayesian_opt.append(bayes_opt)
                 classifiers.append(model)
                 names.append(c)
@@ -70,7 +70,6 @@ def getclf_scikit(model_config):
 
 
 def getclf_xgboost(model_config):
-
     logger = get_logger()
     logger.debug("Load xgboost models")
 
@@ -90,8 +89,7 @@ def getclf_xgboost(model_config):
                 c_bayesian = f"{c}_bayesian_opt"
                 bayes_opt = None
                 if hasattr(templates_xgboost, c_bayesian):
-                    bayes_opt = getattr(templates_xgboost, c_bayesian) \
-                            (model_config["xgboost"][c]["central_params"])
+                    bayes_opt = getattr(templates_xgboost, c_bayesian)(model_config["xgboost"][c]["central_params"])
                 bayesian_opt.append(bayes_opt)
                 classifiers.append(model)
                 names.append(c)
@@ -104,7 +102,6 @@ def getclf_xgboost(model_config):
 
 
 def getclf_keras(model_config, length_input):
-
     logger = get_logger()
     logger.debug("Load keras models")
 
@@ -119,23 +116,22 @@ def getclf_keras(model_config, length_input):
     for c in model_config["keras"]:
         if model_config["keras"][c]["activate"]:
             try:
-                model = getattr(templates_keras, c)(model_config["keras"][c]["central_params"],
-                                                    length_input)
+                model = getattr(templates_keras, c)(model_config["keras"][c]["central_params"], length_input)
                 classifiers.append(model)
                 c_bayesian = f"{c}_bayesian_opt"
                 bayes_opt = None
                 if hasattr(templates_keras, c_bayesian):
-                    bayes_opt = getattr(templates_keras, c_bayesian) \
-                            (model_config["keras"][c]["central_params"], length_input)
+                    bayes_opt = getattr(templates_keras, c_bayesian)(
+                        model_config["keras"][c]["central_params"], length_input
+                    )
                 bayesian_opt.append(bayes_opt)
                 names.append(c)
                 logger.info("Added keras model %s", c)
             except AttributeError:
                 logger.critical("Could not load keras model %s", c)
 
-    #logger.critical("Some reason")
+    # logger.critical("Some reason")
     return classifiers, names, [], bayesian_opt
-
 
 
 def fit(names_, classifiers_, x_train_, y_train_):
@@ -151,15 +147,15 @@ def apply(ml_type, names_, trainedmodels_, test_set_, mylistvariables_, labels_=
 
     if len(test_set_[mylistvariables_]) == 0:
         logger.warning("Empty dataframe provided.")
-        if  ml_type == "BinaryClassification":
+        if ml_type == "BinaryClassification":
             for name in names_:
-                test_set_[f"y_test_prediction{name}"]=0
-                test_set_[f"y_test_prob{name}"]=0
+                test_set_[f"y_test_prediction{name}"] = 0
+                test_set_[f"y_test_prob{name}"] = 0
             return test_set_
-        if  ml_type == "MultiClassification":
+        if ml_type == "MultiClassification":
             for name in names_:
                 for pred, lab in enumerate(labels_):
-                    safe_lab = lab.replace('-', '_')
+                    safe_lab = lab.replace("-", "_")
                     if pred == 0:
                         # bkg cuts work differently
                         test_set_[f"y_test_prediction{name}{safe_lab}"] = 1.1
@@ -180,9 +176,8 @@ def apply(ml_type, names_, trainedmodels_, test_set_, mylistvariables_, labels_=
         elif ml_type == "MultiClassification" and labels_ is not None:
             for pred, lab in enumerate(labels_):
                 # pandas query() used in further analysis cannot accept '-' in column names
-                safe_lab = lab.replace('-', '_')
-                test_set_[f"y_test_prob{name}{safe_lab}"] = pd.Series(y_test_prob[:, pred],
-                                                                      index=test_set_.index)
+                safe_lab = lab.replace("-", "_")
+                test_set_[f"y_test_prob{name}{safe_lab}"] = pd.Series(y_test_prob[:, pred], index=test_set_.index)
         else:
             logger.fatal("Incorrect settings for chosen mltype")
     return test_set_
@@ -194,41 +189,45 @@ def savemodels(names_, trainedmodels_, folder_, suffix_):
             architecture_file = f"{folder_}/{name}{suffix_}_architecture.json"
             weights_file = f"{folder_}/{name}{suffix_}_weights.h5"
             arch_json = model.model.to_json()
-            with open(architecture_file, 'w', encoding='utf-8') as json_file:
+            with open(architecture_file, "w", encoding="utf-8") as json_file:
                 json_file.write(arch_json)
             model.model.save_weights(weights_file)
         if "scikit" in name:
             fileoutmodel = f"{folder_}/{name}{suffix_}.sav"
-            with open(fileoutmodel, 'wb') as out_file:
+            with open(fileoutmodel, "wb") as out_file:
                 pickle.dump(model, out_file, protocol=4)
         if "xgboost" in name:
             fileoutmodel = f"{folder_}/{name}{suffix_}.sav"
-            with open(fileoutmodel, 'wb') as out_file:
+            with open(fileoutmodel, "wb") as out_file:
                 pickle.dump(model, out_file, protocol=4)
             fileoutmodel = fileoutmodel.replace(".sav", ".model")
             model.save_model(fileoutmodel)
 
+
 def readmodels(names_, folder_, suffix_):
     trainedmodels_ = []
     for name in names_:
-        fileinput = folder_+"/"+name+suffix_+".sav"
+        fileinput = folder_ + "/" + name + suffix_ + ".sav"
         if not exists(fileinput):
             return None
-        with open(fileinput, 'rb') as input_file:
+        with open(fileinput, "rb") as input_file:
             model = pickle.load(input_file)
         trainedmodels_.append(model)
     return trainedmodels_
 
 
 def importanceplotall(mylistvariables_, names_, trainedmodels_, suffix_, folder):
-    names_models = [(name, model) for name, model in zip(names_, trainedmodels_) \
-            if not any(mname in name for mname in ("SVC", "Logistic", "Keras"))]
+    names_models = [
+        (name, model)
+        for name, model in zip(names_, trainedmodels_)
+        if not any(mname in name for mname in ("SVC", "Logistic", "Keras"))
+    ]
     figure, nrows, ncols = prepare_fig(len(names_models))
     for ind, (name, model) in enumerate(names_models, start=1):
         ax = plt.subplot(nrows, ncols, ind)
         feature_importances_ = model.feature_importances_
         y_pos = np.arange(len(mylistvariables_))
-        ax.barh(y_pos, feature_importances_, align='center', color='green')
+        ax.barh(y_pos, feature_importances_, align="center", color="green")
         ax.set_yticks(y_pos)
         ax.set_yticklabels(mylistvariables_, fontsize=17)
         ax.invert_yaxis()  # labels read top-to-bottom
@@ -236,8 +235,9 @@ def importanceplotall(mylistvariables_, names_, trainedmodels_, suffix_, folder)
         ax.set_title(f"Importance features {name}", fontsize=17)
         ax.xaxis.set_tick_params(labelsize=17)
         plt.xlim(0, 0.7)
-    figure.savefig(f"{folder}/importance_{suffix_}.png", bbox_inches='tight')
+    figure.savefig(f"{folder}/importance_{suffix_}.png", bbox_inches="tight")
     plt.close()
+
 
 def shap_study(names_, trainedmodels_, suffix_, x_train_, folder, class_labels, plot_options_):
     """Importance via SHAP
@@ -255,8 +255,7 @@ def shap_study(names_, trainedmodels_, suffix_, x_train_, folder, class_labels, 
     """
     mpl.rcParams.update({"text.usetex": True})
     plot_type_name = "prob_cut_scan"
-    plot_options = plot_options_.get(plot_type_name, {}) \
-            if isinstance(plot_options_, dict) else {}
+    plot_options = plot_options_.get(plot_type_name, {}) if isinstance(plot_options_, dict) else {}
     feature_names = []
     for fn in x_train_.columns:
         if fn in plot_options and "xlabel" in plot_options[fn]:
@@ -265,41 +264,50 @@ def shap_study(names_, trainedmodels_, suffix_, x_train_, folder, class_labels, 
             feature_names.append(fn.replace("_", ":"))
 
     # Rely on name to exclude certain models at the moment
-    names_models = [(name, model) for name, model in zip(names_, trainedmodels_) \
-            if not any(mname in name for mname in ("SVC", "Logistic", "Keras"))]
+    names_models = [
+        (name, model)
+        for name, model in zip(names_, trainedmodels_)
+        if not any(mname in name for mname in ("SVC", "Logistic", "Keras"))
+    ]
     figure, nrows, ncols = prepare_fig(len(names_models))
     for ind, (name, model) in enumerate(names_models, start=1):
         ax = figure.add_subplot(nrows, ncols, ind)
         plt.sca(ax)
         explainer = shap.TreeExplainer(model)
         shap_values = explainer.shap_values(x_train_)
-        shap.summary_plot(shap_values, x_train_, show=False, feature_names=feature_names,
-                          class_names=class_labels, class_inds="original")
+        shap.summary_plot(
+            shap_values,
+            x_train_,
+            show=False,
+            feature_names=feature_names,
+            class_names=class_labels,
+            class_inds="original",
+        )
         if len(class_labels) > 2:
             for ind, label in enumerate(class_labels):
                 fig_class, _, _ = prepare_fig(1)
-                shap.summary_plot(shap_values[ind], x_train_, show=False,
-                                  feature_names=feature_names, class_names=class_labels)
-                fig_class.savefig(f"{folder}/importance_shap_{name}_{label}_{suffix_}.png",
-                                  bbox_inches='tight')
+                shap.summary_plot(
+                    shap_values[ind], x_train_, show=False, feature_names=feature_names, class_names=class_labels
+                )
+                fig_class.savefig(f"{folder}/importance_shap_{name}_{label}_{suffix_}.png", bbox_inches="tight")
                 plt.close(fig_class)
-    figure.savefig(f"{folder}/importance_shap_{suffix_}.png", bbox_inches='tight')
+    figure.savefig(f"{folder}/importance_shap_{suffix_}.png", bbox_inches="tight")
     mpl.rcParams.update({"text.usetex": False})
     plt.close(figure)
 
 
 def decisionboundaries(names_, trainedmodels_, suffix_, x_train_, y_train_, folder):
     mylistvariables_ = x_train_.columns.tolist()
-    dictionary_train = x_train_.to_dict(orient='records')
+    dictionary_train = x_train_.to_dict(orient="records")
     vec = DictVectorizer()
     x_train_array_ = vec.fit_transform(dictionary_train).toarray()
 
-    height = .10
+    height = 0.10
     cm = plt.cm.RdBu
-    cm_bright = ListedColormap(['#FF0000', '#0000FF'])
+    cm_bright = ListedColormap(["#FF0000", "#0000FF"])
 
-    x_min, x_max = x_train_array_[:, 0].min() - .5, x_train_array_[:, 0].max() + .5
-    y_min, y_max = x_train_array_[:, 1].min() - .5, x_train_array_[:, 1].max() + .5
+    x_min, x_max = x_train_array_[:, 0].min() - 0.5, x_train_array_[:, 0].max() + 0.5
+    y_min, y_max = x_train_array_[:, 1].min() - 0.5, x_train_array_[:, 1].max() + 0.5
     xx, yy = np.meshgrid(np.arange(x_min, x_max, height), np.arange(y_min, y_max, height))
 
     figure, nrows, ncols = prepare_fig(len(names_))
@@ -311,17 +319,22 @@ def decisionboundaries(names_, trainedmodels_, suffix_, x_train_, y_train_, fold
         ax = plt.subplot(nrows, ncols, ind)
 
         z_contour = z_contour.reshape(xx.shape)
-        ax.contourf(xx, yy, z_contour, cmap=cm, alpha=.8)
+        ax.contourf(xx, yy, z_contour, cmap=cm, alpha=0.8)
         # Plot also the training points
-        ax.scatter(x_train_array_[:, 0], x_train_array_[:, 1],
-                   c=y_train_, cmap=cm_bright, edgecolors='k', alpha=0.3)
+        ax.scatter(x_train_array_[:, 0], x_train_array_[:, 1], c=y_train_, cmap=cm_bright, edgecolors="k", alpha=0.3)
         ax.set_xlim(xx.min(), xx.max())
         ax.set_ylim(yy.min(), yy.max())
         score = model.score(x_train_, y_train_)
-        ax.text(xx.max() - .3, yy.min() + .3, (f"accuracy={score:.2f}").lstrip('0'),
-                size=15, horizontalalignment='right', verticalalignment='center')
+        ax.text(
+            xx.max() - 0.3,
+            yy.min() + 0.3,
+            (f"accuracy={score:.2f}").lstrip("0"),
+            size=15,
+            horizontalalignment="right",
+            verticalalignment="center",
+        )
         ax.set_title(name, fontsize=17)
         ax.set_ylabel(mylistvariables_[1], fontsize=17)
         ax.set_xlabel(mylistvariables_[0], fontsize=17)
-    figure.savefig(f"{folder}/decisionboundaries{suffix_}.png", bbox_inches='tight')
+    figure.savefig(f"{folder}/decisionboundaries{suffix_}.png", bbox_inches="tight")
     plt.close(figure)

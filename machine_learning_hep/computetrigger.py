@@ -13,28 +13,29 @@
 #############################################################################
 
 import argparse
-from ROOT import TFile, TCanvas, TF1, gPad, TLine, TLegend  # pylint: disable=import-error, no-name-in-module
-from machine_learning_hep.utilities_plot import (load_root_style,
-                                                 rebin_histogram,
-                                                 buildbinning,
-                                                 buildhisto)
+
+from ROOT import TF1, TCanvas, TFile, TLegend, TLine, gPad  # pylint: disable=import-error, no-name-in-module
+
+from machine_learning_hep.utilities_plot import buildbinning, buildhisto, load_root_style, rebin_histogram
 
 
-def main(input_trg="/data/DerivedResults/D0kAnywithJets/vAN-20200304_ROOT6-1/pp_2018_data/"
-         "376_20200304-2028/resultsSPDvspt_ntrkl_trigger/masshisto.root",  # pylint: disable=too-many-statements
-         input_mb="/data/DerivedResults/D0kAnywithJets/vAN-20200304_ROOT6-1/pp_2018_data/" \
-                  "376_20200304-2028/resultsMBvspt_ntrkl_trigger/masshisto.root",
-         output_path="../Analyses/ALICE_D2H_vs_mult_pp13/reweighting/data_2018/",
-         min_draw_range=0, max_draw_range=150,
-         min_fit_range=40., max_fit_range=100.,
-         rebin_histo=True, show_func_ratio=True):
+def main(
+    input_trg="/data/DerivedResults/D0kAnywithJets/vAN-20200304_ROOT6-1/pp_2018_data/"
+    "376_20200304-2028/resultsSPDvspt_ntrkl_trigger/masshisto.root",  # pylint: disable=too-many-statements
+    input_mb="/data/DerivedResults/D0kAnywithJets/vAN-20200304_ROOT6-1/pp_2018_data/"
+    "376_20200304-2028/resultsMBvspt_ntrkl_trigger/masshisto.root",
+    output_path="../Analyses/ALICE_D2H_vs_mult_pp13/reweighting/data_2018/",
+    min_draw_range=0,
+    max_draw_range=150,
+    min_fit_range=40.0,
+    max_fit_range=100.0,
+    rebin_histo=True,
+    show_func_ratio=True,
+):
+    draw_range = [min_draw_range, max_draw_range]
+    fit_range = [min_fit_range, max_fit_range]
 
-    draw_range = [min_draw_range,
-                  max_draw_range]
-    fit_range = [min_fit_range,
-                 max_fit_range]
-
-    re_binning = buildbinning(100, -.5, 99.5)
+    re_binning = buildbinning(100, -0.5, 99.5)
     re_binning += buildbinning(25, 100.5, 199.5)
 
     load_root_style()  # Loading the default style
@@ -45,31 +46,27 @@ def main(input_trg="/data/DerivedResults/D0kAnywithJets/vAN-20200304_ROOT6-1/pp_
     hden = filedatamb.Get("hn_tracklets_corr")
     hnum = filedatatrg.Get("hn_tracklets_corr")
     if rebin_histo:
-        hden_rebin = buildhisto(hden.GetName() + "_den_rebin",
-                                hden.GetTitle(), re_binning)
+        hden_rebin = buildhisto(hden.GetName() + "_den_rebin", hden.GetTitle(), re_binning)
         hden = rebin_histogram(hden, hden_rebin)
-        hnum_rebin = buildhisto(hnum.GetName() + "_num_rebin",
-                                hnum.GetTitle(), re_binning)
+        hnum_rebin = buildhisto(hnum.GetName() + "_num_rebin", hnum.GetTitle(), re_binning)
         hnum = rebin_histogram(hnum, hnum_rebin)
     hratio = hnum.Clone("hratio")
     hdend = filedatamb.Get("hn_tracklets_corr_withd")
     hnumd = filedatatrg.Get("hn_tracklets_corr_withd")
     if rebin_histo:
-        hdend_rebin = buildhisto(hdend.GetName() + "_dend_rebin",
-                                 hdend.GetTitle(), re_binning)
+        hdend_rebin = buildhisto(hdend.GetName() + "_dend_rebin", hdend.GetTitle(), re_binning)
         hdend = rebin_histogram(hdend, hdend_rebin)
-        hnumd_rebin = buildhisto(hnumd.GetName() + "_numd_rebin",
-                                 hnumd.GetTitle(), re_binning)
+        hnumd_rebin = buildhisto(hnumd.GetName() + "_numd_rebin", hnumd.GetTitle(), re_binning)
         hnumd = rebin_histogram(hnumd, hnumd_rebin)
     hratiod = hnumd.Clone("hratiod")
     hratio.Divide(hden)
     hratiod.Divide(hdend)
 
     # Prepare the canvas
-    ctrigger = TCanvas('ctrigger', 'The Fit Canvas')
+    ctrigger = TCanvas("ctrigger", "The Fit Canvas")
     ctrigger.SetCanvasSize(2500, 2000)
     ctrigger.Divide(3, 2)
-    leg = TLegend(.5, .65, .7, .85)
+    leg = TLegend(0.5, 0.65, 0.7, 0.85)
     leg.SetBorderSize(0)
     leg.SetFillColor(0)
     leg.SetFillStyle(0)
@@ -94,9 +91,9 @@ def main(input_trg="/data/DerivedResults/D0kAnywithJets/vAN-20200304_ROOT6-1/pp_
     hratio.GetXaxis().SetRangeUser(*draw_range)
     hratio.Draw("pe")
     func = TF1("func", "([0]/(1+TMath::Exp(-[1]*(x-[2]))))", *draw_range)
-    func.SetParameters(300, .1, 570)
-    func.SetParLimits(1, 0., 10.)
-    func.SetParLimits(2, 0., 1000.)
+    func.SetParameters(300, 0.1, 570)
+    func.SetParLimits(1, 0.0, 10.0)
+    func.SetParLimits(2, 0.0, 1000.0)
     func.SetRange(*fit_range)
     func.SetLineWidth(1)
     hratio.Fit(func, "L", "", *fit_range)
@@ -107,14 +104,12 @@ def main(input_trg="/data/DerivedResults/D0kAnywithJets/vAN-20200304_ROOT6-1/pp_
         hfunratio = hratio.DrawCopy()
         hfunratio.GetListOfFunctions().Clear()
         yaxis = hfunratio.GetYaxis()
-        yaxis.SetTitle(yaxis.GetTitle()
-                       + " ratio to fit function")
-        for i in range(1, hfunratio.GetNbinsX()+1):
+        yaxis.SetTitle(yaxis.GetTitle() + " ratio to fit function")
+        for i in range(1, hfunratio.GetNbinsX() + 1):
             x = hfunratio.GetXaxis().GetBinCenter(i)
-            y = [hfunratio.GetBinContent(i),
-                 hfunratio.GetBinError(i)]
-            ratio = y[0]/func.Eval(x)
-            ratio_error = y[1]/func.Eval(x)
+            y = [hfunratio.GetBinContent(i), hfunratio.GetBinError(i)]
+            ratio = y[0] / func.Eval(x)
+            ratio_error = y[1] / func.Eval(x)
             hfunratio.SetBinContent(i, ratio)
             hfunratio.SetBinError(i, ratio_error)
     # Draw source with D
@@ -133,9 +128,9 @@ def main(input_trg="/data/DerivedResults/D0kAnywithJets/vAN-20200304_ROOT6-1/pp_
     hratiod.GetXaxis().SetRangeUser(*draw_range)
     hratiod.Draw("pe")
     funcd = TF1("func", "([0]/(1+TMath::Exp(-[1]*(x-[2]))))", *draw_range)
-    funcd.SetParameters(300, .1, 570)
-    funcd.SetParLimits(1, 0., 10.)
-    funcd.SetParLimits(2, 0., 1000.)
+    funcd.SetParameters(300, 0.1, 570)
+    funcd.SetParLimits(1, 0.0, 10.0)
+    funcd.SetParLimits(2, 0.0, 1000.0)
     funcd.SetRange(*fit_range)
     funcd.SetLineWidth(1)
     hratiod.Fit(funcd, "L", "", *fit_range)
@@ -146,21 +141,18 @@ def main(input_trg="/data/DerivedResults/D0kAnywithJets/vAN-20200304_ROOT6-1/pp_
     # Draw both fitting functions
     ctrigger.cd(6)
     # pylint: disable=unused-variable
-    hframe = gPad.DrawFrame(min_draw_range, 0,
-                            max_draw_range, 1,
-                            ";n_tracklets_corr;Efficiency")
+    hframe = gPad.DrawFrame(min_draw_range, 0, max_draw_range, 1, ";n_tracklets_corr;Efficiency")
     funcnorm = func.Clone("funcSPDvspt_ntrkl_norm")
-    funcnorm.FixParameter(0, funcnorm.GetParameter(0)/funcnorm.GetMaximum())
+    funcnorm.FixParameter(0, funcnorm.GetParameter(0) / funcnorm.GetMaximum())
     funcnormd = funcd.Clone("funcdSPDvspt_ntrkl_norm")
-    funcnormd.FixParameter(0, funcnormd.GetParameter(0)/funcnormd.GetMaximum())
+    funcnormd.FixParameter(0, funcnormd.GetParameter(0) / funcnormd.GetMaximum())
     funcnorm.Draw("same")
     funcnormd.Draw("same")
     line = TLine(60, 0, 60, 1)
     line.SetLineStyle(2)
     line.Draw("same")
     ctrigger.SaveAs(output_path + "/SPDtrigger.pdf")
-    foutput = TFile.Open(output_path + "/triggerSPDvspt_ntrkl.root",
-                         "recreate")
+    foutput = TFile.Open(output_path + "/triggerSPDvspt_ntrkl.root", "recreate")
     foutput.cd()
     hratio.SetName("hratioSPDvspt_ntrkl")
     hratio.Write()
@@ -180,54 +172,36 @@ def main(input_trg="/data/DerivedResults/D0kAnywithJets/vAN-20200304_ROOT6-1/pp_
 if __name__ == "__main__":
     # Configuration variables
     PARSER = argparse.ArgumentParser(description="Compute the trigger")
-    PARSER.add_argument("--input-trg",
-                        dest="input_trg",
-                        help="input file for triggered data")
-    PARSER.add_argument("--input-mb",
-                        dest="input_mb",
-                        help="input file for MB data")
-    PARSER.add_argument("--output-path",
-                        dest="output_path",
-                        help="output path for pdf and root files",
-                        default="/tmp/")
-    PARSER.add_argument("--min-draw-range",
-                        dest="min_draw_range",
-                        help="Minimum histogram plotting range",
-                        default=0.,
-                        type=float)
-    PARSER.add_argument("--max-draw-range",
-                        dest="max_draw_range",
-                        help="Maximum histogram plotting range",
-                        default=150.,
-                        type=float)
-    PARSER.add_argument("--min-fit-range",
-                        dest="min_fit_range",
-                        help="Minimum fit range",
-                        default=40.,
-                        type=float)
-    PARSER.add_argument("--max-fit-range",
-                        dest="max_fit_range",
-                        help="Maximum fit range",
-                        default=100.,
-                        type=float)
-    PARSER.add_argument("--rebin-histo",
-                        help="Rebin the histogram",
-                        dest="rebin_histo",
-                        action="store_true")
-    PARSER.add_argument("--func-ratio",
-                        help="Shows the ratio between the function and the fitted histogram",
-                        dest="func_ratio",
-                        action="store_true")
+    PARSER.add_argument("--input-trg", dest="input_trg", help="input file for triggered data")
+    PARSER.add_argument("--input-mb", dest="input_mb", help="input file for MB data")
+    PARSER.add_argument("--output-path", dest="output_path", help="output path for pdf and root files", default="/tmp/")
+    PARSER.add_argument(
+        "--min-draw-range", dest="min_draw_range", help="Minimum histogram plotting range", default=0.0, type=float
+    )
+    PARSER.add_argument(
+        "--max-draw-range", dest="max_draw_range", help="Maximum histogram plotting range", default=150.0, type=float
+    )
+    PARSER.add_argument("--min-fit-range", dest="min_fit_range", help="Minimum fit range", default=40.0, type=float)
+    PARSER.add_argument("--max-fit-range", dest="max_fit_range", help="Maximum fit range", default=100.0, type=float)
+    PARSER.add_argument("--rebin-histo", help="Rebin the histogram", dest="rebin_histo", action="store_true")
+    PARSER.add_argument(
+        "--func-ratio",
+        help="Shows the ratio between the function and the fitted histogram",
+        dest="func_ratio",
+        action="store_true",
+    )
 
     PARSER.print_help()
     ARGS = PARSER.parse_args()
     print(ARGS)
-    main(input_trg=ARGS.input_trg,
-         input_mb=ARGS.input_mb,
-         output_path=ARGS.output_path,
-         min_draw_range=ARGS.min_draw_range,
-         max_draw_range=ARGS.max_draw_range,
-         min_fit_range=ARGS.min_fit_range,
-         max_fit_range=ARGS.max_fit_range,
-         rebin_histo=ARGS.rebin_histo,
-         show_func_ratio=ARGS.func_ratio)
+    main(
+        input_trg=ARGS.input_trg,
+        input_mb=ARGS.input_mb,
+        output_path=ARGS.output_path,
+        min_draw_range=ARGS.min_draw_range,
+        max_draw_range=ARGS.max_draw_range,
+        min_fit_range=ARGS.min_fit_range,
+        max_fit_range=ARGS.max_fit_range,
+        rebin_histo=ARGS.rebin_histo,
+        show_func_ratio=ARGS.func_ratio,
+    )

@@ -15,19 +15,35 @@
 """
 main script for doing final stage analysis
 """
+
 # pylint: disable=too-many-lines, line-too-long
 import argparse
 from array import array
 from cmath import nan
-import yaml
-# pylint: disable=import-error, no-name-in-module
-from ROOT import TFile, TLatex, TLine, TGaxis, gROOT, gStyle, TCanvas, TGraphAsymmErrors, TGraphErrors, TGraph
-from machine_learning_hep.utilities import make_message_notfound
-from machine_learning_hep.utilities import get_colour, get_marker, draw_latex
-from machine_learning_hep.utilities import make_plot, get_y_window_his, get_y_window_gr, get_plot_range, divide_graphs, get_x_window_his, get_x_window_gr, scale_graph
-from machine_learning_hep.logger import get_logger
 
-def main(): # pylint: disable=too-many-locals, too-many-statements, too-many-branches
+import yaml
+
+# pylint: disable=import-error, no-name-in-module
+from ROOT import TCanvas, TFile, TGaxis, TGraph, TGraphAsymmErrors, TGraphErrors, TLatex, TLine, gROOT, gStyle
+
+from machine_learning_hep.logger import get_logger
+from machine_learning_hep.utilities import (
+    divide_graphs,
+    draw_latex,
+    get_colour,
+    get_marker,
+    get_plot_range,
+    get_x_window_gr,
+    get_x_window_his,
+    get_y_window_gr,
+    get_y_window_his,
+    make_message_notfound,
+    make_plot,
+    scale_graph,
+)
+
+
+def main():  # pylint: disable=too-many-locals, too-many-statements, too-many-branches
     """
     Main plotting function
     """
@@ -36,17 +52,16 @@ def main(): # pylint: disable=too-many-locals, too-many-statements, too-many-bra
     # pylint: disable=unused-variable
 
     parser = argparse.ArgumentParser()
-    parser.add_argument("--database-analysis", "-d", dest="database_analysis",
-                        help="analysis database to be used", required=True)
-    parser.add_argument("--analysis", "-a", dest="type_ana",
-                        help="choose type of analysis", required=True)
-    parser.add_argument("--input", "-i", dest="input_file",
-                        help="results input file", required=True)
+    parser.add_argument(
+        "--database-analysis", "-d", dest="database_analysis", help="analysis database to be used", required=True
+    )
+    parser.add_argument("--analysis", "-a", dest="type_ana", help="choose type of analysis", required=True)
+    parser.add_argument("--input", "-i", dest="input_file", help="results input file", required=True)
 
     args = parser.parse_args()
 
     typean = args.type_ana
-    shape = typean[len("jet_"):]
+    shape = typean[len("jet_") :]
     print(f"Shape: {shape}")
     i_shape = 0 if shape == "zg" else 1 if shape == "rg" else 2
     print(f"Index {i_shape}")
@@ -75,39 +90,35 @@ def main(): # pylint: disable=too-many-locals, too-many-statements, too-many-bra
     var1ranges.append(lpt_finbinmax[-1])
 
     # second variable (jet pt)
-    v_var2_binning = datap["analysis"][typean]["var_binning2"] # name
+    v_var2_binning = datap["analysis"][typean]["var_binning2"]  # name
     lvar2_binmin_reco = datap["analysis"][typean].get("sel_binmin2_reco", None)
     lvar2_binmax_reco = datap["analysis"][typean].get("sel_binmax2_reco", None)
-    p_nbin2_reco = len(lvar2_binmin_reco) # number of reco bins
+    p_nbin2_reco = len(lvar2_binmin_reco)  # number of reco bins
     lvar2_binmin_gen = datap["analysis"][typean].get("sel_binmin2_gen", None)
     lvar2_binmax_gen = datap["analysis"][typean].get("sel_binmax2_gen", None)
-    p_nbin2_gen = len(lvar2_binmin_gen) # number of gen bins
+    p_nbin2_gen = len(lvar2_binmin_gen)  # number of gen bins
     var2ranges_reco = lvar2_binmin_reco.copy()
     var2ranges_reco.append(lvar2_binmax_reco[-1])
-    var2binarray_reco = array("d", var2ranges_reco) # array of bin edges to use in histogram constructors
+    var2binarray_reco = array("d", var2ranges_reco)  # array of bin edges to use in histogram constructors
     var2ranges_gen = lvar2_binmin_gen.copy()
     var2ranges_gen.append(lvar2_binmax_gen[-1])
-    var2binarray_gen = array("d", var2ranges_gen) # array of bin edges to use in histogram constructors
+    var2binarray_gen = array("d", var2ranges_gen)  # array of bin edges to use in histogram constructors
 
     # observable (z, shape,...)
-    v_varshape_binning = datap["analysis"][typean]["var_binningshape"] # name (reco)
-    v_varshape_binning_gen = datap["analysis"][typean]["var_binningshape_gen"] # name (gen)
-    lvarshape_binmin_reco = \
-        datap["analysis"][typean].get("sel_binminshape_reco", None)
-    lvarshape_binmax_reco = \
-        datap["analysis"][typean].get("sel_binmaxshape_reco", None)
-    p_nbinshape_reco = len(lvarshape_binmin_reco) # number of reco bins
-    lvarshape_binmin_gen = \
-        datap["analysis"][typean].get("sel_binminshape_gen", None)
-    lvarshape_binmax_gen = \
-        datap["analysis"][typean].get("sel_binmaxshape_gen", None)
-    p_nbinshape_gen = len(lvarshape_binmin_gen) # number of gen bins
+    v_varshape_binning = datap["analysis"][typean]["var_binningshape"]  # name (reco)
+    v_varshape_binning_gen = datap["analysis"][typean]["var_binningshape_gen"]  # name (gen)
+    lvarshape_binmin_reco = datap["analysis"][typean].get("sel_binminshape_reco", None)
+    lvarshape_binmax_reco = datap["analysis"][typean].get("sel_binmaxshape_reco", None)
+    p_nbinshape_reco = len(lvarshape_binmin_reco)  # number of reco bins
+    lvarshape_binmin_gen = datap["analysis"][typean].get("sel_binminshape_gen", None)
+    lvarshape_binmax_gen = datap["analysis"][typean].get("sel_binmaxshape_gen", None)
+    p_nbinshape_gen = len(lvarshape_binmin_gen)  # number of gen bins
     varshaperanges_reco = lvarshape_binmin_reco.copy()
     varshaperanges_reco.append(lvarshape_binmax_reco[-1])
-    varshapebinarray_reco = array("d", varshaperanges_reco) # array of bin edges to use in histogram constructors
+    varshapebinarray_reco = array("d", varshaperanges_reco)  # array of bin edges to use in histogram constructors
     varshaperanges_gen = lvarshape_binmin_gen.copy()
     varshaperanges_gen.append(lvarshape_binmax_gen[-1])
-    varshapebinarray_gen = array("d", varshaperanges_gen) # array of bin edges to use in histogram constructors
+    varshapebinarray_gen = array("d", varshaperanges_gen)  # array of bin edges to use in histogram constructors
 
     file_results = TFile.Open(file_in)
     if not file_results:
@@ -211,16 +222,16 @@ def main(): # pylint: disable=too-many-locals, too-many-statements, too-many-bra
     offsets_axes_double = [0.8, 0.8]
     margins_can = [0.1, 0.13, 0.1, 0.03]
     margins_can_double = [0.1, 0.1, 0.1, 0.1]
-    margins_can_double = [0., 0., 0., 0.]
+    margins_can_double = [0.0, 0.0, 0.0, 0.0]
     size_thg = 0.05
     offset_thg = 0.85
 
-    gStyle.SetErrorX(0) # do not plot horizontal error bars of histograms
+    gStyle.SetErrorX(0)  # do not plot horizontal error bars of histograms
     fontsize = 0.035
     opt_leg_g = "FP"
     opt_plot_g = "2"
 
-    list_new = [] # list to avoid loosing objects created in loops
+    list_new = []  # list to avoid loosing objects created in loops
 
     # labels
 
@@ -241,8 +252,17 @@ def main(): # pylint: disable=too-many-locals, too-many-statements, too-many-bra
     text_pythia_split = "#splitline{PYTHIA 8}{(Monash)}"
     text_powheg = "POWHEG"
     text_jets = "charged jets, anti-#it{k}_{T}, #it{R} = 0.4"
-    text_ptjet = "%g #leq %s < %g GeV/#it{c}, |#it{#eta}_{jet}| #leq 0.5" % (lvar2_binmin_reco[ibin2], p_latexbin2var, lvar2_binmax_reco[ibin2])
-    text_pth = "%g #leq #it{p}_{T}^{%s} < %g GeV/#it{c}, |#it{y}_{%s}| #leq 0.8" % (lpt_finbinmin[0], p_latexnhadron, min(lpt_finbinmax[-1], lvar2_binmax_reco[ibin2]), p_latexnhadron)
+    text_ptjet = "%g #leq %s < %g GeV/#it{c}, |#it{#eta}_{jet}| #leq 0.5" % (
+        lvar2_binmin_reco[ibin2],
+        p_latexbin2var,
+        lvar2_binmax_reco[ibin2],
+    )
+    text_pth = "%g #leq #it{p}_{T}^{%s} < %g GeV/#it{c}, |#it{y}_{%s}| #leq 0.8" % (
+        lpt_finbinmin[0],
+        p_latexnhadron,
+        min(lpt_finbinmax[-1], lvar2_binmax_reco[ibin2]),
+        p_latexnhadron,
+    )
     text_ptcut = "#it{p}_{T, incl. ch. jet}^{leading track} #geq 5.33 GeV/#it{c}"
     text_ptcut_sim = "#it{p}_{T, incl. ch. jet}^{leading h^{#pm}} #geq 5.33 GeV/#it{c} (varied)"
     text_sd = "Soft Drop (#it{z}_{cut} = 0.1, #it{#beta} = 0)"
@@ -270,18 +290,31 @@ def main(): # pylint: disable=too-many-locals, too-many-statements, too-many-bra
 
     # make the horizontal error bars smaller
     if shape == "nsd":
-        for gr in [hf_data_syst, incl_data_syst, hf_powheg_syst, hf_ratio_syst, incl_ratio_syst, incl_pythia_syst, quark_pythia_syst, gluon_pythia_syst]:
+        for gr in [
+            hf_data_syst,
+            incl_data_syst,
+            hf_powheg_syst,
+            hf_ratio_syst,
+            incl_ratio_syst,
+            incl_pythia_syst,
+            quark_pythia_syst,
+            gluon_pythia_syst,
+        ]:
             for i in range(gr.GetN()):
                 gr.SetPointEXlow(i, 0.1)
                 gr.SetPointEXhigh(i, 0.1)
 
     # Scale PYTHIA to adjust normalisation for the missing entries in the untagged bin of zg and rg
 
-    for his, name in zip((hf_data_stat, incl_data_stat, hf_pythia_stat, incl_pythia_stat, quark_pythia_stat, gluon_pythia_stat),
-    ("data HF", "data incl.", "MC HF", "MC incl.", "MC quark", "MC gluon")):
-        print(f"Integral of {shape} {name} = {his.Integral(1, his.GetNbinsX(), 'width')}, "
-        f"range: {his.GetXaxis().GetXmin()} - {his.GetXaxis().GetXmax()}, "
-        f"untagged fraction = {his.Integral(1, 1, 'width')}")
+    for his, name in zip(
+        (hf_data_stat, incl_data_stat, hf_pythia_stat, incl_pythia_stat, quark_pythia_stat, gluon_pythia_stat),
+        ("data HF", "data incl.", "MC HF", "MC incl.", "MC quark", "MC gluon"),
+    ):
+        print(
+            f"Integral of {shape} {name} = {his.Integral(1, his.GetNbinsX(), 'width')}, "
+            f"range: {his.GetXaxis().GetXmin()} - {his.GetXaxis().GetXmax()}, "
+            f"untagged fraction = {his.Integral(1, 1, 'width')}"
+        )
 
     # untagged fractions obtained from the first bin of nsd
     frac_untag_hf = 0.18552197557279143
@@ -290,33 +323,50 @@ def main(): # pylint: disable=too-many-locals, too-many-statements, too-many-bra
     frac_untag_gluon = 0.014728195998301162
 
     if shape in ("zg", "rg"):
-        for his, gr, frac in zip((hf_pythia_stat, incl_pythia_stat, quark_pythia_stat, gluon_pythia_stat),
-        (None, incl_pythia_syst, quark_pythia_syst, gluon_pythia_syst),
-        (frac_untag_hf, frac_untag_incl, frac_untag_quark, frac_untag_gluon)):
+        for his, gr, frac in zip(
+            (hf_pythia_stat, incl_pythia_stat, quark_pythia_stat, gluon_pythia_stat),
+            (None, incl_pythia_syst, quark_pythia_syst, gluon_pythia_syst),
+            (frac_untag_hf, frac_untag_incl, frac_untag_quark, frac_untag_gluon),
+        ):
             f = 1 - frac
             his.Scale(f)
             scale_graph(gr, f)
         # Check that the integral after scaling is consistent with the missing untagged fraction.
-        for his, name, frac in zip((hf_pythia_stat, incl_pythia_stat, quark_pythia_stat, gluon_pythia_stat),
-        ("MC HF", "MC incl.", "MC quark", "MC gluon"),
-        (frac_untag_hf, frac_untag_incl, frac_untag_quark, frac_untag_gluon)):
-            print(f"Integral of {shape} {name} after scaling + untagged fraction = {his.Integral(1, his.GetNbinsX(), 'width') + frac}")
+        for his, name, frac in zip(
+            (hf_pythia_stat, incl_pythia_stat, quark_pythia_stat, gluon_pythia_stat),
+            ("MC HF", "MC incl.", "MC quark", "MC gluon"),
+            (frac_untag_hf, frac_untag_incl, frac_untag_quark, frac_untag_gluon),
+        ):
+            print(
+                f"Integral of {shape} {name} after scaling + untagged fraction = {his.Integral(1, his.GetNbinsX(), 'width') + frac}"
+            )
 
     # data, HF and inclusive
 
     hf_data_syst_cl = hf_data_syst.Clone()
 
-    leg_pos = [.72, .75, .85, .85]
+    leg_pos = [0.72, 0.75, 0.85, 0.85]
     list_obj = [hf_data_syst, incl_data_syst, hf_data_stat, incl_data_stat]
     labels_obj = ["%s-tagged" % p_latexnhadron, "inclusive", "", ""]
     colours = [get_colour(i, j) for i, j in zip((c_hf_data, c_incl_data, c_hf_data, c_incl_data), (2, 2, 1, 1))]
     markers = [m_hf_data, m_incl_data, m_hf_data, m_incl_data]
     y_margin_up = 0.46
     y_margin_down = 0.05
-    cshape_data, list_obj_data_new = make_plot("cshape_data_" + suffix, size=size_can, \
-        list_obj=list_obj, labels_obj=labels_obj, opt_leg_g=opt_leg_g, opt_plot_g=opt_plot_g, offsets_xy=offsets_axes, \
-        colours=colours, markers=markers, leg_pos=leg_pos, margins_y=[y_margin_down, y_margin_up], margins_c=margins_can, \
-        title=title_full)
+    cshape_data, list_obj_data_new = make_plot(
+        "cshape_data_" + suffix,
+        size=size_can,
+        list_obj=list_obj,
+        labels_obj=labels_obj,
+        opt_leg_g=opt_leg_g,
+        opt_plot_g=opt_plot_g,
+        offsets_xy=offsets_axes,
+        colours=colours,
+        markers=markers,
+        leg_pos=leg_pos,
+        margins_y=[y_margin_down, y_margin_up],
+        margins_c=margins_can,
+        title=title_full,
+    )
     for gr, c in zip((hf_data_syst, incl_data_syst), (c_hf_data, c_incl_data)):
         gr.SetMarkerColor(get_colour(c))
     list_obj_data_new[0].SetTextSize(fontsize)
@@ -362,17 +412,30 @@ def main(): # pylint: disable=too-many-locals, too-many-statements, too-many-bra
 
     # data and PYTHIA, POWHEG, HF
 
-    leg_pos = [.72, .65, .85, .85]
+    leg_pos = [0.72, 0.65, 0.85, 0.85]
     list_obj = [hf_data_syst_cl, hf_powheg_syst, hf_data_stat, hf_pythia_stat, hf_powheg_stat]
     labels_obj = ["data", text_powheg, "", text_pythia_split, ""]
-    colours = [get_colour(i, j) for i, j in zip((c_hf_data, c_hf_powheg, c_hf_data, c_hf_pythia, c_hf_powheg), (2, 2, 1, 1, 1))]
+    colours = [
+        get_colour(i, j) for i, j in zip((c_hf_data, c_hf_powheg, c_hf_data, c_hf_pythia, c_hf_powheg), (2, 2, 1, 1, 1))
+    ]
     markers = [m_hf_data, m_hf_powheg, m_hf_data, m_hf_pythia, m_hf_powheg]
     y_margin_up = 0.4
     y_margin_down = 0.05
-    cshape_data_mc_hf, list_obj_data_mc_hf_new = make_plot("cshape_data_mc_hf_" + suffix, size=size_can, \
-        list_obj=list_obj, labels_obj=labels_obj, opt_leg_g=opt_leg_g, opt_plot_g=opt_plot_g, offsets_xy=offsets_axes, \
-        colours=colours, markers=markers, leg_pos=leg_pos, margins_y=[y_margin_down, y_margin_up], margins_c=margins_can, \
-        title=title_full)
+    cshape_data_mc_hf, list_obj_data_mc_hf_new = make_plot(
+        "cshape_data_mc_hf_" + suffix,
+        size=size_can,
+        list_obj=list_obj,
+        labels_obj=labels_obj,
+        opt_leg_g=opt_leg_g,
+        opt_plot_g=opt_plot_g,
+        offsets_xy=offsets_axes,
+        colours=colours,
+        markers=markers,
+        leg_pos=leg_pos,
+        margins_y=[y_margin_down, y_margin_up],
+        margins_c=margins_can,
+        title=title_full,
+    )
     for gr, c in zip([hf_data_syst_cl, hf_powheg_syst], [c_hf_data, c_hf_powheg]):
         gr.SetMarkerColor(get_colour(c))
     leg_data_mc_hf = list_obj_data_mc_hf_new[0]
@@ -380,13 +443,13 @@ def main(): # pylint: disable=too-many-locals, too-many-statements, too-many-bra
     leg_data_mc_hf.SetTextSize(fontsize)
     if shape == "nsd":
         hf_data_syst_cl.GetXaxis().SetNdivisions(5)
-        #axis_nsd = hf_data_syst_cl.GetHistogram().GetXaxis()
-        #x1 = axis_nsd.GetBinLowEdge(1)
-        #x2 = axis_nsd.GetBinUpEdge(axis_nsd.GetNbins())
-        #axis_nsd.Set(5, x1, x2)
-        #for ibin in range(axis_nsd.GetNbins()):
+        # axis_nsd = hf_data_syst_cl.GetHistogram().GetXaxis()
+        # x1 = axis_nsd.GetBinLowEdge(1)
+        # x2 = axis_nsd.GetBinUpEdge(axis_nsd.GetNbins())
+        # axis_nsd.Set(5, x1, x2)
+        # for ibin in range(axis_nsd.GetNbins()):
         #    axis_nsd.SetBinLabel(ibin + 1, "%d" % ibin)
-        #axis_nsd.SetNdivisions(5)
+        # axis_nsd.SetNdivisions(5)
     cshape_data_mc_hf.Update()
     if shape == "rg":
         # plot the theta_g axis
@@ -419,17 +482,28 @@ def main(): # pylint: disable=too-many-locals, too-many-statements, too-many-bra
 
     # data and PYTHIA, inclusive
 
-    #leg_pos = [.68, .65, .85, .85]
+    # leg_pos = [.68, .65, .85, .85]
     list_obj = [incl_data_syst, incl_pythia_syst, incl_data_stat, incl_pythia_stat]
     labels_obj = ["data", text_pythia_split]
     colours = [get_colour(i, j) for i, j in zip((c_incl_data, c_incl_pythia, c_incl_data, c_incl_pythia), (2, 2, 1, 1))]
     markers = [m_incl_data, m_incl_pythia, m_incl_data, m_incl_pythia]
     y_margin_up = 0.4
     y_margin_down = 0.05
-    cshape_data_mc_incl, list_obj_data_mc_incl_new = make_plot("cshape_data_mc_incl_" + suffix, size=size_can, \
-        list_obj=list_obj, labels_obj=labels_obj, opt_leg_g=opt_leg_g, opt_plot_g=opt_plot_g, offsets_xy=offsets_axes, \
-        colours=colours, markers=markers, leg_pos=leg_pos, margins_y=[y_margin_down, y_margin_up], margins_c=margins_can, \
-        title=title_full)
+    cshape_data_mc_incl, list_obj_data_mc_incl_new = make_plot(
+        "cshape_data_mc_incl_" + suffix,
+        size=size_can,
+        list_obj=list_obj,
+        labels_obj=labels_obj,
+        opt_leg_g=opt_leg_g,
+        opt_plot_g=opt_plot_g,
+        offsets_xy=offsets_axes,
+        colours=colours,
+        markers=markers,
+        leg_pos=leg_pos,
+        margins_y=[y_margin_down, y_margin_up],
+        margins_c=margins_can,
+        title=title_full,
+    )
     for gr, c in zip([incl_data_syst, incl_pythia_syst], [c_incl_data, c_incl_pythia]):
         gr.SetMarkerColor(get_colour(c))
     leg_data_mc_incl = list_obj_data_mc_incl_new[0]
@@ -474,8 +548,8 @@ def main(): # pylint: disable=too-many-locals, too-many-statements, too-many-bra
     line_1.SetLineColor(1)
     line_1.SetLineWidth(3)
 
-    #leg_pos = [.72, .7, .85, .85] # with header
-    leg_pos = [.72, .75, .85, .85] # without header
+    # leg_pos = [.72, .7, .85, .85] # with header
+    leg_pos = [0.72, 0.75, 0.85, 0.85]  # without header
     list_obj = [hf_ratio_syst, line_1, incl_ratio_syst, hf_ratio_stat, incl_ratio_stat]
     labels_obj = ["%s-tagged" % p_latexnhadron, "inclusive"]
     colours = [get_colour(i, j) for i, j in zip((c_hf_data, c_incl_data, c_hf_data, c_incl_data), (2, 2, 1, 1))]
@@ -484,16 +558,27 @@ def main(): # pylint: disable=too-many-locals, too-many-statements, too-many-bra
     y_margin_down = 0.05
     if shape == "nsd":
         y_margin_up = 0.22
-    cshape_ratio, list_obj_ratio_new = make_plot("cshape_ratio_" + suffix, size=size_can, \
-        list_obj=list_obj, labels_obj=labels_obj, opt_leg_g=opt_leg_g, opt_plot_g=opt_plot_g, offsets_xy=offsets_axes, \
-        colours=colours, markers=markers, leg_pos=leg_pos, margins_y=[y_margin_down, y_margin_up], margins_c=margins_can, \
-        title=title_full_ratio)
+    cshape_ratio, list_obj_ratio_new = make_plot(
+        "cshape_ratio_" + suffix,
+        size=size_can,
+        list_obj=list_obj,
+        labels_obj=labels_obj,
+        opt_leg_g=opt_leg_g,
+        opt_plot_g=opt_plot_g,
+        offsets_xy=offsets_axes,
+        colours=colours,
+        markers=markers,
+        leg_pos=leg_pos,
+        margins_y=[y_margin_down, y_margin_up],
+        margins_c=margins_can,
+        title=title_full_ratio,
+    )
     cshape_ratio.Update()
     for gr, c in zip((hf_ratio_syst, incl_ratio_syst), (c_hf_data, c_incl_data)):
         gr.SetMarkerColor(get_colour(c))
     leg_ratio = list_obj_ratio_new[0]
     leg_ratio.SetTextSize(fontsize)
-    #leg_ratio.SetHeader("data/MC")
+    # leg_ratio.SetHeader("data/MC")
     if shape == "nsd":
         hf_ratio_syst.GetXaxis().SetNdivisions(5)
     cshape_ratio.Update()
@@ -544,22 +629,57 @@ def main(): # pylint: disable=too-many-locals, too-many-statements, too-many-bra
     x_min = min(x_min_h, x_min_g)
     x_max = max(x_max_h, x_max_g)
     # explicit y ranges [zg, rg, nsd]
-    list_range_x = [[0.1, 0.5], [0., 0.4], [-0.5, 4.5]] # data
+    list_range_x = [[0.1, 0.5], [0.0, 0.4], [-0.5, 4.5]]  # data
 
-    #leg_pos = [.6, .65, .75, .85]
-    leg_pos = [.72, .55, .85, .85]
-    list_obj = [incl_pythia_syst, quark_pythia_syst, gluon_pythia_syst, hf_pythia_stat, incl_pythia_stat, quark_pythia_stat, gluon_pythia_stat]
+    # leg_pos = [.6, .65, .75, .85]
+    leg_pos = [0.72, 0.55, 0.85, 0.85]
+    list_obj = [
+        incl_pythia_syst,
+        quark_pythia_syst,
+        gluon_pythia_syst,
+        hf_pythia_stat,
+        incl_pythia_stat,
+        quark_pythia_stat,
+        gluon_pythia_stat,
+    ]
     labels_obj = ["inclusive", "quark", "gluon", "%s-tagged" % p_latexnhadron]
-    colours = [get_colour(i, j) for i, j in zip((c_incl_pythia, c_quark_pythia, c_gluon_pythia, c_hf_pythia, c_incl_pythia, c_quark_pythia, c_gluon_pythia), (2, 2, 2, 1, 1, 1, 1))]
-    markers = [m_incl_pythia, m_quark_pythia, m_gluon_pythia, m_hf_pythia, m_incl_pythia, m_quark_pythia, m_gluon_pythia]
+    colours = [
+        get_colour(i, j)
+        for i, j in zip(
+            (c_incl_pythia, c_quark_pythia, c_gluon_pythia, c_hf_pythia, c_incl_pythia, c_quark_pythia, c_gluon_pythia),
+            (2, 2, 2, 1, 1, 1, 1),
+        )
+    ]
+    markers = [
+        m_incl_pythia,
+        m_quark_pythia,
+        m_gluon_pythia,
+        m_hf_pythia,
+        m_incl_pythia,
+        m_quark_pythia,
+        m_gluon_pythia,
+    ]
     y_margin_up = 0.46
     y_margin_down = 0.05
-    cshape_mc, list_obj_mc_new = make_plot("cshape_mc_" + suffix, size=size_can, \
-        list_obj=list_obj, labels_obj=labels_obj, opt_leg_g=opt_leg_g, opt_plot_g=opt_plot_g, offsets_xy=offsets_axes, \
-        colours=colours, markers=markers, leg_pos=leg_pos, range_y=[y_min_plot, y_max_plot], margins_c=margins_can, \
-        title=title_full)
+    cshape_mc, list_obj_mc_new = make_plot(
+        "cshape_mc_" + suffix,
+        size=size_can,
+        list_obj=list_obj,
+        labels_obj=labels_obj,
+        opt_leg_g=opt_leg_g,
+        opt_plot_g=opt_plot_g,
+        offsets_xy=offsets_axes,
+        colours=colours,
+        markers=markers,
+        leg_pos=leg_pos,
+        range_y=[y_min_plot, y_max_plot],
+        margins_c=margins_can,
+        title=title_full,
+    )
     cshape_mc.Update()
-    for gr, c in zip((incl_pythia_syst, quark_pythia_syst, gluon_pythia_syst), (c_incl_pythia, c_quark_pythia, c_gluon_pythia)):
+    for gr, c in zip(
+        (incl_pythia_syst, quark_pythia_syst, gluon_pythia_syst), (c_incl_pythia, c_quark_pythia, c_gluon_pythia)
+    ):
         gr.SetMarkerColor(get_colour(c))
     leg_mc = list_obj_mc_new[0]
     leg_mc.SetTextSize(fontsize)
@@ -598,18 +718,33 @@ def main(): # pylint: disable=too-many-locals, too-many-statements, too-many-bra
 
     # PYTHIA, HF, quark, gluon
 
-    #leg_pos = [.6, .65, .75, .85]
-    leg_pos = [.72, .61, .85, .85]
+    # leg_pos = [.6, .65, .75, .85]
+    leg_pos = [0.72, 0.61, 0.85, 0.85]
     list_obj = [quark_pythia_syst, gluon_pythia_syst, hf_pythia_stat, quark_pythia_stat, gluon_pythia_stat]
     labels_obj = ["quark", "gluon", "%s-tagged" % p_latexnhadron]
-    colours = [get_colour(i, j) for i, j in zip((c_quark_pythia, c_gluon_pythia, c_hf_pythia, c_quark_pythia, c_gluon_pythia), (2, 2, 1, 1, 1))]
+    colours = [
+        get_colour(i, j)
+        for i, j in zip((c_quark_pythia, c_gluon_pythia, c_hf_pythia, c_quark_pythia, c_gluon_pythia), (2, 2, 1, 1, 1))
+    ]
     markers = [m_quark_pythia, m_gluon_pythia, m_hf_pythia, m_quark_pythia, m_gluon_pythia]
     y_margin_up = 0.46
     y_margin_down = 0.05
-    cshape_mc, list_obj_mc_new = make_plot("cshape_mc_qgd_" + suffix, size=size_can, \
-        list_obj=list_obj, labels_obj=labels_obj, opt_leg_g=opt_leg_g, opt_plot_g=opt_plot_g, offsets_xy=offsets_axes, \
-        colours=colours, markers=markers, leg_pos=leg_pos, range_x=list_range_x[i_shape], range_y=[y_min_plot, y_max_plot], margins_c=margins_can, \
-        title=title_full)
+    cshape_mc, list_obj_mc_new = make_plot(
+        "cshape_mc_qgd_" + suffix,
+        size=size_can,
+        list_obj=list_obj,
+        labels_obj=labels_obj,
+        opt_leg_g=opt_leg_g,
+        opt_plot_g=opt_plot_g,
+        offsets_xy=offsets_axes,
+        colours=colours,
+        markers=markers,
+        leg_pos=leg_pos,
+        range_x=list_range_x[i_shape],
+        range_y=[y_min_plot, y_max_plot],
+        margins_c=margins_can,
+        title=title_full,
+    )
     cshape_mc.Update()
     for gr, c in zip((quark_pythia_syst, gluon_pythia_syst), (c_quark_pythia, c_gluon_pythia)):
         gr.SetMarkerColor(get_colour(c))
@@ -652,18 +787,29 @@ def main(): # pylint: disable=too-many-locals, too-many-statements, too-many-bra
 
     # PYTHIA, HF, inclusive
 
-    #leg_pos = [.6, .65, .75, .85]
-    leg_pos = [.72, .67, .85, .85]
+    # leg_pos = [.6, .65, .75, .85]
+    leg_pos = [0.72, 0.67, 0.85, 0.85]
     list_obj = [incl_pythia_syst_cl, incl_pythia_stat, hf_pythia_stat]
     labels_obj = ["inclusive", "", "%s-tagged" % p_latexnhadron]
     colours = [get_colour(i, j) for i, j in zip((c_incl_pythia, c_incl_pythia, c_hf_pythia), (2, 1, 1))]
     markers = [m_incl_pythia, m_incl_pythia, m_hf_pythia]
     y_margin_up = 0.46
     y_margin_down = 0.05
-    cshape_mc, list_obj_mc_new = make_plot("cshape_mc_id_" + suffix, size=size_can, \
-        list_obj=list_obj, labels_obj=labels_obj, opt_leg_g=opt_leg_g, opt_plot_g=opt_plot_g, offsets_xy=offsets_axes, \
-        colours=colours, markers=markers, leg_pos=leg_pos, range_y=[y_min_plot, y_max_plot], margins_c=margins_can, \
-        title=title_full)
+    cshape_mc, list_obj_mc_new = make_plot(
+        "cshape_mc_id_" + suffix,
+        size=size_can,
+        list_obj=list_obj,
+        labels_obj=labels_obj,
+        opt_leg_g=opt_leg_g,
+        opt_plot_g=opt_plot_g,
+        offsets_xy=offsets_axes,
+        colours=colours,
+        markers=markers,
+        leg_pos=leg_pos,
+        range_y=[y_min_plot, y_max_plot],
+        margins_c=margins_can,
+        title=title_full,
+    )
     # Draw a line through the points.
     if shape == "nsd":
         for h in (incl_pythia_stat, hf_pythia_stat):
@@ -710,20 +856,46 @@ def main(): # pylint: disable=too-many-locals, too-many-statements, too-many-bra
 
     # data inclusive vs PYTHIA, quark, gluon
 
-    #leg_pos = [.6, .65, .75, .85]
-    #leg_pos = [.72, .55, .85, .85]
-    leg_pos = [.6, .7, .85, .85]
-    list_obj = [incl_data_syst, quark_pythia_syst, gluon_pythia_syst, incl_data_stat, quark_pythia_stat, gluon_pythia_stat]
+    # leg_pos = [.6, .65, .75, .85]
+    # leg_pos = [.72, .55, .85, .85]
+    leg_pos = [0.6, 0.7, 0.85, 0.85]
+    list_obj = [
+        incl_data_syst,
+        quark_pythia_syst,
+        gluon_pythia_syst,
+        incl_data_stat,
+        quark_pythia_stat,
+        gluon_pythia_stat,
+    ]
     labels_obj = ["inclusive (data)", "quark (PYTHIA 8)", "gluon (PYTHIA 8)"]
-    colours = [get_colour(i, j) for i, j in zip((c_incl_data, c_quark_pythia, c_gluon_pythia, c_incl_data, c_quark_pythia, c_gluon_pythia), (2, 2, 2, 1, 1, 1))]
+    colours = [
+        get_colour(i, j)
+        for i, j in zip(
+            (c_incl_data, c_quark_pythia, c_gluon_pythia, c_incl_data, c_quark_pythia, c_gluon_pythia),
+            (2, 2, 2, 1, 1, 1),
+        )
+    ]
     markers = [m_incl_data, m_quark_pythia, m_gluon_pythia, m_incl_data, m_quark_pythia, m_gluon_pythia]
     y_margin_up = 0.3
     y_margin_down = 0.05
-    cshape_mc, list_obj_mc_new = make_plot("cshape_mc_data_iqg" + suffix, size=size_can, \
-        list_obj=list_obj, labels_obj=labels_obj, opt_leg_g=opt_leg_g, opt_plot_g=opt_plot_g, offsets_xy=offsets_axes, \
-        colours=colours, markers=markers, leg_pos=leg_pos, margins_y=[y_margin_down, y_margin_up], margins_c=margins_can, \
-        title=title_full)
-    for gr, c in zip((incl_data_syst, quark_pythia_syst, gluon_pythia_syst), (c_incl_data, c_quark_pythia, c_gluon_pythia)):
+    cshape_mc, list_obj_mc_new = make_plot(
+        "cshape_mc_data_iqg" + suffix,
+        size=size_can,
+        list_obj=list_obj,
+        labels_obj=labels_obj,
+        opt_leg_g=opt_leg_g,
+        opt_plot_g=opt_plot_g,
+        offsets_xy=offsets_axes,
+        colours=colours,
+        markers=markers,
+        leg_pos=leg_pos,
+        margins_y=[y_margin_down, y_margin_up],
+        margins_c=margins_can,
+        title=title_full,
+    )
+    for gr, c in zip(
+        (incl_data_syst, quark_pythia_syst, gluon_pythia_syst), (c_incl_data, c_quark_pythia, c_gluon_pythia)
+    ):
         gr.SetMarkerColor(get_colour(c))
     leg_mc = list_obj_mc_new[0]
     leg_mc.SetTextSize(fontsize)
@@ -737,8 +909,8 @@ def main(): # pylint: disable=too-many-locals, too-many-statements, too-many-bra
         print(f"Rel. syst. unc. for {name} {shape}")
         e_plus_min = float("inf")
         e_minus_min = float("inf")
-        e_plus_max = 0.
-        e_minus_max = 0.
+        e_plus_max = 0.0
+        e_minus_max = 0.0
         for i in range(gr.GetN()):
             y = gr.GetPointY(i)
             e_plus = 100 * gr.GetErrorYhigh(i)
@@ -755,11 +927,11 @@ def main(): # pylint: disable=too-many-locals, too-many-statements, too-many-bra
         print(f"Absolutes: min: {min(e_plus_min, e_minus_min):.2g} %, max {max(e_plus_max, e_minus_max):.2g} %")
 
     # explicit y ranges [zg, rg, nsd]
-    list_range_y = [[0, 9], [0, 6], [0, 0.7]] # data
-    list_range_y_rat = [[0, 2], [0, 2], [0, 2]] # mc/data ratios
+    list_range_y = [[0, 9], [0, 6], [0, 0.7]]  # data
+    list_range_y_rat = [[0, 2], [0, 2], [0, 2]]  # mc/data ratios
 
     # data
-    leg_pos = [.7, .75, .82, .85]
+    leg_pos = [0.7, 0.75, 0.82, 0.85]
     list_obj = [hf_data_syst, incl_data_syst, hf_data_stat, incl_data_stat]
     labels_obj = ["%s-tagged" % p_latexnhadron, "inclusive", "", ""]
     colours = [get_colour(i, j) for i, j in zip((c_hf_data, c_incl_data, c_hf_data, c_incl_data), (2, 2, 1, 1))]
@@ -770,28 +942,39 @@ def main(): # pylint: disable=too-many-locals, too-many-statements, too-many-bra
     cshape_datamc_all.Divide(1, 2)
     pad1 = cshape_datamc_all.cd(1)
     pad2 = cshape_datamc_all.cd(2)
-    pad1.SetPad(0., 0.3, 1, 1)
-    pad2.SetPad(0., 0., 1, 0.3)
-    pad1.SetBottomMargin(0.)
+    pad1.SetPad(0.0, 0.3, 1, 1)
+    pad2.SetPad(0.0, 0.0, 1, 0.3)
+    pad1.SetBottomMargin(0.0)
     pad2.SetBottomMargin(0.25)
     pad1.SetTopMargin(0.1)
-    pad2.SetTopMargin(0.)
+    pad2.SetTopMargin(0.0)
     pad1.SetLeftMargin(0.12)
     pad2.SetLeftMargin(0.12)
     pad1.SetTicks(1, 1)
     pad2.SetTicks(1, 1)
-    cshape_datamc_all, list_obj_data_new = make_plot("cshape_datamc_" + suffix, size=size_can_double, \
-        can=cshape_datamc_all, pad=1, \
-        list_obj=list_obj, labels_obj=labels_obj, opt_leg_g=opt_leg_g, opt_plot_g=opt_plot_g, offsets_xy=[0.8, 1.1], \
-        colours=colours, markers=markers, leg_pos=leg_pos, margins_c=margins_can_double, \
+    cshape_datamc_all, list_obj_data_new = make_plot(
+        "cshape_datamc_" + suffix,
+        size=size_can_double,
+        can=cshape_datamc_all,
+        pad=1,
+        list_obj=list_obj,
+        labels_obj=labels_obj,
+        opt_leg_g=opt_leg_g,
+        opt_plot_g=opt_plot_g,
+        offsets_xy=[0.8, 1.1],
+        colours=colours,
+        markers=markers,
+        leg_pos=leg_pos,
+        margins_c=margins_can_double,
         # margins_y=[y_margin_down, y_margin_up], \
-        range_y=list_range_y[i_shape], \
-        title=title_full)
+        range_y=list_range_y[i_shape],
+        title=title_full,
+    )
     for gr, c in zip((hf_data_syst, incl_data_syst), (c_hf_data, c_incl_data)):
         gr.SetMarkerColor(get_colour(c))
     list_obj_data_new[0].SetTextSize(fontsize)
-    hf_data_syst.GetYaxis().SetLabelSize(0.1 * 3/7)
-    #hf_data_syst.GetYaxis().SetTitleSize(0.1)
+    hf_data_syst.GetYaxis().SetLabelSize(0.1 * 3 / 7)
+    # hf_data_syst.GetYaxis().SetTitleSize(0.1)
     if shape == "nsd":
         hf_data_syst.GetXaxis().SetNdivisions(5)
     # Draw a line through the points.
@@ -832,7 +1015,7 @@ def main(): # pylint: disable=too-many-locals, too-many-statements, too-many-bra
     cshape_datamc_all.Update()
 
     # MC/data
-    leg_pos = [.15, .8, .85, .95]
+    leg_pos = [0.15, 0.8, 0.85, 0.95]
     hf_ratio_powheg_stat = hf_powheg_stat.Clone(f"{hf_powheg_stat.GetName()}_rat")
     hf_ratio_powheg_stat.Divide(hf_data_stat)
     hf_ratio_powheg_syst = divide_graphs(hf_powheg_syst, hf_data_syst)
@@ -844,9 +1027,9 @@ def main(): # pylint: disable=too-many-locals, too-many-statements, too-many-bra
     hf_pythia_stat_zero = hf_pythia_stat.Clone(f"{hf_pythia_stat.GetName()}_zero")
     for i in range(hf_pythia_stat_zero.GetNbinsX()):
         hf_pythia_stat_zero.SetBinError(i + 1, 0)
-    gStyle.SetErrorX(0.5) # we have to restore the histogram bin width to propagate it to graph
-    hf_pythia_syst = TGraphAsymmErrors(hf_pythia_stat_zero) # convert histogram into a graph
-    gStyle.SetErrorX(0) # set back the intended settings
+    gStyle.SetErrorX(0.5)  # we have to restore the histogram bin width to propagate it to graph
+    hf_pythia_syst = TGraphAsymmErrors(hf_pythia_stat_zero)  # convert histogram into a graph
+    gStyle.SetErrorX(0)  # set back the intended settings
     hf_ratio_pythia_syst = divide_graphs(hf_pythia_syst, hf_data_syst)
     # hf_ratio_pythia_syst = divide_graphs(hf_data_syst, hf_pythia_syst) # version data/MC
     incl_ratio_pythia_stat = incl_pythia_stat.Clone(f"{incl_pythia_stat.GetName()}_rat")
@@ -855,43 +1038,77 @@ def main(): # pylint: disable=too-many-locals, too-many-statements, too-many-bra
     # incl_ratio_pythia_stat = incl_data_stat.Clone(f"{incl_data_stat.GetName()}_rat") # version data/MC
     # incl_ratio_pythia_stat.Divide(incl_pythia_stat) # version data/MC
     # incl_ratio_pythia_syst = divide_graphs(incl_data_syst, incl_pythia_syst) # version data/MC
-    list_obj = [hf_ratio_powheg_syst, hf_ratio_pythia_syst, incl_ratio_pythia_syst, hf_ratio_powheg_stat, hf_ratio_pythia_stat, incl_ratio_pythia_stat, line_1]
-    labels_obj = [text_powheg, f"{p_latexnhadron}-tagged {text_pythia_short}", f"inclusive {text_pythia_short}", "", "", ""]
-    colours = [get_colour(i, j) for i, j in zip((c_hf_powheg, c_hf_pythia, c_incl_pythia, c_hf_powheg, c_hf_pythia, c_incl_pythia), (2, 2, 2, 1, 1, 1))]
+    list_obj = [
+        hf_ratio_powheg_syst,
+        hf_ratio_pythia_syst,
+        incl_ratio_pythia_syst,
+        hf_ratio_powheg_stat,
+        hf_ratio_pythia_stat,
+        incl_ratio_pythia_stat,
+        line_1,
+    ]
+    labels_obj = [
+        text_powheg,
+        f"{p_latexnhadron}-tagged {text_pythia_short}",
+        f"inclusive {text_pythia_short}",
+        "",
+        "",
+        "",
+    ]
+    colours = [
+        get_colour(i, j)
+        for i, j in zip(
+            (c_hf_powheg, c_hf_pythia, c_incl_pythia, c_hf_powheg, c_hf_pythia, c_incl_pythia), (2, 2, 2, 1, 1, 1)
+        )
+    ]
     markers = [m_hf_powheg, m_hf_pythia, m_incl_pythia, m_hf_powheg, m_hf_pythia, m_incl_pythia]
     y_margin_up = 0.2
     y_margin_down = 0.05
-    cshape_datamc_all, list_obj_data_mc_hf_new = make_plot("cshape_data_mc_hf_" + suffix, size=size_can_double, \
-        can=cshape_datamc_all, pad=2, \
-        list_obj=list_obj, labels_obj=labels_obj, opt_leg_g=opt_leg_g, opt_plot_g=opt_plot_g, offsets_xy=[1, 1.3 * 3/7], \
-        colours=colours, markers=markers, leg_pos=leg_pos, margins_c=margins_can_double, \
-        margins_y=[y_margin_down, y_margin_up], \
+    cshape_datamc_all, list_obj_data_mc_hf_new = make_plot(
+        "cshape_data_mc_hf_" + suffix,
+        size=size_can_double,
+        can=cshape_datamc_all,
+        pad=2,
+        list_obj=list_obj,
+        labels_obj=labels_obj,
+        opt_leg_g=opt_leg_g,
+        opt_plot_g=opt_plot_g,
+        offsets_xy=[1, 1.3 * 3 / 7],
+        colours=colours,
+        markers=markers,
+        leg_pos=leg_pos,
+        margins_c=margins_can_double,
+        margins_y=[y_margin_down, y_margin_up],
         # range_y=list_range_y_rat[i_shape], \
-        title=title_full_ratio_double)
+        title=title_full_ratio_double,
+    )
     list_obj[0].GetXaxis().SetLabelSize(0.1)
     list_obj[0].GetXaxis().SetTitleSize(0.1)
     list_obj[0].GetYaxis().SetLabelSize(0.1)
     list_obj[0].GetYaxis().SetTitleSize(0.1)
-    for gr, c in zip([hf_ratio_powheg_syst, hf_ratio_pythia_syst, incl_ratio_pythia_syst], [c_hf_powheg, c_hf_pythia, c_incl_pythia]):
+    for gr, c in zip(
+        [hf_ratio_powheg_syst, hf_ratio_pythia_syst, incl_ratio_pythia_syst], [c_hf_powheg, c_hf_pythia, c_incl_pythia]
+    ):
         gr.SetMarkerColor(get_colour(c))
     leg_data_mc_hf = list_obj_data_mc_hf_new[0]
-    #leg_data_mc_hf.SetHeader("%s-tagged" % p_latexnhadron)
-    leg_data_mc_hf.SetTextSize(fontsize * 7/3)
+    # leg_data_mc_hf.SetHeader("%s-tagged" % p_latexnhadron)
+    leg_data_mc_hf.SetTextSize(fontsize * 7 / 3)
     leg_data_mc_hf.SetNColumns(2)
     if shape == "nsd":
         list_obj[0].GetXaxis().SetNdivisions(5)
     cshape_datamc_all.Update()
     # Draw LaTeX
-    #y_latex = y_latex_top
-    #list_latex_data_mc_hf = []
-    #for text_latex in [text_alice, text_jets, text_ptjet, text_pth, text_sd]:
+    # y_latex = y_latex_top
+    # list_latex_data_mc_hf = []
+    # for text_latex in [text_alice, text_jets, text_ptjet, text_pth, text_sd]:
     #    latex = TLatex(x_latex, y_latex, text_latex)
     #    list_latex_data_mc_hf.append(latex)
     #    draw_latex(latex, textsize=fontsize)
     #    y_latex -= y_step
-    #cshape_datamc_all.Update()
+    # cshape_datamc_all.Update()
     pad1.RedrawAxis()
     pad2.RedrawAxis()
     cshape_datamc_all.SaveAs("%s/%s_datamc_all_%s.pdf" % (rootpath, shape, suffix))
+
 
 main()

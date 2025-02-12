@@ -440,7 +440,7 @@ def main(yaml_in: str, yaml_diff: str, analysis: str, config: str, clean: bool, 
                         with open(logfile, "w", encoding="utf-8") as ana_out:
                             subprocess.Popen(  # pylint: disable=consider-using-with
                                 shlex.split(
-                                    "mlhep " "-a %s -r %s -d %s -b --delete-force" % (analysis, config_final, yaml_out)
+                                    "mlhep -a %s -r %s -d %s -b --delete-force" % (analysis, config_final, yaml_out)
                                 ),
                                 stdout=ana_out,
                                 stderr=ana_out,

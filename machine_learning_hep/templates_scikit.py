@@ -12,18 +12,20 @@
 ##   along with this program. if not, see <https://www.gnu.org/licenses/>. ##
 #############################################################################
 
-from sklearn.ensemble import RandomForestClassifier, AdaBoostClassifier
+from sklearn.ensemble import AdaBoostClassifier, RandomForestClassifier
+from sklearn.linear_model import Lasso, LinearRegression, Ridge
 from sklearn.tree import DecisionTreeClassifier
-from sklearn.linear_model import LinearRegression, Ridge, Lasso
 
 
 def scikit_random_forest_classifier(model_config):
-    return RandomForestClassifier(max_depth=model_config["max_depth"],
-                                  n_estimators=model_config["n_estimators"],
-                                  max_features=model_config["max_features"])
+    return RandomForestClassifier(
+        max_depth=model_config["max_depth"],
+        n_estimators=model_config["n_estimators"],
+        max_features=model_config["max_features"],
+    )
 
 
-def scikit_adaboost_classifier(model_config): # pylint: disable=W0613
+def scikit_adaboost_classifier(model_config):  # pylint: disable=W0613
     return AdaBoostClassifier()
 
 
@@ -31,7 +33,7 @@ def scikit_decision_tree_classifier(model_config):
     return DecisionTreeClassifier(max_depth=model_config["max_depth"])
 
 
-def scikit_linear_regression(model_config): # pylint: disable=W0613
+def scikit_linear_regression(model_config):  # pylint: disable=W0613
     return LinearRegression()
 
 
