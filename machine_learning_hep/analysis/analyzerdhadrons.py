@@ -497,7 +497,7 @@ class AnalyzerDhadrons(Analyzer):  # pylint: disable=invalid-name
         hselevents = filemass.Get("sel_events")
 
         if self.p_nevents is not None:
-                        selnorm = self.p_nevents
+            selnorm = self.p_nevents
         else:
             norm, selnorm = self.calculate_norm(self.logger, hevents, hselevents)
             histonorm.SetBinContent(1, selnorm)
