@@ -93,6 +93,7 @@ class AnalyzerDhadrons(Analyzer):  # pylint: disable=invalid-name
         self.include_reflection = datap["analysis"][self.typean].get(
             "include_reflection", False)
 
+        self.p_nevents = datap["analysis"][self.typean]["nevents"]
         self.p_sigmamb = datap["analysis"]["sigmamb"]
         self.p_br = datap["ml"]["opt"]["BR"]
 
@@ -494,9 +495,14 @@ class AnalyzerDhadrons(Analyzer):  # pylint: disable=invalid-name
         filemass = TFile.Open(self.n_filemass)
         hevents = filemass.Get("all_events")
         hselevents = filemass.Get("sel_events")
-        norm, selnorm = self.calculate_norm(self.logger, hevents, hselevents)
-        histonorm.SetBinContent(1, selnorm)
-        self.logger.warning("Number of events %d", norm)
+
+        if self.p_nevents is not None:
+                        selnorm = self.p_nevents
+        else:
+            norm, selnorm = self.calculate_norm(self.logger, hevents, hselevents)
+            histonorm.SetBinContent(1, selnorm)
+            self.logger.warning("Number of events %d", norm)
+
         self.logger.warning("Number of events after event selection %d", selnorm)
 
         if self.p_dobkgfromsideband:
