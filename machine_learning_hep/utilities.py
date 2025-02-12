@@ -840,7 +840,7 @@ def make_plot(  # pylint: disable=too-many-arguments, too-many-branches, too-man
 
     def plot_graph(graph):
         setup_tgraph(
-            graph, get_my_colour(i_obj), get_my_marker(i_obj), get_my_size(i_obj), textsize=(font_size / scale)
+            graph, get_my_colour(i_obj), get_my_marker(i_obj), get_my_size(i_obj), textsize=(font_size / scale), scale_title=1.3
         )
         graph.SetTitle(title)
         graph.GetXaxis().SetLimits(x_min_plot, x_max_plot)
@@ -861,7 +861,7 @@ def make_plot(  # pylint: disable=too-many-arguments, too-many-branches, too-man
         # If nothing has been plotted yet, plot an empty graph to set the exact ranges.
         if counter_plot_obj == 0:
             gr = TGraph(histogram)
-            setup_tgraph(gr, textsize=font_size / scale)
+            setup_tgraph(gr, textsize=(font_size / scale), scale_title=1.3)
             gr.SetMarkerSize(0)
             gr.SetTitle(title)
             gr.GetXaxis().SetLimits(x_min_plot, x_max_plot)
@@ -877,7 +877,7 @@ def make_plot(  # pylint: disable=too-many-arguments, too-many-branches, too-man
             gr.DrawClone("AP")
             list_new.append(gr)
         setup_histogram(
-            histogram, get_my_colour(i_obj), get_my_marker(i_obj), get_my_size(i_obj), textsize=(font_size / scale)
+            histogram, get_my_colour(i_obj), get_my_marker(i_obj), get_my_size(i_obj), textsize=(font_size / scale), scale_title=1.3
         )
         histogram.GetXaxis().SetLimits(x_min_plot, x_max_plot)
         histogram.GetXaxis().SetRangeUser(x_min_plot, x_max_plot)
