@@ -296,7 +296,7 @@ class Optimiser:  # pylint: disable=too-many-public-methods, consider-using-f-st
                 self.dfs_input[bkg_labels[0]][var_to_zero] = 0
 
             if self.p_equalise_sig_bkg:
-                min_class_count = min((len(self.dfs_input[label]) for label in self.p_class_labels))
+                min_class_count = min(len(self.dfs_input[label]) for label in self.p_class_labels)
                 for ind, label in enumerate(self.p_class_labels):
                     self.p_nclasses[ind] = min(min_class_count, self.p_nclasses[ind])
                     self.logger.info("Max possible number of equalized samples for %s: %d", label, self.p_nclasses[ind])

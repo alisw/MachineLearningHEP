@@ -307,12 +307,12 @@ def find_axes_limits(histos, use_log_y=False):
     """
     # That might be considered to be a hack since it now only has a chance to work
     # reasonably well if there is at least one histogram.
-    max_y = max((h.GetMaximum() for h in histos if isinstance(h, TH1)))
-    min_y = min((h.GetMinimum() for h in histos if isinstance(h, TH1)))
+    max_y = max(h.GetMaximum() for h in histos if isinstance(h, TH1))
+    min_y = min(h.GetMinimum() for h in histos if isinstance(h, TH1))
     if not min_y > 0.0 and use_log_y:
         min_y = 10.0e-9
-    max_x = max((h.GetXaxis().GetXmax() for h in histos))
-    min_x = min((h.GetXaxis().GetXmin() for h in histos))
+    max_x = max(h.GetXaxis().GetXmax() for h in histos)
+    min_x = min(h.GetXaxis().GetXmin() for h in histos)
     return min_x, max_x, min_y, max_y
 
 

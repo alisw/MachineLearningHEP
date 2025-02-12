@@ -54,7 +54,7 @@ from machine_learning_hep.utilities_plot import load_root_style
 def plot_hfmassfitter(case, arraytype):
     load_root_style()
 
-    with open("../data/database_ml_parameters_%s.yml" % case, "r") as param_config:
+    with open("../data/database_ml_parameters_%s.yml" % case) as param_config:
         data_param = yaml.load(param_config, Loader=yaml.FullLoader)
 
     folder_plots = data_param[case]["analysis"]["dir_general_plots"]
@@ -215,7 +215,9 @@ def plot_hfmassfitter(case, arraytype):
         signfhistos[imult].SetMarkerColor(colors[imult % len(colors)])
         signfhistos[imult].SetMarkerStyle(21)
         signfhistos[imult].Draw("same")
-        legyieldstring = "%.1f #leq %s < %.1f (MB)" % (lvar2_binminMB[imult], latexbin2var, lvar2_binmaxMB[imult])
+        legyieldstring = "{:.1f} #leq {} < {:.1f} (MB)".format(
+            lvar2_binminMB[imult], latexbin2var, lvar2_binmaxMB[imult]
+        )
         leg.AddEntry(signfhistos[imult], legyieldstring, "LEP")
 
     for imult, iplot in enumerate(plotbinHM):
@@ -225,10 +227,12 @@ def plot_hfmassfitter(case, arraytype):
         signfhistos[imult].SetMarkerColor(colors[imult % len(colors)])
         signfhistos[imult].SetMarkerStyle(21)
         signfhistos[imult].Draw("same")
-        legyieldstring = "%.1f #leq %s < %.1f (HM)" % (lvar2_binminHM[imult], latexbin2var, lvar2_binmaxHM[imult])
+        legyieldstring = "{:.1f} #leq {} < {:.1f} (HM)".format(
+            lvar2_binminHM[imult], latexbin2var, lvar2_binmaxHM[imult]
+        )
         leg.AddEntry(signfhistos[imult], legyieldstring, "LEP")
     leg.Draw()
-    csign.SaveAs("%s/MassFit_Signf_%s_%scombined%s.eps" % (folder_plots, case, arraytype[0], arraytype[1]))
+    csign.SaveAs(f"{folder_plots}/MassFit_Signf_{case}_{arraytype[0]}combined{arraytype[1]}.eps")
 
     # Mean fit plot
     cmean = TCanvas("cMean", "The Fit Canvas")
@@ -260,7 +264,7 @@ def plot_hfmassfitter(case, arraytype):
         meanhistos[imult].SetMarkerStyle(21)
         meanhistos[imult].Draw("same")
     leg.Draw()
-    cmean.SaveAs("%s/MassFit_Mean_%s_%scombined%s.eps" % (folder_plots, case, arraytype[0], arraytype[1]))
+    cmean.SaveAs(f"{folder_plots}/MassFit_Mean_{case}_{arraytype[0]}combined{arraytype[1]}.eps")
 
     # Sigma fit plot (to add MC!)
     csigm = TCanvas("cSigma", "The Fit Canvas")
@@ -287,7 +291,7 @@ def plot_hfmassfitter(case, arraytype):
         sigmahistos[imult].SetMarkerStyle(21)
         sigmahistos[imult].Draw("same")
     leg.Draw()
-    csigm.SaveAs("%s/MassFit_Sigma_%s_%scombined%s.eps" % (folder_plots, case, arraytype[0], arraytype[1]))
+    csigm.SaveAs(f"{folder_plots}/MassFit_Sigma_{case}_{arraytype[0]}combined{arraytype[1]}.eps")
 
     # Signal fit plot
     csig = TCanvas("cSig", "The Fit Canvas")
@@ -314,7 +318,7 @@ def plot_hfmassfitter(case, arraytype):
         sighistos[imult].SetMarkerStyle(21)
         sighistos[imult].Draw("same")
     leg.Draw()
-    csig.SaveAs("%s/MassFit_Signal_%s_%scombined%s.eps" % (folder_plots, case, arraytype[0], arraytype[1]))
+    csig.SaveAs(f"{folder_plots}/MassFit_Signal_{case}_{arraytype[0]}combined{arraytype[1]}.eps")
 
     # Background fit plot
     cback = TCanvas("cBack", "The Fit Canvas")
@@ -341,7 +345,7 @@ def plot_hfmassfitter(case, arraytype):
         backhistos[imult].SetMarkerStyle(21)
         backhistos[imult].Draw("same")
     leg.Draw()
-    cback.SaveAs("%s/MassFit_Background_%s_%scombined%s.eps" % (folder_plots, case, arraytype[0], arraytype[1]))
+    cback.SaveAs(f"{folder_plots}/MassFit_Background_{case}_{arraytype[0]}combined{arraytype[1]}.eps")
 
 
 #####################################

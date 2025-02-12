@@ -62,7 +62,7 @@ def fill_validation_candidates(df_reco, tag=""):
         # Defining pT interval
         lower_pt = j
         upper_pt = binning_pt[i + 1]
-        pt_interval = "_pt_cand_{:.1f}-{:.1f}".format(lower_pt, upper_pt)
+        pt_interval = f"_pt_cand_{lower_pt:.1f}-{upper_pt:.1f}"
         # Cutting the DF in the pT interval
         df_ptcut = df_reco[df_reco.pt_cand > lower_pt]
         df_ptcut = df_ptcut[df_ptcut.pt_cand < upper_pt]

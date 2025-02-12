@@ -265,7 +265,7 @@ class ProcesserDhadrons_mult(Processer):
                 histomult_weigths = TH1F(label, label, self.nbinshisto, self.minvaluehisto, self.maxvaluehisto)
                 fill_hist(histomult_weigths, dfevtevtsel[self.v_var2_binning_weigths])
 
-                label = "h%s_%s" % (self.v_var2_binning_weigths, self.v_var2_binning)
+                label = f"h{self.v_var2_binning_weigths}_{self.v_var2_binning}"
                 histomult_weigths_2d = TH2F(
                     label,
                     label,
@@ -335,7 +335,9 @@ class ProcesserDhadrons_mult(Processer):
         out_file = TFile.Open(self.l_histoeff[index], "recreate")
         h_list = []
         for ibin2, _ in enumerate(self.lvar2_binmin):
-            stringbin2 = "_%s_%.2f_%.2f" % (self.v_var2_binning, self.lvar2_binmin[ibin2], self.lvar2_binmax[ibin2])
+            stringbin2 = "_{}_{:.2f}_{:.2f}".format(
+                self.v_var2_binning, self.lvar2_binmin[ibin2], self.lvar2_binmax[ibin2]
+            )
             n_bins = len(self.lpt_finbinmin)
             analysis_bin_lims_temp = self.lpt_finbinmin.copy()
             analysis_bin_lims_temp.append(self.lpt_finbinmax[n_bins - 1])

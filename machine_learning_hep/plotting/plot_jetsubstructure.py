@@ -67,7 +67,7 @@ def main():  # pylint: disable=too-many-locals, too-many-statements, too-many-br
     print(f"Index {i_shape}")
 
     file_in = args.input_file
-    with open(args.database_analysis, "r") as file_db:
+    with open(args.database_analysis) as file_db:
         data_param = yaml.safe_load(file_db)
     case = list(data_param.keys())[0]
     datap = data_param[case]
@@ -126,7 +126,7 @@ def main():  # pylint: disable=too-many-locals, too-many-statements, too-many-br
 
     ibin2 = 1
 
-    suffix = "%s_%g_%g" % (v_var2_binning, lvar2_binmin_gen[ibin2], lvar2_binmax_gen[ibin2])
+    suffix = f"{v_var2_binning}_{lvar2_binmin_gen[ibin2]:g}_{lvar2_binmax_gen[ibin2]:g}"
 
     # HF data
     nameobj = "%s_hf_data_%d_stat" % (shape, ibin2)
@@ -241,8 +241,8 @@ def main():  # pylint: disable=too-many-locals, too-many-statements, too-many-br
 
     title_x = v_varshape_latex
     title_y = "(1/#it{N}_{jet}) d#it{N}/d%s" % v_varshape_latex
-    title_full = ";%s;%s" % (title_x, title_y)
-    title_full_ratio = ";%s;data/MC: ratio of %s" % (title_x, title_y)
+    title_full = f";{title_x};{title_y}"
+    title_full_ratio = f";{title_x};data/MC: ratio of {title_y}"
     title_full_ratio_double = f";{title_x};MC/data"
 
     text_alice = "#bf{ALICE}, pp, #sqrt{#it{s}} = 13 TeV"
@@ -252,12 +252,12 @@ def main():  # pylint: disable=too-many-locals, too-many-statements, too-many-br
     text_pythia_split = "#splitline{PYTHIA 8}{(Monash)}"
     text_powheg = "POWHEG"
     text_jets = "charged jets, anti-#it{k}_{T}, #it{R} = 0.4"
-    text_ptjet = "%g #leq %s < %g GeV/#it{c}, |#it{#eta}_{jet}| #leq 0.5" % (
+    text_ptjet = "{:g} #leq {} < {:g} GeV/#it{{c}}, |#it{{#eta}}_{{jet}}| #leq 0.5".format(
         lvar2_binmin_reco[ibin2],
         p_latexbin2var,
         lvar2_binmax_reco[ibin2],
     )
-    text_pth = "%g #leq #it{p}_{T}^{%s} < %g GeV/#it{c}, |#it{y}_{%s}| #leq 0.8" % (
+    text_pth = "{:g} #leq #it{{p}}_{{T}}^{{{}}} < {:g} GeV/#it{{c}}, |#it{{y}}_{{{}}}| #leq 0.8".format(
         lpt_finbinmin[0],
         p_latexnhadron,
         min(lpt_finbinmax[-1], lvar2_binmax_reco[ibin2]),
@@ -408,7 +408,7 @@ def main():  # pylint: disable=too-many-locals, too-many-statements, too-many-br
         draw_latex(latex, textsize=fontsize)
         y_latex -= y_step
     cshape_data.Update()
-    cshape_data.SaveAs("%s/%s_data_%s.pdf" % (rootpath, shape, suffix))
+    cshape_data.SaveAs(f"{rootpath}/{shape}_data_{suffix}.pdf")
 
     # data and PYTHIA, POWHEG, HF
 
@@ -478,7 +478,7 @@ def main():  # pylint: disable=too-many-locals, too-many-statements, too-many-br
         draw_latex(latex, textsize=fontsize)
         y_latex -= y_step
     cshape_data_mc_hf.Update()
-    cshape_data_mc_hf.SaveAs("%s/%s_data_mc_hf_%s.pdf" % (rootpath, shape, suffix))
+    cshape_data_mc_hf.SaveAs(f"{rootpath}/{shape}_data_mc_hf_{suffix}.pdf")
 
     # data and PYTHIA, inclusive
 
@@ -539,7 +539,7 @@ def main():  # pylint: disable=too-many-locals, too-many-statements, too-many-br
         draw_latex(latex, textsize=fontsize)
         y_latex -= y_step
     cshape_data_mc_incl.Update()
-    cshape_data_mc_incl.SaveAs("%s/%s_data_mc_incl_%s.pdf" % (rootpath, shape, suffix))
+    cshape_data_mc_incl.SaveAs(f"{rootpath}/{shape}_data_mc_incl_{suffix}.pdf")
 
     # Ratios data/MC, HF and inclusive
 
@@ -610,7 +610,7 @@ def main():  # pylint: disable=too-many-locals, too-many-statements, too-many-br
         draw_latex(latex, textsize=fontsize)
         y_latex -= y_step
     cshape_ratio.Update()
-    cshape_ratio.SaveAs("%s/%s_ratio_%s.pdf" % (rootpath, shape, suffix))
+    cshape_ratio.SaveAs(f"{rootpath}/{shape}_ratio_{suffix}.pdf")
 
     # PYTHIA, HF, inclusive, quark, gluon
 
@@ -714,7 +714,7 @@ def main():  # pylint: disable=too-many-locals, too-many-statements, too-many-br
         draw_latex(latex, textsize=fontsize)
         y_latex -= y_step
     cshape_mc.Update()
-    cshape_mc.SaveAs("%s/%s_mc_%s.pdf" % (rootpath, shape, suffix))
+    cshape_mc.SaveAs(f"{rootpath}/{shape}_mc_{suffix}.pdf")
 
     # PYTHIA, HF, quark, gluon
 
@@ -783,7 +783,7 @@ def main():  # pylint: disable=too-many-locals, too-many-statements, too-many-br
         draw_latex(latex, textsize=fontsize)
         y_latex -= y_step
     cshape_mc.Update()
-    cshape_mc.SaveAs("%s/%s_mc_qgd_%s.pdf" % (rootpath, shape, suffix))
+    cshape_mc.SaveAs(f"{rootpath}/{shape}_mc_qgd_{suffix}.pdf")
 
     # PYTHIA, HF, inclusive
 
@@ -852,7 +852,7 @@ def main():  # pylint: disable=too-many-locals, too-many-statements, too-many-br
         draw_latex(latex, textsize=fontsize)
         y_latex -= y_step
     cshape_mc.Update()
-    cshape_mc.SaveAs("%s/%s_mc_id_%s.pdf" % (rootpath, shape, suffix))
+    cshape_mc.SaveAs(f"{rootpath}/{shape}_mc_id_{suffix}.pdf")
 
     # data inclusive vs PYTHIA, quark, gluon
 
@@ -900,7 +900,7 @@ def main():  # pylint: disable=too-many-locals, too-many-statements, too-many-br
     leg_mc = list_obj_mc_new[0]
     leg_mc.SetTextSize(fontsize)
     cshape_mc.Update()
-    cshape_mc.SaveAs("%s/%s_data_i_mc_qg_%s.pdf" % (rootpath, shape, suffix))
+    cshape_mc.SaveAs(f"{rootpath}/{shape}_data_i_mc_qg_{suffix}.pdf")
 
     # data + MC/data, HF and inclusive
 
@@ -1108,7 +1108,7 @@ def main():  # pylint: disable=too-many-locals, too-many-statements, too-many-br
     # cshape_datamc_all.Update()
     pad1.RedrawAxis()
     pad2.RedrawAxis()
-    cshape_datamc_all.SaveAs("%s/%s_datamc_all_%s.pdf" % (rootpath, shape, suffix))
+    cshape_datamc_all.SaveAs(f"{rootpath}/{shape}_datamc_all_{suffix}.pdf")
 
 
 main()

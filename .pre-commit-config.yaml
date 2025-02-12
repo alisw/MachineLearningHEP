@@ -20,6 +20,7 @@ repos:
     rev: v3.19.1
     hooks:
       - id: pyupgrade
+        args: ["--py310-plus"]
   - repo: https://github.com/shellcheck-py/shellcheck-py
     rev: v0.10.0.1
     hooks:

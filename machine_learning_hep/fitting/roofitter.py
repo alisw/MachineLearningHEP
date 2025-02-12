@@ -84,7 +84,7 @@ class RooFitter:
                     model.plotOn(
                         frame,
                         ROOT.RooFit.Components(pdf),
-                        ROOT.RooFit.Name((f"pdf_{pdf_name}")),
+                        ROOT.RooFit.Name(f"pdf_{pdf_name}"),
                         ROOT.RooFit.LineStyle(ROOT.ELineStyle.kDashed),
                         ROOT.RooFit.LineColor(ROOT.kViolet),
                         ROOT.RooFit.LineWidth(1),

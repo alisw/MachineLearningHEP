@@ -41,7 +41,7 @@ def ratio(imult):
     fileoutcrossLcpkpipp = TFile.Open("finalcrossLcpKpipp.root")
     fileoutcrossLcpk0s = TFile.Open("finalcrossLcpK0spp.root")
 
-    with open("data/database_ml_parameters_D0pp.yml", "r") as param_config:
+    with open("data/database_ml_parameters_D0pp.yml") as param_config:
         data_param = yaml.load(param_config, Loader=yaml.FullLoader)
 
     nbins = len(data_param["D0pp"]["analysis"]["sel_binmax2"])

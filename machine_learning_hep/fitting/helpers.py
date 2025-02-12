@@ -726,7 +726,7 @@ class MLFitter:  # pylint: disable=too-many-instance-attributes
             i = i + 1
 
         fileoutbkg_fromsidebands = TFile.Open(
-            "%s/Background_fromsidebands_%s_%s.root" % (folder, self.case, self.ana_type), "RECREATE"
+            f"{folder}/Background_fromsidebands_{self.case}_{self.ana_type}.root", "RECREATE"
         )
         fileoutbkg_fromsidebands.cd()
         hbkg_fromsidebands.Write()

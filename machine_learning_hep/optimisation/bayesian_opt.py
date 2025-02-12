@@ -434,7 +434,7 @@ class BayesianOpt:  # pylint: disable=too-many-instance-attributes
 
                 params_extracted[-1]["values"] = y_axis_vals
                 # Now the inverse mapping
-                y_axis_map = dict((v, k) for k, v in y_axis_map.items())
+                y_axis_map = {v: k for k, v in y_axis_map.items()}
                 params_extracted[-1]["mapping"] = y_axis_map
 
         return params_extracted

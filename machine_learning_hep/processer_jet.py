@@ -174,11 +174,11 @@ class ProcesserJets(Processer):
         self.logger.debug("zg")
         df["zg_array"] = np.array(0.5 - abs(df.fPtSubLeading / (df.fPtLeading + df.fPtSubLeading) - 0.5))
         zcut = self.cfg("zcut", 0.1)
-        df["zg"] = df["zg_array"].apply((lambda ar: next((zg for zg in ar if zg >= zcut), -0.1)))
+        df["zg"] = df["zg_array"].apply(lambda ar: next((zg for zg in ar if zg >= zcut), -0.1))
         df["rg"] = df[["zg_array", "fTheta"]].apply(
             (lambda ar: next((rg for (zg, rg) in zip(ar.zg_array, ar.fTheta) if zg >= zcut), -0.1)), axis=1
         )
-        df["nsd"] = df["zg_array"].apply((lambda ar: len([zg for zg in ar if zg >= zcut])))
+        df["nsd"] = df["zg_array"].apply(lambda ar: len([zg for zg in ar if zg >= zcut]))
 
         self.logger.debug("Lund")
         df["lnkt"] = df[["fPtSubLeading", "fTheta"]].apply(

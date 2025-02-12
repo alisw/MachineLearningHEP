@@ -202,19 +202,19 @@ class SystematicsMLWP:  # pylint: disable=too-few-public-methods, too-many-insta
             """helper to compute boundaries if not yet fixed"""
             if found_all_boundaries(boundaries):
                 return
-            wps_strings = ["y_test_prob%s>%s" % (modelname, wps[ipt]) for ipt in range(n_pt_bins)]
+            wps_strings = [f"y_test_prob{modelname}>{wps[ipt]}" for ipt in range(n_pt_bins)]
             if self.mcopt is not None:
                 probvar0 = "y_test_prob" + modelname + multiclasslabels[0]
                 probvar1 = "y_test_prob" + modelname + multiclasslabels[1]
                 if self.mcopt == 0:
                     wps_strings = [
-                        "%s<=%s and %s>=%s" % (probvar0, wps[ipt], probvar1, self.cent_cv_cut_orig[ipt][1])
+                        f"{probvar0}<={wps[ipt]} and {probvar1}>={self.cent_cv_cut_orig[ipt][1]}"
                         for ipt in range(n_pt_bins)
                     ]
                     wps_multi = [[wps[ipt], self.cent_cv_cut_orig[ipt][1]] for ipt in range(n_pt_bins)]
                 elif self.mcopt == 1:
                     wps_strings = [
-                        "%s<=%s and %s>=%s" % (probvar0, self.cent_cv_cut_orig[ipt][0], probvar1, wps[ipt])
+                        f"{probvar0}<={self.cent_cv_cut_orig[ipt][0]} and {probvar1}>={wps[ipt]}"
                         for ipt in range(n_pt_bins)
                     ]
                     wps_multi = [[self.cent_cv_cut_orig[ipt][0], wps[ipt]] for ipt in range(n_pt_bins)]

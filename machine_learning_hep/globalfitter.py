@@ -608,16 +608,18 @@ class Fitter:
                 text.SetTextColor(kRed + 2)
             flag_info.Draw()
 
-        sig_text = pinfos.AddText("S = %.0f #pm %.0f " % (self.yield_sig, self.yield_sig_err))
+        sig_text = pinfos.AddText(f"S = {self.yield_sig:.0f} #pm {self.yield_sig_err:.0f} ")
         sig_text.SetTextColor(kGreen + 2)
         bkg_text = pinfos.AddText(
-            "B (%.0f#sigma) = %.0f #pm %.0f" % (self.nsigma_sig, self.yield_bkg, self.yield_bkg_err)
+            f"B ({self.nsigma_sig:.0f}#sigma) = {self.yield_bkg:.0f} #pm {self.yield_bkg_err:.0f}"
         )
         bkg_text.SetTextColor(kRed + 2)
         sig_over_back = self.yield_sig / self.yield_bkg if self.yield_bkg > 0.0 else 0.0
-        pinfos.AddText("S/B (%.0f#sigma) = %.4f " % (self.nsigma_sig, sig_over_back))
+        pinfos.AddText(f"S/B ({self.nsigma_sig:.0f}#sigma) = {sig_over_back:.4f} ")
         pinfos.AddText(
-            "Signif (%.0f#sigma) = %.1f #pm %.1f " % (self.nsigma_sig, self.significance, self.errsignificance)
+            "Signif ({:.0f}#sigma) = {:.1f} #pm {:.1f} ".format(
+                self.nsigma_sig, self.significance, self.errsignificance
+            )
         )
         pinfos.Draw()
 

@@ -426,7 +426,7 @@ class AnalyzerDhadrons(Analyzer):  # pylint: disable=invalid-name
         print(self.n_fileff)
         lfileeff = TFile.Open(self.n_fileff)
         lfileeff.ls()
-        fileouteff = TFile.Open("%s/efficiencies%s%s.root" % (self.d_resultsallpmc, self.case, self.typean), "recreate")
+        fileouteff = TFile.Open(f"{self.d_resultsallpmc}/efficiencies{self.case}{self.typean}.root", "recreate")
         cEff = TCanvas("cEff", "The Fit Canvas")
         cEff.SetCanvasSize(1900, 1500)
         cEff.SetWindowSize(500, 500)
@@ -446,11 +446,11 @@ class AnalyzerDhadrons(Analyzer):  # pylint: disable=invalid-name
         h_sel_pr.SetName("eff")
         h_sel_pr.Write()
         h_sel_pr.GetXaxis().SetTitle("#it{p}_{T} (GeV/#it{c})")
-        h_sel_pr.GetYaxis().SetTitle("Acc x efficiency (prompt) %s %s (1/GeV)" % (self.p_latexnhadron, self.typean))
+        h_sel_pr.GetYaxis().SetTitle(f"Acc x efficiency (prompt) {self.p_latexnhadron} {self.typean} (1/GeV)")
         h_sel_pr.SetMinimum(0.001)
         h_sel_pr.SetMaximum(1.0)
         gPad.SetLogy()
-        cEff.SaveAs("%s/Eff%s%s.eps" % (self.d_resultsallpmc, self.case, self.typean))
+        cEff.SaveAs(f"{self.d_resultsallpmc}/Eff{self.case}{self.typean}.eps")
 
         cEffFD = TCanvas("cEffFD", "The Fit Canvas")
         cEffFD.SetCanvasSize(1900, 1500)
@@ -471,12 +471,12 @@ class AnalyzerDhadrons(Analyzer):  # pylint: disable=invalid-name
         h_sel_fd.SetName("eff_fd")
         h_sel_fd.Write()
         h_sel_fd.GetXaxis().SetTitle("#it{p}_{T} (GeV/#it{c})")
-        h_sel_fd.GetYaxis().SetTitle("Acc x efficiency feed-down %s %s (1/GeV)" % (self.p_latexnhadron, self.typean))
+        h_sel_fd.GetYaxis().SetTitle(f"Acc x efficiency feed-down {self.p_latexnhadron} {self.typean} (1/GeV)")
         h_sel_fd.SetMinimum(0.001)
         h_sel_fd.SetMaximum(1.0)
         gPad.SetLogy()
         legeffFD.Draw()
-        cEffFD.SaveAs("%s/EffFD%s%s.eps" % (self.d_resultsallpmc, self.case, self.typean))
+        cEffFD.SaveAs(f"{self.d_resultsallpmc}/EffFD{self.case}{self.typean}.eps")
 
     @staticmethod
     def calculate_norm(logger, hevents, hselevents):  # TO BE FIXED WITH EV SEL
@@ -506,7 +506,7 @@ class AnalyzerDhadrons(Analyzer):  # pylint: disable=invalid-name
         if not os.path.exists(fileouteff):
             self.logger.fatal("Efficiency file %s could not be found", fileouteff)
 
-        fileoutcross = "%s/finalcross%s%s.root" % (self.d_resultsallpdata, self.case, self.typean)
+        fileoutcross = f"{self.d_resultsallpdata}/finalcross{self.case}{self.typean}.root"
 
         namehistoeffprompt = "eff"
         namehistoefffeed = "eff_fd"
@@ -528,13 +528,11 @@ class AnalyzerDhadrons(Analyzer):  # pylint: disable=invalid-name
         self.logger.warning("Number of events after event selection %d", selnorm)
 
         if self.p_dobkgfromsideband:
-            fileoutbkg = TFile.Open(
-                "%s/Background_fromsidebands_%s_%s.root" % (self.d_resultsallpdata, self.case, self.typean)
-            )
+            fileoutbkg = TFile.Open(f"{self.d_resultsallpdata}/Background_fromsidebands_{self.case}_{self.typean}.root")
             hbkg = fileoutbkg.Get("hbkg_fromsidebands")
             hbkg.Scale(1.0 / selnorm)
             fileoutbkgscaled = TFile.Open(
-                "%s/NormBackground_fromsidebands_%s_%s.root" % (self.d_resultsallpdata, self.case, self.typean),
+                f"{self.d_resultsallpdata}/NormBackground_fromsidebands_{self.case}_{self.typean}.root",
                 "RECREATE",
             )
             fileoutbkgscaled.cd()
@@ -559,9 +557,7 @@ class AnalyzerDhadrons(Analyzer):  # pylint: disable=invalid-name
             fileoutcross,
         )
 
-        fileoutcrosstot = TFile.Open(
-            "%s/finalcross%s%stot.root" % (self.d_resultsallpdata, self.case, self.typean), "recreate"
-        )
+        fileoutcrosstot = TFile.Open(f"{self.d_resultsallpdata}/finalcross{self.case}{self.typean}tot.root", "recreate")
 
         f_fileoutcross = TFile.Open(fileoutcross)
         if f_fileoutcross:

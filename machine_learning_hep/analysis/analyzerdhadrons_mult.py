@@ -456,7 +456,7 @@ class AnalyzerDhadrons_mult(Analyzer):  # pylint: disable=invalid-name
                 fileout.Close()
 
     def get_efficiency(self, ibin1, ibin2):
-        fileouteff = TFile.Open("%s/efficiencies%s%s.root" % (self.d_resultsallpmc, self.case, self.typean), "read")
+        fileouteff = TFile.Open(f"{self.d_resultsallpmc}/efficiencies{self.case}{self.typean}.root", "read")
         h = fileouteff.Get(f"eff_mult{ibin2}")
         return h.GetBinContent(ibin1 + 1), h.GetBinError(ibin1 + 1)
 
@@ -464,7 +464,7 @@ class AnalyzerDhadrons_mult(Analyzer):  # pylint: disable=invalid-name
         self.loadstyle()
 
         lfileeff = TFile.Open(self.n_fileff)
-        fileouteff = TFile.Open("%s/efficiencies%s%s.root" % (self.d_resultsallpmc, self.case, self.typean), "recreate")
+        fileouteff = TFile.Open(f"{self.d_resultsallpmc}/efficiencies{self.case}{self.typean}.root", "recreate")
         cEff = TCanvas("cEff", "The Fit Canvas")
         cEff.SetCanvasSize(1900, 1500)
         cEff.SetWindowSize(500, 500)
@@ -489,8 +489,10 @@ class AnalyzerDhadrons_mult(Analyzer):  # pylint: disable=invalid-name
             legsl.SetTextSize(0.035)
 
         for imult in range(self.p_nbin2):
-            stringbin2 = "_%s_%.2f_%.2f" % (self.v_var2_binning, self.lvar2_binmin[imult], self.lvar2_binmax[imult])
-            legeffstring = "%.1f #leq %s < %.1f" % (
+            stringbin2 = "_{}_{:.2f}_{:.2f}".format(
+                self.v_var2_binning, self.lvar2_binmin[imult], self.lvar2_binmax[imult]
+            )
+            legeffstring = "{:.1f} #leq {} < {:.1f}".format(
                 self.lvar2_binmin[imult],
                 self.p_latexbin2var,
                 self.lvar2_binmax[imult],
@@ -539,7 +541,7 @@ class AnalyzerDhadrons_mult(Analyzer):  # pylint: disable=invalid-name
         if self.signal_loss:
             cSl.cd()
             legsl.Draw()
-            cSl.SaveAs("%s/SignalLoss%s%s.eps" % (self.d_resultsallpmc, self.case, self.typean))
+            cSl.SaveAs(f"{self.d_resultsallpmc}/SignalLoss{self.case}{self.typean}.eps")
 
             cSlFD = TCanvas("cSlFD", "The Fit Canvas")
             cSlFD.SetCanvasSize(1900, 1500)
@@ -553,7 +555,7 @@ class AnalyzerDhadrons_mult(Analyzer):  # pylint: disable=invalid-name
 
         cEff.cd()
         legeff.Draw()
-        cEff.SaveAs("%s/Eff%s%s.eps" % (self.d_resultsallpmc, self.case, self.typean))
+        cEff.SaveAs(f"{self.d_resultsallpmc}/Eff{self.case}{self.typean}.eps")
 
         cEffFD = TCanvas("cEffFD", "The Fit Canvas")
         cEffFD.SetCanvasSize(1900, 1500)
@@ -567,8 +569,10 @@ class AnalyzerDhadrons_mult(Analyzer):  # pylint: disable=invalid-name
         legeffFD.SetTextSize(0.035)
 
         for imult in range(self.p_nbin2):
-            stringbin2 = "_%s_%.2f_%.2f" % (self.v_var2_binning, self.lvar2_binmin[imult], self.lvar2_binmax[imult])
-            legeffFDstring = "%.1f #leq %s < %.1f" % (
+            stringbin2 = "_{}_{:.2f}_{:.2f}".format(
+                self.v_var2_binning, self.lvar2_binmin[imult], self.lvar2_binmax[imult]
+            )
+            legeffFDstring = "{:.1f} #leq {} < {:.1f}".format(
                 self.lvar2_binmin[imult],
                 self.p_latexbin2var,
                 self.lvar2_binmax[imult],
@@ -616,24 +620,22 @@ class AnalyzerDhadrons_mult(Analyzer):  # pylint: disable=invalid-name
 
         cEffFD.cd()
         legeffFD.Draw()
-        cEffFD.SaveAs("%s/EffFD%s%s.eps" % (self.d_resultsallpmc, self.case, self.typean))
+        cEffFD.SaveAs(f"{self.d_resultsallpmc}/EffFD{self.case}{self.typean}.eps")
         if self.signal_loss:
             cSlFD.cd()
             legslFD.Draw()
-            cSlFD.SaveAs("%s/SignalLossFD%s%s.eps" % (self.d_resultsallpmc, self.case, self.typean))
+            cSlFD.SaveAs(f"{self.d_resultsallpmc}/SignalLossFD{self.case}{self.typean}.eps")
 
     def plotter(self):
         gROOT.SetBatch(True)
         self.loadstyle()
 
-        fileouteff = TFile.Open("%s/efficiencies%s%s.root" % (self.d_resultsallpmc, self.case, self.typean))
+        fileouteff = TFile.Open(f"{self.d_resultsallpmc}/efficiencies{self.case}{self.typean}.root")
         yield_filename = self.make_file_path(
             self.d_resultsallpdata, self.yields_filename, "root", None, [self.case, self.typean]
         )
         fileoutyield = TFile.Open(yield_filename, "READ")
-        fileoutcross = TFile.Open(
-            "%s/finalcross%s%s.root" % (self.d_resultsallpdata, self.case, self.typean), "recreate"
-        )
+        fileoutcross = TFile.Open(f"{self.d_resultsallpdata}/finalcross{self.case}{self.typean}.root", "recreate")
 
         cCrossvsvar1 = TCanvas("cCrossvsvar1", "The Fit Canvas")
         cCrossvsvar1.SetCanvasSize(1900, 1500)
@@ -667,10 +669,10 @@ class AnalyzerDhadrons_mult(Analyzer):  # pylint: disable=invalid-name
             hcross.Scale(1.0 / norm)
             fileoutcross.cd()
             hcross.GetXaxis().SetTitle("#it{p}_{T} %s (GeV/#it{c})" % self.p_latexnhadron)
-            hcross.GetYaxis().SetTitle("d#sigma/d#it{p}_{T} (%s) %s" % (self.p_latexnhadron, self.typean))
+            hcross.GetYaxis().SetTitle(f"d#sigma/d#it{{p}}_{{T}} ({self.p_latexnhadron}) {self.typean}")
             hcross.SetName("hcross%d" % imult)
             hcross.GetYaxis().SetRangeUser(1e1, 1e10)
-            legvsvar1endstring = "%.1f < %s < %.1f" % (
+            legvsvar1endstring = "{:.1f} < {} < {:.1f}".format(
                 self.lvar2_binmin[imult],
                 self.p_latexbin2var,
                 self.lvar2_binmax[imult],
@@ -683,9 +685,7 @@ class AnalyzerDhadrons_mult(Analyzer):  # pylint: disable=invalid-name
             listvalerrpt = [hcross.GetBinError(ipt + 1) for ipt in range(self.p_nptbins)]
             listvalueserr.append(listvalerrpt)
         legvsvar1.Draw()
-        cCrossvsvar1.SaveAs(
-            "%s/Cross%s%sVs%s.eps" % (self.d_resultsallpdata, self.case, self.typean, self.v_var_binning)
-        )
+        cCrossvsvar1.SaveAs(f"{self.d_resultsallpdata}/Cross{self.case}{self.typean}Vs{self.v_var_binning}.eps")
 
         cCrossvsvar2 = TCanvas("cCrossvsvar2", "The Fit Canvas")
         cCrossvsvar2.SetCanvasSize(1900, 1500)
@@ -713,7 +713,7 @@ class AnalyzerDhadrons_mult(Analyzer):  # pylint: disable=invalid-name
                 hcrossvsvar2[ipt].SetBinError(imult + 1, listvalueserr[imult][ipt])
 
                 hcrossvsvar2[ipt].GetYaxis().SetRangeUser(1e4, 1e10)
-            legvsvar2endstring = "%.1f < %s < %.1f GeV/#it{c}" % (
+            legvsvar2endstring = "{:.1f} < {} < {:.1f} GeV/#it{{c}}".format(
                 self.lpt_finbinmin[ipt],
                 "#it{p}_{T}",
                 self.lpt_finbinmax[ipt],
@@ -721,9 +721,7 @@ class AnalyzerDhadrons_mult(Analyzer):  # pylint: disable=invalid-name
             hcrossvsvar2[ipt].Draw("same")
             legvsvar2.AddEntry(hcrossvsvar2[ipt], legvsvar2endstring, "LEP")
         legvsvar2.Draw()
-        cCrossvsvar2.SaveAs(
-            "%s/Cross%s%sVs%s.eps" % (self.d_resultsallpdata, self.case, self.typean, self.v_var2_binning)
-        )
+        cCrossvsvar2.SaveAs(f"{self.d_resultsallpdata}/Cross{self.case}{self.typean}Vs{self.v_var2_binning}.eps")
 
     @staticmethod
     def calculate_norm(logger, hevents, hselevents):  # TO BE FIXED WITH EV SEL
@@ -783,7 +781,9 @@ class AnalyzerDhadrons_mult(Analyzer):  # pylint: disable=invalid-name
 
             if self.p_fprompt_from_mb:
                 if imult == 0:
-                    fileoutcrossmb = "%s/finalcross%s%smult0.root" % (self.d_resultsallpdata, self.case, self.typean)
+                    fileoutcrossmb = "{}/finalcross{}{}mult0.root".format(
+                        self.d_resultsallpdata, self.case, self.typean
+                    )
                     output_prompt = []
                     if self.p_nevents is not None:
                         norm = self.p_nevents
@@ -844,7 +844,7 @@ class AnalyzerDhadrons_mult(Analyzer):  # pylint: disable=invalid-name
                 )
 
         fileoutcrosstot = TFile.Open(
-            "%s/finalcross%s%smulttot.root" % (self.d_resultsallpdata, self.case, self.typean), "recreate"
+            f"{self.d_resultsallpdata}/finalcross{self.case}{self.typean}multtot.root", "recreate"
         )
 
         for imult in range(self.p_nbin2):
@@ -871,7 +871,7 @@ class AnalyzerDhadrons_mult(Analyzer):  # pylint: disable=invalid-name
         legvsvar1.SetFillStyle(0)
         legvsvar1.SetTextFont(42)
         legvsvar1.SetTextSize(0.035)
-        fileoutcrosstot = TFile.Open("%s/finalcross%s%smulttot.root" % (self.d_resultsallpdata, self.case, self.typean))
+        fileoutcrosstot = TFile.Open(f"{self.d_resultsallpdata}/finalcross{self.case}{self.typean}multtot.root")
 
         for imult in range(self.p_nbin2):
             hcross = fileoutcrosstot.Get("histoSigmaCorr%d" % imult)
@@ -880,9 +880,9 @@ class AnalyzerDhadrons_mult(Analyzer):  # pylint: disable=invalid-name
             hcross.SetMarkerColor(imult + 1)
             hcross.GetXaxis().SetTitle("#it{p}_{T} %s (GeV/#it{c})" % self.p_latexnhadron)
             hcross.GetYaxis().SetTitleOffset(1.3)
-            hcross.GetYaxis().SetTitle("Corrected yield/events (%s) %s" % (self.p_latexnhadron, self.typean))
+            hcross.GetYaxis().SetTitle(f"Corrected yield/events ({self.p_latexnhadron}) {self.typean}")
             hcross.GetYaxis().SetRangeUser(1e-10, 1)
-            legvsvar1endstring = "%.1f #leq %s < %.1f" % (
+            legvsvar1endstring = "{:.1f} #leq {} < {:.1f}".format(
                 self.lvar2_binmin[imult],
                 self.p_latexbin2var,
                 self.lvar2_binmax[imult],
@@ -891,6 +891,8 @@ class AnalyzerDhadrons_mult(Analyzer):  # pylint: disable=invalid-name
             hcross.Draw("same")
         legvsvar1.Draw()
         cCrossvsvar1.SaveAs(
-            "%s/CorrectedYieldsNorm%s%sVs%s.eps" % (self.d_resultsallpdata, self.case, self.typean, self.v_var_binning)
+            "{}/CorrectedYieldsNorm{}{}Vs{}.eps".format(
+                self.d_resultsallpdata, self.case, self.typean, self.v_var_binning
+            )
         )
         fileoutcrosstot.Close()

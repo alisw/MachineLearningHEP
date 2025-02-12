@@ -92,7 +92,7 @@ class AnalyzerJetSystematics:
         self.logger.setLevel(logging.INFO)
         self.verbose = False
 
-        with open(path_database_analysis, "r", encoding="utf-8") as file_in:
+        with open(path_database_analysis, encoding="utf-8") as file_in:
             db_analysis = yaml.safe_load(file_in)
         case = list(db_analysis.keys())[0]
         self.datap = db_analysis[case]
@@ -135,7 +135,7 @@ class AnalyzerJetSystematics:
             self.logger.critical(make_message_notfound("the variation database"))
         if "/" not in path_database_variations:
             path_database_variations = f"{os.path.dirname(path_database_analysis)}/{path_database_variations}"
-        with open(path_database_variations, "r", encoding="utf-8") as file_sys:
+        with open(path_database_variations, encoding="utf-8") as file_sys:
             db_variations = yaml.safe_load(file_sys)
 
         if not healthy_structure(db_variations):
@@ -492,16 +492,28 @@ class AnalyzerJetSystematics:
                     print("Variation: %s" % self.systematic_varlabels[sys_cat][sys_var])
                     leg_sysvar.AddEntry(
                         input_histograms_sys[iptjet][sys_cat][sys_var],
-                        ("%s, %s" % (self.systematic_catlabels[sys_cat], self.systematic_varlabels[sys_cat][sys_var])),
+                        (
+                            "{}, {}".format(
+                                self.systematic_catlabels[sys_cat], self.systematic_varlabels[sys_cat][sys_var]
+                            )
+                        ),
                         "P",
                     )
                     self.logger.info(
                         "Adding label %s",
-                        ("%s, %s" % (self.systematic_catlabels[sys_cat], self.systematic_varlabels[sys_cat][sys_var])),
+                        (
+                            "{}, {}".format(
+                                self.systematic_catlabels[sys_cat], self.systematic_varlabels[sys_cat][sys_var]
+                            )
+                        ),
                     )
                     print(
                         "Adding label %s"
-                        % ("%s, %s" % (self.systematic_catlabels[sys_cat], self.systematic_varlabels[sys_cat][sys_var]))
+                        % (
+                            "{}, {}".format(
+                                self.systematic_catlabels[sys_cat], self.systematic_varlabels[sys_cat][sys_var]
+                            )
+                        )
                     )
                     setup_histogram(input_histograms_sys[iptjet][sys_cat][sys_var], get_colour(nsys + 1))
                     input_histograms_sys[iptjet][sys_cat][sys_var].Draw("same")
@@ -522,7 +534,7 @@ class AnalyzerJetSystematics:
             for sys_cat in range(self.n_sys_cat):
                 suffix2 = self.systematic_catnames[sys_cat]
                 nsys = 0
-                csysvar_each = TCanvas("csysvar_%s_%s" % (suffix2, suffix), "systematic variations" + suffix2 + suffix)
+                csysvar_each = TCanvas(f"csysvar_{suffix2}_{suffix}", "systematic variations" + suffix2 + suffix)
                 setup_canvas(csysvar_each)
                 csysvar_each.SetRightMargin(0.25)
                 leg_sysvar_each = TLegend(0.77, 0.2, 0.95, 0.85, self.systematic_catlabels[sys_cat])  # Rg
@@ -554,7 +566,7 @@ class AnalyzerJetSystematics:
                     )
                     input_histograms_sys[iptjet][sys_cat][sys_var].Draw("same")
                     nsys = nsys + 1
-                latex_text = "%g #leq %s < %g GeV/#it{c}" % (
+                latex_text = "{:g} #leq {} < {:g} GeV/#it{{c}}".format(
                     self.edges_ptjet_gen_min[iptjet],
                     self.latex_ptjet,
                     self.edges_ptjet_gen_max[iptjet],
@@ -571,9 +583,7 @@ class AnalyzerJetSystematics:
                 # plot ratios to the default
 
                 nsys = 0
-                csysvar_ratio = TCanvas(
-                    "csysvar_ratio_%s_%s" % (suffix2, suffix), "systematic variations" + suffix2 + suffix
-                )
+                csysvar_ratio = TCanvas(f"csysvar_ratio_{suffix2}_{suffix}", "systematic variations" + suffix2 + suffix)
                 setup_canvas(csysvar_ratio)
                 csysvar_ratio.SetRightMargin(0.25)
                 leg_sysvar_ratio = TLegend(0.77, 0.2, 0.95, 0.85, self.systematic_catlabels[sys_cat])  # Rg
@@ -655,9 +665,7 @@ class AnalyzerJetSystematics:
 
                 # Plot efficiency variations
 
-                csysvar_eff = TCanvas(
-                    "csysvar_eff_%s_%s" % (suffix2, suffix), "systematic variations" + suffix2 + suffix
-                )
+                csysvar_eff = TCanvas(f"csysvar_eff_{suffix2}_{suffix}", "systematic variations" + suffix2 + suffix)
                 setup_canvas(csysvar_eff)
                 csysvar_eff.SetRightMargin(0.25)
                 leg_sysvar_eff = TLegend(
@@ -715,7 +723,7 @@ class AnalyzerJetSystematics:
                 # Plot ratios of efficiency variations to the default efficiency
 
                 csysvar_eff_ratio = TCanvas(
-                    "csysvar_eff_ratio_%s_%s" % (suffix2, suffix), "systematic variations" + suffix2 + suffix
+                    f"csysvar_eff_ratio_{suffix2}_{suffix}", "systematic variations" + suffix2 + suffix
                 )
                 setup_canvas(csysvar_eff_ratio)
                 csysvar_eff_ratio.SetRightMargin(0.25)

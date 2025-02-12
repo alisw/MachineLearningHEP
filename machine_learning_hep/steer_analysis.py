@@ -450,7 +450,7 @@ def load_config(user_path: str, default_path=None) -> dict:
         if not os.path.exists(user_path):
             get_logger().fatal("The file %s does not exist", user_path)
             sys.exit(-1)
-        with open(user_path, "r", encoding="utf-8") as stream:
+        with open(user_path, encoding="utf-8") as stream:
             cfg = yaml.safe_load(stream)
     else:
         res = importlib.resources.files(default_path[0]).joinpath(default_path[1]).read_bytes()

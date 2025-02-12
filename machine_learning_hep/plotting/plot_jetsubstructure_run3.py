@@ -102,7 +102,7 @@ class Plotter:
         if "LcJet" in path_database_analysis:
             self.species = "Lc"
 
-        with open(path_database_analysis, "r", encoding="utf-8") as file_db:
+        with open(path_database_analysis, encoding="utf-8") as file_db:
             db_analysis = yaml.safe_load(file_db)
         case = list(db_analysis.keys())[0]
         self.datap = db_analysis[case]

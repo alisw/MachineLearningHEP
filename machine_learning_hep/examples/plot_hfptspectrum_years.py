@@ -31,10 +31,10 @@ FILES_NOT_FOUND = []
 # pylint: disable=too-many-statements
 # pylint: disable=too-many-branches, too-many-locals
 def plot_hfspectrum_years_ratios(case_1, case_2, ana_type, mult_bins=None):
-    with open("../data/database_ml_parameters_%s.yml" % case_1, "r") as param_config:
+    with open("../data/database_ml_parameters_%s.yml" % case_1) as param_config:
         data_param_1 = yaml.load(param_config, Loader=yaml.FullLoader)
 
-    with open("../data/database_ml_parameters_%s.yml" % case_2, "r") as param_config:
+    with open("../data/database_ml_parameters_%s.yml" % case_2) as param_config:
         data_param_2 = yaml.load(param_config, Loader=yaml.FullLoader)
 
     folder_plots_1 = data_param_1[case_1]["analysis"]["dir_general_plots"]
@@ -144,7 +144,7 @@ def plot_hfspectrum_years_ratios(case_1, case_2, ana_type, mult_bins=None):
 # pylint: disable=too-many-statements
 # pylint: disable=too-many-branches, too-many-locals
 def plot_hfspectrum_years(case, ana_type, mult_bins=None):
-    with open("../data/database_ml_parameters_%s.yml" % case, "r") as param_config:
+    with open("../data/database_ml_parameters_%s.yml" % case) as param_config:
         data_param = yaml.load(param_config, Loader=yaml.FullLoader)
 
     folder_plots = data_param[case]["analysis"]["dir_general_plots"]

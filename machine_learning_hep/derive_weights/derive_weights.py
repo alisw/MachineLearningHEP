@@ -40,13 +40,13 @@ def only_one_evt(df_in, dupl_cols):
 
 def read_database(path, overwrite_path=None):
     data_param = None
-    with open(path, "r") as param_config:
+    with open(path) as param_config:
         data_param = yaml.load(param_config, Loader=yaml.FullLoader)
     case = list(data_param.keys())[0]
     data_param = data_param[case]
     if overwrite_path:
         overwrite_db = None
-        with open(overwrite_path, "r") as param_config:
+        with open(overwrite_path) as param_config:
             overwrite_db = yaml.load(param_config, Loader=yaml.FullLoader)
         modify_dictionary(data_param, overwrite_db)
     return case, data_param

@@ -187,7 +187,7 @@ leg = TLegend(0.1, 0.7, 0.3, 0.9, "")
 leg.AddEntry(graphpbpb05_sym, "XeXe 0-5% data")
 for i, species in enumerate(speciesrun5):
     listdndetafitrun5[i].SetLineColor(colorrun5[i])
-    leg.AddEntry(listdndetafitrun5[i], "Extrapolation %s at %.2f TeV" % (speciesrun5[i], energyrun5[i]))
+    leg.AddEntry(listdndetafitrun5[i], f"Extrapolation {speciesrun5[i]} at {energyrun5[i]:.2f} TeV")
     listdndetafitrun5[i].Draw("SAME")
     print("booo", listdndetafitrun5[i].Eval(0.0))
 leg.Draw()
