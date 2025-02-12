@@ -1308,18 +1308,23 @@ def format_number_prec(num, prec):
     return f"{round(num, prec):.{max(0, prec)}f}"
 
 
+def magnitude(num):
+    """Decimal magnitude of a number."""
+    return math.floor(math.log10(abs(num)))
+
+
 def format_value_with_unc(y, e_stat=None, e_syst_plus=None, e_syst_minus=None, n_sig=2):  # pylint: disable=invalid-name
     """Format a value with uncertainties so that the main value is reported with a decimal precision
     given by the number of significant figures of the smallest uncertainty."""
-    mag_y = math.floor(math.log10(y))
+    mag_y = magnitude(y)
     mag_e_stat = mag_y
     mag_e_syst = mag_y
     if e_stat:
-        mag_e_stat = math.floor(math.log10(e_stat))
+        mag_e_stat = magnitude(e_stat)
     if e_syst_plus:
         if not e_syst_minus:
             e_syst_minus = e_syst_plus
-        mag_e_syst = math.floor(math.log10(min(e_syst_plus, e_syst_minus)))
+        mag_e_syst = magnitude(min(e_syst_plus, e_syst_minus))
     mag_y = min(mag_y, mag_e_stat, mag_e_syst)
     # print(f"Mag stat {mag_e_stat}, sys {mag_e_syst}")
     prec_y = n_sig - 1 - mag_y
