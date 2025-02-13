@@ -293,11 +293,16 @@ def do_entire_analysis(
 
     analyzers = ana_mgr.get_analyzers()
     # For ML WP systematics
-    if mltype == "MultiClassification":
-        syst_ml_pt_cl0 = syst_class(data_param[case], case, typean, analyzers, mymultiprocessmc, mymultiprocessdata, 0)
-        syst_ml_pt_cl1 = syst_class(data_param[case], case, typean, analyzers, mymultiprocessmc, mymultiprocessdata, 1)
-    else:
-        syst_ml_pt = syst_class(data_param[case], case, typean, analyzers, mymultiprocessmc, mymultiprocessdata)
+    if do_syst_ml:
+        if mltype == "MultiClassification":
+            syst_ml_pt_cl0 = syst_class(
+                data_param[case], case, typean, analyzers, mymultiprocessmc, mymultiprocessdata, 0
+            )
+            syst_ml_pt_cl1 = syst_class(
+                data_param[case], case, typean, analyzers, mymultiprocessmc, mymultiprocessdata, 1
+            )
+        else:
+            syst_ml_pt = syst_class(data_param[case], case, typean, analyzers, mymultiprocessmc, mymultiprocessdata)
 
     # perform the analysis flow
     if dodownloadalice:
