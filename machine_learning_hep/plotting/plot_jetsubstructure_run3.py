@@ -1228,7 +1228,7 @@ class Plotter:
             self.labels_obj = []
             self.list_latex = []
             self.y_margin_up = 0.06  # to fix cropped number on the axis
-            self.title_full = f";{self.latex_obs};ratio to    "
+            self.title_full = f";{self.latex_obs};ratio to  "
             can, new = self.make_plot(
                 name_can, can=can, pad=2, scale=pad_heights[1], colours=self.list_colours, markers=self.list_markers
             )
