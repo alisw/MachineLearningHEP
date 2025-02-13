@@ -695,10 +695,10 @@ class Plotter:
             if self.species == "D0":
                 # list_iptjet = [0, 1, 2, 3]  # indices of jet pt bins to process
                 # list_iptjet = [0, 1, 2, 3, 4, 5, 6, 7]  # indices of jet pt bins to process
-                list_iptjet = [0, 2, 4, 6]  # indices of jet pt bins to process
+                list_iptjet = [2, 3, 4, 5, 6]  # indices of jet pt bins to process
                 # list_iptjet = [2, 3]  # indices of jet pt bins to process
             if self.species == "Lc":
-                list_iptjet = [1]  # indices of jet pt bins to process
+                list_iptjet = [1, 2]  # indices of jet pt bins to process
             if self.species == "incl":
                 list_iptjet = [2]
             plot_lc_vs_d0 = True
@@ -1228,7 +1228,7 @@ class Plotter:
             self.labels_obj = []
             self.list_latex = []
             self.y_margin_up = 0.06  # to fix cropped number on the axis
-            self.title_full = f";{self.latex_obs};ratio to  "
+            self.title_full = f";{self.latex_obs};ratio to    "
             can, new = self.make_plot(
                 name_can, can=can, pad=2, scale=pad_heights[1], colours=self.list_colours, markers=self.list_markers
             )
