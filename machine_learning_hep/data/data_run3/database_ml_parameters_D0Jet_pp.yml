@@ -98,33 +98,8 @@ D0Jet_pp:
         trees: # add EEC columns
           O2hfd0base: [fIndexHfD0CollBases, fPt, fEta, fPhi, fM]
           O2hfd0mc: [fFlagMcMatchRec, fOriginMcRec]
-          # O2hfd0par:
-          #     [
-          #         fCpa,
-          #         fCpaXY,
-          #         fChi2PCA,
-          #         fDecayLength,
-          #         fDecayLengthXY,
-          #         fDecayLengthNormalised,
-          #         fDecayLengthXYNormalised,
-          #         fImpactParameter0,
-          #         fImpactParameter1,
-          #         fImpactParameterNormalised0,
-          #         fImpactParameterNormalised1,
-          #         fPtProng0,
-          #         fPtProng1,
-          #         fNSigTpcPiExpPi,
-          #         fNSigTpcKaExpPi,
-          #         fNSigTpcPiExpKa,
-          #         fNSigTpcKaExpKa,
-          #     ]
-          # O2hfd0pare:
-          #     [
-          #         fErrorDecayLength,
-          #         fErrorDecayLengthXY,
-          #         fErrorImpactParameter0,
-          #         fErrorImpactParameter1,
-          #     ]
+          # O2hfd0par: [fCpa, fCpaXY, fChi2PCA, fDecayLength, fDecayLengthXY, fDecayLengthNormalised, fDecayLengthXYNormalised, fImpactParameter0, fImpactParameter1, fImpactParameterNormalised0, fImpactParameterNormalised1, fPtProng0, fPtProng1, fNSigTpcPiExpPi, fNSigTpcKaExpPi, fNSigTpcPiExpKa, fNSigTpcKaExpKa]
+          # O2hfd0pare: [fErrorDecayLength, fErrorDecayLengthXY, fErrorImpactParameter0, fErrorImpactParameter1]
           O2hfd0sel: [fCandidateSelFlag]
           O2hfd0ml: [fMlScores]
           O2d0cmcdjeto: [fIndexD0CMCDJETCOS, fJetPt, fJetPhi, fJetEta, fJetNConstituents, fJetR]
@@ -158,33 +133,8 @@ D0Jet_pp:
         index: fIndexD0CJETOS
         trees:
           O2hfd0base: [fIndexHfD0CollBases, fPt, fEta, fPhi, fM]
-          # O2hfd0par:
-          #     [
-          #         fCpa,
-          #         fCpaXY,
-          #         fChi2PCA,
-          #         fDecayLength,
-          #         fDecayLengthXY,
-          #         fDecayLengthNormalised,
-          #         fDecayLengthXYNormalised,
-          #         fImpactParameter0,
-          #         fImpactParameter1,
-          #         fImpactParameterNormalised0,
-          #         fImpactParameterNormalised1,
-          #         fPtProng0,
-          #         fPtProng1,
-          #         fNSigTpcPiExpPi,
-          #         fNSigTpcKaExpPi,
-          #         fNSigTpcPiExpKa,
-          #         fNSigTpcKaExpKa,
-          #     ]
-          # O2hfd0pare:
-          #     [
-          #         fErrorDecayLength,
-          #         fErrorDecayLengthXY,
-          #         fErrorImpactParameter0,
-          #         fErrorImpactParameter1,
-          #     ]
+          # O2hfd0par: [fCpa, fCpaXY, fChi2PCA, fDecayLength, fDecayLengthXY, fDecayLengthNormalised, fDecayLengthXYNormalised, fImpactParameter0, fImpactParameter1, fImpactParameterNormalised0, fImpactParameterNormalised1, fPtProng0, fPtProng1, fNSigTpcPiExpPi, fNSigTpcKaExpPi, fNSigTpcPiExpKa, fNSigTpcKaExpKa]
+          # O2hfd0pare: [fErrorDecayLength, fErrorDecayLengthXY, fErrorImpactParameter0, fErrorImpactParameter1]
           O2hfd0ml: [fMlScores]
           O2hfd0sel: [fCandidateSelFlag]
           O2d0cjeto: [fIndexD0CJETCOS, fJetPt, fJetPhi, fJetEta, fJetNConstituents, fJetR]
@@ -389,7 +339,14 @@ D0Jet_pp:
       pkl_skimmed_dec: [LHC22pp_mc/MLapplication/prod_LHC22b1b/skpkldecmc] #list of periods
       pkl_skimmed_decmerged: [LHC22pp_mc/MLapplication/prod_LHC22b1b/skpkldecmcmerged] #list of periods
     modelname: xgboost
-    modelsperptbin: [xgboost_classifierD0pp_jet_dfselection_fPt_1.0_2.0.sav, xgboost_classifierD0pp_jet_dfselection_fPt_2.0_4.0.sav, xgboost_classifierD0pp_jet_dfselection_fPt_4.0_6.0.sav, xgboost_classifierD0pp_jet_dfselection_fPt_6.0_8.0.sav, xgboost_classifierD0pp_jet_dfselection_fPt_8.0_12.0.sav, xgboost_classifierD0pp_jet_dfselection_fPt_12.0_24.0.sav, xgboost_classifierD0pp_jet_dfselection_fPt_24.0_48.0.sav] # sel_skim_binmin bins
+    modelsperptbin: # sel_skim_binmin bins
+      - xgboost_classifierD0pp_jet_dfselection_fPt_1.0_2.0.sav
+      - xgboost_classifierD0pp_jet_dfselection_fPt_2.0_4.0.sav
+      - xgboost_classifierD0pp_jet_dfselection_fPt_4.0_6.0.sav
+      - xgboost_classifierD0pp_jet_dfselection_fPt_6.0_8.0.sav
+      - xgboost_classifierD0pp_jet_dfselection_fPt_8.0_12.0.sav
+      - xgboost_classifierD0pp_jet_dfselection_fPt_12.0_24.0.sav
+      - xgboost_classifierD0pp_jet_dfselection_fPt_24.0_48.0.sav
     probcutpresel:
       data: [0.75, 0.75, 0.65, 0.65, 0.45, 0.45, 0.45, .45] # sel_skim_binmin bins
       mc: [0.75, 0.75, 0.65, 0.65, 0.45, 0.45, 0.45, .45] # sel_skim_binmin bins
