@@ -131,7 +131,13 @@ LcpKpi:
       data: [fIndexCollisions, fPosX, fPosY, fPosZ, fNumContrib, fMultZeqNTracksPV, fCentFT0A, fCentFT0C, fCentFT0M, fCentFV0A]
       mc: [fIndexCollisions, fPosX, fPosY, fPosZ, fNumContrib, fMultZeqNTracksPV, fCentFT0A, fCentFT0C, fCentFT0M, fCentFV0A]
     var_gen: [fIndexMcCollisions, fPosX, fPosY, fPosZ, fPt, fY, fFlagMcMatchGen, fOriginMcGen]
-    var_training: [[fImpactParameter0, fImpactParameter1, fImpactParameter2, fCpa, fChi2PCA, fDecayLength, fDecayLengthXY, fNSigTpcTofPi0, fNSigTpcTofPr0, fNSigTpcTofKa1, fNSigTpcTofPi2, fNSigTpcTofPr2], [fImpactParameter0, fImpactParameter1, fImpactParameter2, fCpa, fChi2PCA, fDecayLength, fDecayLengthXY, fNSigTpcTofPi0, fNSigTpcTofPr0, fNSigTpcTofKa1, fNSigTpcTofPi2, fNSigTpcTofPr2], [fImpactParameter0, fImpactParameter1, fImpactParameter2, fCpa, fChi2PCA, fDecayLength, fDecayLengthXY, fNSigTpcTofPi0, fNSigTpcTofPr0, fNSigTpcTofKa1, fNSigTpcTofPi2, fNSigTpcTofPr2], [fImpactParameter0, fImpactParameter1, fImpactParameter2, fCpa, fChi2PCA, fDecayLength, fDecayLengthXY, fNSigTpcTofPi0, fNSigTpcTofPr0, fNSigTpcTofKa1, fNSigTpcTofPi2, fNSigTpcTofPr2], [fImpactParameter0, fImpactParameter1, fImpactParameter2, fCpa, fChi2PCA, fDecayLength, fDecayLengthXY, fNSigTpcTofPi0, fNSigTpcTofPr0, fNSigTpcTofKa1, fNSigTpcTofPi2, fNSigTpcTofPr2], [fImpactParameter0, fImpactParameter1, fImpactParameter2, fCpa, fChi2PCA, fDecayLength, fDecayLengthXY, fNSigTpcTofPi0, fNSigTpcTofPr0, fNSigTpcTofKa1, fNSigTpcTofPi2, fNSigTpcTofPr2]]
+    var_training:
+      - [fImpactParameter0, fImpactParameter1, fImpactParameter2, fCpa, fChi2PCA, fDecayLength, fDecayLengthXY, fNSigTpcTofPi0, fNSigTpcTofPr0, fNSigTpcTofKa1, fNSigTpcTofPi2, fNSigTpcTofPr2]
+      - [fImpactParameter0, fImpactParameter1, fImpactParameter2, fCpa, fChi2PCA, fDecayLength, fDecayLengthXY, fNSigTpcTofPi0, fNSigTpcTofPr0, fNSigTpcTofKa1, fNSigTpcTofPi2, fNSigTpcTofPr2]
+      - [fImpactParameter0, fImpactParameter1, fImpactParameter2, fCpa, fChi2PCA, fDecayLength, fDecayLengthXY, fNSigTpcTofPi0, fNSigTpcTofPr0, fNSigTpcTofKa1, fNSigTpcTofPi2, fNSigTpcTofPr2]
+      - [fImpactParameter0, fImpactParameter1, fImpactParameter2, fCpa, fChi2PCA, fDecayLength, fDecayLengthXY, fNSigTpcTofPi0, fNSigTpcTofPr0, fNSigTpcTofKa1, fNSigTpcTofPi2, fNSigTpcTofPr2]
+      - [fImpactParameter0, fImpactParameter1, fImpactParameter2, fCpa, fChi2PCA, fDecayLength, fDecayLengthXY, fNSigTpcTofPi0, fNSigTpcTofPr0, fNSigTpcTofKa1, fNSigTpcTofPi2, fNSigTpcTofPr2]
+      - [fImpactParameter0, fImpactParameter1, fImpactParameter2, fCpa, fChi2PCA, fDecayLength, fDecayLengthXY, fNSigTpcTofPi0, fNSigTpcTofPr0, fNSigTpcTofKa1, fNSigTpcTofPi2, fNSigTpcTofPr2]
     var_selected: [fM, fY, fEta, fPt, fCpa, fCpaXY, fChi2PCA, fDecayLength, fDecayLengthXY, fPtProng0, fPtProng1, fPtProng2, fImpactParameter0, fImpactParameter1, fImpactParameter2, fNSigTpcPi0, fNSigTpcPr0, fNSigTpcKa1, fNSigTpcPi2, fNSigTpcPr2, fNSigTofPi0, fNSigTofPr0, fNSigTofKa1, fNSigTofPi2, fNSigTofPr2, fNSigTpcTofPi0, fNSigTpcTofPr0, fNSigTpcTofKa1, fNSigTpcTofPi2, fNSigTpcTofPr2]
     var_boundaries: [fDecayLength, fPt]
     var_correlation:
@@ -329,7 +335,13 @@ LcpKpi:
       pkl_skimmed_dec: [LHC22pp_mc/MLapplication/prod_LHC22b1b/skpkldecmc, LHC22pp_mc/MLapplication/prod_LHC22b1a/skpkldecmc] #list of periods
       pkl_skimmed_decmerged: [LHC22pp_mc/MLapplication/prod_LHC22b1b/skpkldecmcmerged, LHC22pp_mc/MLapplication/prod_LHC22b1a/skpkldecmcmerged] #list of periods
     modelname: xgboost
-    modelsperptbin: [xgboost_classifierLcpKpi_dfselection_fPt_1.0_2.0.sav, xgboost_classifierLcpKpi_dfselection_fPt_2.0_4.0.sav, xgboost_classifierLcpKpi_dfselection_fPt_4.0_6.0.sav, xgboost_classifierLcpKpi_dfselection_fPt_6.0_8.0.sav, xgboost_classifierLcpKpi_dfselection_fPt_8.0_12.0.sav, xgboost_classifierLcpKpi_dfselection_fPt_12.0_24.0.sav]
+    modelsperptbin:
+      - xgboost_classifierLcpKpi_dfselection_fPt_1.0_2.0.sav
+      - xgboost_classifierLcpKpi_dfselection_fPt_2.0_4.0.sav
+      - xgboost_classifierLcpKpi_dfselection_fPt_4.0_6.0.sav
+      - xgboost_classifierLcpKpi_dfselection_fPt_6.0_8.0.sav
+      - xgboost_classifierLcpKpi_dfselection_fPt_8.0_12.0.sav
+      - xgboost_classifierLcpKpi_dfselection_fPt_12.0_24.0.sav
     probcutpresel:
       data: [0.4, 0.4, 0.4, 0.4, 0., 0.] #list of nbins
       mc: [0.4, 0.4, 0.4, 0.4, 0., 0.] #list of nbins
