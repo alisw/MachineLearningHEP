@@ -59,5 +59,5 @@ jobs:
           ci/run-tests.sh --tests ${{ matrix.test-tool }} --files $changed_files
       - name: Run on push
         if: github.event_name == 'push'
-        run: |
+        run: |-
           ci/run-tests.sh --tests ${{ matrix.test-tool }}
