@@ -386,12 +386,15 @@ LcpKpi:
       data:
         runselection: [null] #FIXME
         prefix_dir_res: /data2/MLhep/
-        results: [LHC22pp/Results/prod_LHC22o/resultsdata] #list of periods
+        results: #list of periods
+          - LHC22pp/Results/prod_LHC22o/resultsdata
         resultsallp: LHC22pp/Results/resultsdatatot
       mc:
         runselection: [null, null] #FIXME
         prefix_dir_res: /data2/MLhep/
-        results: [LHC22pp_mc/Results/prod_LHC22b1b/resultsmc, LHC22pp_mc/Results/prod_LHC22b1a/resultsmc] #list of periods
+        results: #list of periods
+          - LHC22pp_mc/Results/prod_LHC22b1b/resultsmc
+          - LHC22pp_mc/Results/prod_LHC22b1a/resultsmc
         resultsallp: LHC22pp_mc/Results/prod_LHC22/resultsmctot
 
       mass_fit_lim: [2.10, 2.47] # region for the fit of the invariant mass distribution [GeV/c^2]
