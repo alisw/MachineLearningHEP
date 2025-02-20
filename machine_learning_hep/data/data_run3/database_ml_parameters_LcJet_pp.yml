@@ -148,32 +148,8 @@ LcJet_pp:
         index: fIndexLCCJETOS
         trees:
           O2hflcbase: [fIndexHfLcCollBases, fPt, fY, fEta, fPhi, fM]
-          # O2hflcpar:
-          #     [
-          #         fCpa,
-          #         fCpaXY,
-          #         fChi2PCA,
-          #         fDecayLength,
-          #         fDecayLengthXY,
-          #         fDecayLengthNormalised,
-          #         fDecayLengthXYNormalised,
-          #         fImpactParameter0,
-          #         fImpactParameter1,
-          #         fImpactParameter2,
-          #         fImpactParameterNormalised0,
-          #         fImpactParameterNormalised1,
-          #         fImpactParameterNormalised2,
-          #         fPtProng0,
-          #         fPtProng1,
-          #         fPtProng2,
-          #     ]
-          # O2hflcpare:
-          #     [
-          #         fErrorDecayLength,
-          #         fErrorDecayLengthXY,
-          #         fErrorImpactParameter0,
-          #         fErrorImpactParameter1,
-          #     ]
+          # O2hflcpar: [fCpa, fCpaXY, fChi2PCA, fDecayLength, fDecayLengthXY, fDecayLengthNormalised, fDecayLengthXYNormalised, fImpactParameter0, fImpactParameter1, fImpactParameter2, fImpactParameterNormalised0, fImpactParameterNormalised1, fImpactParameterNormalised2, fPtProng0, fPtProng1, fPtProng2]
+          # O2hflcpare: [fErrorDecayLength, fErrorDecayLengthXY, fErrorImpactParameter0, fErrorImpactParameter1]
           O2hflcsel: [fCandidateSelFlag]
           O2hflcml: [fMlScores]
           O2lccjeto: [fIndexLCCJETCOS, fIndexHFLcBASES_0, fJetPt, fJetPhi, fJetEta, fJetNConstituents, fJetR]
