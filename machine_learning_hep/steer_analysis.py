@@ -32,10 +32,10 @@ from .logger import configure_logger, get_logger
 from .utilities_files import checkdirs, checkmakedir, checkmakedirlist, delete_dirlist
 
 
-def do_entire_analysis(
+def do_entire_analysis(  # pylint: disable=too-many-locals, too-many-statements, too-many-branches
     data_config: dict,
     data_param: dict,
-    data_param_overwrite: dict,  # pylint: disable=too-many-locals, too-many-statements, too-many-branches
+    data_param_overwrite: dict,
     data_model: dict,
     run_param: dict,
     args,
