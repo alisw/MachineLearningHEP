@@ -1230,7 +1230,8 @@ class Plotter:
                 1.0,
             )
             setup_legend(leg)
-            leg.AddEntry(list_syst_all[-1], " ", "FP")
+            if list_syst_all:
+                leg.AddEntry(list_syst_all[-1], " ", "FP")
             can.cd(2)
             leg.Draw()
             gStyle.SetErrorX(0.5)  # reset default width
