@@ -12,14 +12,14 @@
 ##   along with this program. if not, see <https://www.gnu.org/licenses/>. ##
 #############################################################################
 
-from os.path import join
 import tempfile
+from os.path import join
 
-from machine_learning_hep.utilities import mergerootfiles
 from machine_learning_hep.logger import get_logger
+from machine_learning_hep.utilities import mergerootfiles
+
 
 def multi_preparenorm(database, typean, doperiodbyperiod):
-
     logger = get_logger()
 
     lper_normfilesorig = []
@@ -31,16 +31,14 @@ def multi_preparenorm(database, typean, doperiodbyperiod):
         lper_normfilesorig.append(join(lper_val, "correctionsweights.root"))
         lper_normfiles.append(join(res_path, "correctionsweights.root"))
 
-    f_normmerged = join(database["analysis"][typean]["data"]["resultsallp"],
-                        "correctionsweights.root")
+    f_normmerged = join(database["analysis"][typean]["data"]["resultsallp"], "correctionsweights.root")
 
     listempty = []
     useperiod = database["analysis"][typean]["useperiod"]
 
     with tempfile.TemporaryDirectory() as tmp_merged_dir:
         for indexp in range(len(resultsdata)):
-            logger.info("Origin path: %s, target path: %s", lper_normfilesorig[indexp],
-                        lper_normfiles[indexp])
+            logger.info("Origin path: %s, target path: %s", lper_normfilesorig[indexp], lper_normfiles[indexp])
             mergerootfiles([lper_normfilesorig[indexp]], lper_normfiles[indexp], tmp_merged_dir)
             if doperiodbyperiod and useperiod[indexp]:
                 listempty.append(lper_normfiles[indexp])

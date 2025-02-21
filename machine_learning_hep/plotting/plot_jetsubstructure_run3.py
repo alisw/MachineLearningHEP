@@ -102,7 +102,7 @@ class Plotter:
         if "LcJet" in path_database_analysis:
             self.species = "Lc"
 
-        with open(path_database_analysis, "r", encoding="utf-8") as file_db:
+        with open(path_database_analysis, encoding="utf-8") as file_db:
             db_analysis = yaml.safe_load(file_db)
         case = list(db_analysis.keys())[0]
         self.datap = db_analysis[case]
@@ -680,8 +680,7 @@ class Plotter:
                 for cat, label in zip(("pr", "np"), ("prompt", "non-prompt")):
                     self.list_obj = self.get_objects(
                         *(
-                            f"h_ptjet-pthf_effnew_{cat}_"
-                            f"{string_range_ptjet(get_bin_limits(axis_ptjet, iptjet + 1))}"
+                            f"h_ptjet-pthf_effnew_{cat}_{string_range_ptjet(get_bin_limits(axis_ptjet, iptjet + 1))}"
                             for iptjet in bins_ptjet
                         )
                     )
@@ -724,7 +723,7 @@ class Plotter:
                         self.list_obj = self.get_objects(
                             f"h_ptjet-{self.var}_signal_{string_pthf}_{self.mcordata}",
                             f"h_ptjet-{self.var}_sideband_{string_pthf}_{self.mcordata}",
-                            f"h_ptjet-{self.var}_subtracted_notscaled_{string_pthf}" f"_{self.mcordata}",
+                            f"h_ptjet-{self.var}_subtracted_notscaled_{string_pthf}_{self.mcordata}",
                         )
                         self.list_obj = [project_hist(h, [1], {0: (iptjet + 1, iptjet + 1)}) for h in self.list_obj]
                         self.labels_obj = ["signal region", "scaled sidebands", "after subtraction"]
@@ -776,7 +775,7 @@ class Plotter:
                 if plot_unfolding:
                     self.logger.info("Plotting unfolding")
                     self.list_obj = [
-                        self.get_object(f"h_{self.var}_{self.method}_unfolded_{self.mcordata}_" f"{string_ptjet}_{i}")
+                        self.get_object(f"h_{self.var}_{self.method}_unfolded_{self.mcordata}_{string_ptjet}_{i}")
                         for i in range(self.niter_unfolding)
                     ]
                     self.labels_obj = [f"iteration {i + 1}" for i in range(self.niter_unfolding)]
@@ -809,7 +808,7 @@ class Plotter:
                 self.plot_errors_x = False
                 self.range_x = x_range[self.var]
                 h_stat = self.get_object(
-                    f"h_{self.var}_{self.method}_unfolded_{self.mcordata}_" f"{string_ptjet}_sel_selfnorm"
+                    f"h_{self.var}_{self.method}_unfolded_{self.mcordata}_{string_ptjet}_sel_selfnorm"
                 )
                 self.list_obj = [h_stat]
                 self.plot_order = list(range(len(self.list_obj)))

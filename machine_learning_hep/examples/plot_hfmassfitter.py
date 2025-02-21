@@ -15,28 +15,46 @@
 """
 main script for doing final stage analysis
 """
+
 import os
+
 # pylint: disable=unused-wildcard-import, wildcard-import
 from array import *
+
 # pylint: disable=import-error, no-name-in-module, unused-import
 import yaml
-from ROOT import TFile, TH1F, TCanvas
-from ROOT import gStyle, TLegend, TLatex
-from ROOT import Double
-from ROOT import gROOT, kRed, kGreen, kBlack, kBlue, kOrange, kViolet, kAzure
-from ROOT import TStyle, gPad
+from ROOT import (
+    TH1F,
+    Double,
+    TCanvas,
+    TFile,
+    TLatex,
+    TLegend,
+    TStyle,
+    gPad,
+    gROOT,
+    gStyle,
+    kAzure,
+    kBlack,
+    kBlue,
+    kGreen,
+    kOrange,
+    kRed,
+    kViolet,
+)
+
 from machine_learning_hep.utilities import make_file_path
 from machine_learning_hep.utilities_plot import load_root_style
+
 
 # pylint: disable=import-error, no-name-in-module, unused-import
 # pylint: disable=too-many-statements
 # pylint: disable=too-many-branches
 # pylint: disable=too-many-locals
 def plot_hfmassfitter(case, arraytype):
-
     load_root_style()
 
-    with open("../data/database_ml_parameters_%s.yml" % case, 'r') as param_config:
+    with open("../data/database_ml_parameters_%s.yml" % case) as param_config:
         data_param = yaml.load(param_config, Loader=yaml.FullLoader)
 
     folder_plots = data_param[case]["analysis"]["dir_general_plots"]
@@ -73,37 +91,29 @@ def plot_hfmassfitter(case, arraytype):
     d_resultsdataHM = data_param[case]["analysis"][arraytype[1]]["data"]["resultsallp"]
     yields_filename = "yields"
 
-
-    signfhistos = [TH1F("hsignf%d" % (imult), "", \
-                                    p_nptbins, array("d", ptranges)) \
-                                    for imult in range(p_nbin2)]
-    meanhistos = [TH1F("hmean%d" % (imult), "", \
-                                    p_nptbins, array("d", ptranges)) \
-                                    for imult in range(p_nbin2)]
-    sigmahistos = [TH1F("hsigma%d" % (imult), "", \
-                                    p_nptbins, array("d", ptranges)) \
-                                    for imult in range(p_nbin2)]
-    sighistos = [TH1F("hsig%d" % (imult), "", \
-                                p_nptbins, array("d", ptranges)) \
-                                for imult in range(p_nbin2)]
-    backhistos = [TH1F("hback%d" % (imult), "", \
-                                  p_nptbins, array("d", ptranges)) \
-                                  for imult in range(p_nbin2)]
+    signfhistos = [TH1F("hsignf%d" % (imult), "", p_nptbins, array("d", ptranges)) for imult in range(p_nbin2)]
+    meanhistos = [TH1F("hmean%d" % (imult), "", p_nptbins, array("d", ptranges)) for imult in range(p_nbin2)]
+    sigmahistos = [TH1F("hsigma%d" % (imult), "", p_nptbins, array("d", ptranges)) for imult in range(p_nbin2)]
+    sighistos = [TH1F("hsig%d" % (imult), "", p_nptbins, array("d", ptranges)) for imult in range(p_nbin2)]
+    backhistos = [TH1F("hback%d" % (imult), "", p_nptbins, array("d", ptranges)) for imult in range(p_nbin2)]
 
     for imult, iplot in enumerate(plotbinMB):
         if not iplot:
             continue
-        func_filename = make_file_path(d_resultsdataMB, yields_filename, "root",
-                                       None, [case, arraytype[0]])
+        func_filename = make_file_path(d_resultsdataMB, yields_filename, "root", None, [case, arraytype[0]])
         func_file = TFile.Open(func_filename, "READ")
 
         for ipt in range(p_nptbins):
             bin_id = bin_matchingMB[ipt]
-            suffix = "%s%d_%d_%.2f%s_%.2f_%.2f" % \
-                         (v_var_binning, lpt_finbinminMB[ipt],
-                          lpt_finbinmaxMB[ipt], lpt_probcutfin[bin_id],
-                          v_var2_binningMB, lvar2_binminMB[imult],
-                          lvar2_binmaxMB[imult])
+            suffix = "%s%d_%d_%.2f%s_%.2f_%.2f" % (
+                v_var_binning,
+                lpt_finbinminMB[ipt],
+                lpt_finbinmaxMB[ipt],
+                lpt_probcutfin[bin_id],
+                v_var2_binningMB,
+                lvar2_binminMB[imult],
+                lvar2_binmaxMB[imult],
+            )
             load_dir = func_file.GetDirectory(suffix)
             mass_fitter = load_dir.Get("fitter")
             sign = 0
@@ -136,17 +146,20 @@ def plot_hfmassfitter(case, arraytype):
     for imult, iplot in enumerate(plotbinHM):
         if not iplot:
             continue
-        func_filename = make_file_path(d_resultsdataHM, yields_filename, "root",
-                                       None, [case, arraytype[1]])
+        func_filename = make_file_path(d_resultsdataHM, yields_filename, "root", None, [case, arraytype[1]])
         func_file = TFile.Open(func_filename, "READ")
 
         for ipt in range(p_nptbins):
             bin_id = bin_matchingHM[ipt]
-            suffix = "%s%d_%d_%.2f%s_%.2f_%.2f" % \
-                         (v_var_binning, lpt_finbinminHM[ipt],
-                          lpt_finbinmaxHM[ipt], lpt_probcutfin[bin_id],
-                          v_var2_binningHM, lvar2_binminHM[imult],
-                          lvar2_binmaxHM[imult])
+            suffix = "%s%d_%d_%.2f%s_%.2f_%.2f" % (
+                v_var_binning,
+                lpt_finbinminHM[ipt],
+                lpt_finbinmaxHM[ipt],
+                lpt_probcutfin[bin_id],
+                v_var2_binningHM,
+                lvar2_binminHM[imult],
+                lvar2_binmaxHM[imult],
+            )
             load_dir = func_file.GetDirectory(suffix)
             mass_fitter = load_dir.Get("fitter")
             sign = 0
@@ -176,8 +189,8 @@ def plot_hfmassfitter(case, arraytype):
             backhistos[imult].SetBinContent(ipt + 1, rootback)
             backhistos[imult].SetBinError(ipt + 1, rooteback)
 
-    #Significance fit plot
-    csign = TCanvas('cSign', 'The Fit Canvas')
+    # Significance fit plot
+    csign = TCanvas("cSign", "The Fit Canvas")
     csign.SetCanvasSize(1500, 1500)
     csign.SetWindowSize(500, 500)
     maxplot = 25
@@ -187,14 +200,14 @@ def plot_hfmassfitter(case, arraytype):
         maxplot = 40
     csign.cd(1).DrawFrame(0, 0, 30, maxplot, ";#it{p}_{T} (GeV/#it{c});Significance %s" % name)
 
-    leg = TLegend(.25, .65, .65, .85)
+    leg = TLegend(0.25, 0.65, 0.65, 0.85)
     leg.SetBorderSize(0)
     leg.SetFillColor(0)
     leg.SetFillStyle(0)
     leg.SetTextFont(42)
     leg.SetTextSize(0.035)
 
-    colors = [kBlack, kRed, kGreen+2, kBlue, kViolet-1, kOrange+2, kAzure+1, kOrange-7]
+    colors = [kBlack, kRed, kGreen + 2, kBlue, kViolet - 1, kOrange + 2, kAzure + 1, kOrange - 7]
     for imult, iplot in enumerate(plotbinMB):
         if not iplot:
             continue
@@ -202,8 +215,9 @@ def plot_hfmassfitter(case, arraytype):
         signfhistos[imult].SetMarkerColor(colors[imult % len(colors)])
         signfhistos[imult].SetMarkerStyle(21)
         signfhistos[imult].Draw("same")
-        legyieldstring = "%.1f #leq %s < %.1f (MB)" % \
-                    (lvar2_binminMB[imult], latexbin2var, lvar2_binmaxMB[imult])
+        legyieldstring = "{:.1f} #leq {} < {:.1f} (MB)".format(
+            lvar2_binminMB[imult], latexbin2var, lvar2_binmaxMB[imult]
+        )
         leg.AddEntry(signfhistos[imult], legyieldstring, "LEP")
 
     for imult, iplot in enumerate(plotbinHM):
@@ -213,16 +227,15 @@ def plot_hfmassfitter(case, arraytype):
         signfhistos[imult].SetMarkerColor(colors[imult % len(colors)])
         signfhistos[imult].SetMarkerStyle(21)
         signfhistos[imult].Draw("same")
-        legyieldstring = "%.1f #leq %s < %.1f (HM)" % \
-                    (lvar2_binminHM[imult], latexbin2var, lvar2_binmaxHM[imult])
+        legyieldstring = "{:.1f} #leq {} < {:.1f} (HM)".format(
+            lvar2_binminHM[imult], latexbin2var, lvar2_binmaxHM[imult]
+        )
         leg.AddEntry(signfhistos[imult], legyieldstring, "LEP")
     leg.Draw()
-    csign.SaveAs("%s/MassFit_Signf_%s_%scombined%s.eps" % \
-                 (folder_plots, case, arraytype[0], arraytype[1]))
+    csign.SaveAs(f"{folder_plots}/MassFit_Signf_{case}_{arraytype[0]}combined{arraytype[1]}.eps")
 
-
-    #Mean fit plot
-    cmean = TCanvas('cMean', 'The Fit Canvas')
+    # Mean fit plot
+    cmean = TCanvas("cMean", "The Fit Canvas")
     cmean.SetCanvasSize(1500, 1500)
     cmean.SetWindowSize(500, 500)
     minplot = 2.27
@@ -251,12 +264,10 @@ def plot_hfmassfitter(case, arraytype):
         meanhistos[imult].SetMarkerStyle(21)
         meanhistos[imult].Draw("same")
     leg.Draw()
-    cmean.SaveAs("%s/MassFit_Mean_%s_%scombined%s.eps" % \
-                 (folder_plots, case, arraytype[0], arraytype[1]))
+    cmean.SaveAs(f"{folder_plots}/MassFit_Mean_{case}_{arraytype[0]}combined{arraytype[1]}.eps")
 
-
-    #Sigma fit plot (to add MC!)
-    csigm = TCanvas('cSigma', 'The Fit Canvas')
+    # Sigma fit plot (to add MC!)
+    csigm = TCanvas("cSigma", "The Fit Canvas")
     csigm.SetCanvasSize(1500, 1500)
     csigm.SetWindowSize(500, 500)
     maxplot = 0.03
@@ -280,17 +291,15 @@ def plot_hfmassfitter(case, arraytype):
         sigmahistos[imult].SetMarkerStyle(21)
         sigmahistos[imult].Draw("same")
     leg.Draw()
-    csigm.SaveAs("%s/MassFit_Sigma_%s_%scombined%s.eps" % \
-                 (folder_plots, case, arraytype[0], arraytype[1]))
+    csigm.SaveAs(f"{folder_plots}/MassFit_Sigma_{case}_{arraytype[0]}combined{arraytype[1]}.eps")
 
-
-    #Signal fit plot
-    csig = TCanvas('cSig', 'The Fit Canvas')
+    # Signal fit plot
+    csig = TCanvas("cSig", "The Fit Canvas")
     csig.SetCanvasSize(1500, 1500)
     csig.SetWindowSize(500, 500)
     csig.cd(1)
 
-    #First draw HM for scale
+    # First draw HM for scale
     for imult, iplot in enumerate(plotbinHM):
         if not iplot:
             continue
@@ -309,17 +318,15 @@ def plot_hfmassfitter(case, arraytype):
         sighistos[imult].SetMarkerStyle(21)
         sighistos[imult].Draw("same")
     leg.Draw()
-    csig.SaveAs("%s/MassFit_Signal_%s_%scombined%s.eps" % \
-                (folder_plots, case, arraytype[0], arraytype[1]))
+    csig.SaveAs(f"{folder_plots}/MassFit_Signal_{case}_{arraytype[0]}combined{arraytype[1]}.eps")
 
-
-    #Background fit plot
-    cback = TCanvas('cBack', 'The Fit Canvas')
+    # Background fit plot
+    cback = TCanvas("cBack", "The Fit Canvas")
     cback.SetCanvasSize(1500, 1500)
     cback.SetWindowSize(500, 500)
     cback.cd(1)
 
-    #First draw HM for scale
+    # First draw HM for scale
     for imult, iplot in enumerate(plotbinHM):
         if not iplot:
             continue
@@ -338,13 +345,13 @@ def plot_hfmassfitter(case, arraytype):
         backhistos[imult].SetMarkerStyle(21)
         backhistos[imult].Draw("same")
     leg.Draw()
-    cback.SaveAs("%s/MassFit_Background_%s_%scombined%s.eps" % \
-                 (folder_plots, case, arraytype[0], arraytype[1]))
+    cback.SaveAs(f"{folder_plots}/MassFit_Background_{case}_{arraytype[0]}combined{arraytype[1]}.eps")
+
 
 #####################################
 
 gROOT.SetBatch(True)
 
-#EXAMPLE HOW TO USE plot_hfmassfitter
+# EXAMPLE HOW TO USE plot_hfmassfitter
 #  ---> Combines and plots the output of AliHFInvMassFitter in nice way
-#plot_hfmassfitter("Dspp", ["MBvspt_ntrkl", "SPDvspt"])
+# plot_hfmassfitter("Dspp", ["MBvspt_ntrkl", "SPDvspt"])

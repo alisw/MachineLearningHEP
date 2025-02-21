@@ -15,17 +15,20 @@
 """
 Methods to do grid-search hyper-parameters optimization
 """
-from os.path import join as osjoin
+
 import itertools
 import pickle
-import pandas as pd
+from os.path import join as osjoin
+
 import matplotlib.pyplot as plt
+import pandas as pd
 from sklearn.model_selection import GridSearchCV
+
+from machine_learning_hep.io import dump_yaml_from_dict, parse_yaml, print_dict
 from machine_learning_hep.logger import get_logger
-from machine_learning_hep.utilities import openfile
-from machine_learning_hep.io import print_dict, dump_yaml_from_dict, parse_yaml
 from machine_learning_hep.models import savemodels
 from machine_learning_hep.optimisation.metrics import get_scorers
+from machine_learning_hep.utilities import openfile
 
 
 def do_gridsearch(names, classifiers, grid_params, x_train, y_train, nkfolds, out_dirs, ncores=-1):
@@ -61,9 +64,16 @@ def do_gridsearch(names, classifiers, grid_params, x_train, y_train, nkfolds, ou
         # performance
         scoring = get_scorers(gps["scoring"])
 
-        grid_search = GridSearchCV(clf, gps["params"], cv=nkfolds, refit=gps["refit"],
-                                   scoring=scoring, n_jobs=ncores, verbose=2,
-                                   return_train_score=True)
+        grid_search = GridSearchCV(
+            clf,
+            gps["params"],
+            cv=nkfolds,
+            refit=gps["refit"],
+            scoring=scoring,
+            n_jobs=ncores,
+            verbose=2,
+            return_train_score=True,
+        )
         grid_search.fit(x_train, y_train)
         cvres = grid_search.cv_results_
 
@@ -78,13 +88,12 @@ def do_gridsearch(names, classifiers, grid_params, x_train, y_train, nkfolds, ou
 
 # pylint: disable=too-many-locals, too-many-statements
 def perform_plot_gridsearch(names, out_dirs):
-    '''
+    """
     Function for grid scores plotting (working with scikit 0.20)
-    '''
+    """
     logger = get_logger()
 
     for name, out_dir in zip(names, out_dirs):
-
         # Read written results
         gps = parse_yaml(osjoin(out_dir, "parameters.yaml"))
         score_obj = pickle.load(openfile(osjoin(out_dir, "results.pkl"), "rb"))
@@ -114,8 +123,7 @@ def perform_plot_gridsearch(names, out_dirs):
 
         y_axis_mins = {sn: 9999 for sn in score_names}
         y_axis_maxs = {sn: -9999 for sn in score_names}
-        for indices, case in zip(itertools.product(*values_indices),
-                                 itertools.product(*list(gps["params"].values()))):
+        for indices, case in zip(itertools.product(*values_indices), itertools.product(*list(gps["params"].values()))):
             df_case = score_obj.copy()
             for i_case, i_key in zip(case, param_keys):
                 df_case = df_case.loc[df_case[i_key] == df_case[i_key].dtype.type(i_case)]
@@ -134,8 +142,7 @@ def perform_plot_gridsearch(names, out_dirs):
 
         # To determine fontsizes later
         figsize = (35, 18 * len(score_names))
-        fig, axes = plt.subplots(len(score_names), 1, sharex=True, gridspec_kw={"hspace": 0.05},
-                                 figsize=figsize)
+        fig, axes = plt.subplots(len(score_names), 1, sharex=True, gridspec_kw={"hspace": 0.05}, figsize=figsize)
         ax_plot = dict(zip(score_names, axes))
 
         # The axes to put the parameter list
@@ -149,8 +156,8 @@ def perform_plot_gridsearch(names, out_dirs):
 
         for sn in score_names:
             ax = ax_plot[sn]
-            ax_min = y_axis_mins[sn] - (y_axis_maxs[sn] - y_axis_mins[sn]) / 10.
-            ax_max = y_axis_maxs[sn] + (y_axis_maxs[sn] - y_axis_mins[sn]) / 10.
+            ax_min = y_axis_mins[sn] - (y_axis_maxs[sn] - y_axis_mins[sn]) / 10.0
+            ax_max = y_axis_maxs[sn] + (y_axis_maxs[sn] - y_axis_mins[sn]) / 10.0
             ax.set_ylim(ax_min, ax_max)
             ax.set_ylabel(f"mean {sn}", fontsize=20)
             ax.get_yaxis().set_tick_params(labelsize=20)
@@ -158,8 +165,15 @@ def perform_plot_gridsearch(names, out_dirs):
             for j, tt in enumerate(("train", "test")):
                 markerstyle = markerstyles[j % len(markerstyles)]
 
-                ax.errorbar(range(len(x_labels)), y_values[sn][tt], yerr=y_errors[sn][tt],
-                            ls="", marker=markerstyle, markersize=markersize, label=f"{sn} ({tt})")
+                ax.errorbar(
+                    range(len(x_labels)),
+                    y_values[sn][tt],
+                    yerr=y_errors[sn][tt],
+                    ls="",
+                    marker=markerstyle,
+                    markersize=markersize,
+                    label=f"{sn} ({tt})",
+                )
 
                 # Add values to points
                 ylim = ax.get_ylim()

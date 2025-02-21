@@ -17,13 +17,14 @@ Methods to: update/assert database and run configuration
 """
 
 from itertools import product
-from machine_learning_hep.logger import get_logger
+
 from machine_learning_hep.do_variations import modify_dictionary
+from machine_learning_hep.logger import get_logger
 
 
 # disable pylint unused-argument because this is done already in view of updating the
 # database depending on info in there
-def update_config(database: dict, run_config: dict, database_overwrite=None): # pylint: disable=unused-argument
+def update_config(database: dict, run_config: dict, database_overwrite=None):  # pylint: disable=unused-argument
     """Update database before usage
 
     1. overwrite with potential additional user configuration
@@ -59,16 +60,17 @@ def update_config(database: dict, run_config: dict, database_overwrite=None): # 
         data_mc = ("data", "mc")
         pkl_keys = ("pkl_skimmed_dec", "pkl_skimmed_decmerged")
         for keys in product(data_mc, pkl_keys):
-            database["mlapplication"][keys[0]][keys[1]][:] = \
-                    [f"{path}_std" for path in database["mlapplication"][keys[0]][keys[1]]]
+            database["mlapplication"][keys[0]][keys[1]][:] = [
+                f"{path}_std" for path in database["mlapplication"][keys[0]][keys[1]]
+            ]
         # ...set the ML working point all to 0
         # except for MultiClassification, where bkg cut of 1 is the loosest one
         for k in data_mc:
-            database["mlapplication"]["probcutpresel"][k] = \
-              [[1 if i == 0 and database["ml"]["mltype"] == "MultiClassification" else 0 \
-                for i in range(len(pcut))] \
-                for pcut in database["mlapplication"]["probcutpresel"][k]]
-        database["mlapplication"]["probcutoptimal"] = \
-          [[1 if i == 0 and database["ml"]["mltype"] == "MultiClassification" else 0 \
-            for i in range(len(pcut))] \
-            for pcut in database["mlapplication"]["probcutoptimal"]]
+            database["mlapplication"]["probcutpresel"][k] = [
+                [1 if i == 0 and database["ml"]["mltype"] == "MultiClassification" else 0 for i in range(len(pcut))]
+                for pcut in database["mlapplication"]["probcutpresel"][k]
+            ]
+        database["mlapplication"]["probcutoptimal"] = [
+            [1 if i == 0 and database["ml"]["mltype"] == "MultiClassification" else 0 for i in range(len(pcut))]
+            for pcut in database["mlapplication"]["probcutoptimal"]
+        ]

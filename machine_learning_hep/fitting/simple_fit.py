@@ -16,16 +16,16 @@
 Script only used for fitting
 """
 
-from os.path import exists, join
-from os import makedirs
 import argparse
+from os import makedirs
+from os.path import exists, join
 
-from ROOT import TFile, TCanvas # pylint: disable=import-error, no-name-in-module
+from ROOT import TCanvas, TFile  # pylint: disable=import-error, no-name-in-module
 
-from machine_learning_hep.logger import configure_logger #, get_logger
-from machine_learning_hep.io import parse_yaml
 from machine_learning_hep.fitting.fitters import FitAliHF, FitROOTGauss
 from machine_learning_hep.fitting.utils import save_fit
+from machine_learning_hep.io import parse_yaml
+from machine_learning_hep.logger import configure_logger  # , get_logger
 
 #############################################################################
 #                                                                           #
@@ -59,12 +59,13 @@ from machine_learning_hep.fitting.utils import save_fit
 #                                                                           #
 #############################################################################
 
+
 def draw(fitter, save_name, **kwargs):
     """Draw helper function
 
-        This can safely be ignored in view of understanding this script
-        and it doesn't do anything but drawing a fit. It won't change
-        any number.
+    This can safely be ignored in view of understanding this script
+    and it doesn't do anything but drawing a fit. It won't change
+    any number.
     """
     c = TCanvas("canvas", "", 500, 500)
     try:
@@ -72,7 +73,7 @@ def draw(fitter, save_name, **kwargs):
     # NOTE The broad-except is only used to make this script running under
     #      any circumstances and ignore any reason for which a fit could not
     #      be drawn.
-    except Exception as e: # pylint: disable=broad-except
+    except Exception as e:  # pylint: disable=broad-except
         print(f"Could not draw fit")
         print(fitter)
         print(e)
@@ -102,7 +103,6 @@ def do_simple_fit(database, type_ana, period_number=-1, output_dir="simple_fit")
     # Map fit function names to numbers complying with AliHFInvMassFitter framework
     sig_func_map = {"kGaus": 0, "k2Gaus": 1, "kGausSigmaRatioPar": 2}
     bkg_func_map = {"kExpo": 0, "kLin": 1, "Pol2": 2, "kNoBk": 3, "kPow": 4, "kPowEx": 5}
-
 
     # Extract the analysis parameters
     fit_pars = database["analysis"][type_ana]
@@ -179,12 +179,11 @@ def do_simple_fit(database, type_ana, period_number=-1, output_dir="simple_fit")
     # END reading all fit parameters #
     ##################################
 
-
     # Where the histomass.root is read from
-    input_dir_mc = fit_pars["mc"]["results"][period_number] \
-            if period_number > -1 else fit_pars["mc"]["resultsallp"]
-    input_dir_data = fit_pars["data"]["results"][period_number] \
-            if period_number > -1 else fit_pars["data"]["resultsallp"]
+    input_dir_mc = fit_pars["mc"]["results"][period_number] if period_number > -1 else fit_pars["mc"]["resultsallp"]
+    input_dir_data = (
+        fit_pars["data"]["results"][period_number] if period_number > -1 else fit_pars["data"]["resultsallp"]
+    )
 
     # Otherwise the output directory might not exist, hence create
     if not exists(output_dir):
@@ -199,28 +198,33 @@ def do_simple_fit(database, type_ana, period_number=-1, output_dir="simple_fit")
     ##############################################
     mc_fitters = []
     for ipt in range(n_bins1):
-
         # Always have the MC histogram for mult. integrated
         bin_id_match = bin_matching[ipt]
-        suffix_mc_int = "%s%d_%d_%.2f%s_%.2f_%.2f" % \
-                        (bin1_name, bins1_edges_low[ipt],
-                         bins1_edges_up[ipt], prob_cut_fin[bin_id_match],
-                         bin2_gen_name, bins2_edges_low[bins2_int_bin],
-                         bins2_edges_up[bins2_int_bin])
+        suffix_mc_int = "%s%d_%d_%.2f%s_%.2f_%.2f" % (
+            bin1_name,
+            bins1_edges_low[ipt],
+            bins1_edges_up[ipt],
+            prob_cut_fin[bin_id_match],
+            bin2_gen_name,
+            bins2_edges_low[bins2_int_bin],
+            bins2_edges_up[bins2_int_bin],
+        )
         # Get always the one for the multiplicity integrated
         histo_mc_int = histo_file_mc.Get("hmass_sig" + suffix_mc_int)
         histo_mc_int.SetDirectory(0)
 
-        fit_pars_mc = {"mean": mean,
-                       "sigma": sigma[ipt],
-                       "rebin": rebin[bins2_int_bin][ipt],
-                       "use_user_fit_range": False,
-                       "fit_range_low": fit_range_low[ipt],
-                       "fit_range_up": fit_range_up[ipt],
-                       "n_rms_fix": None,
-                       "n_rms_start": 3,
-                       "n_rms_stop": 8,
-                       "likelihood": False}
+        fit_pars_mc = {
+            "mean": mean,
+            "sigma": sigma[ipt],
+            "rebin": rebin[bins2_int_bin][ipt],
+            "use_user_fit_range": False,
+            "fit_range_low": fit_range_low[ipt],
+            "fit_range_up": fit_range_up[ipt],
+            "n_rms_fix": None,
+            "n_rms_start": 3,
+            "n_rms_stop": 8,
+            "likelihood": False,
+        }
 
         fitter_mc = FitROOTGauss(fit_pars_mc, histo=histo_mc_int)
         mc_fitters.append(fitter_mc)
@@ -244,7 +248,6 @@ def do_simple_fit(database, type_ana, period_number=-1, output_dir="simple_fit")
     data_fitters = []
     for imult in range(n_bins2):
         for ipt in range(n_bins1):
-
             # We only perform fit where the fit on M was successful
             mc_fit = mc_fitters[ipt]
             if not mc_fit.success:
@@ -253,19 +256,26 @@ def do_simple_fit(database, type_ana, period_number=-1, output_dir="simple_fit")
 
             bin_id_match = bin_matching[ipt]
 
-            suffix_data = "%s%d_%d_%.2f%s_%.2f_%.2f" % \
-                          (bin1_name, bins1_edges_low[ipt],
-                           bins1_edges_up[ipt], prob_cut_fin[bin_id_match],
-                           bin2_name, bins2_edges_low[imult],
-                           bins2_edges_up[imult])
+            suffix_data = "%s%d_%d_%.2f%s_%.2f_%.2f" % (
+                bin1_name,
+                bins1_edges_low[ipt],
+                bins1_edges_up[ipt],
+                prob_cut_fin[bin_id_match],
+                bin2_name,
+                bins2_edges_low[imult],
+                bins2_edges_up[imult],
+            )
             # There might be a different name for the MC histogram due to a potential
             # difference in the multiplicity binning variable
-            suffix_mc = "%s%d_%d_%.2f%s_%.2f_%.2f" % \
-                        (bin1_name, bins1_edges_low[ipt],
-                         bins1_edges_up[ipt], prob_cut_fin[bin_id_match],
-                         bin2_gen_name, bins2_edges_low[imult],
-                         bins2_edges_up[imult])
-
+            suffix_mc = "%s%d_%d_%.2f%s_%.2f_%.2f" % (
+                bin1_name,
+                bins1_edges_low[ipt],
+                bins1_edges_up[ipt],
+                prob_cut_fin[bin_id_match],
+                bin2_gen_name,
+                bins2_edges_low[imult],
+                bins2_edges_up[imult],
+            )
 
             # Get all histograms which might be required
             # Are we using weighted or unweighted histograms?
@@ -280,26 +290,28 @@ def do_simple_fit(database, type_ana, period_number=-1, output_dir="simple_fit")
             ##################################
             # All fit parameters from the DB #
             ##################################
-            fit_pars = {"mean": mean,
-                        "fix_mean": fix_mean,
-                        "sigma": mc_fit.fit_pars["sigma"],
-                        "fix_sigma": fix_sigma[ipt],
-                        "include_sec_peak": include_sec_peak[imult][ipt],
-                        "sec_mean": None,
-                        "fix_sec_mean": False,
-                        "sec_sigma": None,
-                        "fix_sec_sigma": False,
-                        "use_sec_peak_rel_sigma": True,
-                        "include_reflections": include_reflections,
-                        "fix_reflections_s_over_b": True,
-                        "rebin": rebin[imult][ipt],
-                        "fit_range_low": fit_range_low[ipt],
-                        "fit_range_up": fit_range_up[ipt],
-                        "likelihood": likelihood,
-                        "n_sigma_sideband": n_sigma_sideband,
-                        "rel_sigma_bound": rel_sigma_bound,
-                        "sig_func_name": sig_func_map[sig_func_name[ipt]],
-                        "bkg_func_name": bkg_func_map[bkg_func_name[ipt]]}
+            fit_pars = {
+                "mean": mean,
+                "fix_mean": fix_mean,
+                "sigma": mc_fit.fit_pars["sigma"],
+                "fix_sigma": fix_sigma[ipt],
+                "include_sec_peak": include_sec_peak[imult][ipt],
+                "sec_mean": None,
+                "fix_sec_mean": False,
+                "sec_sigma": None,
+                "fix_sec_sigma": False,
+                "use_sec_peak_rel_sigma": True,
+                "include_reflections": include_reflections,
+                "fix_reflections_s_over_b": True,
+                "rebin": rebin[imult][ipt],
+                "fit_range_low": fit_range_low[ipt],
+                "fit_range_up": fit_range_up[ipt],
+                "likelihood": likelihood,
+                "n_sigma_sideband": n_sigma_sideband,
+                "rel_sigma_bound": rel_sigma_bound,
+                "sig_func_name": sig_func_map[sig_func_name[ipt]],
+                "bkg_func_name": bkg_func_map[bkg_func_name[ipt]],
+            }
 
             # Include second peak if required
             if fit_pars["include_sec_peak"]:
@@ -314,8 +326,7 @@ def do_simple_fit(database, type_ana, period_number=-1, output_dir="simple_fit")
             ################################
 
             # Construct fitter and add to list
-            fitter = FitAliHF(fit_pars, histo=histo_data, histo_mc=histo_mc,
-                              histo_reflections=histo_refl)
+            fitter = FitAliHF(fit_pars, histo=histo_data, histo_mc=histo_mc, histo_reflections=histo_refl)
             data_fitters.append(fitter)
 
             # Fit, draw and save
@@ -327,8 +338,7 @@ def do_simple_fit(database, type_ana, period_number=-1, output_dir="simple_fit")
             save_fit(fitter, join(output_dir, f"fit_ipt_{ipt}_imult_{imult}"))
 
             if not fitter.success:
-                print(f"Fit in (ipt, imult) = ({ipt}, {imult}) failed. Try to draw and save " \
-                      f"anyway.")
+                print(f"Fit in (ipt, imult) = ({ipt}, {imult}) failed. Try to draw and save anyway.")
 
 
 def main():
@@ -337,16 +347,19 @@ def main():
     """
 
     parser = argparse.ArgumentParser()
-    parser.add_argument("--database-analysis", "-d", dest="database_analysis",
-                        help="analysis database to be used", required=True)
-    parser.add_argument("--analysis", "-a", dest="type_ana",
-                        help="choose type of analysis", required=True)
-    parser.add_argument("--period-number", "-p", dest="period_number", type=int,
-                        help="choose type of analysis (0: 2016, 1: 2017, 2: 2018, " \
-                             "-1: all merged (default))", default=-1)
-    parser.add_argument("--output", "-o", default="simple_fit",
-                        help="result output directory")
-
+    parser.add_argument(
+        "--database-analysis", "-d", dest="database_analysis", help="analysis database to be used", required=True
+    )
+    parser.add_argument("--analysis", "-a", dest="type_ana", help="choose type of analysis", required=True)
+    parser.add_argument(
+        "--period-number",
+        "-p",
+        dest="period_number",
+        type=int,
+        help="choose type of analysis (0: 2016, 1: 2017, 2: 2018, -1: all merged (default))",
+        default=-1,
+    )
+    parser.add_argument("--output", "-o", default="simple_fit", help="result output directory")
 
     args = parser.parse_args()
 

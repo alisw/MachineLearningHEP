@@ -17,8 +17,8 @@ Script containing validation histograms on the event granularity
 """
 
 from machine_learning_hep.bitwise import filter_bit_df
-from machine_learning_hep.validation.validation import ValidationCollection
 from machine_learning_hep.utilities_plot import buildbinning
+from machine_learning_hep.validation.validation import ValidationCollection
 
 
 def fill_validation_multiplicity(dfevt, dfevtevtsel, df_reco):
@@ -54,12 +54,9 @@ def fill_validation_multiplicity(dfevt, dfevtevtsel, df_reco):
     val.reset_input(dfevtevtsel, "_EvtSel")
     do_mult_plots()
 
-    val.make_and_fill(binning_ntrklt, "n_tracklets",
-                      binning_ntrklt, "n_tracklets_corr")
-    val.make_and_fill(binning_zvtx, "z_vtx_reco",
-                      binning_ntrklt, "n_tracklets_corr")
-    val.make_and_fill(binning_zvtx, "z_vtx_reco",
-                      binning_ntrklt, "n_tracklets")
+    val.make_and_fill(binning_ntrklt, "n_tracklets", binning_ntrklt, "n_tracklets_corr")
+    val.make_and_fill(binning_zvtx, "z_vtx_reco", binning_ntrklt, "n_tracklets_corr")
+    val.make_and_fill(binning_zvtx, "z_vtx_reco", binning_ntrklt, "n_tracklets")
 
     val.make_and_fill(binning_ntrklt, "n_tracklets_corr")
     val.make_and_fill(binning_ntrklt, "n_tracklets_corr_shm")
@@ -69,12 +66,9 @@ def fill_validation_multiplicity(dfevt, dfevtevtsel, df_reco):
     # val.reset_input(dfevtevtsel.query("is_ev_sel_shm == 1"), "spd")
     # val.make_and_fill(binning_ntrklt, "n_tracklets_corr")
 
-    df_reco["n_tracklets_corr-n_tracklets_corr_sub"] = (
-        df_reco["n_tracklets_corr"] - df_reco["n_tracklets_corr_sub"]
-    )
+    df_reco["n_tracklets_corr-n_tracklets_corr_sub"] = df_reco["n_tracklets_corr"] - df_reco["n_tracklets_corr_sub"]
 
-    df_reco_list = [[df_reco, ""],
-                    [df_reco[df_reco.is_ev_rej_INT7 == 0], "MB"]]
+    df_reco_list = [[df_reco, ""], [df_reco[df_reco.is_ev_rej_INT7 == 0], "MB"]]
     if "is_ev_sel_shm" in df_reco:
         df_reco_list.append([df_reco.query("is_ev_sel_shm == 1"), "HMSPD"])
     for i in df_reco_list:
@@ -85,11 +79,7 @@ def fill_validation_multiplicity(dfevt, dfevtevtsel, df_reco):
             binning_ntrklt_diff,
             "n_tracklets_corr-n_tracklets_corr_sub",
         )
-        val.make_and_fill(
-            binning_ntrklt, "n_tracklets_corr_sub", binning_ntrklt, "n_tracklets_corr"
-        )
-        val.make_and_fill(
-            binning_ntrklt, "n_tracklets_corr", binning_ntrklt, "n_tracklets_corr_sub"
-        )
+        val.make_and_fill(binning_ntrklt, "n_tracklets_corr_sub", binning_ntrklt, "n_tracklets_corr")
+        val.make_and_fill(binning_ntrklt, "n_tracklets_corr", binning_ntrklt, "n_tracklets_corr_sub")
 
     return val

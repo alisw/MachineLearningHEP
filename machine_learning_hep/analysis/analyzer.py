@@ -12,13 +12,15 @@
 ##   along with this program. if not, see <https://www.gnu.org/licenses/>. ##
 #############################################################################
 
-from os.path import exists, join
-from os import makedirs
 import os
+from os import makedirs
+from os.path import exists, join
+
+from machine_learning_hep.io import dump_yaml_from_dict
 
 # HF specific imports
 from machine_learning_hep.workflow.workflow_base import WorkflowBase
-from machine_learning_hep.io import dump_yaml_from_dict
+
 
 class Analyzer(WorkflowBase):
     def __init__(self, datap, case, typean, period):
@@ -28,15 +30,16 @@ class Analyzer(WorkflowBase):
         for mcordata in ("mc", "data"):
             dp = datap["analysis"][typean][mcordata]
             prefix_dir_res = dp.get("prefix_dir_res", "")
-            results_dir = prefix_dir_res + os.path.expandvars(dp["results"][period]) \
-                    if period is not None \
-                    else prefix_dir_res + os.path.expandvars(dp["resultsallp"])
+            results_dir = (
+                prefix_dir_res + os.path.expandvars(dp["results"][period])
+                if period is not None
+                else prefix_dir_res + os.path.expandvars(dp["resultsallp"])
+            )
             if not exists(results_dir):
                 # create otput directories in case they do not exist
                 makedirs(results_dir)
             if mcordata == "data":
-                dump_yaml_from_dict({case: datap},
-                                    join(results_dir, f"database_{case}_{typean}.yml"))
+                dump_yaml_from_dict({case: datap}, join(results_dir, f"database_{case}_{typean}.yml"))
 
 
 class AnalyzerAfterBurner(WorkflowBase):

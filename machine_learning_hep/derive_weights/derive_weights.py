@@ -13,24 +13,21 @@
 #############################################################################
 
 
+import argparse
+import multiprocessing as mp
+import pickle
 import sys
 from glob import glob
-import multiprocessing as mp
-import argparse
-import pickle
 
 import pandas as pd
 import yaml
-from lz4 import frame # pylint: disable=unused-import
+from lz4 import frame  # pylint: disable=unused-import
+from ROOT import TH1F, TH2F, TFile  # pylint: disable=import-error, no-name-in-module
+from root_numpy import fill_hist  # pylint: disable=import-error
 
-from root_numpy import fill_hist # pylint: disable=import-error
-
-from ROOT import TFile, TH1F, TH2F # pylint: disable=import-error, no-name-in-module
-
-from machine_learning_hep.utilities import openfile
-from machine_learning_hep.io import parse_yaml
 from machine_learning_hep.do_variations import modify_dictionary
-
+from machine_learning_hep.io import parse_yaml
+from machine_learning_hep.utilities import openfile
 
 # Needed here for multiprocessing
 INV_MASS = [None]
@@ -40,29 +37,28 @@ INV_MASS_WINDOW = [None]
 def only_one_evt(df_in, dupl_cols):
     return df_in.drop_duplicates(dupl_cols)
 
+
 def read_database(path, overwrite_path=None):
     data_param = None
-    with open(path, 'r') as param_config:
+    with open(path) as param_config:
         data_param = yaml.load(param_config, Loader=yaml.FullLoader)
     case = list(data_param.keys())[0]
     data_param = data_param[case]
     if overwrite_path:
         overwrite_db = None
-        with open(overwrite_path, 'r') as param_config:
+        with open(overwrite_path) as param_config:
             overwrite_db = yaml.load(param_config, Loader=yaml.FullLoader)
         modify_dictionary(data_param, overwrite_db)
     return case, data_param
 
-def summary_histograms_and_write(file_out, histos, histo_names,
-                                 histo_xtitles, histo_ytitles):
 
+def summary_histograms_and_write(file_out, histos, histo_names, histo_xtitles, histo_ytitles):
     histos_added = histos[0]
     for h_list in histos[1:]:
         for h_added, h in zip(histos_added, h_list):
             h_added.Add(h)
 
-    for h_add, name, xtitle, ytitle \
-            in zip(histos_added, histo_names, histo_xtitles, histo_ytitles):
+    for h_add, name, xtitle, ytitle in zip(histos_added, histo_names, histo_xtitles, histo_ytitles):
         h_add.SetName(name)
         h_add.SetTitle(name)
         h_add.GetXaxis().SetTitle(xtitle)
@@ -71,10 +67,20 @@ def summary_histograms_and_write(file_out, histos, histo_names,
         file_out.WriteTObject(h_add)
 
 
-def derive(periods, in_top_dirs, gen_file_name, required_columns, use_mass_window, # pylint: disable=too-many-arguments, too-many-branches
-           distribution_column, distribution_x_range, file_name_mlwp_map, file_out_name,
-           queries_periods=None, query_all=None, queries_slices=None):
-
+def derive(
+    periods,
+    in_top_dirs,
+    gen_file_name,
+    required_columns,
+    use_mass_window,  # pylint: disable=too-many-arguments, too-many-branches
+    distribution_column,
+    distribution_x_range,
+    file_name_mlwp_map,
+    file_out_name,
+    queries_periods=None,
+    query_all=None,
+    queries_slices=None,
+):
     """
 
     make n_tracklets distributions for all events
@@ -96,7 +102,7 @@ def derive(periods, in_top_dirs, gen_file_name, required_columns, use_mass_windo
 
     merge_on = [required_columns[:3]]
 
-    for period, dir_applied, query_period in zip(periods, in_top_dirs, queries_periods): # pylint: disable=too-many-nested-blocks
+    for period, dir_applied, query_period in zip(periods, in_top_dirs, queries_periods):  # pylint: disable=too-many-nested-blocks
         query_tmp = None
         if query_all:
             query_tmp = query_all
@@ -114,9 +120,10 @@ def derive(periods, in_top_dirs, gen_file_name, required_columns, use_mass_windo
         files_all = glob(f"{dir_applied}/**/{gen_file_name}", recursive=True)
 
         if not file_name_mlwp_map:
-            args = [((f_reco,), histo_params, required_columns, \
-                    query_tmp, only_one_evt, merge_on[0], queries_slices, None) \
-                    for f_reco in files_all]
+            args = [
+                ((f_reco,), histo_params, required_columns, query_tmp, only_one_evt, merge_on[0], queries_slices, None)
+                for f_reco in files_all
+            ]
 
         else:
             print(file_name_mlwp_map)
@@ -135,23 +142,28 @@ def derive(periods, in_top_dirs, gen_file_name, required_columns, use_mass_windo
                 if not found:
                     print(f"ERROR: {file_name}")
                     sys.exit(0)
-                args.append(((file_name,), histo_params, required_columns, \
-                        query_tmp_file, only_one_evt, merge_on[0], queries_slices, None))
-
+                args.append(
+                    (
+                        (file_name,),
+                        histo_params,
+                        required_columns,
+                        query_tmp_file,
+                        only_one_evt,
+                        merge_on[0],
+                        queries_slices,
+                        None,
+                    )
+                )
 
         histos = multi_proc(fill_from_pickles, args, None, 100, 30)
 
         histo_names_period = [f"{name}_{period}" for name in histo_names]
-        summary_histograms_and_write(file_out, histos, histo_names_period,
-                                     histo_xtitles, histo_ytitles)
+        summary_histograms_and_write(file_out, histos, histo_names_period, histo_xtitles, histo_ytitles)
 
     file_out.Close()
 
 
-
-
-def make_distributions(args, inv_mass, inv_mass_window): # pylint: disable=too-many-statements
-
+def make_distributions(args, inv_mass, inv_mass_window):  # pylint: disable=too-many-statements
     config = parse_yaml(args.config)
 
     database_path = config["database"]
@@ -205,7 +217,7 @@ def make_distributions(args, inv_mass, inv_mass_window): # pylint: disable=too-m
             query_all = trigger_sel
 
     in_file_name_gen = database["files_names"]["namefile_reco"]
-    in_file_name_gen = in_file_name_gen[:in_file_name_gen.find(".")]
+    in_file_name_gen = in_file_name_gen[: in_file_name_gen.find(".")]
 
     if is_ml:
         pkl_extension = ""
@@ -216,10 +228,8 @@ def make_distributions(args, inv_mass, inv_mass_window): # pylint: disable=too-m
             ml_sel_pt = database["mlapplication"]["probcutoptimal"]
             pt_bins_low = database["sel_skim_binmin"]
             pt_bins_up = database["sel_skim_binmax"]
-            in_file_names = [f"{in_file_name_gen}{ptl}_{ptu}" \
-                    for ptl, ptu in zip(pt_bins_low, pt_bins_up)]
-            file_names_cut_map = {ifn: f"{ml_sel_column} > {cut}" \
-                    for ifn, cut in zip(in_file_names, ml_sel_pt)}
+            in_file_names = [f"{in_file_name_gen}{ptl}_{ptu}" for ptl, ptu in zip(pt_bins_low, pt_bins_up)]
+            file_names_cut_map = {ifn: f"{ml_sel_column} > {cut}" for ifn, cut in zip(in_file_names, ml_sel_pt)}
     else:
         pkl_extension = "_std"
 
@@ -228,12 +238,23 @@ def make_distributions(args, inv_mass, inv_mass_window): # pylint: disable=too-m
     # Now make the directory path right
     in_top_dirs = [f"{itd}{pkl_extension}" for itd in in_top_dirs]
 
-    derive(periods, in_top_dirs, in_file_name_gen, column_names, use_mass_window,
-           distribution, distribution_x_range, file_names_cut_map, out_file, period_cuts,
-           query_all, slice_cuts)
+    derive(
+        periods,
+        in_top_dirs,
+        in_file_name_gen,
+        column_names,
+        use_mass_window,
+        distribution,
+        distribution_x_range,
+        file_names_cut_map,
+        out_file,
+        period_cuts,
+        query_all,
+        slice_cuts,
+    )
 
 
-def make_weights(args, *ignore): # pylint: disable=unused-argument
+def make_weights(args, *ignore):  # pylint: disable=unused-argument
     file_data = TFile.Open(args.data, "READ")
     file_mc = TFile.Open(args.mc, "READ")
 
@@ -256,10 +277,10 @@ def make_weights(args, *ignore): # pylint: disable=unused-argument
     # norm all
     for h in mc_histos:
         if h.GetEntries():
-            h.Scale(1. / h.Integral())
+            h.Scale(1.0 / h.Integral())
     for h in data_histos:
         if h.GetEntries():
-            h.Scale(1. / h.Integral())
+            h.Scale(1.0 / h.Integral())
 
     for dh in data_histos:
         name = dh.GetName()
@@ -268,7 +289,7 @@ def make_weights(args, *ignore): # pylint: disable=unused-argument
         period = name[per_pos:]
         mc_histo = get_mc_histo(mc_histos, period)
 
-        dh.Divide(dh, mc_histo, 1., 1.)
+        dh.Divide(dh, mc_histo, 1.0, 1.0)
         out_file.cd()
         dh.Write(f"{dh.GetName()}_weights")
 
@@ -281,40 +302,40 @@ def make_weights(args, *ignore): # pylint: disable=unused-argument
 # FUNCTIONS #
 #############
 
+
 def _callback(err):
     print(err)
 
-def multi_proc(function, argument_list, kw_argument_list, maxperchunk, max_n_procs=10):
 
-    chunks_args = [argument_list[x:x+maxperchunk] \
-            for x in range(0, len(argument_list), maxperchunk)]
+def multi_proc(function, argument_list, kw_argument_list, maxperchunk, max_n_procs=10):
+    chunks_args = [argument_list[x : x + maxperchunk] for x in range(0, len(argument_list), maxperchunk)]
     if not kw_argument_list:
         kw_argument_list = [{} for _ in argument_list]
-    chunks_kwargs = [kw_argument_list[x:x+maxperchunk] \
-            for x in range(0, len(kw_argument_list), maxperchunk)]
+    chunks_kwargs = [kw_argument_list[x : x + maxperchunk] for x in range(0, len(kw_argument_list), maxperchunk)]
     res_all = []
     for chunk_args, chunk_kwargs in zip(chunks_args, chunks_kwargs):
         print("Processing new chunck size=", maxperchunk)
         pool = mp.Pool(max_n_procs)
-        res = [pool.apply_async(function, args=args, kwds=kwds, error_callback=_callback) \
-                for args, kwds in zip(chunk_args, chunk_kwargs)]
+        res = [
+            pool.apply_async(function, args=args, kwds=kwds, error_callback=_callback)
+            for args, kwds in zip(chunk_args, chunk_kwargs)
+        ]
         pool.close()
         pool.join()
         res_all.extend(res)
 
-
     res_list = None
     try:
         res_list = [r.get() for r in res_all]
-    except Exception as e: # pylint: disable=broad-except
+    except Exception as e:  # pylint: disable=broad-except
         print("EXCEPTION")
         print(e)
     return res_list
 
 
-def fill_from_pickles(file_paths, histo_params, cols=None, query=None, skim_func=None,
-                      skim_func_args=None, queries=None, merge_on=None):
-
+def fill_from_pickles(
+    file_paths, histo_params, cols=None, query=None, skim_func=None, skim_func_args=None, queries=None, merge_on=None
+):
     print(f"Process files {file_paths}")
 
     dfs = [pickle.load(openfile(f, "rb")) for f in file_paths]
@@ -338,7 +359,6 @@ def fill_from_pickles(file_paths, histo_params, cols=None, query=None, skim_func
     if skim_func:
         # Skim the dataframe according to user function
         df = skim_func(df, skim_func_args)
-
 
     histos = []
     if not queries:
@@ -372,10 +392,6 @@ def fill_from_pickles(file_paths, histo_params, cols=None, query=None, skim_func
         histos.append(histo)
 
     return histos
-
-
-
-
 
 
 def main():

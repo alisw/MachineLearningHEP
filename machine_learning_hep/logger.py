@@ -15,6 +15,7 @@
 """
 Methods to: provide and manage central logging utility
 """
+
 import logging
 import sys
 from copy import copy
@@ -24,39 +25,42 @@ class ExitHandler(logging.Handler):
     """
     Add custom logging handler to exit on certain logging level
     """
+
     def emit(self, record):
         logging.shutdown()
         sys.exit(1)
+
 
 class MLLoggerFormatter(logging.Formatter):
     """
     A custom formatter that colors the levelname on request
     """
+
     # color names to indices
     color_map = {
-        'black': 0,
-        'red': 1,
-        'green': 2,
-        'yellow': 3,
-        'blue': 4,
-        'magenta': 5,
-        'cyan': 6,
-        'white': 7,
+        "black": 0,
+        "red": 1,
+        "green": 2,
+        "yellow": 3,
+        "blue": 4,
+        "magenta": 5,
+        "cyan": 6,
+        "white": 7,
     }
 
     level_map = {
-        logging.DEBUG: (None, 'blue', False),
-        logging.INFO: (None, 'green', False),
-        logging.WARNING: (None, 'yellow', False),
-        logging.ERROR: (None, 'red', False),
-        logging.CRITICAL: ('red', 'white', True),
+        logging.DEBUG: (None, "blue", False),
+        logging.INFO: (None, "green", False),
+        logging.WARNING: (None, "yellow", False),
+        logging.ERROR: (None, "red", False),
+        logging.CRITICAL: ("red", "white", True),
     }
-    csi = '\x1b['
-    reset = '\x1b[0m'
+    csi = "\x1b["
+    reset = "\x1b[0m"
 
     # Define default format string
-    def __init__(self, fmt=None, datefmt=None, style='%', color=False):
-        fmt = fmt or '%(levelname)s %(asctime)s - %(pathname)s:%(lineno)d:\n ↳ %(message)s'
+    def __init__(self, fmt=None, datefmt=None, style="%", color=False):
+        fmt = fmt or "%(levelname)s %(asctime)s - %(pathname)s:%(lineno)d:\n ↳ %(message)s"
         logging.Formatter.__init__(self, fmt, datefmt, style)
         self.color = color
 
@@ -78,11 +82,11 @@ class MLLoggerFormatter(logging.Formatter):
             if fg in self.color_map:
                 params.append(str(self.color_map[fg] + 30))
             if bold:
-                params.append('1')
+                params.append("1")
             if params:
-                cached_record.levelname = "".join((self.csi, ';'.join(params), "m",
-                                                   cached_record.levelname,
-                                                   self.reset))
+                cached_record.levelname = "".join(
+                    (self.csi, ";".join(params), "m", cached_record.levelname, self.reset)
+                )
         return logging.Formatter.format(self, cached_record)
 
 
@@ -98,8 +102,9 @@ def configure_logger(debug, logfile=None, quiet=False):
     logger.setLevel(logging.DEBUG if debug else logging.INFO)
 
     sh = logging.StreamHandler()
-    formatter = MLLoggerFormatter(color=lambda : getattr(sh.stream, 'isatty', None),
-                                  fmt = '%(levelname)s ➞ %(message)s' if quiet else None)
+    formatter = MLLoggerFormatter(
+        color=lambda: getattr(sh.stream, "isatty", None), fmt="%(levelname)s ➞ %(message)s" if quiet else None
+    )
 
     sh.setFormatter(formatter)
     logger.addHandler(sh)

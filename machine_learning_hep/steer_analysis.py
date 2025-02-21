@@ -29,13 +29,17 @@ import yaml
 from .analysis.analyzer_manager import AnalyzerManager
 from .config import update_config
 from .logger import configure_logger, get_logger
-from .utilities_files import (checkdirs, checkmakedir, checkmakedirlist,
-                              delete_dirlist)
+from .utilities_files import checkdirs, checkmakedir, checkmakedirlist, delete_dirlist
 
 
-def do_entire_analysis(data_config: dict, data_param: dict, data_param_overwrite: dict, # pylint: disable=too-many-locals, too-many-statements, too-many-branches
-                       data_model: dict, run_param: dict, args):
-
+def do_entire_analysis(
+    data_config: dict,
+    data_param: dict,
+    data_param_overwrite: dict,  # pylint: disable=too-many-locals, too-many-statements, too-many-branches
+    data_model: dict,
+    run_param: dict,
+    args,
+):
     logger = get_logger()
     logger.info("Do analysis chain")
 
@@ -55,21 +59,21 @@ def do_entire_analysis(data_config: dict, data_param: dict, data_param_overwrite
     domergingperiodsmc = data_config["mergingperiods"]["mc"]["activate"]
     domergingperiodsdata = data_config["mergingperiods"]["data"]["activate"]
     doml = data_config["ml_study"]["activate"]
-    docorrelation = data_config["ml_study"]['docorrelation']
-    dotraining = data_config["ml_study"]['dotraining']
-    dotesting = data_config["ml_study"]['dotesting']
-    doapplytodatamc = data_config["ml_study"]['doapplytodatamc']
-    docrossvalidation = data_config["ml_study"]['docrossvalidation']
-    dolearningcurve = data_config["ml_study"]['dolearningcurve']
-    doroc = data_config["ml_study"]['doroc']
-    doroctraintest = data_config["ml_study"]['doroctraintest']
-    doboundary = data_config["ml_study"]['doboundary']
-    doimportance = data_config["ml_study"]['doimportance']
-    doimportanceshap = data_config["ml_study"]['doimportanceshap']
-    dogridsearch = data_config["ml_study"]['dogridsearch']
-    dobayesianopt = data_config["ml_study"]['dobayesianopt']
-    doefficiencyml = data_config["ml_study"]['doefficiency']
-    dosignifopt = data_config["ml_study"]['dosignifopt']
+    docorrelation = data_config["ml_study"]["docorrelation"]
+    dotraining = data_config["ml_study"]["dotraining"]
+    dotesting = data_config["ml_study"]["dotesting"]
+    doapplytodatamc = data_config["ml_study"]["doapplytodatamc"]
+    docrossvalidation = data_config["ml_study"]["docrossvalidation"]
+    dolearningcurve = data_config["ml_study"]["dolearningcurve"]
+    doroc = data_config["ml_study"]["doroc"]
+    doroctraintest = data_config["ml_study"]["doroctraintest"]
+    doboundary = data_config["ml_study"]["doboundary"]
+    doimportance = data_config["ml_study"]["doimportance"]
+    doimportanceshap = data_config["ml_study"]["doimportanceshap"]
+    dogridsearch = data_config["ml_study"]["dogridsearch"]
+    dobayesianopt = data_config["ml_study"]["dobayesianopt"]
+    doefficiencyml = data_config["ml_study"]["doefficiency"]
+    dosignifopt = data_config["ml_study"]["dosignifopt"]
     doscancuts = data_config["ml_study"]["doscancuts"]
     doplotdistr = data_config["ml_study"]["doplotdistr"]
     doapplydata = data_config["mlapplication"]["data"]["doapply"]
@@ -187,13 +191,13 @@ def do_entire_analysis(data_config: dict, data_param: dict, data_param_overwrite
         exdirs.extend(checkdirs(dirresultsdatatot))
 
     if len(exdirs) > 0:
-        logger.info('existing directories must be deleted')
+        logger.info("existing directories must be deleted")
         for d in exdirs:
-            print(f'rm -rf {d}')
+            print(f"rm -rf {d}")
         delete = False
         if args.delete:
-            ok = input('Do you want to delete these directories now (y/n)? ')
-            delete = ok.lower() == 'y'
+            ok = input("Do you want to delete these directories now (y/n)? ")
+            delete = ok.lower() == "y"
         if args.delete_force:
             delete = True
         if delete:
@@ -258,48 +262,44 @@ def do_entire_analysis(data_config: dict, data_param: dict, data_param_overwrite
         return importlib.import_module(f"..{name}", __name__)
 
     import ROOT  # pylint: disable=import-outside-toplevel, import-error
-    ROOT.gROOT.SetBatch(args.batch) # pylint: disable=no-member
-    ROOT.TDirectory.AddDirectory(False) # pylint: disable=no-member
+
+    ROOT.gROOT.SetBatch(args.batch)  # pylint: disable=no-member
+    ROOT.TDirectory.AddDirectory(False)  # pylint: disable=no-member
     ROOT.TH1.AddDirectory(False)
-    ROOT.gErrorIgnoreLevel = ROOT.kWarning # pylint: disable=no-member
-    from machine_learning_hep.multiprocesser import \
-        MultiProcesser  # pylint: disable=import-outside-toplevel
-    syst_class = mlhepmod('analysis.systematics').SystematicsMLWP
+    ROOT.gErrorIgnoreLevel = ROOT.kWarning  # pylint: disable=no-member
+    from machine_learning_hep.multiprocesser import MultiProcesser  # pylint: disable=import-outside-toplevel
+
+    syst_class = mlhepmod("analysis.systematics").SystematicsMLWP
     if proc_type == "Dhadrons":
-        proc_class = mlhepmod('processerdhadrons').ProcesserDhadrons
-        ana_class = mlhepmod('analysis.analyzerdhadrons').AnalyzerDhadrons
+        proc_class = mlhepmod("processerdhadrons").ProcesserDhadrons
+        ana_class = mlhepmod("analysis.analyzerdhadrons").AnalyzerDhadrons
     elif proc_type == "Dhadrons_mult":
-        proc_class = mlhepmod('processerdhadrons_mult').ProcesserDhadrons_mult
-        ana_class = mlhepmod('analysis.analyzerdhadrons_mult').AnalyzerDhadrons_mult
+        proc_class = mlhepmod("processerdhadrons_mult").ProcesserDhadrons_mult
+        ana_class = mlhepmod("analysis.analyzerdhadrons_mult").AnalyzerDhadrons_mult
     elif proc_type == "Dhadrons_jet":
-        proc_class = mlhepmod('processerdhadrons_jet').ProcesserDhadrons_jet
-        ana_class = mlhepmod('analysis.analyzer_jet').AnalyzerJet
+        proc_class = mlhepmod("processerdhadrons_jet").ProcesserDhadrons_jet
+        ana_class = mlhepmod("analysis.analyzer_jet").AnalyzerJet
     elif proc_type == "Jets":
         proc_class = mlhepmod("processer_jet").ProcesserJets
         ana_class = mlhepmod("analysis.analyzer_jets").AnalyzerJets
     else:
-        proc_class = mlhepmod('processer').Processer
-        ana_class = mlhepmod('analysis.analyzer').Analyzer
+        proc_class = mlhepmod("processer").Processer
+        ana_class = mlhepmod("analysis.analyzer").Analyzer
 
-    mymultiprocessmc = MultiProcesser(
-        case, proc_class, data_param[case], typean, run_param, "mc")
-    mymultiprocessdata = MultiProcesser(
-        case, proc_class, data_param[case], typean, run_param, "data")
+    mymultiprocessmc = MultiProcesser(case, proc_class, data_param[case], typean, run_param, "mc")
+    mymultiprocessdata = MultiProcesser(case, proc_class, data_param[case], typean, run_param, "data")
 
     ana_mgr = AnalyzerManager(ana_class, data_param[case], case, typean, doanaperperiod)
 
     analyzers = ana_mgr.get_analyzers()
     # For ML WP systematics
     if mltype == "MultiClassification":
-        syst_ml_pt_cl0 = syst_class(data_param[case], case, typean, analyzers,
-                                    mymultiprocessmc, mymultiprocessdata, 0)
-        syst_ml_pt_cl1 = syst_class(data_param[case], case, typean, analyzers,
-                                    mymultiprocessmc, mymultiprocessdata, 1)
+        syst_ml_pt_cl0 = syst_class(data_param[case], case, typean, analyzers, mymultiprocessmc, mymultiprocessdata, 0)
+        syst_ml_pt_cl1 = syst_class(data_param[case], case, typean, analyzers, mymultiprocessmc, mymultiprocessdata, 1)
     else:
-        syst_ml_pt = syst_class(data_param[case], case, typean, analyzers,
-                                mymultiprocessmc, mymultiprocessdata)
+        syst_ml_pt = syst_class(data_param[case], case, typean, analyzers, mymultiprocessmc, mymultiprocessdata)
 
-    #perform the analysis flow
+    # perform the analysis flow
     if dodownloadalice:
         subprocess.call("../cplusutilities/Download.sh")
 
@@ -328,12 +328,21 @@ def do_entire_analysis(data_config: dict, data_param: dict, data_param_overwrite
         mymultiprocessdata.multi_mergeml_allinone()
 
     if doml:
-        from machine_learning_hep.optimiser import \
-            Optimiser  # pylint: disable=import-outside-toplevel
+        from machine_learning_hep.optimiser import Optimiser  # pylint: disable=import-outside-toplevel
+
         for index, (binmin, binmax) in enumerate(zip(binminarray, binmaxarray)):
-            myopt = Optimiser(data_param[case], case, typean,
-                              data_model[mltype], binmin, binmax, multbkg[index],
-                              raahp[index], training_vars[index], index)
+            myopt = Optimiser(
+                data_param[case],
+                case,
+                typean,
+                data_model[mltype],
+                binmin,
+                binmax,
+                multbkg[index],
+                raahp[index],
+                training_vars[index],
+                index,
+            )
             if docorrelation:
                 myopt.do_corr()
             if dotraining:
@@ -398,7 +407,7 @@ def do_entire_analysis(data_config: dict, data_param: dict, data_param_overwrite
     # Collect all desired analysis steps
     analyze_steps = []
 
-    for step in data_config["analysis"].get('steps', []) or []:
+    for step in data_config["analysis"].get("steps", []) or []:
         if step not in analyze_steps:
             analyze_steps.append(step)
 
@@ -423,6 +432,7 @@ def do_entire_analysis(data_config: dict, data_param: dict, data_param_overwrite
 
     logger.info("Done")
 
+
 def load_config(user_path: str, default_path=None) -> dict:
     """
     Quickly extract either configuration given by user and fall back to package default if no user
@@ -440,12 +450,13 @@ def load_config(user_path: str, default_path=None) -> dict:
         if not os.path.exists(user_path):
             get_logger().fatal("The file %s does not exist", user_path)
             sys.exit(-1)
-        with open(user_path, 'r', encoding='utf-8') as stream:
+        with open(user_path, encoding="utf-8") as stream:
             cfg = yaml.safe_load(stream)
     else:
         res = importlib.resources.files(default_path[0]).joinpath(default_path[1]).read_bytes()
         cfg = yaml.safe_load(res)
     return cfg
+
 
 def main(args=None):
     """
@@ -455,26 +466,19 @@ def main(args=None):
 
     parser = argparse.ArgumentParser()
     parser.add_argument("--debug", action="store_true", help="activate debug log level")
-    parser.add_argument("--quiet", '-q', action="store_true", help="quiet logging")
+    parser.add_argument("--quiet", "-q", action="store_true", help="quiet logging")
     parser.add_argument("--log-file", dest="log_file", help="file to print the log to")
-    parser.add_argument("--run-config", "-r", dest="run_config",
-                        help="the run configuration to be used")
-    parser.add_argument("--database-analysis", "-d", dest="database_analysis",
-                        help="analysis database to be used", required=True)
-    parser.add_argument("--database-overwrite", dest="database_overwrite",
-                        help="overwrite fields in analysis database")
-    parser.add_argument("--database-ml-models", dest="database_ml_models",
-                        help="ml model database to be used")
-    parser.add_argument("--database-run-list", dest="database_run_list",
-                        help="run list database to be used")
-    parser.add_argument("--analysis", "-a", dest="type_ana",
-                        help="choose type of analysis")
-    parser.add_argument("--clean", "-c", action="store_true",
-                        help="delete per-period results at the end")
-    parser.add_argument("--delete", action="store_true",
-                        help="delete existing directories")
-    parser.add_argument("--delete-force", action="store_true",
-                        help="delete existing directories without asking")
+    parser.add_argument("--run-config", "-r", dest="run_config", help="the run configuration to be used")
+    parser.add_argument(
+        "--database-analysis", "-d", dest="database_analysis", help="analysis database to be used", required=True
+    )
+    parser.add_argument("--database-overwrite", dest="database_overwrite", help="overwrite fields in analysis database")
+    parser.add_argument("--database-ml-models", dest="database_ml_models", help="ml model database to be used")
+    parser.add_argument("--database-run-list", dest="database_run_list", help="run list database to be used")
+    parser.add_argument("--analysis", "-a", dest="type_ana", help="choose type of analysis")
+    parser.add_argument("--clean", "-c", action="store_true", help="delete per-period results at the end")
+    parser.add_argument("--delete", action="store_true", help="delete existing directories")
+    parser.add_argument("--delete-force", action="store_true", help="delete existing directories without asking")
     parser.add_argument("--batch", "-b", action="store_true", help="enable ROOT batch mode")
 
     args = parser.parse_args(args)
@@ -498,5 +502,6 @@ def main(args=None):
     # Run the chain
     do_entire_analysis(run_config, db_analysis, db_analysis_overwrite, db_ml_models, db_run_list, args)
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     main()
