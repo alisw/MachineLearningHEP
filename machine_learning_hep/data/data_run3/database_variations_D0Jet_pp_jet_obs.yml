@@ -12,1001 +12,1001 @@
 #   along with this program. if not, see <https://www.gnu.org/licenses/>. #
 
 categories:
-    default:
-        activate: no
-        processor: false
-        label: "default"
-        correlation: "corr"
-        rms: true
-        symmetrise: true
-        rms_both_sides: true
-        variations:
-            default:
-                activate: [yes]
-                label: ["default"]
-                diffs: {}
-    fitting:
-        activate: yes
-        processor: false
-        label: "fitting"
-        group: "signal extraction"
-        correlation: "corr"
-        rms: true
-        symmetrise: true
-        rms_both_sides: true
-        variations:
-            bkgfunc:
-                activate: [no]
-                label: ["bkg. func."]
-                diffs:
-                    analysis:
-                        jet_obs:
-                            mass_roofit:
-                                - - level: mcsig
-                                    datasel: mcsig
-                                    range: [1.69, 2.04]
-                                    components:
-                                      sig:
-                                        fn: 'Gaussian::peak(m[1.,5.], mean[1.85,1.89], sigma_g1[.01,.08])'
-                                      bkg:
-                                        fn: 'Gaussian::wide(m, mean, sigma_wide[.05,1.])'
-                                      model:
-                                        fn: 'SUM::sig(frac_wide[0.,.3]*wide, peak)'
-                                  - level: mcrefl
-                                    ptrange: [1., 3.]
-                                    datasel: mcrefl
-                                    range: [1.69, 2.04]
-                                    components:
-                                      refl_l:
-                                        fn: 'Gaussian::refl_l(m, mean_l[1.7,1.865], sigma_l[.01,.1])'
-                                      refl_r:
-                                        fn: 'Gaussian::refl_r(m, mean_r[1.865,2.0], sigma_r[.01,.1])'
-                                      model:
-                                        fn: 'SUM::refl(frac_l[0.1,.9]*refl_l, refl_r)'
-                                  - level: mcrefl
-                                    ptrange: [3., 4.]
-                                    datasel: mcrefl
-                                    range: [1.68, 2.06]
-                                    components:
-                                      refl_l:
-                                        fn: 'Gaussian::refl_l(m, mean_l[1.7,1.865], sigma_l[.01,.2])'
-                                      refl_r:
-                                        fn: 'Gaussian::refl_r(m, mean_r[1.865,2.0], sigma_r[.01,.2])'
-                                      model:
-                                        fn: 'SUM::refl(frac_l[0.,1.]*refl_l, refl_r)'
-                                  - level: mcrefl
-                                    ptrange: [4., 5.]
-                                    datasel: mcrefl
-                                    range: [1.64, 2.08]
-                                    components:
-                                      refl_l:
-                                        fn: 'Gaussian::refl_l(m, mean_l[1.7,1.865], sigma_l[.01,.2])'
-                                      refl_r:
-                                        fn: 'Gaussian::refl_r(m, mean_r[1.865,2.0], sigma_r[.01,.2])'
-                                      model:
-                                        fn: 'SUM::refl(frac_l[0.,1.]*refl_l, refl_r)'
-                                  - level: mcrefl
-                                    ptrange: [5., 6.]
-                                    datasel: mcrefl
-                                    range: [1.64, 2.10]
-                                    components:
-                                      refl_l:
-                                        fn: 'Gaussian::refl_l(m, mean_l[1.8,1.865], sigma_l[.01,.2])'
-                                      refl_r:
-                                        fn: 'Gaussian::refl_r(m, mean_r[1.865,2.0], sigma_r[.01,.2])'
-                                      model:
-                                        fn: 'SUM::refl(frac_l[0.,1.]*refl_l, refl_r)'
-                                  - level: mcrefl
-                                    ptrange: [6., 8.]
-                                    datasel: mcrefl
-                                    range: [1.60, 2.14]
-                                    components:
-                                      refl_l:
-                                        fn: 'Gaussian::refl_l(m, mean_l[1.7,1.865], sigma_l[.01,.2])'
-                                      refl_r:
-                                        fn: 'Gaussian::refl_r(m, mean_r[1.865,2.1], sigma_r[.01,.2])'
-                                      model:
-                                        fn: 'SUM::refl(frac_l[0.,1.]*refl_l, refl_r)'
-                                  - level: mcrefl
-                                    ptrange: [8., 12.]
-                                    datasel: mcrefl
-                                    range: [1.52, 2.30]
-                                    components:
-                                      refl_l:
-                                        fn: 'Gaussian::refl_l(m, mean_l[1.7,1.865], sigma_l[.01,.2])'
-                                      refl_r:
-                                        fn: 'Gaussian::refl_r(m, mean_r[1.865,2.1], sigma_r[.01,.2])'
-                                      model:
-                                        fn: 'SUM::refl(frac_l[0.,1.]*refl_l, refl_r)'
-                                  - level: mcrefl
-                                    ptrange: [12., 48.]
-                                    datasel: mcrefl
-                                    range: [1.40, 2.4]
-                                    components:
-                                      refl_l:
-                                        fn: 'Gaussian::refl_l(m, mean_l[1.7,1.865], sigma_l[.01,.2])'
-                                      refl_r:
-                                        fn: 'Gaussian::refl_r(m, mean_r[1.865,2.1], sigma_r[.01,.2])'
-                                      model:
-                                        fn: 'SUM::refl(frac_l[0.,1.]*refl_l, refl_r)'
-                                  - level: mc
-                                    ptrange: [1., 3.]
-                                    range: [1.69, 2.04]
-                                    fix_params: ['frac_l', 'mean_l', 'mean_r', 'sigma_l', 'sigma_r', 'frac_wide', 'sigma_g1', 'sigma_wide']
-                                    components:
-                                      model:
-                                        fn: 'SUM::sigrefl(frac_refl[0.,1.]*refl, sig)'
-                                  - level: mc
-                                    ptrange: [3., 4.]
-                                    range: [1.68, 2.06]
-                                    fix_params: ['frac_l', 'mean_l', 'mean_r', 'sigma_l', 'sigma_r', 'frac_wide', 'sigma_g1', 'sigma_wide']
-                                    components:
-                                      model:
-                                        fn: 'SUM::sigrefl(frac_refl[0.,1.]*refl, sig)'
-                                  - level: mc
-                                    ptrange: [4., 5.]
-                                    range: [1.64, 2.08]
-                                    fix_params: ['frac_l', 'mean_l', 'mean_r', 'sigma_l', 'sigma_r', 'frac_wide', 'sigma_g1', 'sigma_wide']
-                                    components:
-                                      model:
-                                        fn: 'SUM::sigrefl(frac_refl[0.,1.]*refl, sig)'
-                                  - level: mc
-                                    ptrange: [5., 6.]
-                                    range: [1.64, 2.10]
-                                    fix_params: ['frac_l', 'mean_l', 'mean_r', 'sigma_l', 'sigma_r', 'frac_wide', 'sigma_g1', 'sigma_wide']
-                                    components:
-                                      model:
-                                        fn: 'SUM::sigrefl(frac_refl[0.,1.]*refl, sig)'
-                                  - level: mc
-                                    ptrange: [6., 8.]
-                                    range: [1.60, 2.14]
-                                    fix_params: ['frac_l', 'mean_l', 'mean_r', 'sigma_l', 'sigma_r', 'frac_wide', 'sigma_g1', 'sigma_wide']
-                                    components:
-                                      model:
-                                        fn: 'SUM::sigrefl(frac_refl[0.,1.]*refl, sig)'
-                                  - level: mc
-                                    ptrange: [8., 12.]
-                                    range: [1.52, 2.30]
-                                    fix_params: ['frac_l', 'mean_l', 'mean_r', 'sigma_l', 'sigma_r', 'frac_wide', 'sigma_g1', 'sigma_wide']
-                                    components:
-                                      model:
-                                        fn: 'SUM::sigrefl(frac_refl[0.,1.]*refl, sig)'
-                                  - level: mc
-                                    ptrange: [12., 48.]
-                                    range: [1.40, 2.40]
-                                    fix_params: ['frac_l', 'mean_l', 'mean_r', 'sigma_l', 'sigma_r', 'frac_wide', 'sigma_g1', 'sigma_wide']
-                                    components:
-                                      model:
-                                        fn: 'SUM::sigrefl(frac_refl[0.,1.]*refl, sig)'
-                                  - ptrange: [1., 2.]
-                                    per_ptjet: true
-                                    range: [1.72, 2.02]
-                                    fix_params: ['frac_refl']
-                                    free_params: ['sigma_g1']
-                                    fix_params_ptjet: ['mean', 'sigma_g1']
-                                    components:
-                                      bkg:
-                                        fn: 'Polynomial::bkg(m, {a0[0.2, -3, 3], a1[0.2 , -3, 3], a2[0.2, -3, 3]})'  # variation
-                                      model:
-                                        fn: 'SUM::sum(frac[0.,1.]*sigrefl, bkg)'
-                                  - ptrange: [2., 3.]
-                                    per_ptjet: true
-                                    fix_params: ['frac_refl']
-                                    free_params: ['sigma_g1']
-                                    fix_params_ptjet: ['mean', 'sigma_g1']
-                                    range: [1.72, 2.04]
-                                    components:
-                                      bkg:
-                                        fn: 'Polynomial::bkg(m, {a0[0.2, -3, 3], a1[0.2 , -3, 3], a2[0.2, -3, 3]})'  # variation
-                                      model:
-                                        fn: 'SUM::sum(frac[0.,1.]*sigrefl, bkg)'
-                                  - ptrange: [3., 4.]
-                                    per_ptjet: true
-                                    fix_params: ['frac_refl']
-                                    free_params: ['sigma_g1']
-                                    fix_params_ptjet: ['mean', 'sigma_g1']
-                                    range: [1.72, 2.06]
-                                    components:
-                                      bkg:
-                                        fn: 'Polynomial::bkg(m, {a0[0.2, -3, 3], a1[0.2 , -3, 3], a2[0.2, -3, 3]})'  # variation
-                                      model:
-                                        fn: 'SUM::sum(frac[0.,1.]*sigrefl, bkg)'
-                                  - ptrange: [4., 5.]
-                                    per_ptjet: true
-                                    fix_params: ['frac_refl']
-                                    free_params: ['sigma_g1']
-                                    fix_params_ptjet: ['mean', 'sigma_g1']
-                                    range: [1.72, 2.08]
-                                    components:
-                                      bkg:
-                                        fn: 'Polynomial::bkg(m, {a0[0.2, -3, 3], a1[0.2 , -3, 3], a2[0.2, -3, 3]})'  # variation
-                                      model:
-                                        fn: 'SUM::sum(frac[0.,1.]*sigrefl, bkg)'
-                                  - ptrange: [5., 6.]
-                                    per_ptjet: true
-                                    fix_params: ['frac_refl']
-                                    free_params: ['sigma_g1']
-                                    fix_params_ptjet: ['mean', 'sigma_g1']
-                                    range: [1.72, 2.10]
-                                    components:
-                                      bkg:
-                                        fn: 'Polynomial::bkg(m, {a0[0.2, -3, 3], a1[0.2 , -3, 3], a2[0.2, -3, 3]})'  # variation
-                                      model:
-                                        fn: 'SUM::sum(frac[0.,1.]*sigrefl, bkg)'
-                                  - ptrange: [6., 8.]
-                                    per_ptjet: true
-                                    fix_params: ['frac_refl']
-                                    free_params: ['sigma_g1']
-                                    fix_params_ptjet: ['mean', 'sigma_g1']
-                                    range: [1.72, 2.14]
-                                    components:
-                                      bkg:
-                                        fn: 'Polynomial::bkg(m, {a0[0.2, -3, 3], a1[0.2 , -3, 3], a2[0.2, -3, 3]})'  # variation
-                                      model:
-                                        fn: 'SUM::sum(frac[0.,1.]*sigrefl, bkg)'
-                                  - range: [1.72, 2.20]
-                                    per_ptjet: true
-                                    fix_params: ['frac_refl']
-                                    free_params: ['sigma_g1']
-                                    fix_params_ptjet: ['mean', 'sigma_g1']
-                                    components:
-                                      bkg:
-                                        fn: 'Polynomial::bkg(m, {a0[0.2, -3, 3], a1[0.2 , -3, 3], a2[0.2, -3, 3]})'  # variation
-                                      model:
-                                        fn: 'SUM::sum(frac[0.,1.]*sigrefl, bkg)'
-            sigfunc: # TODO: mass_roofit
-                activate: [no]
-                label: ["sig. func."]
-                diffs:
-                    analysis:
-                        jet_obs:
-                            todo: [0]
-            massmin:
-                activate: [no]
-                label:
-                    - "#it{m} min. 1.75"
-                diffs:
-                    analysis:
-                        jet_obs:
-                            mass_roofit:
-                                - - level: mcsig
-                                    datasel: mcsig
-                                    range: [1.69, 2.04]
-                                    components:
-                                      sig:
-                                        fn: 'Gaussian::peak(m[1.,5.], mean[1.85,1.89], sigma_g1[.01,.08])'
-                                      bkg:
-                                        fn: 'Gaussian::wide(m, mean, sigma_wide[.05,1.])'
-                                      model:
-                                        fn: 'SUM::sig(frac_wide[0.,.3]*wide, peak)'
-                                  - level: mcrefl
-                                    ptrange: [1., 3.]
-                                    datasel: mcrefl
-                                    range: [1.69, 2.04]
-                                    components:
-                                      refl_l:
-                                        fn: 'Gaussian::refl_l(m, mean_l[1.7,1.865], sigma_l[.01,.1])'
-                                      refl_r:
-                                        fn: 'Gaussian::refl_r(m, mean_r[1.865,2.0], sigma_r[.01,.1])'
-                                      model:
-                                        fn: 'SUM::refl(frac_l[0.1,.9]*refl_l, refl_r)'
-                                  - level: mcrefl
-                                    ptrange: [3., 4.]
-                                    datasel: mcrefl
-                                    range: [1.68, 2.06]
-                                    components:
-                                      refl_l:
-                                        fn: 'Gaussian::refl_l(m, mean_l[1.7,1.865], sigma_l[.01,.2])'
-                                      refl_r:
-                                        fn: 'Gaussian::refl_r(m, mean_r[1.865,2.0], sigma_r[.01,.2])'
-                                      model:
-                                        fn: 'SUM::refl(frac_l[0.,1.]*refl_l, refl_r)'
-                                  - level: mcrefl
-                                    ptrange: [4., 5.]
-                                    datasel: mcrefl
-                                    range: [1.64, 2.08]
-                                    components:
-                                      refl_l:
-                                        fn: 'Gaussian::refl_l(m, mean_l[1.7,1.865], sigma_l[.01,.2])'
-                                      refl_r:
-                                        fn: 'Gaussian::refl_r(m, mean_r[1.865,2.0], sigma_r[.01,.2])'
-                                      model:
-                                        fn: 'SUM::refl(frac_l[0.,1.]*refl_l, refl_r)'
-                                  - level: mcrefl
-                                    ptrange: [5., 6.]
-                                    datasel: mcrefl
-                                    range: [1.64, 2.10]
-                                    components:
-                                      refl_l:
-                                        fn: 'Gaussian::refl_l(m, mean_l[1.8,1.865], sigma_l[.01,.2])'
-                                      refl_r:
-                                        fn: 'Gaussian::refl_r(m, mean_r[1.865,2.0], sigma_r[.01,.2])'
-                                      model:
-                                        fn: 'SUM::refl(frac_l[0.,1.]*refl_l, refl_r)'
-                                  - level: mcrefl
-                                    ptrange: [6., 8.]
-                                    datasel: mcrefl
-                                    range: [1.60, 2.14]
-                                    components:
-                                      refl_l:
-                                        fn: 'Gaussian::refl_l(m, mean_l[1.7,1.865], sigma_l[.01,.2])'
-                                      refl_r:
-                                        fn: 'Gaussian::refl_r(m, mean_r[1.865,2.1], sigma_r[.01,.2])'
-                                      model:
-                                        fn: 'SUM::refl(frac_l[0.,1.]*refl_l, refl_r)'
-                                  - level: mcrefl
-                                    ptrange: [8., 12.]
-                                    datasel: mcrefl
-                                    range: [1.52, 2.30]
-                                    components:
-                                      refl_l:
-                                        fn: 'Gaussian::refl_l(m, mean_l[1.7,1.865], sigma_l[.01,.2])'
-                                      refl_r:
-                                        fn: 'Gaussian::refl_r(m, mean_r[1.865,2.1], sigma_r[.01,.2])'
-                                      model:
-                                        fn: 'SUM::refl(frac_l[0.,1.]*refl_l, refl_r)'
-                                  - level: mcrefl
-                                    ptrange: [12., 48.]
-                                    datasel: mcrefl
-                                    range: [1.40, 2.4]
-                                    components:
-                                      refl_l:
-                                        fn: 'Gaussian::refl_l(m, mean_l[1.7,1.865], sigma_l[.01,.2])'
-                                      refl_r:
-                                        fn: 'Gaussian::refl_r(m, mean_r[1.865,2.1], sigma_r[.01,.2])'
-                                      model:
-                                        fn: 'SUM::refl(frac_l[0.,1.]*refl_l, refl_r)'
-                                  - level: mc
-                                    ptrange: [1., 3.]
-                                    range: [1.69, 2.04]
-                                    fix_params: ['frac_l', 'mean_l', 'mean_r', 'sigma_l', 'sigma_r', 'frac_wide', 'sigma_g1', 'sigma_wide']
-                                    components:
-                                      model:
-                                        fn: 'SUM::sigrefl(frac_refl[0.,1.]*refl, sig)'
-                                  - level: mc
-                                    ptrange: [3., 4.]
-                                    range: [1.68, 2.06]
-                                    fix_params: ['frac_l', 'mean_l', 'mean_r', 'sigma_l', 'sigma_r', 'frac_wide', 'sigma_g1', 'sigma_wide']
-                                    components:
-                                      model:
-                                        fn: 'SUM::sigrefl(frac_refl[0.,1.]*refl, sig)'
-                                  - level: mc
-                                    ptrange: [4., 5.]
-                                    range: [1.64, 2.08]
-                                    fix_params: ['frac_l', 'mean_l', 'mean_r', 'sigma_l', 'sigma_r', 'frac_wide', 'sigma_g1', 'sigma_wide']
-                                    components:
-                                      model:
-                                        fn: 'SUM::sigrefl(frac_refl[0.,1.]*refl, sig)'
-                                  - level: mc
-                                    ptrange: [5., 6.]
-                                    range: [1.64, 2.10]
-                                    fix_params: ['frac_l', 'mean_l', 'mean_r', 'sigma_l', 'sigma_r', 'frac_wide', 'sigma_g1', 'sigma_wide']
-                                    components:
-                                      model:
-                                        fn: 'SUM::sigrefl(frac_refl[0.,1.]*refl, sig)'
-                                  - level: mc
-                                    ptrange: [6., 8.]
-                                    range: [1.60, 2.14]
-                                    fix_params: ['frac_l', 'mean_l', 'mean_r', 'sigma_l', 'sigma_r', 'frac_wide', 'sigma_g1', 'sigma_wide']
-                                    components:
-                                      model:
-                                        fn: 'SUM::sigrefl(frac_refl[0.,1.]*refl, sig)'
-                                  - level: mc
-                                    ptrange: [8., 12.]
-                                    range: [1.52, 2.30]
-                                    fix_params: ['frac_l', 'mean_l', 'mean_r', 'sigma_l', 'sigma_r', 'frac_wide', 'sigma_g1', 'sigma_wide']
-                                    components:
-                                      model:
-                                        fn: 'SUM::sigrefl(frac_refl[0.,1.]*refl, sig)'
-                                  - level: mc
-                                    ptrange: [12., 48.]
-                                    range: [1.40, 2.40]
-                                    fix_params: ['frac_l', 'mean_l', 'mean_r', 'sigma_l', 'sigma_r', 'frac_wide', 'sigma_g1', 'sigma_wide']
-                                    components:
-                                      model:
-                                        fn: 'SUM::sigrefl(frac_refl[0.,1.]*refl, sig)'
-                                  - ptrange: [1., 2.]
-                                    per_ptjet: true
-                                    range: [1.75, 2.02]  # variation
-                                    fix_params: ['frac_refl']
-                                    free_params: ['sigma_g1']
-                                    fix_params_ptjet: ['mean', 'sigma_g1']
-                                    components:
-                                      bkg:
-                                        fn: 'Exponential::bkg(m, alpha[-100,0])'
-                                      model:
-                                        fn: 'SUM::sum(frac[0.,1.]*sigrefl, bkg)'
-                                  - ptrange: [2., 3.]
-                                    per_ptjet: true
-                                    fix_params: ['frac_refl']
-                                    free_params: ['sigma_g1']
-                                    fix_params_ptjet: ['mean', 'sigma_g1']
-                                    range: [1.75, 2.04]  # variation
-                                    components:
-                                      bkg:
-                                        fn: 'Exponential::bkg(m, alpha[-100,0])'
-                                      model:
-                                        fn: 'SUM::sum(frac[0.,1.]*sigrefl, bkg)'
-                                  - ptrange: [3., 4.]
-                                    per_ptjet: true
-                                    fix_params: ['frac_refl']
-                                    free_params: ['sigma_g1']
-                                    fix_params_ptjet: ['mean', 'sigma_g1']
-                                    range: [1.75, 2.06]  # variation
-                                    components:
-                                      bkg:
-                                        fn: 'Exponential::bkg(m, alpha[-100,0])'
-                                      model:
-                                        fn: 'SUM::sum(frac[0.,1.]*sigrefl, bkg)'
-                                  - ptrange: [4., 5.]
-                                    per_ptjet: true
-                                    fix_params: ['frac_refl']
-                                    free_params: ['sigma_g1']
-                                    fix_params_ptjet: ['mean', 'sigma_g1']
-                                    range: [1.75, 2.08]  # variation
-                                    components:
-                                      bkg:
-                                        fn: 'Exponential::bkg(m, alpha[-100,0])'
-                                      model:
-                                        fn: 'SUM::sum(frac[0.,1.]*sigrefl, bkg)'
-                                  - ptrange: [5., 6.]
-                                    per_ptjet: true
-                                    fix_params: ['frac_refl']
-                                    free_params: ['sigma_g1']
-                                    fix_params_ptjet: ['mean', 'sigma_g1']
-                                    range: [1.75, 2.10]  # variation
-                                    components:
-                                      bkg:
-                                        fn: 'Exponential::bkg(m, alpha[-100,0])'
-                                      model:
-                                        fn: 'SUM::sum(frac[0.,1.]*sigrefl, bkg)'
-                                  - ptrange: [6., 8.]
-                                    per_ptjet: true
-                                    fix_params: ['frac_refl']
-                                    free_params: ['sigma_g1']
-                                    fix_params_ptjet: ['mean', 'sigma_g1']
-                                    range: [1.75, 2.14]  # variation
-                                    components:
-                                      bkg:
-                                        fn: 'Exponential::bkg(m, alpha[-100,0])'
-                                      model:
-                                        fn: 'SUM::sum(frac[0.,1.]*sigrefl, bkg)'
-                                  - range: [1.75, 2.20]  # variation
-                                    per_ptjet: true
-                                    fix_params: ['frac_refl']
-                                    free_params: ['sigma_g1']
-                                    fix_params_ptjet: ['mean', 'sigma_g1']
-                                    components:
-                                      bkg:
-                                        fn: 'Exponential::bkg(m, alpha[-100,0])'
-                                      model:
-                                        fn: 'SUM::sum(frac[0.,1.]*sigrefl, bkg)'
-                            sidesub:
-                                - - level: mc
-                                    regions:
-                                        left: [-2., -2.]
-                                        signal: [-2., 2.]
-                                        right: [3., 3.]
-                                  - ptrange: [10., 100.]
-                                    regions:
-                                        left: [-2., -2.]
-                                        signal: [-1.5, 1.5]  # variation
-                                        right: [3., 5.]
-                                  - regions:
-                                        left: [-5.5, -3.]
-                                        signal: [-1.5, 1.5]  # variation
-                                        right: [3., 5.5]
-            rebin:
-                activate: [yes, yes, yes, yes]
-                label: ["rebin 1", "rebin 2", "rebin 4", "rebin 5"]
-                diffs:
-                    analysis:
-                        jet_obs:
-                            n_rebin: [1, 2, 4, 5]
-            reflections:
-                activate: [no]
-                label: ["w/o refl."]
-                diffs:
-                    analysis:
-                        jet_obs:
-                            corr_refl: [false]
-    sideband:
-        activate: yes
-        processor: false
-        label: "sideband sub."
-        group: "signal extraction"
-        correlation: "corr"
-        rms: true
-        symmetrise: true
-        rms_both_sides: true
-        variations:
-            sigma:
-                activate: [no, yes, yes, yes, yes, yes, yes, yes, yes, yes]
-                label:
-                    - "S 1.5#it{#sigma}"
-                    - "S 1.6#it{#sigma}"
-                    - "S 1.7#it{#sigma}"
-                    - "S 1.8#it{#sigma}"
-                    - "S 1.9#it{#sigma}"
-                    - "S 2.1#it{#sigma}"
-                    - "S 2.2#it{#sigma}"
-                    - "S 2.3#it{#sigma}"
-                    - "S 2.4#it{#sigma}"
-                    - "S 2.5#it{#sigma}"
-                diffs:
-                    analysis:
-                        jet_obs:
-                            sidesub:
-                                - - level: mc
-                                    regions:
-                                        left: [-2., -2.]
-                                        signal: [-2., 2.]
-                                        right: [3., 3.]
-                                  - ptrange: [16., 100.]
-                                    regions:
-                                        left: [-2., -2.]
-                                        signal: [-1.5, 1.5]  # variation
-                                        right: [3., 5.]
-                                  - regions:
-                                        left: [-5.5, -3.]
-                                        signal: [-1.5, 1.5]  # variation
-                                        right: [3., 5.5]
-                                - - level: mc
-                                    regions:
-                                        left: [-2., -2.]
-                                        signal: [-2., 2.]
-                                        right: [3., 3.]
-                                  - ptrange: [16., 100.]
-                                    regions:
-                                        left: [-2., -2.]
-                                        signal: [-1.6, 1.6]  # variation
-                                        right: [3., 5.]
-                                  - regions:
-                                        left: [-5.5, -3.]
-                                        signal: [-1.6, 1.6]  # variation
-                                        right: [3., 5.5]
-                                - - level: mc
-                                    regions:
-                                        left: [-2., -2.]
-                                        signal: [-2., 2.]
-                                        right: [3., 3.]
-                                  - ptrange: [16., 100.]
-                                    regions:
-                                        left: [-2., -2.]
-                                        signal: [-1.7, 1.7]  # variation
-                                        right: [3., 5.]
-                                  - regions:
-                                        left: [-5.5, -3.]
-                                        signal: [-1.7, 1.7]  # variation
-                                        right: [3., 5.5]
-                                - - level: mc
-                                    regions:
-                                        left: [-2., -2.]
-                                        signal: [-2., 2.]
-                                        right: [3., 3.]
-                                  - ptrange: [16., 100.]
-                                    regions:
-                                        left: [-2., -2.]
-                                        signal: [-1.8, 1.8]  # variation
-                                        right: [3., 5.]
-                                  - regions:
-                                        left: [-5.5, -3.]
-                                        signal: [-1.8, 1.8]  # variation
-                                        right: [3., 5.5]
-                                - - level: mc
-                                    regions:
-                                        left: [-2., -2.]
-                                        signal: [-2., 2.]
-                                        right: [3., 3.]
-                                  - ptrange: [16., 100.]
-                                    regions:
-                                        left: [-2., -2.]
-                                        signal: [-1.9, 1.9]  # variation
-                                        right: [3., 5.]
-                                  - regions:
-                                        left: [-5.5, -3.]
-                                        signal: [-1.9, 1.9]  # variation
-                                        right: [3., 5.5]
-                                - - level: mc
-                                    regions:
-                                        left: [-2., -2.]
-                                        signal: [-2., 2.]
-                                        right: [3., 3.]
-                                  - ptrange: [16., 100.]
-                                    regions:
-                                        left: [-2., -2.]
-                                        signal: [-2.1, 2.1]  # variation
-                                        right: [3., 5.]
-                                  - regions:
-                                        left: [-5.5, -3.]
-                                        signal: [-2.1, 2.1]  # variation
-                                        right: [3., 5.5]
-                                - - level: mc
-                                    regions:
-                                        left: [-2., -2.]
-                                        signal: [-2., 2.]
-                                        right: [3., 3.]
-                                  - ptrange: [16., 100.]
-                                    regions:
-                                        left: [-2., -2.]
-                                        signal: [-2.2, 2.2]  # variation
-                                        right: [3., 5.]
-                                  - regions:
-                                        left: [-5.5, -3.]
-                                        signal: [-2.2, 2.2]  # variation
-                                        right: [3., 5.5]
-                                - - level: mc
-                                    regions:
-                                        left: [-2., -2.]
-                                        signal: [-2., 2.]
-                                        right: [3., 3.]
-                                  - ptrange: [16., 100.]
-                                    regions:
-                                        left: [-2., -2.]
-                                        signal: [-2.3, 2.3]  # variation
-                                        right: [3., 5.]
-                                  - regions:
-                                        left: [-5.5, -3.]
-                                        signal: [-2.3, 2.3]  # variation
-                                        right: [3., 5.5]
-                                - - level: mc
-                                    regions:
-                                        left: [-2., -2.]
-                                        signal: [-2., 2.]
-                                        right: [3., 3.]
-                                  - ptrange: [16., 100.]
-                                    regions:
-                                        left: [-2., -2.]
-                                        signal: [-2.4, 2.4]  # variation
-                                        right: [3., 5.]
-                                  - regions:
-                                        left: [-5.5, -3.]
-                                        signal: [-2.4, 2.4]  # variation
-                                        right: [3., 5.5]
-                                - - level: mc
-                                    regions:
-                                        left: [-2., -2.]
-                                        signal: [-2., 2.]
-                                        right: [3., 3.]
-                                  - ptrange: [16., 100.]
-                                    regions:
-                                        left: [-2., -2.]
-                                        signal: [-2.5, 2.5]  # variation
-                                        right: [3., 5.]
-                                  - regions:
-                                        left: [-5.5, -3.]
-                                        signal: [-2.5, 2.5]  # variation
-                                        right: [3., 5.5]
-            ranges:
-                activate: [yes, yes, yes, yes, no, no, no, no]
-                label:
-                    - "SB 3#minus6#it{#sigma}"
-                    - "SB 3#minus5#it{#sigma}"
-                    - "SB 3#minus6#it{#sigma} left"
-                    - "SB 3.5#minus6#it{#sigma} left"
-                    - "SB 4#minus6#it{#sigma} left"
-                    - "SB 3#minus6#it{#sigma} right"
-                    - "SB 3.5#minus6#it{#sigma} right"
-                    - "SB 4#minus6#it{#sigma} right"
-                diffs:
-                    analysis:
-                        jet_obs:
-                            sidesub:
-                                - - level: mc  # 3-6
-                                    regions:
-                                        left: [-2., -2.]
-                                        signal: [-2., 2.]
-                                        right: [3., 3.]
-                                  - ptrange: [16., 100.]
-                                    regions:
-                                        left: [-2., -2.]
-                                        signal: [-2., 2.]
-                                        right: [3., 5.5]  # variation
-                                  - regions:
-                                        left: [-6., -3.]  # variation
-                                        signal: [-2., 2.]
-                                        right: [3., 6.]  # variation
-                                - - level: mc  # 3-5
-                                    regions:
-                                        left: [-2., -2.]
-                                        signal: [-2., 2.]
-                                        right: [3., 3.]
-                                  - ptrange: [16., 100.]
-                                    regions:
-                                        left: [-2., -2.]
-                                        signal: [-2., 2.]
-                                        right: [3., 4.5]  # variation
-                                  - regions:
-                                        left: [-5., -3.]  # variation
-                                        signal: [-2., 2.]
-                                        right: [3., 5.]  # variation
-                                - - level: mc  # 3-6 left
-                                    regions:
-                                        left: [-2., -2.]
-                                        signal: [-2., 2.]
-                                        right: [3., 3.]
-                                  - ptrange: [16., 100.]
-                                    regions:
-                                        left: [-2., -2.]
-                                        signal: [-2., 2.]
-                                        right: [3., 5.]
-                                  - regions:
-                                        left: [-6., -3.]  # variation
-                                        signal: [-2., 2.]
-                                        right: [3., 5.5]
-                                - - level: mc  # 3.5-6 left
-                                    regions:
-                                        left: [-2., -2.]
-                                        signal: [-2., 2.]
-                                        right: [3., 3.]
-                                  - ptrange: [16., 100.]
-                                    regions:
-                                        left: [-2., -2.]
-                                        signal: [-2., 2.]
-                                        right: [3., 5.]
-                                  - regions:
-                                        left: [-6., -3.5]  # variation
-                                        signal: [-2., 2.]
-                                        right: [3., 5.5]
-                                - - level: mc  # 4-6 left
-                                    regions:
-                                        left: [-2., -2.]
-                                        signal: [-2., 2.]
-                                        right: [3., 3.]
-                                  - ptrange: [16., 100.]
-                                    regions:
-                                        left: [-2., -2.]
-                                        signal: [-2., 2.]
-                                        right: [3., 5.]
-                                  - regions:
-                                        left: [-6., -4.0]  # variation
-                                        signal: [-2., 2.]
-                                        right: [3., 5.5]
-                                - - level: mc  # 3-6 right
-                                    regions:
-                                        left: [-2., -2.]
-                                        signal: [-2., 2.]
-                                        right: [3., 3.]
-                                  - ptrange: [16., 100.]
-                                    regions:
-                                        left: [-2., -2.]
-                                        signal: [-2., 2.]
-                                        right: [3., 5.5]  # variation
-                                  - regions:
-                                        left: [-5.5., -3.0]
-                                        signal: [-2., 2.]
-                                        right: [3., 6.]  # variation
-                                - - level: mc  # 3.5-6 right
-                                    regions:
-                                        left: [-2., -2.]
-                                        signal: [-2., 2.]
-                                        right: [3., 3.]
-                                  - ptrange: [16., 100.]
-                                    regions:
-                                        left: [-2., -2.]
-                                        signal: [-2., 2.]
-                                        right: [3.5, 5.5]  # variation
-                                  - regions:
-                                        left: [-5.5., -3.0]
-                                        signal: [-2., 2.]
-                                        right: [3.5, 6.]  # variation
-                                - - level: mc  # 4-6 right
-                                    regions:
-                                        left: [-2., -2.]
-                                        signal: [-2., 2.]
-                                        right: [3., 3.]
-                                  - ptrange: [16., 100.]
-                                    regions:
-                                        left: [-2., -2.]
-                                        signal: [-2., 2.]
-                                        right: [4., 5.5]  # variation
-                                  - regions:
-                                        left: [-5.5., -3.0]
-                                        signal: [-2., 2.]
-                                        right: [4., 6.]  # variation
-            sb_left:  # not for D0
-                activate: [no]
-                label: ["left sb only"]
-                diffs:
-                    analysis:
-                        jet_obs:
-                            sidebandleftonly: [true]
-    feeddown:
-        activate: yes
-        processor: false
-        label: "feed-down"
-        correlation: "corr"
-        rms: false
-        symmetrise: false
-        rms_both_sides: false
-        variations:
-            tune:
-                activate: [yes, yes, yes, yes, yes, yes, yes, yes, yes]
-                label:
-                    - "#it{f}_{F} = 1, #it{f}_{R} = 0.5"
-                    - "#it{f}_{F} = 0.5, #it{f}_{R} = 1"
-                    - "#it{f}_{F} = 2, #it{f}_{R} = 1"
-                    - "#it{f}_{F} = 1, #it{f}_{R} = 2"
-                    - "#it{f}_{F} = 2, #it{f}_{R} = 2"
-                    - "#it{f}_{F} = 0.5, #it{f}_{R} = 0.5"
-                    - "#it{m}_{b} high"
-                    - "#it{m}_{b} low"
-                    - "no EvtGen"
-                diffs:
-                    analysis:
-                        jet_obs:
-                            fd_root:
-                                - /data2/vkucera/powheg/trees_powheg_fd_F1_R05.root
-                                - /data2/vkucera/powheg/trees_powheg_fd_F05_R1.root
-                                - /data2/vkucera/powheg/trees_powheg_fd_F2_R1.root
-                                - /data2/vkucera/powheg/trees_powheg_fd_F1_R2.root
-                                - /data2/vkucera/powheg/trees_powheg_fd_F2_R2.root
-                                - /data2/vkucera/powheg/trees_powheg_fd_F05_R05.root
-                                - /data2/vkucera/powheg/trees_powheg_fd_Mhigh.root
-                                - /data2/vkucera/powheg/trees_powheg_fd_Mlow.root
-                                - /data2/vkucera/powheg/trees_powheg_fd_NoEvtGen.root
-                            fd_parquet:
-                                - /data2/jklein/powheg/trees_powheg_fd_F1_R05.parquet
-                                - /data2/jklein/powheg/trees_powheg_fd_F05_R1.parquet
-                                - /data2/jklein/powheg/trees_powheg_fd_F2_R1.parquet
-                                - /data2/jklein/powheg/trees_powheg_fd_F1_R2.parquet
-                                - /data2/jklein/powheg/trees_powheg_fd_F2_R2.parquet
-                                - /data2/jklein/powheg/trees_powheg_fd_F05_R05.parquet
-                                - /data2/jklein/powheg/trees_powheg_fd_Mhigh.parquet
-                                - /data2/jklein/powheg/trees_powheg_fd_Mlow.parquet
-                                - /data2/jklein/powheg/trees_powheg_fd_NoEvtGen.parquet
-    prior:
-        activate: yes
-        processor: true
-        label: "prior"
-        group: "unfolding"
-        correlation: "corr"
-        rms: true
-        symmetrise: true
-        rms_both_sides: true
-        variations:
-            flatness:
-                activate: [yes, yes, yes, yes, yes, yes, yes, yes, yes, no]
-                label: ["flat 0.1", "flat 0.2", "flat 0.3", "flat 0.4", "flat 0.5", "flat 0.6", "flat 0.7", "flat 0.8", "flat 0.9", "flat 1.0"]
-                diffs:
-                    analysis:
-                        jet_obs:
-                            unfolding_prior_flatness: [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0]
-                            unfolding_iterations_sel: [5, 5, 6, 6, 7, 7, 7, 7, 8, 8]
-    modeldep:  # TODO
-        activate: no
-        processor: true
-        label: "model dep."
-        group: "unfolding"
-        correlation: "corr"
-        rms: true
-        symmetrise: true
-        rms_both_sides: true
-        variations:
-            inclusive:
-                activate: [yes]
-                label: ["inclusive"]
-                diffs:
-                    analysis:
-                        jet_nsd:
-                            domodeldep: [true]
-    regularisation:
-        activate: yes
-        processor: false
-        label: "regularisation"
-        group: "unfolding"
-        correlation: "corr"
-        rms: true
-        symmetrise: true
-        rms_both_sides: true
-        variations:
-            iter:
-                activate: [yes, yes]
-                label: ["down (4)", "up (7)"]
-                diffs:
-                    analysis:
-                        jet_obs:
-                            unfolding_iterations_sel: [4, 7]
-    normalisation:
-        activate: yes
-        processor: false
-        label: "#it{#sigma}_{MB}"
-        correlation: "corr"
-        rms: true
-        symmetrise: true
-        rms_both_sides: true
-        variations:
-            crosssection:
-                activate: [yes, yes]
-                label: ["#it{#sigma}_{MB} down", "#it{#sigma}_{MB} up"]
-                diffs:
-                    analysis:
-                        jet_obs:
-                            xsection_inel: [53.46, 65.34]
-    tracking:
-        activate: yes
-        processor: true
-        label: "JES"
-        correlation: "corr"
-        rms: true
-        symmetrise: true
-        rms_both_sides: true
-        variations:
-            efficiency:
-                activate: [yes]
-                label: ["eff. down"]
-                diffs:
-                  multi:
-                    mc:
-                      prefix_dir: [/data2/MLhep/sim/train_259454/]
-    binning:
-        activate: yes
-        processor: true
-        label: "binning"
-        group: "unfolding"
-        correlation: "corr"
-        rms: true
-        symmetrise: true
-        rms_both_sides: true
-        variations:
-            # pt_cand:  # TODO
-            pt_jet:
-                activate: [yes, yes]
-                label:
-                    - "#it{p}_{T}^{jet} 5#rightarrow4"
-                    - "#it{p}_{T}^{jet} 50#rightarrow55"
-                diffs:
-                    analysis:
-                        jet_obs:
-                            bins_ptjet: [[4, 7, 15, 30, 50, 70], [5, 7, 15, 30, 50, 75]]
-                            bins_ptjet_eff: [[2, 4, 7, 15, 30, 50, 70, 90], [2, 5, 7, 15, 30, 50, 75, 90]]
-            observable:
-                activate: [no]
-                label:
-                    - "obs. 1"
-                diffs:
-                    analysis:
-                        jet_obs:
-                            observables:
-                              zg:
-                                bins_det_fix: [[12, -.1, .5]]
-                              nsd:
-                                bins_det_fix: [[11, -.5, 10.5]]
-                              rg:
-                                bins_det_fix: [[22, -.1, 1.]]
-                              zpar:
-                                bins_det_fix: [[20, 0., 1.]]
-    cand_sel:
-        activate: yes
-        processor: true
-        label: "BDT cut"
-        correlation: "corr"
-        rms: true
-        symmetrise: true
-        rms_both_sides: true
-        variations:
-            ml:
-                activate: [no, no, no, yes, yes, yes, yes, yes, no, yes, yes, yes, yes]
-                label:
-                    # default: working point (for tests, should be same as the default result)
-                    # null: no cuts (for tests, whatever was applied on Hyperloop)
-                    # loosest: same cuts as Hyperloop (for tests, should be same as null)
-                    ["default", "null", "loosest", "tight 5", "tight 4", "tight 3", "tight 2", "tight 1", "loose 1", "loose 2", "loose 3", "loose 4", "loose 5"]
-                diffs:
-                    analysis:
-                        jet_obs:
-                            use_cuts: [True, True, True, True, True, True, True, True, True, True, True, True, True]
-                            cuts:
-                                    - ["mlBkgScore < 0.02", "mlBkgScore < 0.02", "mlBkgScore < 0.02", "mlBkgScore < 0.05", "mlBkgScore < 0.06", "mlBkgScore < 0.08", "mlBkgScore < 0.08", "mlBkgScore < 0.10", "mlBkgScore < 0.10", "mlBkgScore < 0.20", "mlBkgScore < 0.25", "mlBkgScore < 0.30"]  # default
-                                    - [null,null,null,null,null,null,null,null,null,null,null,null]
-                                    - ["mlBkgScore < 0.30", "mlBkgScore < 0.35", "mlBkgScore < 0.40", "mlBkgScore < 0.40", "mlBkgScore < 0.40", "mlBkgScore < 0.4", "mlBkgScore < 0.4", "mlBkgScore < 0.5", "mlBkgScore < 0.5", "mlBkgScore < 0.5", "mlBkgScore < 0.5", "mlBkgScore < 0.5"]  # loosest
-                                    -  ["mlBkgScore < 0.008", "mlBkgScore < 0.008", "mlBkgScore < 0.0087", "mlBkgScore < 0.017", "mlBkgScore < 0.024", "mlBkgScore < 0.031", "mlBkgScore < 0.028", "mlBkgScore < 0.042", "mlBkgScore < 0.038", "mlBkgScore < 0.052", "mlBkgScore < 0.067", "mlBkgScore < 0.06"]   # tight 5
-                                    -  ["mlBkgScore < 0.0104", "mlBkgScore < 0.0104", "mlBkgScore < 0.01096", "mlBkgScore < 0.0236", "mlBkgScore < 0.0312", "mlBkgScore < 0.0408", "mlBkgScore < 0.0384", "mlBkgScore < 0.0536", "mlBkgScore < 0.0504", "mlBkgScore < 0.0816", "mlBkgScore < 0.1036", "mlBkgScore < 0.108"]   # tight 4
-                                    -  ["mlBkgScore < 0.0128", "mlBkgScore < 0.0128", "mlBkgScore < 0.01322", "mlBkgScore < 0.0302", "mlBkgScore < 0.0384", "mlBkgScore < 0.0506", "mlBkgScore < 0.0488", "mlBkgScore < 0.0652", "mlBkgScore < 0.0628", "mlBkgScore < 0.1112", "mlBkgScore < 0.1402", "mlBkgScore < 0.156"]   # tight 3
-                                    -  ["mlBkgScore < 0.0152", "mlBkgScore < 0.0152", "mlBkgScore < 0.01548", "mlBkgScore < 0.0368", "mlBkgScore < 0.0456", "mlBkgScore < 0.0604", "mlBkgScore < 0.0592", "mlBkgScore < 0.0768", "mlBkgScore < 0.0752", "mlBkgScore < 0.1408", "mlBkgScore < 0.1768", "mlBkgScore < 0.204"]   # tight 2
-                                    -  ["mlBkgScore < 0.0176", "mlBkgScore < 0.0176", "mlBkgScore < 0.01774", "mlBkgScore < 0.0434", "mlBkgScore < 0.0528", "mlBkgScore < 0.0702", "mlBkgScore < 0.0696", "mlBkgScore < 0.0884", "mlBkgScore < 0.0876", "mlBkgScore < 0.1704", "mlBkgScore < 0.2134", "mlBkgScore < 0.252"]   # tight 1
-                                    -  ["mlBkgScore < 0.025", "mlBkgScore < 0.0266", "mlBkgScore < 0.0268", "mlBkgScore < 0.078", "mlBkgScore < 0.092", "mlBkgScore < 0.13", "mlBkgScore < 0.156", "mlBkgScore < 0.156", "mlBkgScore < 0.18", "mlBkgScore < 0.26", "mlBkgScore < 0.3", "mlBkgScore < 0.34"]   # loose 1
-                                    -  ["mlBkgScore < 0.03", "mlBkgScore < 0.0332", "mlBkgScore < 0.0336", "mlBkgScore < 0.106", "mlBkgScore < 0.124", "mlBkgScore < 0.18", "mlBkgScore < 0.232", "mlBkgScore < 0.212", "mlBkgScore < 0.26", "mlBkgScore < 0.32", "mlBkgScore < 0.35", "mlBkgScore < 0.38"]   # loose 2
-                                    -  ["mlBkgScore < 0.035", "mlBkgScore < 0.0398", "mlBkgScore < 0.0404", "mlBkgScore < 0.134", "mlBkgScore < 0.156", "mlBkgScore < 0.23", "mlBkgScore < 0.308", "mlBkgScore < 0.268", "mlBkgScore < 0.34", "mlBkgScore < 0.38", "mlBkgScore < 0.4", "mlBkgScore < 0.42"]   # loose 3
-                                    -  ["mlBkgScore < 0.04", "mlBkgScore < 0.0464", "mlBkgScore < 0.0472", "mlBkgScore < 0.162", "mlBkgScore < 0.188", "mlBkgScore < 0.28", "mlBkgScore < 0.384", "mlBkgScore < 0.324", "mlBkgScore < 0.42", "mlBkgScore < 0.44", "mlBkgScore < 0.45", "mlBkgScore < 0.46"]   # loose 4
-                                    -  ["mlBkgScore < 0.045", "mlBkgScore < 0.053", "mlBkgScore < 0.054", "mlBkgScore < 0.19", "mlBkgScore < 0.22", "mlBkgScore < 0.33", "mlBkgScore < 0.46", "mlBkgScore < 0.38", "mlBkgScore < 0.5", "mlBkgScore < 0.5", "mlBkgScore < 0.5", "mlBkgScore < 0.5"]   # loose 5
+  default:
+    activate: no
+    processor: false
+    label: "default"
+    correlation: "corr"
+    rms: true
+    symmetrise: true
+    rms_both_sides: true
+    variations:
+      default:
+        activate: [yes]
+        label: ["default"]
+        diffs: {}
+  fitting:
+    activate: yes
+    processor: false
+    label: "fitting"
+    group: "signal extraction"
+    correlation: "corr"
+    rms: true
+    symmetrise: true
+    rms_both_sides: true
+    variations:
+      bkgfunc:
+        activate: [no]
+        label: ["bkg. func."]
+        diffs:
+          analysis:
+            jet_obs:
+              mass_roofit:
+                - - level: mcsig
+                    datasel: mcsig
+                    range: [1.69, 2.04]
+                    components:
+                      sig:
+                        fn: 'Gaussian::peak(m[1.,5.], mean[1.85,1.89], sigma_g1[.01,.08])'
+                      bkg:
+                        fn: 'Gaussian::wide(m, mean, sigma_wide[.05,1.])'
+                      model:
+                        fn: 'SUM::sig(frac_wide[0.,.3]*wide, peak)'
+                  - level: mcrefl
+                    ptrange: [1., 3.]
+                    datasel: mcrefl
+                    range: [1.69, 2.04]
+                    components:
+                      refl_l:
+                        fn: 'Gaussian::refl_l(m, mean_l[1.7,1.865], sigma_l[.01,.1])'
+                      refl_r:
+                        fn: 'Gaussian::refl_r(m, mean_r[1.865,2.0], sigma_r[.01,.1])'
+                      model:
+                        fn: 'SUM::refl(frac_l[0.1,.9]*refl_l, refl_r)'
+                  - level: mcrefl
+                    ptrange: [3., 4.]
+                    datasel: mcrefl
+                    range: [1.68, 2.06]
+                    components:
+                      refl_l:
+                        fn: 'Gaussian::refl_l(m, mean_l[1.7,1.865], sigma_l[.01,.2])'
+                      refl_r:
+                        fn: 'Gaussian::refl_r(m, mean_r[1.865,2.0], sigma_r[.01,.2])'
+                      model:
+                        fn: 'SUM::refl(frac_l[0.,1.]*refl_l, refl_r)'
+                  - level: mcrefl
+                    ptrange: [4., 5.]
+                    datasel: mcrefl
+                    range: [1.64, 2.08]
+                    components:
+                      refl_l:
+                        fn: 'Gaussian::refl_l(m, mean_l[1.7,1.865], sigma_l[.01,.2])'
+                      refl_r:
+                        fn: 'Gaussian::refl_r(m, mean_r[1.865,2.0], sigma_r[.01,.2])'
+                      model:
+                        fn: 'SUM::refl(frac_l[0.,1.]*refl_l, refl_r)'
+                  - level: mcrefl
+                    ptrange: [5., 6.]
+                    datasel: mcrefl
+                    range: [1.64, 2.10]
+                    components:
+                      refl_l:
+                        fn: 'Gaussian::refl_l(m, mean_l[1.8,1.865], sigma_l[.01,.2])'
+                      refl_r:
+                        fn: 'Gaussian::refl_r(m, mean_r[1.865,2.0], sigma_r[.01,.2])'
+                      model:
+                        fn: 'SUM::refl(frac_l[0.,1.]*refl_l, refl_r)'
+                  - level: mcrefl
+                    ptrange: [6., 8.]
+                    datasel: mcrefl
+                    range: [1.60, 2.14]
+                    components:
+                      refl_l:
+                        fn: 'Gaussian::refl_l(m, mean_l[1.7,1.865], sigma_l[.01,.2])'
+                      refl_r:
+                        fn: 'Gaussian::refl_r(m, mean_r[1.865,2.1], sigma_r[.01,.2])'
+                      model:
+                        fn: 'SUM::refl(frac_l[0.,1.]*refl_l, refl_r)'
+                  - level: mcrefl
+                    ptrange: [8., 12.]
+                    datasel: mcrefl
+                    range: [1.52, 2.30]
+                    components:
+                      refl_l:
+                        fn: 'Gaussian::refl_l(m, mean_l[1.7,1.865], sigma_l[.01,.2])'
+                      refl_r:
+                        fn: 'Gaussian::refl_r(m, mean_r[1.865,2.1], sigma_r[.01,.2])'
+                      model:
+                        fn: 'SUM::refl(frac_l[0.,1.]*refl_l, refl_r)'
+                  - level: mcrefl
+                    ptrange: [12., 48.]
+                    datasel: mcrefl
+                    range: [1.40, 2.4]
+                    components:
+                      refl_l:
+                        fn: 'Gaussian::refl_l(m, mean_l[1.7,1.865], sigma_l[.01,.2])'
+                      refl_r:
+                        fn: 'Gaussian::refl_r(m, mean_r[1.865,2.1], sigma_r[.01,.2])'
+                      model:
+                        fn: 'SUM::refl(frac_l[0.,1.]*refl_l, refl_r)'
+                  - level: mc
+                    ptrange: [1., 3.]
+                    range: [1.69, 2.04]
+                    fix_params: ['frac_l', 'mean_l', 'mean_r', 'sigma_l', 'sigma_r', 'frac_wide', 'sigma_g1', 'sigma_wide']
+                    components:
+                      model:
+                        fn: 'SUM::sigrefl(frac_refl[0.,1.]*refl, sig)'
+                  - level: mc
+                    ptrange: [3., 4.]
+                    range: [1.68, 2.06]
+                    fix_params: ['frac_l', 'mean_l', 'mean_r', 'sigma_l', 'sigma_r', 'frac_wide', 'sigma_g1', 'sigma_wide']
+                    components:
+                      model:
+                        fn: 'SUM::sigrefl(frac_refl[0.,1.]*refl, sig)'
+                  - level: mc
+                    ptrange: [4., 5.]
+                    range: [1.64, 2.08]
+                    fix_params: ['frac_l', 'mean_l', 'mean_r', 'sigma_l', 'sigma_r', 'frac_wide', 'sigma_g1', 'sigma_wide']
+                    components:
+                      model:
+                        fn: 'SUM::sigrefl(frac_refl[0.,1.]*refl, sig)'
+                  - level: mc
+                    ptrange: [5., 6.]
+                    range: [1.64, 2.10]
+                    fix_params: ['frac_l', 'mean_l', 'mean_r', 'sigma_l', 'sigma_r', 'frac_wide', 'sigma_g1', 'sigma_wide']
+                    components:
+                      model:
+                        fn: 'SUM::sigrefl(frac_refl[0.,1.]*refl, sig)'
+                  - level: mc
+                    ptrange: [6., 8.]
+                    range: [1.60, 2.14]
+                    fix_params: ['frac_l', 'mean_l', 'mean_r', 'sigma_l', 'sigma_r', 'frac_wide', 'sigma_g1', 'sigma_wide']
+                    components:
+                      model:
+                        fn: 'SUM::sigrefl(frac_refl[0.,1.]*refl, sig)'
+                  - level: mc
+                    ptrange: [8., 12.]
+                    range: [1.52, 2.30]
+                    fix_params: ['frac_l', 'mean_l', 'mean_r', 'sigma_l', 'sigma_r', 'frac_wide', 'sigma_g1', 'sigma_wide']
+                    components:
+                      model:
+                        fn: 'SUM::sigrefl(frac_refl[0.,1.]*refl, sig)'
+                  - level: mc
+                    ptrange: [12., 48.]
+                    range: [1.40, 2.40]
+                    fix_params: ['frac_l', 'mean_l', 'mean_r', 'sigma_l', 'sigma_r', 'frac_wide', 'sigma_g1', 'sigma_wide']
+                    components:
+                      model:
+                        fn: 'SUM::sigrefl(frac_refl[0.,1.]*refl, sig)'
+                  - ptrange: [1., 2.]
+                    per_ptjet: true
+                    range: [1.72, 2.02]
+                    fix_params: ['frac_refl']
+                    free_params: ['sigma_g1']
+                    fix_params_ptjet: ['mean', 'sigma_g1']
+                    components:
+                      bkg:
+                        fn: 'Polynomial::bkg(m, {a0[0.2, -3, 3], a1[0.2 , -3, 3], a2[0.2, -3, 3]})' # variation
+                      model:
+                        fn: 'SUM::sum(frac[0.,1.]*sigrefl, bkg)'
+                  - ptrange: [2., 3.]
+                    per_ptjet: true
+                    fix_params: ['frac_refl']
+                    free_params: ['sigma_g1']
+                    fix_params_ptjet: ['mean', 'sigma_g1']
+                    range: [1.72, 2.04]
+                    components:
+                      bkg:
+                        fn: 'Polynomial::bkg(m, {a0[0.2, -3, 3], a1[0.2 , -3, 3], a2[0.2, -3, 3]})' # variation
+                      model:
+                        fn: 'SUM::sum(frac[0.,1.]*sigrefl, bkg)'
+                  - ptrange: [3., 4.]
+                    per_ptjet: true
+                    fix_params: ['frac_refl']
+                    free_params: ['sigma_g1']
+                    fix_params_ptjet: ['mean', 'sigma_g1']
+                    range: [1.72, 2.06]
+                    components:
+                      bkg:
+                        fn: 'Polynomial::bkg(m, {a0[0.2, -3, 3], a1[0.2 , -3, 3], a2[0.2, -3, 3]})' # variation
+                      model:
+                        fn: 'SUM::sum(frac[0.,1.]*sigrefl, bkg)'
+                  - ptrange: [4., 5.]
+                    per_ptjet: true
+                    fix_params: ['frac_refl']
+                    free_params: ['sigma_g1']
+                    fix_params_ptjet: ['mean', 'sigma_g1']
+                    range: [1.72, 2.08]
+                    components:
+                      bkg:
+                        fn: 'Polynomial::bkg(m, {a0[0.2, -3, 3], a1[0.2 , -3, 3], a2[0.2, -3, 3]})' # variation
+                      model:
+                        fn: 'SUM::sum(frac[0.,1.]*sigrefl, bkg)'
+                  - ptrange: [5., 6.]
+                    per_ptjet: true
+                    fix_params: ['frac_refl']
+                    free_params: ['sigma_g1']
+                    fix_params_ptjet: ['mean', 'sigma_g1']
+                    range: [1.72, 2.10]
+                    components:
+                      bkg:
+                        fn: 'Polynomial::bkg(m, {a0[0.2, -3, 3], a1[0.2 , -3, 3], a2[0.2, -3, 3]})' # variation
+                      model:
+                        fn: 'SUM::sum(frac[0.,1.]*sigrefl, bkg)'
+                  - ptrange: [6., 8.]
+                    per_ptjet: true
+                    fix_params: ['frac_refl']
+                    free_params: ['sigma_g1']
+                    fix_params_ptjet: ['mean', 'sigma_g1']
+                    range: [1.72, 2.14]
+                    components:
+                      bkg:
+                        fn: 'Polynomial::bkg(m, {a0[0.2, -3, 3], a1[0.2 , -3, 3], a2[0.2, -3, 3]})' # variation
+                      model:
+                        fn: 'SUM::sum(frac[0.,1.]*sigrefl, bkg)'
+                  - range: [1.72, 2.20]
+                    per_ptjet: true
+                    fix_params: ['frac_refl']
+                    free_params: ['sigma_g1']
+                    fix_params_ptjet: ['mean', 'sigma_g1']
+                    components:
+                      bkg:
+                        fn: 'Polynomial::bkg(m, {a0[0.2, -3, 3], a1[0.2 , -3, 3], a2[0.2, -3, 3]})' # variation
+                      model:
+                        fn: 'SUM::sum(frac[0.,1.]*sigrefl, bkg)'
+      sigfunc: # TODO: mass_roofit
+        activate: [no]
+        label: ["sig. func."]
+        diffs:
+          analysis:
+            jet_obs:
+              todo: [0]
+      massmin:
+        activate: [no]
+        label:
+          - "#it{m} min. 1.75"
+        diffs:
+          analysis:
+            jet_obs:
+              mass_roofit:
+                - - level: mcsig
+                    datasel: mcsig
+                    range: [1.69, 2.04]
+                    components:
+                      sig:
+                        fn: 'Gaussian::peak(m[1.,5.], mean[1.85,1.89], sigma_g1[.01,.08])'
+                      bkg:
+                        fn: 'Gaussian::wide(m, mean, sigma_wide[.05,1.])'
+                      model:
+                        fn: 'SUM::sig(frac_wide[0.,.3]*wide, peak)'
+                  - level: mcrefl
+                    ptrange: [1., 3.]
+                    datasel: mcrefl
+                    range: [1.69, 2.04]
+                    components:
+                      refl_l:
+                        fn: 'Gaussian::refl_l(m, mean_l[1.7,1.865], sigma_l[.01,.1])'
+                      refl_r:
+                        fn: 'Gaussian::refl_r(m, mean_r[1.865,2.0], sigma_r[.01,.1])'
+                      model:
+                        fn: 'SUM::refl(frac_l[0.1,.9]*refl_l, refl_r)'
+                  - level: mcrefl
+                    ptrange: [3., 4.]
+                    datasel: mcrefl
+                    range: [1.68, 2.06]
+                    components:
+                      refl_l:
+                        fn: 'Gaussian::refl_l(m, mean_l[1.7,1.865], sigma_l[.01,.2])'
+                      refl_r:
+                        fn: 'Gaussian::refl_r(m, mean_r[1.865,2.0], sigma_r[.01,.2])'
+                      model:
+                        fn: 'SUM::refl(frac_l[0.,1.]*refl_l, refl_r)'
+                  - level: mcrefl
+                    ptrange: [4., 5.]
+                    datasel: mcrefl
+                    range: [1.64, 2.08]
+                    components:
+                      refl_l:
+                        fn: 'Gaussian::refl_l(m, mean_l[1.7,1.865], sigma_l[.01,.2])'
+                      refl_r:
+                        fn: 'Gaussian::refl_r(m, mean_r[1.865,2.0], sigma_r[.01,.2])'
+                      model:
+                        fn: 'SUM::refl(frac_l[0.,1.]*refl_l, refl_r)'
+                  - level: mcrefl
+                    ptrange: [5., 6.]
+                    datasel: mcrefl
+                    range: [1.64, 2.10]
+                    components:
+                      refl_l:
+                        fn: 'Gaussian::refl_l(m, mean_l[1.8,1.865], sigma_l[.01,.2])'
+                      refl_r:
+                        fn: 'Gaussian::refl_r(m, mean_r[1.865,2.0], sigma_r[.01,.2])'
+                      model:
+                        fn: 'SUM::refl(frac_l[0.,1.]*refl_l, refl_r)'
+                  - level: mcrefl
+                    ptrange: [6., 8.]
+                    datasel: mcrefl
+                    range: [1.60, 2.14]
+                    components:
+                      refl_l:
+                        fn: 'Gaussian::refl_l(m, mean_l[1.7,1.865], sigma_l[.01,.2])'
+                      refl_r:
+                        fn: 'Gaussian::refl_r(m, mean_r[1.865,2.1], sigma_r[.01,.2])'
+                      model:
+                        fn: 'SUM::refl(frac_l[0.,1.]*refl_l, refl_r)'
+                  - level: mcrefl
+                    ptrange: [8., 12.]
+                    datasel: mcrefl
+                    range: [1.52, 2.30]
+                    components:
+                      refl_l:
+                        fn: 'Gaussian::refl_l(m, mean_l[1.7,1.865], sigma_l[.01,.2])'
+                      refl_r:
+                        fn: 'Gaussian::refl_r(m, mean_r[1.865,2.1], sigma_r[.01,.2])'
+                      model:
+                        fn: 'SUM::refl(frac_l[0.,1.]*refl_l, refl_r)'
+                  - level: mcrefl
+                    ptrange: [12., 48.]
+                    datasel: mcrefl
+                    range: [1.40, 2.4]
+                    components:
+                      refl_l:
+                        fn: 'Gaussian::refl_l(m, mean_l[1.7,1.865], sigma_l[.01,.2])'
+                      refl_r:
+                        fn: 'Gaussian::refl_r(m, mean_r[1.865,2.1], sigma_r[.01,.2])'
+                      model:
+                        fn: 'SUM::refl(frac_l[0.,1.]*refl_l, refl_r)'
+                  - level: mc
+                    ptrange: [1., 3.]
+                    range: [1.69, 2.04]
+                    fix_params: ['frac_l', 'mean_l', 'mean_r', 'sigma_l', 'sigma_r', 'frac_wide', 'sigma_g1', 'sigma_wide']
+                    components:
+                      model:
+                        fn: 'SUM::sigrefl(frac_refl[0.,1.]*refl, sig)'
+                  - level: mc
+                    ptrange: [3., 4.]
+                    range: [1.68, 2.06]
+                    fix_params: ['frac_l', 'mean_l', 'mean_r', 'sigma_l', 'sigma_r', 'frac_wide', 'sigma_g1', 'sigma_wide']
+                    components:
+                      model:
+                        fn: 'SUM::sigrefl(frac_refl[0.,1.]*refl, sig)'
+                  - level: mc
+                    ptrange: [4., 5.]
+                    range: [1.64, 2.08]
+                    fix_params: ['frac_l', 'mean_l', 'mean_r', 'sigma_l', 'sigma_r', 'frac_wide', 'sigma_g1', 'sigma_wide']
+                    components:
+                      model:
+                        fn: 'SUM::sigrefl(frac_refl[0.,1.]*refl, sig)'
+                  - level: mc
+                    ptrange: [5., 6.]
+                    range: [1.64, 2.10]
+                    fix_params: ['frac_l', 'mean_l', 'mean_r', 'sigma_l', 'sigma_r', 'frac_wide', 'sigma_g1', 'sigma_wide']
+                    components:
+                      model:
+                        fn: 'SUM::sigrefl(frac_refl[0.,1.]*refl, sig)'
+                  - level: mc
+                    ptrange: [6., 8.]
+                    range: [1.60, 2.14]
+                    fix_params: ['frac_l', 'mean_l', 'mean_r', 'sigma_l', 'sigma_r', 'frac_wide', 'sigma_g1', 'sigma_wide']
+                    components:
+                      model:
+                        fn: 'SUM::sigrefl(frac_refl[0.,1.]*refl, sig)'
+                  - level: mc
+                    ptrange: [8., 12.]
+                    range: [1.52, 2.30]
+                    fix_params: ['frac_l', 'mean_l', 'mean_r', 'sigma_l', 'sigma_r', 'frac_wide', 'sigma_g1', 'sigma_wide']
+                    components:
+                      model:
+                        fn: 'SUM::sigrefl(frac_refl[0.,1.]*refl, sig)'
+                  - level: mc
+                    ptrange: [12., 48.]
+                    range: [1.40, 2.40]
+                    fix_params: ['frac_l', 'mean_l', 'mean_r', 'sigma_l', 'sigma_r', 'frac_wide', 'sigma_g1', 'sigma_wide']
+                    components:
+                      model:
+                        fn: 'SUM::sigrefl(frac_refl[0.,1.]*refl, sig)'
+                  - ptrange: [1., 2.]
+                    per_ptjet: true
+                    range: [1.75, 2.02] # variation
+                    fix_params: ['frac_refl']
+                    free_params: ['sigma_g1']
+                    fix_params_ptjet: ['mean', 'sigma_g1']
+                    components:
+                      bkg:
+                        fn: 'Exponential::bkg(m, alpha[-100,0])'
+                      model:
+                        fn: 'SUM::sum(frac[0.,1.]*sigrefl, bkg)'
+                  - ptrange: [2., 3.]
+                    per_ptjet: true
+                    fix_params: ['frac_refl']
+                    free_params: ['sigma_g1']
+                    fix_params_ptjet: ['mean', 'sigma_g1']
+                    range: [1.75, 2.04] # variation
+                    components:
+                      bkg:
+                        fn: 'Exponential::bkg(m, alpha[-100,0])'
+                      model:
+                        fn: 'SUM::sum(frac[0.,1.]*sigrefl, bkg)'
+                  - ptrange: [3., 4.]
+                    per_ptjet: true
+                    fix_params: ['frac_refl']
+                    free_params: ['sigma_g1']
+                    fix_params_ptjet: ['mean', 'sigma_g1']
+                    range: [1.75, 2.06] # variation
+                    components:
+                      bkg:
+                        fn: 'Exponential::bkg(m, alpha[-100,0])'
+                      model:
+                        fn: 'SUM::sum(frac[0.,1.]*sigrefl, bkg)'
+                  - ptrange: [4., 5.]
+                    per_ptjet: true
+                    fix_params: ['frac_refl']
+                    free_params: ['sigma_g1']
+                    fix_params_ptjet: ['mean', 'sigma_g1']
+                    range: [1.75, 2.08] # variation
+                    components:
+                      bkg:
+                        fn: 'Exponential::bkg(m, alpha[-100,0])'
+                      model:
+                        fn: 'SUM::sum(frac[0.,1.]*sigrefl, bkg)'
+                  - ptrange: [5., 6.]
+                    per_ptjet: true
+                    fix_params: ['frac_refl']
+                    free_params: ['sigma_g1']
+                    fix_params_ptjet: ['mean', 'sigma_g1']
+                    range: [1.75, 2.10] # variation
+                    components:
+                      bkg:
+                        fn: 'Exponential::bkg(m, alpha[-100,0])'
+                      model:
+                        fn: 'SUM::sum(frac[0.,1.]*sigrefl, bkg)'
+                  - ptrange: [6., 8.]
+                    per_ptjet: true
+                    fix_params: ['frac_refl']
+                    free_params: ['sigma_g1']
+                    fix_params_ptjet: ['mean', 'sigma_g1']
+                    range: [1.75, 2.14] # variation
+                    components:
+                      bkg:
+                        fn: 'Exponential::bkg(m, alpha[-100,0])'
+                      model:
+                        fn: 'SUM::sum(frac[0.,1.]*sigrefl, bkg)'
+                  - range: [1.75, 2.20] # variation
+                    per_ptjet: true
+                    fix_params: ['frac_refl']
+                    free_params: ['sigma_g1']
+                    fix_params_ptjet: ['mean', 'sigma_g1']
+                    components:
+                      bkg:
+                        fn: 'Exponential::bkg(m, alpha[-100,0])'
+                      model:
+                        fn: 'SUM::sum(frac[0.,1.]*sigrefl, bkg)'
+              sidesub:
+                - - level: mc
+                    regions:
+                      left: [-2., -2.]
+                      signal: [-2., 2.]
+                      right: [3., 3.]
+                  - ptrange: [10., 100.]
+                    regions:
+                      left: [-2., -2.]
+                      signal: [-1.5, 1.5] # variation
+                      right: [3., 5.]
+                  - regions:
+                      left: [-5.5, -3.]
+                      signal: [-1.5, 1.5] # variation
+                      right: [3., 5.5]
+      rebin:
+        activate: [yes, yes, yes, yes]
+        label: ["rebin 1", "rebin 2", "rebin 4", "rebin 5"]
+        diffs:
+          analysis:
+            jet_obs:
+              n_rebin: [1, 2, 4, 5]
+      reflections:
+        activate: [no]
+        label: ["w/o refl."]
+        diffs:
+          analysis:
+            jet_obs:
+              corr_refl: [false]
+  sideband:
+    activate: yes
+    processor: false
+    label: "sideband sub."
+    group: "signal extraction"
+    correlation: "corr"
+    rms: true
+    symmetrise: true
+    rms_both_sides: true
+    variations:
+      sigma:
+        activate: [no, yes, yes, yes, yes, yes, yes, yes, yes, yes]
+        label:
+          - "S 1.5#it{#sigma}"
+          - "S 1.6#it{#sigma}"
+          - "S 1.7#it{#sigma}"
+          - "S 1.8#it{#sigma}"
+          - "S 1.9#it{#sigma}"
+          - "S 2.1#it{#sigma}"
+          - "S 2.2#it{#sigma}"
+          - "S 2.3#it{#sigma}"
+          - "S 2.4#it{#sigma}"
+          - "S 2.5#it{#sigma}"
+        diffs:
+          analysis:
+            jet_obs:
+              sidesub:
+                - - level: mc
+                    regions:
+                      left: [-2., -2.]
+                      signal: [-2., 2.]
+                      right: [3., 3.]
+                  - ptrange: [16., 100.]
+                    regions:
+                      left: [-2., -2.]
+                      signal: [-1.5, 1.5] # variation
+                      right: [3., 5.]
+                  - regions:
+                      left: [-5.5, -3.]
+                      signal: [-1.5, 1.5] # variation
+                      right: [3., 5.5]
+                - - level: mc
+                    regions:
+                      left: [-2., -2.]
+                      signal: [-2., 2.]
+                      right: [3., 3.]
+                  - ptrange: [16., 100.]
+                    regions:
+                      left: [-2., -2.]
+                      signal: [-1.6, 1.6] # variation
+                      right: [3., 5.]
+                  - regions:
+                      left: [-5.5, -3.]
+                      signal: [-1.6, 1.6] # variation
+                      right: [3., 5.5]
+                - - level: mc
+                    regions:
+                      left: [-2., -2.]
+                      signal: [-2., 2.]
+                      right: [3., 3.]
+                  - ptrange: [16., 100.]
+                    regions:
+                      left: [-2., -2.]
+                      signal: [-1.7, 1.7] # variation
+                      right: [3., 5.]
+                  - regions:
+                      left: [-5.5, -3.]
+                      signal: [-1.7, 1.7] # variation
+                      right: [3., 5.5]
+                - - level: mc
+                    regions:
+                      left: [-2., -2.]
+                      signal: [-2., 2.]
+                      right: [3., 3.]
+                  - ptrange: [16., 100.]
+                    regions:
+                      left: [-2., -2.]
+                      signal: [-1.8, 1.8] # variation
+                      right: [3., 5.]
+                  - regions:
+                      left: [-5.5, -3.]
+                      signal: [-1.8, 1.8] # variation
+                      right: [3., 5.5]
+                - - level: mc
+                    regions:
+                      left: [-2., -2.]
+                      signal: [-2., 2.]
+                      right: [3., 3.]
+                  - ptrange: [16., 100.]
+                    regions:
+                      left: [-2., -2.]
+                      signal: [-1.9, 1.9] # variation
+                      right: [3., 5.]
+                  - regions:
+                      left: [-5.5, -3.]
+                      signal: [-1.9, 1.9] # variation
+                      right: [3., 5.5]
+                - - level: mc
+                    regions:
+                      left: [-2., -2.]
+                      signal: [-2., 2.]
+                      right: [3., 3.]
+                  - ptrange: [16., 100.]
+                    regions:
+                      left: [-2., -2.]
+                      signal: [-2.1, 2.1] # variation
+                      right: [3., 5.]
+                  - regions:
+                      left: [-5.5, -3.]
+                      signal: [-2.1, 2.1] # variation
+                      right: [3., 5.5]
+                - - level: mc
+                    regions:
+                      left: [-2., -2.]
+                      signal: [-2., 2.]
+                      right: [3., 3.]
+                  - ptrange: [16., 100.]
+                    regions:
+                      left: [-2., -2.]
+                      signal: [-2.2, 2.2] # variation
+                      right: [3., 5.]
+                  - regions:
+                      left: [-5.5, -3.]
+                      signal: [-2.2, 2.2] # variation
+                      right: [3., 5.5]
+                - - level: mc
+                    regions:
+                      left: [-2., -2.]
+                      signal: [-2., 2.]
+                      right: [3., 3.]
+                  - ptrange: [16., 100.]
+                    regions:
+                      left: [-2., -2.]
+                      signal: [-2.3, 2.3] # variation
+                      right: [3., 5.]
+                  - regions:
+                      left: [-5.5, -3.]
+                      signal: [-2.3, 2.3] # variation
+                      right: [3., 5.5]
+                - - level: mc
+                    regions:
+                      left: [-2., -2.]
+                      signal: [-2., 2.]
+                      right: [3., 3.]
+                  - ptrange: [16., 100.]
+                    regions:
+                      left: [-2., -2.]
+                      signal: [-2.4, 2.4] # variation
+                      right: [3., 5.]
+                  - regions:
+                      left: [-5.5, -3.]
+                      signal: [-2.4, 2.4] # variation
+                      right: [3., 5.5]
+                - - level: mc
+                    regions:
+                      left: [-2., -2.]
+                      signal: [-2., 2.]
+                      right: [3., 3.]
+                  - ptrange: [16., 100.]
+                    regions:
+                      left: [-2., -2.]
+                      signal: [-2.5, 2.5] # variation
+                      right: [3., 5.]
+                  - regions:
+                      left: [-5.5, -3.]
+                      signal: [-2.5, 2.5] # variation
+                      right: [3., 5.5]
+      ranges:
+        activate: [yes, yes, yes, yes, no, no, no, no]
+        label:
+          - "SB 3#minus6#it{#sigma}"
+          - "SB 3#minus5#it{#sigma}"
+          - "SB 3#minus6#it{#sigma} left"
+          - "SB 3.5#minus6#it{#sigma} left"
+          - "SB 4#minus6#it{#sigma} left"
+          - "SB 3#minus6#it{#sigma} right"
+          - "SB 3.5#minus6#it{#sigma} right"
+          - "SB 4#minus6#it{#sigma} right"
+        diffs:
+          analysis:
+            jet_obs:
+              sidesub:
+                - - level: mc # 3-6
+                    regions:
+                      left: [-2., -2.]
+                      signal: [-2., 2.]
+                      right: [3., 3.]
+                  - ptrange: [16., 100.]
+                    regions:
+                      left: [-2., -2.]
+                      signal: [-2., 2.]
+                      right: [3., 5.5] # variation
+                  - regions:
+                      left: [-6., -3.] # variation
+                      signal: [-2., 2.]
+                      right: [3., 6.] # variation
+                - - level: mc # 3-5
+                    regions:
+                      left: [-2., -2.]
+                      signal: [-2., 2.]
+                      right: [3., 3.]
+                  - ptrange: [16., 100.]
+                    regions:
+                      left: [-2., -2.]
+                      signal: [-2., 2.]
+                      right: [3., 4.5] # variation
+                  - regions:
+                      left: [-5., -3.] # variation
+                      signal: [-2., 2.]
+                      right: [3., 5.] # variation
+                - - level: mc # 3-6 left
+                    regions:
+                      left: [-2., -2.]
+                      signal: [-2., 2.]
+                      right: [3., 3.]
+                  - ptrange: [16., 100.]
+                    regions:
+                      left: [-2., -2.]
+                      signal: [-2., 2.]
+                      right: [3., 5.]
+                  - regions:
+                      left: [-6., -3.] # variation
+                      signal: [-2., 2.]
+                      right: [3., 5.5]
+                - - level: mc # 3.5-6 left
+                    regions:
+                      left: [-2., -2.]
+                      signal: [-2., 2.]
+                      right: [3., 3.]
+                  - ptrange: [16., 100.]
+                    regions:
+                      left: [-2., -2.]
+                      signal: [-2., 2.]
+                      right: [3., 5.]
+                  - regions:
+                      left: [-6., -3.5] # variation
+                      signal: [-2., 2.]
+                      right: [3., 5.5]
+                - - level: mc # 4-6 left
+                    regions:
+                      left: [-2., -2.]
+                      signal: [-2., 2.]
+                      right: [3., 3.]
+                  - ptrange: [16., 100.]
+                    regions:
+                      left: [-2., -2.]
+                      signal: [-2., 2.]
+                      right: [3., 5.]
+                  - regions:
+                      left: [-6., -4.0] # variation
+                      signal: [-2., 2.]
+                      right: [3., 5.5]
+                - - level: mc # 3-6 right
+                    regions:
+                      left: [-2., -2.]
+                      signal: [-2., 2.]
+                      right: [3., 3.]
+                  - ptrange: [16., 100.]
+                    regions:
+                      left: [-2., -2.]
+                      signal: [-2., 2.]
+                      right: [3., 5.5] # variation
+                  - regions:
+                      left: [-5.5., -3.0]
+                      signal: [-2., 2.]
+                      right: [3., 6.] # variation
+                - - level: mc # 3.5-6 right
+                    regions:
+                      left: [-2., -2.]
+                      signal: [-2., 2.]
+                      right: [3., 3.]
+                  - ptrange: [16., 100.]
+                    regions:
+                      left: [-2., -2.]
+                      signal: [-2., 2.]
+                      right: [3.5, 5.5] # variation
+                  - regions:
+                      left: [-5.5., -3.0]
+                      signal: [-2., 2.]
+                      right: [3.5, 6.] # variation
+                - - level: mc # 4-6 right
+                    regions:
+                      left: [-2., -2.]
+                      signal: [-2., 2.]
+                      right: [3., 3.]
+                  - ptrange: [16., 100.]
+                    regions:
+                      left: [-2., -2.]
+                      signal: [-2., 2.]
+                      right: [4., 5.5] # variation
+                  - regions:
+                      left: [-5.5., -3.0]
+                      signal: [-2., 2.]
+                      right: [4., 6.] # variation
+      sb_left: # not for D0
+        activate: [no]
+        label: ["left sb only"]
+        diffs:
+          analysis:
+            jet_obs:
+              sidebandleftonly: [true]
+  feeddown:
+    activate: yes
+    processor: false
+    label: "feed-down"
+    correlation: "corr"
+    rms: false
+    symmetrise: false
+    rms_both_sides: false
+    variations:
+      tune:
+        activate: [yes, yes, yes, yes, yes, yes, yes, yes, yes]
+        label:
+          - "#it{f}_{F} = 1, #it{f}_{R} = 0.5"
+          - "#it{f}_{F} = 0.5, #it{f}_{R} = 1"
+          - "#it{f}_{F} = 2, #it{f}_{R} = 1"
+          - "#it{f}_{F} = 1, #it{f}_{R} = 2"
+          - "#it{f}_{F} = 2, #it{f}_{R} = 2"
+          - "#it{f}_{F} = 0.5, #it{f}_{R} = 0.5"
+          - "#it{m}_{b} high"
+          - "#it{m}_{b} low"
+          - "no EvtGen"
+        diffs:
+          analysis:
+            jet_obs:
+              fd_root:
+                - /data2/vkucera/powheg/trees_powheg_fd_F1_R05.root
+                - /data2/vkucera/powheg/trees_powheg_fd_F05_R1.root
+                - /data2/vkucera/powheg/trees_powheg_fd_F2_R1.root
+                - /data2/vkucera/powheg/trees_powheg_fd_F1_R2.root
+                - /data2/vkucera/powheg/trees_powheg_fd_F2_R2.root
+                - /data2/vkucera/powheg/trees_powheg_fd_F05_R05.root
+                - /data2/vkucera/powheg/trees_powheg_fd_Mhigh.root
+                - /data2/vkucera/powheg/trees_powheg_fd_Mlow.root
+                - /data2/vkucera/powheg/trees_powheg_fd_NoEvtGen.root
+              fd_parquet:
+                - /data2/jklein/powheg/trees_powheg_fd_F1_R05.parquet
+                - /data2/jklein/powheg/trees_powheg_fd_F05_R1.parquet
+                - /data2/jklein/powheg/trees_powheg_fd_F2_R1.parquet
+                - /data2/jklein/powheg/trees_powheg_fd_F1_R2.parquet
+                - /data2/jklein/powheg/trees_powheg_fd_F2_R2.parquet
+                - /data2/jklein/powheg/trees_powheg_fd_F05_R05.parquet
+                - /data2/jklein/powheg/trees_powheg_fd_Mhigh.parquet
+                - /data2/jklein/powheg/trees_powheg_fd_Mlow.parquet
+                - /data2/jklein/powheg/trees_powheg_fd_NoEvtGen.parquet
+  prior:
+    activate: yes
+    processor: true
+    label: "prior"
+    group: "unfolding"
+    correlation: "corr"
+    rms: true
+    symmetrise: true
+    rms_both_sides: true
+    variations:
+      flatness:
+        activate: [yes, yes, yes, yes, yes, yes, yes, yes, yes, no]
+        label: ["flat 0.1", "flat 0.2", "flat 0.3", "flat 0.4", "flat 0.5", "flat 0.6", "flat 0.7", "flat 0.8", "flat 0.9", "flat 1.0"]
+        diffs:
+          analysis:
+            jet_obs:
+              unfolding_prior_flatness: [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0]
+              unfolding_iterations_sel: [5, 5, 6, 6, 7, 7, 7, 7, 8, 8]
+  modeldep: # TODO
+    activate: no
+    processor: true
+    label: "model dep."
+    group: "unfolding"
+    correlation: "corr"
+    rms: true
+    symmetrise: true
+    rms_both_sides: true
+    variations:
+      inclusive:
+        activate: [yes]
+        label: ["inclusive"]
+        diffs:
+          analysis:
+            jet_nsd:
+              domodeldep: [true]
+  regularisation:
+    activate: yes
+    processor: false
+    label: "regularisation"
+    group: "unfolding"
+    correlation: "corr"
+    rms: true
+    symmetrise: true
+    rms_both_sides: true
+    variations:
+      iter:
+        activate: [yes, yes]
+        label: ["down (4)", "up (7)"]
+        diffs:
+          analysis:
+            jet_obs:
+              unfolding_iterations_sel: [4, 7]
+  normalisation:
+    activate: yes
+    processor: false
+    label: "#it{#sigma}_{MB}"
+    correlation: "corr"
+    rms: true
+    symmetrise: true
+    rms_both_sides: true
+    variations:
+      crosssection:
+        activate: [yes, yes]
+        label: ["#it{#sigma}_{MB} down", "#it{#sigma}_{MB} up"]
+        diffs:
+          analysis:
+            jet_obs:
+              xsection_inel: [53.46, 65.34]
+  tracking:
+    activate: yes
+    processor: true
+    label: "JES"
+    correlation: "corr"
+    rms: true
+    symmetrise: true
+    rms_both_sides: true
+    variations:
+      efficiency:
+        activate: [yes]
+        label: ["eff. down"]
+        diffs:
+          multi:
+            mc:
+              prefix_dir: [/data2/MLhep/sim/train_259454/]
+  binning:
+    activate: yes
+    processor: true
+    label: "binning"
+    group: "unfolding"
+    correlation: "corr"
+    rms: true
+    symmetrise: true
+    rms_both_sides: true
+    variations:
+      # pt_cand:  # TODO
+      pt_jet:
+        activate: [yes, yes]
+        label:
+          - "#it{p}_{T}^{jet} 5#rightarrow4"
+          - "#it{p}_{T}^{jet} 50#rightarrow55"
+        diffs:
+          analysis:
+            jet_obs:
+              bins_ptjet: [[4, 7, 15, 30, 50, 70], [5, 7, 15, 30, 50, 75]]
+              bins_ptjet_eff: [[2, 4, 7, 15, 30, 50, 70, 90], [2, 5, 7, 15, 30, 50, 75, 90]]
+      observable:
+        activate: [no]
+        label:
+          - "obs. 1"
+        diffs:
+          analysis:
+            jet_obs:
+              observables:
+                zg:
+                  bins_det_fix: [[12, -.1, .5]]
+                nsd:
+                  bins_det_fix: [[11, -.5, 10.5]]
+                rg:
+                  bins_det_fix: [[22, -.1, 1.]]
+                zpar:
+                  bins_det_fix: [[20, 0., 1.]]
+  cand_sel:
+    activate: yes
+    processor: true
+    label: "BDT cut"
+    correlation: "corr"
+    rms: true
+    symmetrise: true
+    rms_both_sides: true
+    variations:
+      ml:
+        activate: [no, no, no, yes, yes, yes, yes, yes, no, yes, yes, yes, yes]
+        label: [
+          # default: working point (for tests, should be same as the default result)
+          # null: no cuts (for tests, whatever was applied on Hyperloop)
+          # loosest: same cuts as Hyperloop (for tests, should be same as null)
+          "default", "null", "loosest", "tight 5", "tight 4", "tight 3", "tight 2", "tight 1", "loose 1", "loose 2", "loose 3", "loose 4", "loose 5"]
+        diffs:
+          analysis:
+            jet_obs:
+              use_cuts: [True, True, True, True, True, True, True, True, True, True, True, True, True]
+              cuts:
+                - ["mlBkgScore < 0.02", "mlBkgScore < 0.02", "mlBkgScore < 0.02", "mlBkgScore < 0.05", "mlBkgScore < 0.06", "mlBkgScore < 0.08", "mlBkgScore < 0.08", "mlBkgScore < 0.10", "mlBkgScore < 0.10", "mlBkgScore < 0.20", "mlBkgScore < 0.25", "mlBkgScore < 0.30"] # default
+                - [null, null, null, null, null, null, null, null, null, null, null, null]
+                - ["mlBkgScore < 0.30", "mlBkgScore < 0.35", "mlBkgScore < 0.40", "mlBkgScore < 0.40", "mlBkgScore < 0.40", "mlBkgScore < 0.4", "mlBkgScore < 0.4", "mlBkgScore < 0.5", "mlBkgScore < 0.5", "mlBkgScore < 0.5", "mlBkgScore < 0.5", "mlBkgScore < 0.5"] # loosest
+                - ["mlBkgScore < 0.008", "mlBkgScore < 0.008", "mlBkgScore < 0.0087", "mlBkgScore < 0.017", "mlBkgScore < 0.024", "mlBkgScore < 0.031", "mlBkgScore < 0.028", "mlBkgScore < 0.042", "mlBkgScore < 0.038", "mlBkgScore < 0.052", "mlBkgScore < 0.067", "mlBkgScore < 0.06"] # tight 5
+                - ["mlBkgScore < 0.0104", "mlBkgScore < 0.0104", "mlBkgScore < 0.01096", "mlBkgScore < 0.0236", "mlBkgScore < 0.0312", "mlBkgScore < 0.0408", "mlBkgScore < 0.0384", "mlBkgScore < 0.0536", "mlBkgScore < 0.0504", "mlBkgScore < 0.0816", "mlBkgScore < 0.1036", "mlBkgScore < 0.108"] # tight 4
+                - ["mlBkgScore < 0.0128", "mlBkgScore < 0.0128", "mlBkgScore < 0.01322", "mlBkgScore < 0.0302", "mlBkgScore < 0.0384", "mlBkgScore < 0.0506", "mlBkgScore < 0.0488", "mlBkgScore < 0.0652", "mlBkgScore < 0.0628", "mlBkgScore < 0.1112", "mlBkgScore < 0.1402", "mlBkgScore < 0.156"] # tight 3
+                - ["mlBkgScore < 0.0152", "mlBkgScore < 0.0152", "mlBkgScore < 0.01548", "mlBkgScore < 0.0368", "mlBkgScore < 0.0456", "mlBkgScore < 0.0604", "mlBkgScore < 0.0592", "mlBkgScore < 0.0768", "mlBkgScore < 0.0752", "mlBkgScore < 0.1408", "mlBkgScore < 0.1768", "mlBkgScore < 0.204"] # tight 2
+                - ["mlBkgScore < 0.0176", "mlBkgScore < 0.0176", "mlBkgScore < 0.01774", "mlBkgScore < 0.0434", "mlBkgScore < 0.0528", "mlBkgScore < 0.0702", "mlBkgScore < 0.0696", "mlBkgScore < 0.0884", "mlBkgScore < 0.0876", "mlBkgScore < 0.1704", "mlBkgScore < 0.2134", "mlBkgScore < 0.252"] # tight 1
+                - ["mlBkgScore < 0.025", "mlBkgScore < 0.0266", "mlBkgScore < 0.0268", "mlBkgScore < 0.078", "mlBkgScore < 0.092", "mlBkgScore < 0.13", "mlBkgScore < 0.156", "mlBkgScore < 0.156", "mlBkgScore < 0.18", "mlBkgScore < 0.26", "mlBkgScore < 0.3", "mlBkgScore < 0.34"] # loose 1
+                - ["mlBkgScore < 0.03", "mlBkgScore < 0.0332", "mlBkgScore < 0.0336", "mlBkgScore < 0.106", "mlBkgScore < 0.124", "mlBkgScore < 0.18", "mlBkgScore < 0.232", "mlBkgScore < 0.212", "mlBkgScore < 0.26", "mlBkgScore < 0.32", "mlBkgScore < 0.35", "mlBkgScore < 0.38"] # loose 2
+                - ["mlBkgScore < 0.035", "mlBkgScore < 0.0398", "mlBkgScore < 0.0404", "mlBkgScore < 0.134", "mlBkgScore < 0.156", "mlBkgScore < 0.23", "mlBkgScore < 0.308", "mlBkgScore < 0.268", "mlBkgScore < 0.34", "mlBkgScore < 0.38", "mlBkgScore < 0.4", "mlBkgScore < 0.42"] # loose 3
+                - ["mlBkgScore < 0.04", "mlBkgScore < 0.0464", "mlBkgScore < 0.0472", "mlBkgScore < 0.162", "mlBkgScore < 0.188", "mlBkgScore < 0.28", "mlBkgScore < 0.384", "mlBkgScore < 0.324", "mlBkgScore < 0.42", "mlBkgScore < 0.44", "mlBkgScore < 0.45", "mlBkgScore < 0.46"] # loose 4
+                - ["mlBkgScore < 0.045", "mlBkgScore < 0.053", "mlBkgScore < 0.054", "mlBkgScore < 0.19", "mlBkgScore < 0.22", "mlBkgScore < 0.33", "mlBkgScore < 0.46", "mlBkgScore < 0.38", "mlBkgScore < 0.5", "mlBkgScore < 0.5", "mlBkgScore < 0.5", "mlBkgScore < 0.5"] # loose 5

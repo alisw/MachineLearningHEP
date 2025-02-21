@@ -1,10 +1,11 @@
+---
 test:
-    test1: [42, "test", Null]
-    test2:
-        tea: False
-        coffee: True
-        list_of_lists:
-            - [1, 2, 3,4, 5]
-            - ["ABC", "DEF", "GHI"]
-            - [Null, False, True, true, false, null]
-    test3: 42
+  test1: [42, "test", Null]
+  test2:
+    tea: False
+    coffee: True
+    list_of_lists:
+      - [1, 2, 3, 4, 5]
+      - ["ABC", "DEF", "GHI"]
+      - [Null, False, True, true, false, null]
+  test3: 42
