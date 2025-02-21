@@ -32,10 +32,10 @@ from .logger import configure_logger, get_logger
 from .utilities_files import checkdirs, checkmakedir, checkmakedirlist, delete_dirlist
 
 
-def do_entire_analysis(
+def do_entire_analysis(  # pylint: disable=too-many-locals, too-many-statements, too-many-branches
     data_config: dict,
     data_param: dict,
-    data_param_overwrite: dict,  # pylint: disable=too-many-locals, too-many-statements, too-many-branches
+    data_param_overwrite: dict,
     data_model: dict,
     run_param: dict,
     args,
@@ -293,11 +293,16 @@ def do_entire_analysis(
 
     analyzers = ana_mgr.get_analyzers()
     # For ML WP systematics
-    if mltype == "MultiClassification":
-        syst_ml_pt_cl0 = syst_class(data_param[case], case, typean, analyzers, mymultiprocessmc, mymultiprocessdata, 0)
-        syst_ml_pt_cl1 = syst_class(data_param[case], case, typean, analyzers, mymultiprocessmc, mymultiprocessdata, 1)
-    else:
-        syst_ml_pt = syst_class(data_param[case], case, typean, analyzers, mymultiprocessmc, mymultiprocessdata)
+    if do_syst_ml:
+        if mltype == "MultiClassification":
+            syst_ml_pt_cl0 = syst_class(
+                data_param[case], case, typean, analyzers, mymultiprocessmc, mymultiprocessdata, 0
+            )
+            syst_ml_pt_cl1 = syst_class(
+                data_param[case], case, typean, analyzers, mymultiprocessmc, mymultiprocessdata, 1
+            )
+        else:
+            syst_ml_pt = syst_class(data_param[case], case, typean, analyzers, mymultiprocessmc, mymultiprocessdata)
 
     # perform the analysis flow
     if dodownloadalice:
