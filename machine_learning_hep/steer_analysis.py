@@ -276,9 +276,6 @@ def do_entire_analysis(  # pylint: disable=too-many-locals, too-many-statements,
     elif proc_type == "Dhadrons_mult":
         proc_class = mlhepmod("processerdhadrons_mult").ProcesserDhadrons_mult
         ana_class = mlhepmod("analysis.analyzerdhadrons_mult").AnalyzerDhadrons_mult
-    elif proc_type == "Dhadrons_jet":
-        proc_class = mlhepmod("processerdhadrons_jet").ProcesserDhadrons_jet
-        ana_class = mlhepmod("analysis.analyzer_jet").AnalyzerJet
     elif proc_type == "Jets":
         proc_class = mlhepmod("processer_jet").ProcesserJets
         ana_class = mlhepmod("analysis.analyzer_jets").AnalyzerJets
