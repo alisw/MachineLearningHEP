@@ -351,12 +351,6 @@ D0Jet_pp:
 
   #region analysis
   analysis:
-    anahptspectrum: "D0Kpi" #D0Kpi, DplusKpipi, DstarD0pi, DsKKpi, LctopKpi, LcK0Sp # used in analysis/analyzerdhadrons_mult.py
-    fd_method: "Nb" #fc, Nb
-    cctype: "pp"
-    inputfonllpred: data/fonll/D0DplusDstarPredictions_13TeV_y05_all_300416_BDShapeCorrected.root # used in machine_learning_hep/hf_pt_spectrum.py
-    dir_general_plots: /data2/jklein/data/analysis_plots
-
     jet_obs: &jet_default
       sel_an_binmin: [1, 2, 3, 4, 5, 6, 7, 8, 10, 12, 16, 24] # hadron pt bins (sel_an_binmin bins)
       sel_an_binmax: [2, 3, 4, 5, 6, 7, 8, 10, 12, 16, 24, 48] # hadron pt bins (sel_an_binmin bins) # FIXME: move the last edge in sel_an_binmin
@@ -716,38 +710,9 @@ D0Jet_pp:
       fd_root: "/data2/vkucera/powheg/trees_powheg_fd_central.root" # systematics
       fd_parquet: "/data2/jklein/powheg/trees_powheg_fd_central.parquet" # systematics
 
-      # obsolete?
       proc_type: Jets # used
       useperiod: [1] #list of periods # used
-      # usejetptbinned_deff: false
-      # doeff_resp: true #efficiency correction for the response matrix
-      # unmatched_gen: true
       latexnamehadron: "D^{0}"
-      # latexnamedecay: "K^{#minus} #pi^{#plus}"
-      var_binning2: pt_jet
-      # var_binning2_gen: pt_gen_jet
-      latexbin2var: "#it{p}_{T}^{jet ch}"
-      # sel_binmin2_reco: [5, 7, 15, 30] # rec jet pt bins (sel_binmin2_reco bins)
-      # sel_binmax2_reco:     [7, 15, 30, 50] # rec jet pt bins (sel_binmin2_reco bins)
-      # sel_binmin2_gen: [5, 7, 15, 30] # rec jet pt bins (sel_binmin2_reco bins)
-      # sel_binmax2_gen:     [7, 15, 30, 50] # rec jet pt bins (sel_binmin2_reco bins)
-      # var_binningshape: zg_jet
-      # var_binningshape_gen: zg_gen_jet
-      # var_shape_latex: "shape"
-      # sel_binminshape_reco: [-0.1,0.1,0.2,0.3,0.4]
-      # sel_binmaxshape_reco:      [0.1,0.2,0.3,0.4,0.5]
-      # sel_binminshape_gen:  [-0.1,0.1,0.2,0.3,0.4]
-      # sel_binmaxshape_gen:       [0.1,0.2,0.3,0.4,0.5]
-      # sel_closure_frac: 0.2
-      # triggerbit: INT7
-      #jetsel_gen: "abs(y_cand) < 0.8 and abs(z_vtx_gen) < 10 and abs(eta_jet) < 0.5"
-      #jetsel_sim: "abs(y_cand) < 0.8 and abs(eta_jet) < 0.5" # jet selection in simulations
-      #jetsel_reco: "abs(y_cand) < 0.8 and abs(z_vtx_reco) < 10 and abs(eta_jet) < 0.5"
-      #jetsel_gen_matched_reco: "abs(eta_gen_jet) < 5.0"
-      # jetsel_gen: "abs(y_cand) < 0.5 and abs(z_vtx_gen) < 10 and abs(eta_jet) < 0.5"
-      # jetsel_sim: "abs(y_cand) < 0.5 and abs(eta_jet) < 0.5" # jet selection in simulations
-      # jetsel_reco: "abs(y_cand) < 0.5 and abs(z_vtx_reco) < 10 and abs(eta_jet) < 0.5"
-      # jetsel_gen_matched_reco: "abs(y_cand) < 0.5 and abs(z_vtx_gen) < 10 and abs(eta_gen_jet) < 0.5"
       evtsel: null # fIsEventReject==0
       triggersel:
         data: "trigger_hasbit_INT7==1"
@@ -765,74 +730,8 @@ D0Jet_pp:
       mc_proc: # alternative processor output used as the analyzer input
         <<: *mc_out_default
 
-      # simple fitter START # used in cplusutilities/mass_fitter.C
-      # sgnfunc: [0,0,0,0,0,0,0,0,0,0,0,0] # kGaus=0, k2Gaus=1, k2GausSigmaRatioPar=2 (sel_an_binmin bins)
-      # bkgfunc: [0,0,0,0,0,0,0,0,0,0,0,0] # kExpo=0, kLin=1, kPol2=2, kNoBk=3, kPow=4, kPowEx=5 (sel_an_binmin bins)
-      # masspeak: 1.864
-      # massmin: [1.66,1.66,1.66,1.66,1.66,1.66,1.66,1.66,1.66,1.66,1.66,1.66] # sel_an_binmin bins, fit region of the invariant mass distribution [GeV/c^2]
-      # massmax: [2.06,2.06,2.06,2.06,2.06,2.06,2.06,2.06,2.06,2.06,2.06,2.06] # sel_an_binmin bins, fit region of the invariant mass distribution [GeV/c^2]
-      # rebin: [6,6,6,6,6,6,6,6,6,6,6,6] # sel_an_binmin bins
-      # fix_mean: [false, false, false, false, false, false, false, false, false, false, false, false] # sel_an_binmin bins
-      # masspeaksec: 1.864
-
-      # obsolete (uses Ali... fitter)
-      # If SetArraySigma true: sigma_initial is taken from sigmaarray; false: sigma_initial is taken from MC
-      # If SetFixGaussianSigma true: sigma fixed to sigma_initial
-      # SetFixGaussianSigma: [false, false, false, false, false, false, false, false, false, false, false, false] # sel_an_binmin bins
-      # SetFixGaussianSigma: [true, true, true, true, true, true, true, true, true, true, true, true] # sel_an_binmin bins
-      # SetArraySigma: [false, false, false, false, false, false, false, false, false, false, false, false] # sel_an_binmin bins
-      # sigmaarray: [0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01] # initial sigma (sel_an_binmin bins)
-
-      # fix_sigmasec: [true, true, true, true, true, true, true, true, true, true, true, true] # sel_an_binmin bins
-      # sigmaarraysec: [0.007497,0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01] # sel_an_binmin bins
-      # use_reflections: true
-      # simple fitter END
-
-      # signal_sigma: 2.0
-      # sigma_scale: 0.9545
-      # sideband_sigma_1_left: 4
-      # sideband_sigma_2_left: 9
-      # sideband_sigma_1_right: 4
-      # sideband_sigma_2_right: 9
-      # sidebandleftonly: false
-
-      # niterunfolding: 15
-      # niterunfoldingchosen: 4
-
-      # doprior: false
-      # domodeldep: false
-      # path_modeldep: /home/nzardosh/PYTHIA_Sim/PYTHIA8_Simulations/Plots/D0_Substructure_Simulations_Output.root
-
-      # replace with fd_root...
-      # powheg_path_nonprompt: /data/POWHEG/trees_powheg_fd_central.root
-      # powheg_path_prompt: /data/POWHEG/trees_powheg_pr_central.root
-      # powheg_prompt_variations_path: /data/POWHEG/trees_powheg_pr_
-      # powheg_prompt_variations: ["F1_R05","F05_R1","F2_R1","F1_R2","F2_R2","F05_R05","Mhigh","Mlow"]
-
-      # pythia8_prompt_variations_path: /data/PYTHIA8/trees_pythia8_pr_
-      # pythia8_prompt_variations: ["default", "charm_lo"] #["default","colour0soft"]
-      # pythia8_prompt_variations_legend: ["PYTHIA 8 (Monash)", "PYTHIA 8 charm LO"] # ["PYTHIA 8 (Monash)","PYTHIA 8 SoftQCD, mode 0"]
-
       variations_db: database_variations_D0Jet_pp_jet_obs.yml
 
       # Additional cuts applied before mass histogram is filled
       use_cuts: True # systematics
       cuts: ["mlBkgScore < 0.02", "mlBkgScore < 0.02", "mlBkgScore < 0.02", "mlBkgScore < 0.05", "mlBkgScore < 0.06", "mlBkgScore < 0.08", "mlBkgScore < 0.08", "mlBkgScore < 0.10", "mlBkgScore < 0.10", "mlBkgScore < 0.20", "mlBkgScore < 0.25", "mlBkgScore < 0.30"] # (sel_an_binmin bins) systematics FIXME: Update for new model.
-
-  systematics: # used in machine_learning_hep/analysis/systematics.py
-    probvariation:
-      useperiod: [0, 0, 1] #period from where to define prob cuts
-      ncutvar: 10 #number of looser and tighter variations
-      maxperccutvar: 0.25 #max diff in efficiency for loosest/tightest var
-      cutvarminrange: [0.80, 0.80, 0.6, 0.3, 0.3] #Min starting point for scan
-      cutvarmaxrange: [0.98, 0.95, 0.95, 0.95, 0.95] #Max starting point for scan
-      fixedmean: True #Fix mean cutvar histo to central fit
-      fixedsigma: True #Fix sigma cutvar histo to central fit
-    mcptshape:
-      #FONLL / generated LHC19h4c1
-      weights: [1.000000]
-      #From SetPtWeightsFromFONLL13overLHC17c3a12 in AliPhysics
-      #weights: [1.429770]
-      weights_min_pt: 0
-      weights_max_pt: 40
-      weights_bins: 400
