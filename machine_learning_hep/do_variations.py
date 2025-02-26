@@ -299,7 +299,8 @@ def healthy_structure(dic_diff: dict):  # pylint: disable=too-many-return-statem
     return True
 
 
-def main(yaml_in: str, yaml_diff: str, analysis: str, config: str, clean: bool, proc: int, script_name: str):  # pylint: disable=too-many-locals, too-many-statements, too-many-branches
+# pylint: disable=too-many-locals, too-many-statements, too-many-branches, too-many-positional-arguments
+def main(yaml_in: str, yaml_diff: str, analysis: str, config: str, clean: bool, proc: int, script_name: str):
     """Main function"""
 
     suffix_config_default = "analysis.yml"
