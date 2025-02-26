@@ -34,7 +34,6 @@ from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import label_binarize
 from sklearn.utils import shuffle
 
-# from machine_learning_hep.root import write_tree
 import machine_learning_hep.mlperformance as mlhep_plot
 import machine_learning_hep.optimization as optz
 from machine_learning_hep.correlations import (
@@ -124,19 +123,12 @@ class Optimiser:  # pylint: disable=too-many-public-methods, consider-using-f-st
         self.v_all = data_param["variables"]["var_all"]
         self.v_train = training_var
         self.v_selected = data_param["variables"].get("var_selected", None)
-        # if self.v_selected:
-        #    self.v_selected = self.v_selected[index]
         self.v_bound = data_param["variables"]["var_boundaries"]
         self.v_class = data_param["variables"]["var_class"]
         self.v_invmass = data_param["variables"]["var_inv_mass"]
         self.v_cuts = data_param["variables"].get("var_cuts", [])
         self.v_corrx = data_param["variables"]["var_correlation"][0]
         self.v_corry = data_param["variables"]["var_correlation"][1]
-        self.v_isstd = data_param["bitmap_sel"]["var_isstd"]
-        self.v_ismcsignal = data_param["bitmap_sel"]["var_ismcsignal"]
-        self.v_ismcprompt = data_param["bitmap_sel"]["var_ismcprompt"]
-        self.v_ismcfd = data_param["bitmap_sel"]["var_ismcfd"]
-        self.v_ismcbkg = data_param["bitmap_sel"]["var_ismcbkg"]
         # parameters
         self.p_case = case
         self.p_typean = typean
@@ -446,8 +438,6 @@ class Optimiser:  # pylint: disable=too-many-public-methods, consider-using-f-st
             self.p_mltype, self.p_classname, self.p_trainedmod, self.df_mltest, self.v_train, self.p_class_labels
         )
         write_df(self.df_mltest_applied, self.f_mltest_applied)
-        # df_ml_test_to_root = self.dirmlout+"/testsample_%s_mldecision.root" % (self.s_suffix)
-        # write_tree(df_ml_test_to_root, self.n_treetest, self.df_mltest_applied)
 
     def do_apply(self):
         self.prepare_data_mc_mcgen()
@@ -845,11 +835,6 @@ class Optimiser:  # pylint: disable=too-many-public-methods, consider-using-f-st
                 transform=fig_signif.gca().transAxes,
                 fontsize=30,
             )
-            # signif_array_tot = [sig * sqrt(self.p_nevttot) for sig in signif_array]
-            # signif_err_array_tot = [sig_err * sqrt(self.p_nevttot) for sig_err in signif_err_array]
-            # plt.figure(fig_signif.number)
-            # plt.errorbar(x_axis, signif_array_tot, yerr=signif_err_array_tot,
-            #             label=f'{name}_Tot', elinewidth=2.5, linewidth=5.0)
         plt.figure(fig_signif_pevt.number)
         plt.legend(loc="lower left", fontsize=25)
         plt.savefig(f"{self.dirmlplot}/Significance_PerEvent_{self.s_suffix}.png", bbox_inches="tight")
