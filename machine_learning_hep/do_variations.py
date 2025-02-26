@@ -64,9 +64,6 @@ def modify_paths(dic: dict, old: str, new: str, do_proc: bool):
     for key_a, val_a in dic["analysis"].items():
         if not isinstance(val_a, dict):
             continue
-        # Skip non-jet analyses.
-        if "jet" not in key_a:
-            continue
         dic_ana = dic["analysis"][key_a]
         dirs = ["data", "mc"]
         dirs_proc = ["data_proc", "mc_proc"]
