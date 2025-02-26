@@ -407,7 +407,6 @@ class Optimiser:  # pylint: disable=too-many-public-methods, consider-using-f-st
             self.logger.info("Read and use models from disk. Remove them if you don't want to use them")
             self.p_trainedmod = clfs
             self.p_class = clfs
-            return
 
     def do_train(self):
         if self.step_done("training"):
