@@ -351,7 +351,7 @@ D0Jet_pp:
 
   #region analysis
   analysis:
-    jet_obs: &jet_default
+    jet_obs:
       sel_an_binmin: [1, 2, 3, 4, 5, 6, 7, 8, 10, 12, 16, 24] # hadron pt bins (sel_an_binmin bins)
       sel_an_binmax: [2, 3, 4, 5, 6, 7, 8, 10, 12, 16, 24, 48] # hadron pt bins (sel_an_binmin bins) # FIXME: move the last edge in sel_an_binmin
       bins_ptjet: [5, 7, 15, 30, 50, 70] # systematics, TODO: split rec and gen binning
