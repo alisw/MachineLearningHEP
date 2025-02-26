@@ -80,7 +80,6 @@ class Processer:  # pylint: disable=too-many-instance-attributes
         d_pkl_decmerged,
         d_results,
         typean,
-        runlisttrigger,
         d_mcreweights,
     ):
         self.doml = datap["doml"]
@@ -324,8 +323,6 @@ class Processer:  # pylint: disable=too-many-instance-attributes
                 if self.lpt_gensk_sl
                 else None
             )
-
-        self.runlistrigger = runlisttrigger
 
         # Analysis cuts (loaded in self.process_histomass)
         self.analysis_cuts = None
@@ -669,7 +666,6 @@ class Processer:  # pylint: disable=too-many-instance-attributes
 
     def process_histomass(self):
         self.logger.debug("Doing masshisto %s %s", self.mcordata, self.period)
-        self.logger.debug("Using run selection for mass histo %s %s %s", self.runlistrigger, "for period", self.period)
         if self.doml is True:
             self.logger.debug("Doing ml analysis")
         elif self.do_custom_analysis_cuts:
@@ -688,7 +684,6 @@ class Processer:  # pylint: disable=too-many-instance-attributes
 
     def process_efficiency(self):
         print("Doing efficiencies", self.mcordata, self.period)
-        print("Using run selection for eff histo", self.runlistrigger, "for period", self.period)
         if self.doml is True:
             print("Doing ml analysis")
         elif self.do_custom_analysis_cuts:

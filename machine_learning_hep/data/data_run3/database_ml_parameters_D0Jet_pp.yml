@@ -718,11 +718,9 @@ D0Jet_pp:
         data: "trigger_hasbit_INT7==1"
         mc: null
       data: &data_out_default
-        runselection: [null] #FIXME # used but useless
         results: ["/home/${USER}/mlhep/d0jet/jet_obs/default/default/data/results"] #list of periods
         resultsallp: "/home/${USER}/mlhep/d0jet/jet_obs/default/default/data/results_all"
       mc: &mc_out_default
-        runselection: [null] #FIXME # used but useless
         results: ["/home/${USER}/mlhep/d0jet/jet_obs/default/default/mc/results"] #list of periods
         resultsallp: "/home/${USER}/mlhep/d0jet/jet_obs/default/default/mc/results_all"
       data_proc: # alternative processor output used as the analyzer input

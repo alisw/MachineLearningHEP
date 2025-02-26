@@ -50,7 +50,6 @@ class ProcesserJets(Processer):
         d_pkl_decmerged,
         d_results,
         typean,
-        runlisttrigger,
         d_mcreweights,
     ):
         super().__init__(
@@ -74,7 +73,6 @@ class ProcesserJets(Processer):
             d_pkl_decmerged,
             d_results,
             typean,
-            runlisttrigger,
             d_mcreweights,
         )
         self.logger.info("initialized processer for HF jets")

@@ -58,7 +58,6 @@ class ProcesserDhadrons(Processer):  # pylint: disable=too-many-instance-attribu
         d_pkl_decmerged,
         d_results,
         typean,
-        runlisttrigger,
         d_mcreweights,
     ):
         super().__init__(
@@ -82,7 +81,6 @@ class ProcesserDhadrons(Processer):  # pylint: disable=too-many-instance-attribu
             d_pkl_decmerged,
             d_results,
             typean,
-            runlisttrigger,
             d_mcreweights,
         )
 
