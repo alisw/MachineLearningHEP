@@ -27,26 +27,17 @@ D0Jet_pp:
   var_binning: fPt
   dofullevtmerge: false
 
-  # obsolete, to be removed
-  # var_cand: fCandidateSelFlag
-  # # var_swap: fIsCandidateSwapped
   bitmap_sel:
     var_name: fFlagMcMatchRec
-    var_name_gen: fFlagMcMatchGen
-    var_name_origgen: fOriginMcGen
-    var_name_origrec: fOriginMcRec
-    var_isstd: isstd
+    # var_name_gen: fFlagMcMatchGen # unused
+    # var_name_origgen: fOriginMcGen # unused
+    # var_name_origrec: fOriginMcRec # unused
     var_ismcsignal: ismcsignal
-    var_ismcprompt: ismcprompt
-    var_ismcfd: ismcfd
     var_ismcbkg: ismcbkg
-    var_ismcrefl: ismcrefl
-    isstd: [[1], []]
     ismcsignal: [[0], []]
     ismcprompt: [[0], [1]]
     ismcfd: [[1], [0]]
     ismcbkg: [[], [1]]
-    ismcrefl: [[1], [1]] # probably missing from tree creator
 
   #region dfs
   dfs:

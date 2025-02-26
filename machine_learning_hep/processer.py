@@ -154,7 +154,6 @@ class Processer:  # pylint: disable=too-many-instance-attributes
         self.v_bitvar = datap["bitmap_sel"]["var_name"]  # used in hadrons
         self.v_ismcsignal = datap["bitmap_sel"]["var_ismcsignal"]  # used in hadrons
         self.v_ismcbkg = datap["bitmap_sel"]["var_ismcbkg"]  # used in hadrons
-        self.v_ismcrefl = datap["bitmap_sel"]["var_ismcrefl"]  # used in hadrons
         self.v_var_binning = datap["var_binning"]
         self.v_invmass = datap["variables"].get("var_inv_mass", "inv_mass")
 
