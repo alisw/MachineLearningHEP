@@ -64,9 +64,6 @@ def modify_paths(dic: dict, old: str, new: str, do_proc: bool):
     for key_a, val_a in dic["analysis"].items():
         if not isinstance(val_a, dict):
             continue
-        # Skip non-jet analyses.
-        if "jet" not in key_a:
-            continue
         dic_ana = dic["analysis"][key_a]
         dirs = ["data", "mc"]
         dirs_proc = ["data_proc", "mc_proc"]
@@ -302,7 +299,8 @@ def healthy_structure(dic_diff: dict):  # pylint: disable=too-many-return-statem
     return True
 
 
-def main(yaml_in: str, yaml_diff: str, analysis: str, config: str, clean: bool, proc: int, script_name: str):  # pylint: disable=too-many-locals, too-many-statements, too-many-branches
+# pylint: disable=too-many-locals, too-many-statements, too-many-branches, too-many-positional-arguments
+def main(yaml_in: str, yaml_diff: str, analysis: str, config: str, clean: bool, proc: int, script_name: str):
     """Main function"""
 
     suffix_config_default = "analysis.yml"
