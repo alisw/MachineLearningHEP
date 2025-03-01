@@ -1085,7 +1085,7 @@ class AnalyzerJets(Analyzer):
             if f"{colname}" not in df:
                 if var is not None:
                     self.logger.error("No feeddown information for %s (%s), cannot estimate feeddown", var, colname)
-                    print(df.info(), flush=True)
+                    # print(df.info(), flush=True)
                 continue
 
             # TODO: derive histogram
@@ -1121,7 +1121,7 @@ class AnalyzerJets(Analyzer):
                 h_response = rfile.Get(f"h_response_fd_{var}")
                 if not h_response:
                     self.logger.error("Could not find response matrix for fd estimation of %s", var)
-                    rfile.ls()
+                    # rfile.ls()
                     continue
                 h_response_norm = norm_response(h_response, 3)
                 h3_fd_gen.Multiply(h_effkine_gen)

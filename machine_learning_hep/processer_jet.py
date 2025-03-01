@@ -187,7 +187,7 @@ class ProcesserJets(Processer):
         df["lntheta"] = df["fTheta"].apply(lambda x: -np.log(x))
         # df['lntheta'] = np.array(-np.log(df.fTheta))
 
-        self.logger.info("EEC")
+        self.logger.debug("EEC")
         df["eecweight"] = df[["fPairPt", "fJetPt"]].apply((lambda ar: ar.fPairPt / ar.fJetPt**2), axis=1)
 
         if self.cfg("hfjet", True):
