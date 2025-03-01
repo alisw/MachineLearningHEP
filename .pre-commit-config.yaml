@@ -11,10 +11,10 @@ repos:
       - id: check-yaml
       - id: check-added-large-files
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.9.7 # ruff version
+    rev: v0.9.9 # ruff version
     hooks:
       - id: ruff # linter
-        args: ["--extend-select", "I", "--fix"]
+        args: ["--fix"]
       - id: ruff-format # formatter
   - repo: https://github.com/asottile/pyupgrade
     rev: v3.19.1
