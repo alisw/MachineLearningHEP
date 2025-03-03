@@ -242,7 +242,7 @@ D0Jet_pp:
   multi:
     data:
       nprocessesparallel: 80
-      maxfiles: [1] #list of periods
+      maxfiles: [-1] #list of periods
       chunksizeunp: [100] #list of periods
       chunksizeskim: [100] #list of periods
       fracmerge: [.1] #list of periods
@@ -265,7 +265,7 @@ D0Jet_pp:
       mcreweights: [../Analyses] #list of periods
     mc:
       nprocessesparallel: 80
-      maxfiles: [1] #list of periods
+      maxfiles: [-1] #list of periods
       chunksizeunp: [100] #list of periods
       chunksizeskim: [1000] #list of periods
       fracmerge: [1.] #list of periods
