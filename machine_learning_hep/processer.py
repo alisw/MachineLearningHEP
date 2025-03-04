@@ -353,6 +353,7 @@ class Processer:  # pylint: disable=too-many-instance-attributes
 
         # Analysis cuts (loaded in self.process_histomass)
         self.analysis_cuts = None
+        self.analysis_mult_cuts = None
         # Flag if they should be used
         self.do_custom_analysis_cuts = datap["analysis"][self.typean].get("use_cuts", False)
 

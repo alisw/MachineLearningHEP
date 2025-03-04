@@ -296,7 +296,7 @@ class AnalyzerDhadrons_mult(Analyzer):  # pylint: disable=invalid-name
 
         return (fit_res, func_sig, func_bkg)
 
-    # pylint: disable=too-many-branches,too-many-statements,too-many-nested-blocks
+    # pylint: disable=too-many-branches,too-many-statements,too-many-nested-blocks, too-many-locals
     def fit(self):
         self.logger.info("Fitting inclusive mass distributions")
         gStyle.SetOptFit(1111)
