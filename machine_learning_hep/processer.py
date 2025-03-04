@@ -57,7 +57,7 @@ class Processer:  # pylint: disable=too-many-instance-attributes
     logger = get_logger()
 
     # Initializer / Instance Attributes
-    # pylint: disable=too-many-statements, too-many-arguments, consider-using-f-string
+    # pylint: disable=too-many-statements, too-many-arguments, consider-using-f-string, too-many-branches
     def __init__(
         self,
         case,
