@@ -90,8 +90,8 @@ class AnalyzerJets(Analyzer):
         self.n_fileresp = os.path.join(self.d_resultsallpmc_proc, self.n_fileresp)
         file_result_name = datap["files_names"]["resultfilename"]
         self.n_fileresult = os.path.join(self.d_resultsallpdata, file_result_name)
-        self.p_pdfnames = datap["analysis"][self.typean]["pdf_names"]
-        self.p_param_names = datap["analysis"][self.typean]["param_names"]
+        self.p_pdfnames = datap["analysis"][self.typean].get("pdf_names")
+        self.p_param_names = datap["analysis"][self.typean].get("param_names")
 
         self.observables = {
             "qa": ["zg", "rg", "nsd", "zpar", "dr", "lntheta", "lnkt", "lntheta-lnkt"],
