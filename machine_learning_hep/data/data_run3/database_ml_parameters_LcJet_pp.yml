@@ -22,7 +22,7 @@ LcJet_pp:
   sel_reco_skim: [null, null, null, null, null, null, null, null, null, null, null] # (sel_skim_binmin bins)
   sel_gen_skim: [null, null, null, null, null, null, null, null, null, null, null] # (sel_skim_binmin bins)
   sel_skim_binmin: [1, 2, 3, 4, 5, 6, 7, 8, 10, 12] # skimming pt bins (sel_skim_binmin bins)
-  sel_skim_binmax: [2, 3, 4, 5, 6, 7, 8, 10, 12, 24] # skimming pt bins (sel_skim_binmin bins)
+  sel_skim_binmax: [2, 3, 4, 5, 6, 7, 8, 10, 12, 30] # skimming pt bins (sel_skim_binmin bins)
   var_binning: fPt
   dofullevtmerge: false
   var_cand: fCandidateSelFlag
@@ -50,7 +50,7 @@ LcJet_pp:
     read:
       evtorig:
         level: all
-        index: fIndexHfLcCollBases
+        index: fIndexHFLCCOLLBASES
         trees:
           O2hflccollbase: [fNumContrib, fCentFT0M, fMultZeqNTracksPV]
         extra:
@@ -73,7 +73,7 @@ LcJet_pp:
         index: fIndexLCMCPJETOS
         trees:
           O2hflcpbase: [fPt, fY, fEta, fPhi, fFlagMcMatchGen, fOriginMcGen]
-          O2lccmcpjeto: [fIndexLCCMCPJETCOS, fIndexHFLcPBASES_0, fJetPt, fJetPhi, fJetEta, fJetNConstituents, fJetR]
+          O2lccmcpjeto: [fIndexLCCMCPJETCOS, fIndexHFLCPBASES_0, fJetPt, fJetPhi, fJetEta, fJetNConstituents, fJetR]
           O2lccmcpjetmo: [fIndexArrayLCCMCDJETOS_hf, fIndexArrayLCCMCDJETOS_geo, fIndexArrayLCCMCDJETOS_pt]
           O2lccmcpjetsso: [fEnergyMother, fPtLeading, fPtSubLeading, fTheta, fNSub2DR, fNSub1, fNSub2]
         tags:
@@ -93,13 +93,13 @@ LcJet_pp:
         level: det
         index: fIndexLCCMCDJETOS
         trees:
-          O2hflcbase: [fIndexHfLcCollBases, fPt, fY, fEta, fPhi, fM]
+          O2hflcbase: [fIndexHFLCCOLLBASES, fPt, fY, fEta, fPhi, fM]
           O2hflcmc: [fFlagMcMatchRec, fOriginMcRec]
           # O2hflcpar: [fCpa, fCpaXY, fChi2PCA, fDecayLength, fDecayLengthXY, fDecayLengthNormalised, fDecayLengthXYNormalised, fImpactParameter0, fImpactParameter1, fImpactParameter2, fImpactParameterNormalised0, fImpactParameterNormalised1, fImpactParameterNormalised2, fPtProng0, fPtProng1, fPtProng2]
           # O2hflcpare: [fErrorDecayLength, fErrorDecayLengthXY, fErrorImpactParameter0, fErrorImpactParameter1]
           O2hflcsel: [fCandidateSelFlag]
           O2hflcml: [fMlScores]
-          O2lccmcdjeto: [fIndexLCCMCDJETCOS, fIndexHFLcBASES_0, fJetPt, fJetPhi, fJetEta, fJetNConstituents, fJetR]
+          O2lccmcdjeto: [fIndexLCCMCDJETCOS, fIndexHFLCBASES_0, fJetPt, fJetPhi, fJetEta, fJetNConstituents, fJetR]
           O2lccmcdjetmo: [fIndexArrayLCCMCPJETOS_hf, fIndexArrayLCCMCPJETOS_geo, fIndexArrayLCCMCPJETOS_pt]
           O2lccmcdjetsso: [fEnergyMother, fPtLeading, fPtSubLeading, fTheta, fNSub2DR, fNSub1, fNSub2]
         tags:
@@ -123,12 +123,12 @@ LcJet_pp:
         level: data
         index: fIndexLCCJETOS
         trees:
-          O2hflcbase: [fIndexHfLcCollBases, fPt, fY, fEta, fPhi, fM]
+          O2hflcbase: [fIndexHFLCCOLLBASES, fPt, fY, fEta, fPhi, fM]
           # O2hflcpar: [fCpa, fCpaXY, fChi2PCA, fDecayLength, fDecayLengthXY, fDecayLengthNormalised, fDecayLengthXYNormalised, fImpactParameter0, fImpactParameter1, fImpactParameter2, fImpactParameterNormalised0, fImpactParameterNormalised1, fImpactParameterNormalised2, fPtProng0, fPtProng1, fPtProng2]
           # O2hflcpare: [fErrorDecayLength, fErrorDecayLengthXY, fErrorImpactParameter0, fErrorImpactParameter1]
           O2hflcsel: [fCandidateSelFlag]
           O2hflcml: [fMlScores]
-          O2lccjeto: [fIndexLCCJETCOS, fIndexHFLcBASES_0, fJetPt, fJetPhi, fJetEta, fJetNConstituents, fJetR]
+          O2lccjeto: [fIndexLCCJETCOS, fIndexHFLCBASES_0, fJetPt, fJetPhi, fJetEta, fJetNConstituents, fJetR]
           O2lccjetsso: [fIndexLCCJETOS, fEnergyMother, fPtLeading, fPtSubLeading, fTheta, fNSub2DR, fNSub1, fNSub2]
         extract_component:
           #- { var: fMlScores, newvar: mlPromptScore, component: 1 }
@@ -239,7 +239,7 @@ LcJet_pp:
       seedmerge: [12] #list of periods
       period: [LHC23] #list of periods
       select_period: [1]
-      prefix_dir: /data2/MLhep/real/train_318625/
+      prefix_dir: /data2/MLhep/real/train_357222/
       unmerged_tree_dir: [alice] #list of periods
       pkl: ["${USER}/lcjet/pkl"] #list of periods
       pkl_skimmed: ["${USER}/lcjet/pklsk"] #list of periods
@@ -256,7 +256,7 @@ LcJet_pp:
       seedmerge: [12] #list of periods
       period: [LHC24h1] #list of periods
       select_period: [1]
-      prefix_dir: /data2/MLhep/sim/train_316964/
+      prefix_dir: /data2/MLhep/sim/train_352826/
       unmerged_tree_dir: [alice]
       pkl: ["${USER}/lcjet/pkl"] #list of periods
       pkl_skimmed: ["${USER}/lcjet/pklsk"] #list of periods
@@ -346,10 +346,10 @@ LcJet_pp:
 
     jet_obs: &jet_default
       sel_an_binmin: [2, 3, 4, 5, 6, 7, 8, 10, 12, 16] # hadron pt bins (sel_an_binmin bins)
-      sel_an_binmax: [3, 4, 5, 6, 7, 8, 10, 12, 16, 24] # hadron pt bins (sel_an_binmin bins)
-      bins_ptjet: [2, 5, 7, 10, 15, 30] # systematics, TODO: split rec and gen binning
+      sel_an_binmax: [3, 4, 5, 6, 7, 8, 10, 12, 16, 30] # hadron pt bins (sel_an_binmin bins)
+      bins_ptjet: [5, 7, 15, 30] # systematics, TODO: split rec and gen binning
       bins_ptjet_eff: [2, 5, 7, 15, 30, 50] # systematics, TODO: split rec and gen binning
-      cand_collidx: fIndexHfLcCollBases
+      cand_collidx: fIndexHFLCCOLLBASES
       counter_read_data: fReadCountsWithTVXAndZVertexAndSel8
       counter_read_mc: fReadCountsWithTVXAndZVertexAndSelMC
       counter_tvx: fReadCountsWithTVX
@@ -411,9 +411,22 @@ LcJet_pp:
       mass_roofit:
         - level: mc
           # per_ptjet: true
+          ptrange: [1., 5.]
+          range: [2.10, 2.45]
           components:
             sig:
-              fn: "Gaussian::peak(m[1., 5.], mean[2.27,2.29], sigma_g1[.01,.005,.035])"
+              fn: "Gaussian::peak(m[1., 5.], mean[2.282,2.29], sigma_g1[.007,.006,.015])"
+            wide:
+              fn: 'Gaussian::wide(m, mean, expr("n*sigma_g1", n[1.,5.], sigma_g1))'
+            model:
+              fn: "SUM::sig(f_peak[0.,1.]*peak, wide)"
+        - level: mc
+          # per_ptjet: true
+          ptrange: [5., 30.]
+          range: [2.10, 2.45]
+          components:
+            sig:
+              fn: "Gaussian::peak(m[1., 5.], mean[2.282,2.29], sigma_g1[.01,.008,.030])"
             wide:
               fn: 'Gaussian::wide(m, mean, expr("n*sigma_g1", n[1.,5.], sigma_g1))'
             model:
@@ -473,6 +486,11 @@ LcJet_pp:
         #extra_cols: ["mlPromptScore"]
         extra_cols: ["mlBkgScore"]
         correction_method: run3
+
+        #reweight: [[0.86,0.89], [0.89,0.91], [0.90,0.93], [0.92,0.93], [0.93,0.93], [0.94,0.93], [0.95,0.93], [0.95,0.94], [0.95,0.94], [0.95,0.94]] #70-100
+        #reweight: [[1.03,1.05], [1.02,1.04], [1.02,1.04], [1.02,1.04], [1.01,1.03], [1.01,1.03], [1.01,1.03], [1.01,1.03], [1.00,1.03], [1.01,1.02]] #20-70
+        #reweight: [[1.15,1.16], [1.11,1.13], [1.10,1.10], [1.08,1.10], [1.07,1.10], [1.06,1.09], [1.06,1.08], [1.05,1.08], [1.05,1.08], [1.05,1.08]] #0-20
+
 
       unfolding_iterations: 8 # used, maximum iteration
       unfolding_iterations_sel: 5 # used, selected iteration # systematics
@@ -581,7 +599,8 @@ LcJet_pp:
 
       # Additional cuts applied before mass histogram is filled
       use_cuts: True
-      cuts: ["mlBkgScore < 0.03", "mlBkgScore < 0.04", "mlBkgScore < 0.07", "mlBkgScore < 0.09", "mlBkgScore < 0.11", "mlBkgScore < 0.15", "mlBkgScore < 0.18", "mlBkgScore < 0.25", "mlBkgScore < 0.35", "mlBkgScore < 0.35"] # (sel_an_binmin bins) systematics FIXME: Update for new model.
+      cuts: ["mlBkgScore < 0.03", "mlBkgScore < 0.04", "mlBkgScore < 0.07", "mlBkgScore < 0.09", "mlBkgScore < 0.11", "mlBkgScore < 0.15", "mlBkgScore < 0.18", "mlBkgScore < 0.25", "mlBkgScore < 0.35", "mlBkgScore < 0.35"] # (sel_an_binmin bins)
+      #mult_cuts: ["fCentFT0M >= 20 and fCentFT0M <= 70", "fCentFT0M >= 20 and fCentFT0M <= 70", "fCentFT0M >= 20 and fCentFT0M <= 70", "fCentFT0M >= 20 and fCentFT0M <= 70", "fCentFT0M >= 20 and fCentFT0M <= 70", "fCentFT0M >= 20 and fCentFT0M <= 70", "fCentFT0M >= 20 and fCentFT0M <= 70", "fCentFT0M >= 20 and fCentFT0M <= 70", "fCentFT0M >= 20 and fCentFT0M <= 70", "fCentFT0M >= 20 and fCentFT0M <= 70"] # (sel_an_binmin bins)
 
   systematics: # used in machine_learning_hep/analysis/systematics.py
     probvariation:

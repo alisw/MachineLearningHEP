@@ -79,7 +79,7 @@ class AnalyzerDhadrons(Analyzer):  # pylint: disable=invalid-name
         self.lpt_finbinmax = datap["analysis"][self.typean]["sel_an_binmax"]
         self.bin_matching = datap["analysis"][self.typean]["binning_matching"]
         self.p_nptbins = len(self.lpt_finbinmin)
-        self.lpt_probcutfin = datap["mlapplication"]["probcutoptimal"]
+        self.lpt_probcutfin_tmp = datap["mlapplication"]["probcutoptimal"]
         self.triggerbit = datap["analysis"][self.typean].get("triggerbit", "")
 
         dp = datap["analysis"][self.typean]
@@ -131,7 +131,7 @@ class AnalyzerDhadrons(Analyzer):  # pylint: disable=invalid-name
         self.fit_func_bkg = {}
         self.fit_range = {}
 
-        self.path_fig = Path(f"fig/{self.case}/{self.typean}")
+        self.path_fig = Path(f'{os.path.expandvars(self.d_resultsallpdata)}/fig')
         for folder in ["qa", "fit", "roofit", "sideband", "signalextr", "fd", "uf"]:
             (self.path_fig / folder).mkdir(parents=True, exist_ok=True)
 
@@ -160,7 +160,7 @@ class AnalyzerDhadrons(Analyzer):  # pylint: disable=invalid-name
     # region helpers
     def _save_canvas(self, canvas, filename):
         # folder = self.d_resultsallpmc if mcordata == 'mc' else self.d_resultsallpdata
-        canvas.SaveAs(f"fig/{self.case}/{self.typean}/{filename}")
+        canvas.SaveAs(f'{self.path_fig}/{filename}')
 
     def _save_hist(self, hist, filename, option=""):
         if not hist:
@@ -290,8 +290,10 @@ class AnalyzerDhadrons(Analyzer):  # pylint: disable=invalid-name
             signifhistos = TH1F("hsignifs0", "", len(self.lpt_finbinmin), array("d", self.bins_candpt))
             soverbhistos = TH1F("hSoverB0", "", len(self.lpt_finbinmin), array("d", self.bins_candpt))
 
+            lpt_probcutfin = [None] * self.nbins
             with TFile(rfilename) as rfile:
                 for ipt in range(len(self.lpt_finbinmin)):
+                    lpt_probcutfin[ipt] = self.lpt_probcutfin_tmp[self.bin_matching[ipt]]
                     self.logger.debug("fitting %s - %i", level, ipt)
                     roows = self.roows.get(ipt)
                     if self.mltype == "MultiClassification":
@@ -299,16 +301,16 @@ class AnalyzerDhadrons(Analyzer):  # pylint: disable=invalid-name
                             self.v_var_binning,
                             self.lpt_finbinmin[ipt],
                             self.lpt_finbinmax[ipt],
-                            self.lpt_probcutfin[ipt][0],
-                            self.lpt_probcutfin[ipt][1],
-                            self.lpt_probcutfin[ipt][2],
+                            lpt_probcutfin[ipt][0],
+                            lpt_probcutfin[ipt][1],
+                            lpt_probcutfin[ipt][2],
                         )
                     else:
                         suffix = "%s%d_%d_%.2f" % (
                             self.v_var_binning,
                             self.lpt_finbinmin[ipt],
                             self.lpt_finbinmax[ipt],
-                            self.lpt_probcutfin[ipt],
+                            lpt_probcutfin[ipt],
                         )
                     h_invmass = rfile.Get("hmass" + suffix)
                     # Rebin

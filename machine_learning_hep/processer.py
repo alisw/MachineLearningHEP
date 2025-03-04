@@ -655,14 +655,27 @@ class Processer:  # pylint: disable=too-many-instance-attributes
     def load_cuts(self):
         """Load custom analysis cuts from the database."""
         raw_cuts = self.datap["analysis"][self.typean].get("cuts", None)
+        raw_mult_cuts = self.datap["analysis"][self.typean].get("mult_cuts", None)
         if not raw_cuts:
             print("No custom cuts given, hence not cutting...")
             self.analysis_cuts = [None] * self.p_nptfinbins
+        if not raw_mult_cuts:
+            print("No multiplicity cuts given, hence not cutting...")
+            self.analysis_mult_cuts = [None] * self.p_nptfinbins
+        if not raw_cuts and not raw_mult_cuts:
             return
-        if len(raw_cuts) != self.p_nptfinbins:
+
+        if raw_cuts and len(raw_cuts) != self.p_nptfinbins:
             print(f"You have {self.p_nptfinbins} but you passed {len(raw_cuts)} cuts. Exit...")
             sys.exit(1)
-        self.analysis_cuts = deepcopy(raw_cuts)
+        if raw_mult_cuts and len(raw_mult_cuts) != self.p_nptfinbins:
+            print(f"You have {self.p_nptfinbins} but you passed {len(raw_mult_cuts)} cuts. Exit...")
+            sys.exit(1)
+
+        if raw_cuts:
+            self.analysis_cuts = deepcopy(raw_cuts)
+        if raw_mult_cuts:
+            self.analysis_mult_cuts = deepcopy(raw_mult_cuts)
 
     def apply_cuts_ptbin(self, df_ipt, ipt):
         """Cut dataframe with cuts for a given analysis pT bin"""
@@ -672,7 +685,7 @@ class Processer:  # pylint: disable=too-many-instance-attributes
 
     def apply_cuts_all_ptbins(self, df_):
         """Apply cuts for all analysis pT bins."""
-        if not self.do_custom_analysis_cuts or not any(self.analysis_cuts):
+        if not self.do_custom_analysis_cuts or (not any(self.analysis_cuts) and not any(self.analysis_mult_cuts)):
             return df_
 
         def apply_cut_for_ipt(df_full, ipt: int):
@@ -688,7 +701,12 @@ class Processer:  # pylint: disable=too-many-instance-attributes
                 pt_max = self.lpt_finbinmax[ipt]
                 in_range = True
             df_ipt = seldf_singlevar(df_full, self.v_var_binning, pt_min, pt_max)
-            return df_ipt.query(self.analysis_cuts[ipt]) if in_range and self.analysis_cuts[ipt] else df_ipt
+
+            if any(self.analysis_cuts):
+                df_ipt = df_ipt.query(self.analysis_cuts[ipt]) if in_range else df_ipt
+            if any(self.analysis_mult_cuts) and self.mcordata == 'data':
+                df_ipt = df_ipt.query(self.analysis_mult_cuts[ipt]) if in_range else df_ipt
+            return df_ipt
 
         return pd.concat(apply_cut_for_ipt(df_, ipt) for ipt in range(-1, self.p_nptfinbins + 1))
 
