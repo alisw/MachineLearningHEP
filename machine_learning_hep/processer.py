@@ -661,14 +661,13 @@ class Processer:  # pylint: disable=too-many-instance-attributes
             print("No custom cuts given, hence not cutting...")
             self.analysis_cuts = [None] * self.p_nptfinbins
         if not raw_mult_cuts:
-            print("No multiplicity cuts given, hence not cutting...")
+            self.logger.info("No multiplicity cuts given, hence not cutting...")
             self.analysis_mult_cuts = [None] * self.p_nptfinbins
         if not raw_cuts and not raw_mult_cuts:
             return
 
         if raw_cuts and len(raw_cuts) != self.p_nptfinbins:
-            print(f"You have {self.p_nptfinbins} but you passed {len(raw_cuts)} cuts. Exit...")
-            sys.exit(1)
+            self.logger.critical("You have %i but you passed %i cuts. Exit...", self.p_nptfinbins, len(raw_cuts))
         if raw_mult_cuts and len(raw_mult_cuts) != self.p_nptfinbins:
             print(f"You have {self.p_nptfinbins} but you passed {len(raw_mult_cuts)} cuts. Exit...")
             sys.exit(1)
@@ -705,7 +704,7 @@ class Processer:  # pylint: disable=too-many-instance-attributes
 
             if any(self.analysis_cuts):
                 df_ipt = df_ipt.query(self.analysis_cuts[ipt]) if in_range else df_ipt
-            if any(self.analysis_mult_cuts) and self.mcordata == 'data':
+            if any(self.analysis_mult_cuts) and self.mcordata == "data":
                 df_ipt = df_ipt.query(self.analysis_mult_cuts[ipt]) if in_range else df_ipt
             return df_ipt
 
