@@ -110,8 +110,6 @@ class MultiProcesser:  # pylint: disable=too-many-instance-attributes, too-many-
         self.f_evt_mergedallp = os.path.join(self.d_pklevt_mergedallp, self.n_evt)
         self.f_evtorig_mergedallp = os.path.join(self.d_pklevt_mergedallp, self.n_evtorig)
 
-        self.lper_runlistrigger = datap["analysis"][self.typean][self.mcordata]["runselection"]
-
         self.lper_mcreweights = None
         if self.mcordata == "mc":
             self.lper_mcreweights = [os.path.join(direc, self.n_mcreweights) for direc in self.dlper_mcreweights]
@@ -140,7 +138,6 @@ class MultiProcesser:  # pylint: disable=too-many-instance-attributes, too-many-
                     self.dlper_reco_modappmerged[indexp],
                     self.d_results[indexp],
                     self.typean,
-                    self.lper_runlistrigger[indexp],
                     self.dlper_mcreweights[indexp],
                 )
                 self.process_listsample.append(myprocess)

@@ -67,7 +67,6 @@ class ProcesserDhadrons_mult(Processer):
         d_pkl_decmerged,
         d_results,
         typean,
-        runlisttrigger,
         d_mcreweights,
     ):
         super().__init__(
@@ -91,7 +90,6 @@ class ProcesserDhadrons_mult(Processer):
             d_pkl_decmerged,
             d_results,
             typean,
-            runlisttrigger,
             d_mcreweights,
         )
 
