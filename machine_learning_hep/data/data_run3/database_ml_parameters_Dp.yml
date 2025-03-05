@@ -1,3 +1,4 @@
+---
 #############################################################################
 ##  © Copyright CERN 2023. All rights not expressly granted are reserved.  ##
 ##                 Author: Gian.Michele.Innocenti@cern.ch                  ##
@@ -19,10 +20,10 @@ DppiKpi:
   sel_gen_unp: "fPt>0"
   sel_cen_unp: null
   sel_good_evt_unp: null
-  sel_reco_skim: [null,null,null,null,null,null,null,null,null,null,null,null,null]
-  sel_gen_skim: [null,null,null,null,null,null,null,null,null,null,null,null,null]
-  sel_skim_binmin: [1,2,3,4,5,6,7,8,10,12,16] #list of nbins
-  sel_skim_binmax: [2,3,4,5,6,7,8,10,12,16,24] #list of nbins
+  sel_reco_skim: [null, null, null, null, null, null, null, null, null, null, null, null, null]
+  sel_gen_skim: [null, null, null, null, null, null, null, null, null, null, null, null, null]
+  sel_skim_binmin: [1, 2, 3, 4, 5, 6, 7, 8, 10, 12, 16] #list of nbins
+  sel_skim_binmax: [2, 3, 4, 5, 6, 7, 8, 10, 12, 16, 24] #list of nbins
   apply_yptacccut: false
   var_binning: fPt
   dofullevtmerge: false
@@ -38,12 +39,12 @@ DppiKpi:
     var_ismcfd: ismcfd
     var_ismcbkg: ismcbkg
     var_ismcrefl: ismcref
-    isstd : [[1],[]]
-    ismcsignal: [[1],[]]
-    ismcprompt: [[0],[]]
-    ismcfd: [[1],[]]
-    ismcbkg: [[],[1]]
-    ismcrefl: [[1],[1]]
+    isstd: [[1], []]
+    ismcsignal: [[1], []]
+    ismcprompt: [[0], []]
+    ismcfd: [[1], []]
+    ismcbkg: [[], [1]]
+    ismcrefl: [[1], [1]]
 
   dfs:
     read:
@@ -67,9 +68,7 @@ DppiKpi:
         index: fIndexHfDpBases
         trees:
           O2hfdpbase: [fIndexHFDPCOLLBASES, fPt, fEta, fPhi, fM, fY]
-          O2hfdppar: [fNProngsContributorsPV, fCpa, fCpaXY, fChi2PCA, fDecayLength, fDecayLengthXY,
-                      fPtProng0, fPtProng1, fPtProng2, fImpactParameter0, fImpactParameter1, fImpactParameter2,
-                      fNSigTpcTofPi0, fNSigTpcTofKa1, fNSigTpcTofPi2]
+          O2hfdppar: [fNProngsContributorsPV, fCpa, fCpaXY, fChi2PCA, fDecayLength, fDecayLengthXY, fPtProng0, fPtProng1, fPtProng2, fImpactParameter0, fImpactParameter1, fImpactParameter2, fNSigTpcTofPi0, fNSigTpcTofKa1, fNSigTpcTofPi2]
           O2hfdpmc:
             level: mc
             vars: [fFlagMcMatchRec, fOriginMcRec]
@@ -80,27 +79,28 @@ DppiKpi:
         #extra:
         #  fY: log((sqrt(2.28646**2 + (fPt * cosh(fEta))**2) + fPt * sinh(fEta)) / sqrt(2.28646**2 + fPt**2)) #TODO : change mass or make sure Lc mass is updated
         tags:
-          isstd: {var: fFlagMcMatchRec, req: [[1],[]], level: mc}
-          ismcsignal: {var: fFlagMcMatchRec, req: [[0],[]], abs: true, level: mc}
-          ismcbkg: {var: fFlagMcMatchRec, req: [[],[0]], abs: true, level: mc}
-          ismcprompt: {var: fOriginMcRec, req: [[0],[]], level: mc}
-          ismcfd: {var: fOriginMcRec, req: [[1],[]], level: mc}
+          isstd: {var: fFlagMcMatchRec, req: [[1], []], level: mc}
+          ismcsignal: {var: fFlagMcMatchRec, req: [[0], []], abs: true, level: mc}
+          ismcbkg: {var: fFlagMcMatchRec, req: [[], [0]], abs: true, level: mc}
+          ismcprompt: {var: fOriginMcRec, req: [[0], []], level: mc}
+          ismcfd: {var: fOriginMcRec, req: [[1], []], level: mc}
 
       gen:
         level: mc
         trees:
           O2hfdppbase: [fPt, fEta, fPhi, fY, fFlagMcMatchGen, fOriginMcGen]
         tags:
-          isstd: {var: fFlagMcMatchGen, req: [[1],[]], level: mc}
-          ismcsignal: {var: fFlagMcMatchGen, req: [[0],[]], abs: true, level: mc}
-          ismcbkg: {var: fFlagMcMatchGen, req: [[],[0]], abs: true, level: mc}
-          ismcprompt: {var: fOriginMcGen, req: [[0],[]], level: mc}
-          ismcfd: {var: fOriginMcGen, req: [[1],[]], level: mc}
-        #extra:
-        #  fY: log((sqrt(2.28646**2 + (fPt * cosh(fEta))**2) + fPt * sinh(fEta)) / sqrt(2.28646**2 + fPt**2)) #TODO : change mass or make sure Lc mass is updated
+          isstd: {var: fFlagMcMatchGen, req: [[1], []], level: mc}
+          ismcsignal: {var: fFlagMcMatchGen, req: [[0], []], abs: true, level: mc}
+          ismcbkg: {var: fFlagMcMatchGen, req: [[], [0]], abs: true, level: mc}
+          ismcprompt: {var: fOriginMcGen, req: [[0], []], level: mc}
+          ismcfd: {var: fOriginMcGen, req: [[1], []], level: mc}
+          #extra:
+          #  fY: log((sqrt(2.28646**2 + (fPt * cosh(fEta))**2) + fPt * sinh(fEta)) / sqrt(2.28646**2 + fPt**2)) #TODO : change mass or make sure Lc mass is updated
 
     merge:
       - {base: reco, ref: evtorig}
+    # workaround for yamlfmt issue #110
 
     write:
       evtorig:
@@ -118,45 +118,17 @@ DppiKpi:
         file: AnalysisResultsGen.parquet
 
   variables:
-    var_all: [fIndexCollisions, fFlagMcMatchRec, fCandidateSelFlag, fOriginMcRec, fNProngsContributorsPV,
-              fY, fEta, fPt, fCpa, fCpaXY, fM, fChi2PCA, fDecayLength, fDecayLengthXY,
-              fPtProng0, fPtProng1, fPtProng2, fImpactParameter0, fImpactParameter1, fImpactParameter2,
-              fNSigTpcTofPi0, fNSigTpcTofKa1, fNSigTpcTofPi2]
+    var_all: [fIndexCollisions, fFlagMcMatchRec, fCandidateSelFlag, fOriginMcRec, fNProngsContributorsPV, fY, fEta, fPt, fCpa, fCpaXY, fM, fChi2PCA, fDecayLength, fDecayLengthXY, fPtProng0, fPtProng1, fPtProng2, fImpactParameter0, fImpactParameter1, fImpactParameter2, fNSigTpcTofPi0, fNSigTpcTofKa1, fNSigTpcTofPi2]
     var_jet: [fJetPt, fJetEta, fJetPhi]
     var_jetsub: [fZg, fRg, fNsd]
     var_jet_match: [df, fIndexHfCand2Prong]
     var_jetsub_match: [df, fIndexLcChargedJets]
     var_evt:
       data: [fIndexCollisions, fPosX, fPosY, fPosZ, fNumContrib, fMultZeqNTracksPV, fCentFT0M]
-      mc:   [fIndexCollisions, fPosX, fPosY, fPosZ, fNumContrib, fMultZeqNTracksPV, fCentFT0M]
+      mc: [fIndexCollisions, fPosX, fPosY, fPosZ, fNumContrib, fMultZeqNTracksPV, fCentFT0M]
     var_gen: [fIndexMcCollisions, fPosX, fPosY, fPosZ, fPt, fY, fFlagMcMatchGen, fOriginMcGen]
-    var_training: [[fImpactParameter0, fImpactParameter1, fImpactParameter2, fCpa, fCpaXY, fChi2PCA, 
-                    fDecayLength, fDecayLengthXY, fNSigTpcTofPi0, fNSigTpcTofKa1, fNSigTpcTofPi2],
-                   [fImpactParameter0, fImpactParameter1, fImpactParameter2, fCpa, fCpaXY, fChi2PCA, 
-                    fDecayLength, fDecayLengthXY, fNSigTpcTofPi0, fNSigTpcTofKa1, fNSigTpcTofPi2],
-                   [fImpactParameter0, fImpactParameter1, fImpactParameter2, fCpa, fCpaXY, fChi2PCA, 
-                    fDecayLength, fDecayLengthXY, fNSigTpcTofPi0, fNSigTpcTofKa1, fNSigTpcTofPi2],
-                   [fImpactParameter0, fImpactParameter1, fImpactParameter2, fCpa, fCpaXY, fChi2PCA, 
-                    fDecayLength, fDecayLengthXY, fNSigTpcTofPi0, fNSigTpcTofKa1, fNSigTpcTofPi2],
-                   [fImpactParameter0, fImpactParameter1, fImpactParameter2, fCpa, fCpaXY, fChi2PCA, 
-                    fDecayLength, fDecayLengthXY, fNSigTpcTofPi0, fNSigTpcTofKa1, fNSigTpcTofPi2],
-                   [fImpactParameter0, fImpactParameter1, fImpactParameter2, fCpa, fCpaXY, fChi2PCA, 
-                    fDecayLength, fDecayLengthXY, fNSigTpcTofPi0, fNSigTpcTofKa1, fNSigTpcTofPi2],
-                   [fImpactParameter0, fImpactParameter1, fImpactParameter2, fCpa, fCpaXY, fChi2PCA, 
-                    fDecayLength, fDecayLengthXY, fNSigTpcTofPi0, fNSigTpcTofKa1, fNSigTpcTofPi2],
-                   [fImpactParameter0, fImpactParameter1, fImpactParameter2, fCpa, fCpaXY, fChi2PCA, 
-                    fDecayLength, fDecayLengthXY, fNSigTpcTofPi0, fNSigTpcTofKa1, fNSigTpcTofPi2],
-                   [fImpactParameter0, fImpactParameter1, fImpactParameter2, fCpa, fCpaXY, fChi2PCA, 
-                    fDecayLength, fDecayLengthXY, fNSigTpcTofPi0, fNSigTpcTofKa1, fNSigTpcTofPi2],
-                   [fImpactParameter0, fImpactParameter1, fImpactParameter2, fCpa, fCpaXY, fChi2PCA, 
-                    fDecayLength, fDecayLengthXY, fNSigTpcTofPi0, fNSigTpcTofKa1, fNSigTpcTofPi2],
-                   [fImpactParameter0, fImpactParameter1, fImpactParameter2, fCpa, fCpaXY, fChi2PCA, 
-                    fDecayLength, fDecayLengthXY, fNSigTpcTofPi0, fNSigTpcTofKa1, fNSigTpcTofPi2],
-                   [fImpactParameter0, fImpactParameter1, fImpactParameter2, fCpa, fCpaXY, fChi2PCA, 
-                    fDecayLength, fDecayLengthXY, fNSigTpcTofPi0, fNSigTpcTofKa1, fNSigTpcTofPi2]]
-    var_selected: [fM, fY, fEta, fPt, fCpa, fCpaXY, fChi2PCA, fDecayLength, fDecayLengthXY,
-                   fPtProng0, fPtProng1, fPtProng2, fImpactParameter0, fImpactParameter1, fImpactParameter2,
-                   fNSigTpcTofPi0, fNSigTpcTofKa1, fNSigTpcTofPi2]
+    var_training: [[fImpactParameter0, fImpactParameter1, fImpactParameter2, fCpa, fCpaXY, fChi2PCA, fDecayLength, fDecayLengthXY, fNSigTpcTofPi0, fNSigTpcTofKa1, fNSigTpcTofPi2], [fImpactParameter0, fImpactParameter1, fImpactParameter2, fCpa, fCpaXY, fChi2PCA, fDecayLength, fDecayLengthXY, fNSigTpcTofPi0, fNSigTpcTofKa1, fNSigTpcTofPi2], [fImpactParameter0, fImpactParameter1, fImpactParameter2, fCpa, fCpaXY, fChi2PCA, fDecayLength, fDecayLengthXY, fNSigTpcTofPi0, fNSigTpcTofKa1, fNSigTpcTofPi2], [fImpactParameter0, fImpactParameter1, fImpactParameter2, fCpa, fCpaXY, fChi2PCA, fDecayLength, fDecayLengthXY, fNSigTpcTofPi0, fNSigTpcTofKa1, fNSigTpcTofPi2], [fImpactParameter0, fImpactParameter1, fImpactParameter2, fCpa, fCpaXY, fChi2PCA, fDecayLength, fDecayLengthXY, fNSigTpcTofPi0, fNSigTpcTofKa1, fNSigTpcTofPi2], [fImpactParameter0, fImpactParameter1, fImpactParameter2, fCpa, fCpaXY, fChi2PCA, fDecayLength, fDecayLengthXY, fNSigTpcTofPi0, fNSigTpcTofKa1, fNSigTpcTofPi2], [fImpactParameter0, fImpactParameter1, fImpactParameter2, fCpa, fCpaXY, fChi2PCA, fDecayLength, fDecayLengthXY, fNSigTpcTofPi0, fNSigTpcTofKa1, fNSigTpcTofPi2], [fImpactParameter0, fImpactParameter1, fImpactParameter2, fCpa, fCpaXY, fChi2PCA, fDecayLength, fDecayLengthXY, fNSigTpcTofPi0, fNSigTpcTofKa1, fNSigTpcTofPi2], [fImpactParameter0, fImpactParameter1, fImpactParameter2, fCpa, fCpaXY, fChi2PCA, fDecayLength, fDecayLengthXY, fNSigTpcTofPi0, fNSigTpcTofKa1, fNSigTpcTofPi2], [fImpactParameter0, fImpactParameter1, fImpactParameter2, fCpa, fCpaXY, fChi2PCA, fDecayLength, fDecayLengthXY, fNSigTpcTofPi0, fNSigTpcTofKa1, fNSigTpcTofPi2], [fImpactParameter0, fImpactParameter1, fImpactParameter2, fCpa, fCpaXY, fChi2PCA, fDecayLength, fDecayLengthXY, fNSigTpcTofPi0, fNSigTpcTofKa1, fNSigTpcTofPi2], [fImpactParameter0, fImpactParameter1, fImpactParameter2, fCpa, fCpaXY, fChi2PCA, fDecayLength, fDecayLengthXY, fNSigTpcTofPi0, fNSigTpcTofKa1, fNSigTpcTofPi2]]
+    var_selected: [fM, fY, fEta, fPt, fCpa, fCpaXY, fChi2PCA, fDecayLength, fDecayLengthXY, fPtProng0, fPtProng1, fPtProng2, fImpactParameter0, fImpactParameter1, fImpactParameter2, fNSigTpcTofPi0, fNSigTpcTofKa1, fNSigTpcTofPi2]
     var_boundaries: [fDecayLength, fPt]
     var_correlation:
       - [fDecayLength, fChi2PCA, fCpa]
@@ -240,10 +212,10 @@ DppiKpi:
   multi:
     data:
       nprocessesparallel: 80
-      maxfiles : [-1] #list of periods
-      chunksizeunp : [100] #list of periods
+      maxfiles: [-1] #list of periods
+      chunksizeunp: [100] #list of periods
       chunksizeskim: [100] #list of periods
-      fracmerge : [0.05] #list of periods
+      fracmerge: [0.05] #list of periods
       seedmerge: [12] #list of periods
       period: [LHC23] #list of periods
       select_period: [1]
@@ -258,10 +230,10 @@ DppiKpi:
       mcreweights: [../Analyses]
     mc:
       nprocessesparallel: 80
-      maxfiles : [-1] #list of periods
-      chunksizeunp : [100] #list of periods
+      maxfiles: [-1] #list of periods
+      chunksizeunp: [100] #list of periods
       chunksizeskim: [100] #list of periods
-      fracmerge : [1.0] #list of periods
+      fracmerge: [1.0] #list of periods
       seedmerge: [12] #list of periods
       period: [LHC24g5] #list of periods
       select_period: [1]
@@ -282,7 +254,7 @@ DppiKpi:
 
     nclasses: [500000, 500000, 500000]
     equalise_sig_bkg: True
-    mult_bkg: [1,1,1,1,1,1,1,1,1,1,1,1]
+    mult_bkg: [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
     sampletags: [0, 1, 1]
     sel_bkg: fM < 1.80 or fM > 1.92 # for plotting significance; should agree with bkg selection in sel_ml
     # best to have non-prompt (the smallest class) last, so the plots won't complain about the middle class missing
@@ -293,8 +265,8 @@ DppiKpi:
     rnd_splt: 12
     rnd_all: 12 # Set to None for pure randomness
     test_frac: 0.2
-    binmin: [1,2,3,4,5,6,7,8,10,12,16] # must be equal to sel_skim_binmin (sel_skim_binmin bins)
-    binmax: [2,3,4,5,6,7,8,10,12,16,24] # must be equal to sel_skim_binmax (sel_skim_binmin bins)
+    binmin: [1, 2, 3, 4, 5, 6, 7, 8, 10, 12, 16] # must be equal to sel_skim_binmin (sel_skim_binmin bins)
+    binmax: [2, 3, 4, 5, 6, 7, 8, 10, 12, 16, 24] # must be equal to sel_skim_binmax (sel_skim_binmin bins)
     mltype: MultiClassification
     ncorescrossval: 10
     prefix_dir_ml: /data2/ldellost/MLhep/
@@ -307,7 +279,7 @@ DppiKpi:
       fonll_particle: 'hDpluskpipipred'
       fonll_pred: 'central' # edge of the FONLL prediction
       FF: 0.204 # fragmentation fraction
-      sigma_MB: 57.8e-3  # Minimum Bias cross section (pp) 50.87e-3 [b], 1 for Pb-Pb
+      sigma_MB: 57.8e-3 # Minimum Bias cross section (pp) 50.87e-3 [b], 1 for Pb-Pb
       Taa: 1 # 23260 [b^-1] in 0-10% Pb-Pb, 3917 [b^-1] in 30-50% Pb-Pb, 1 for pp
       BR: 6.23e-2 # branching ratio of the decay Lc -> p K- pi+
       f_prompt: 0.9 # estimated fraction of prompt candidates
@@ -315,7 +287,7 @@ DppiKpi:
       num_steps: 111 # number of steps used in efficiency and signif. estimation
       bkg_function: pol2 # fit function for bkg (among TH1 predefined fit functions, e.g. expo, pol1, pol2, ...)
       save_fit: true # save bkg fits with the various cuts on ML output
-      raahp: [1,1,1,1,1,1,1,1,1,1,1,1] # sel_skim_binmin bins
+      raahp: [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1] # sel_skim_binmin bins
       presel_gen_eff: "abs(fY) < 0.8"
       #presel_gen_eff: "abs(fY) < 0.8 and abs(fPosZ) < 10"
 
@@ -329,19 +301,9 @@ DppiKpi:
       pkl_skimmed_dec: [LHC22pp_mc/MLapplication/prod_LHC24g5_dp/skpkldecmc] #list of periods
       pkl_skimmed_decmerged: [LHC22pp_mc/MLapplication/prod_LHC24g5_dp/skpkldecmcmerged] #list of periods
     modelname: xgboost
-    modelsperptbin: [xgboost_classifierDppiKpi_dfselection_fPt_1.0_2.0.sav,
-                     xgboost_classifierDppiKpi_dfselection_fPt_2.0_3.0.sav,
-                     xgboost_classifierDppiKpi_dfselection_fPt_3.0_4.0.sav,
-                     xgboost_classifierDppiKpi_dfselection_fPt_4.0_5.0.sav,
-                     xgboost_classifierDppiKpi_dfselection_fPt_5.0_6.0.sav,
-                     xgboost_classifierDppiKpi_dfselection_fPt_6.0_7.0.sav,
-                     xgboost_classifierDppiKpi_dfselection_fPt_7.0_8.0.sav,
-                     xgboost_classifierDppiKpi_dfselection_fPt_8.0_10.0.sav,
-                     xgboost_classifierDppiKpi_dfselection_fPt_10.0_12.0.sav,
-                     xgboost_classifierDppiKpi_dfselection_fPt_12.0_16.0.sav,
-                     xgboost_classifierDppiKpi_dfselection_fPt_16.0_24.0.sav]
+    modelsperptbin: [xgboost_classifierDppiKpi_dfselection_fPt_1.0_2.0.sav, xgboost_classifierDppiKpi_dfselection_fPt_2.0_3.0.sav, xgboost_classifierDppiKpi_dfselection_fPt_3.0_4.0.sav, xgboost_classifierDppiKpi_dfselection_fPt_4.0_5.0.sav, xgboost_classifierDppiKpi_dfselection_fPt_5.0_6.0.sav, xgboost_classifierDppiKpi_dfselection_fPt_6.0_7.0.sav, xgboost_classifierDppiKpi_dfselection_fPt_7.0_8.0.sav, xgboost_classifierDppiKpi_dfselection_fPt_8.0_10.0.sav, xgboost_classifierDppiKpi_dfselection_fPt_10.0_12.0.sav, xgboost_classifierDppiKpi_dfselection_fPt_12.0_16.0.sav, xgboost_classifierDppiKpi_dfselection_fPt_16.0_24.0.sav]
     probcutpresel:
-      data: [[0.05, 0.0, 0.0], [0.05, 0.0, 0.0], [0.05, 0.0, 0.0], [0.1, 0.0, 0.0], [0.2, 0.0, 0.0], [0.2, 0.0, 0.0], [0.2, 0.0, 0.0], [0.2, 0.0, 0.0], [0.3, 0.0, 0.0], [0.4, 0.0, 0.0],[0.4, 0.0, 0.0]] #list of nbins
+      data: [[0.05, 0.0, 0.0], [0.05, 0.0, 0.0], [0.05, 0.0, 0.0], [0.1, 0.0, 0.0], [0.2, 0.0, 0.0], [0.2, 0.0, 0.0], [0.2, 0.0, 0.0], [0.2, 0.0, 0.0], [0.3, 0.0, 0.0], [0.4, 0.0, 0.0], [0.4, 0.0, 0.0]] #list of nbins
       mc: [[0.05, 0.0, 0.0], [0.05, 0.0, 0.0], [0.05, 0.0, 0.0], [0.1, 0.0, 0.0], [0.2, 0.0, 0.0], [0.2, 0.0, 0.0], [0.2, 0.0, 0.0], [0.2, 0.0, 0.0], [0.3, 0.0, 0.0], [0.4, 0.0, 0.0], [0.4, 0.0, 0.0]] #list of nbins
     probcutoptimal: [[0.02, 0.0, 0.0], [0.03, 0.0, 0.0], [0.04, 0.0, 0.0], [0.07, 0.0, 0.0], [0.09, 0.0, 0.0], [0.11, 0.0, 0.0], [0.15, 0.0, 0.0], [0.18, 0.0, 0.0], [0.25, 0.0, 0.0], [0.35, 0.0, 0.0], [0.35, 0.0, 0.0]] #list of nbins
   analysis:
@@ -357,8 +319,8 @@ DppiKpi:
       useperiod: [1]
       plotbin: [1]
       usesinglebineff: 0
-      sel_binmin2: [1,2,3,4,5,6,7,8,10,12,16] #list of nbins
-      sel_binmax2: [2,3,4,5,6,7,8,10,12,16,24] #list of nbins
+      sel_binmin2: [1, 2, 3, 4, 5, 6, 7, 8, 10, 12, 16] #list of nbins
+      sel_binmax2: [2, 3, 4, 5, 6, 7, 8, 10, 12, 16, 24] #list of nbins
       var_binning2: null
       triggerbit: ''
       use_cuts: false
@@ -375,12 +337,11 @@ DppiKpi:
         - "fDecayLength > 0.02"
         - "fDecayLength > 0.02"
 
-
-      sel_an_binmin: [1,2,3,4,5,6,7,8,10,12,16]
-      sel_an_binmax: [2,3,4,5,6,7,8,10,12,16,24]
-      binning_matching: [0,1,2,3,4,5,6,7,8,9,10]
+      sel_an_binmin: [1, 2, 3, 4, 5, 6, 7, 8, 10, 12, 16]
+      sel_an_binmax: [2, 3, 4, 5, 6, 7, 8, 10, 12, 16, 24]
+      binning_matching: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
       presel_gen_eff: "abs(fY) < 0.5"
-      #evtsel: 
+      #evtsel:
       evtsel: null
       triggersel:
         data: null
@@ -406,7 +367,7 @@ DppiKpi:
 
       mass_fit_lim: [1.70, 2.02] # region for the fit of the invariant mass distribution [GeV/c^2]
       bin_width: 0.001 # bin width of the invariant mass histogram
-      n_rebin: [2,2,2,2,3,3,3,4,5,5,6,6]  # number of mass bins to merge
+      n_rebin: [2, 2, 2, 2, 3, 3, 3, 4, 5, 5, 6, 6] # number of mass bins to merge
 
       pdf_names:
         pdf_sig: "sig"
@@ -426,8 +387,8 @@ DppiKpi:
           components:
             sig:
               fn: 'Gaussian::sig(m[1., 4.], mean[1.8, 1.92], sigma_g1[.006,.006,.025])'
-            #wide:
-             # fn: 'Gaussian::wide(m, mean, expr("n*sigma_g1", n[1.,5.], sigma_g1))'
+              #wide:
+            # fn: 'Gaussian::wide(m, mean, expr("n*sigma_g1", n[1.,5.], sigma_g1))'
             #model:
             #  fn: 'SUM::sig(f_peak[0.,1.]*peak, wide)'
             bkg:
@@ -439,7 +400,7 @@ DppiKpi:
           #fix_params: ['n', 'f_peak']
           components:
             #sig:
-              #fn: 'Gaussian::sig(m, mean[2.28,2.29], sigma_g1[.005,.005,.015])'
+            #fn: 'Gaussian::sig(m, mean[2.28,2.29], sigma_g1[.005,.005,.015])'
             bkg:
               fn: 'Polynomial::bkg(m, {a0[-1e10, 1e10], a1[-1e10, 1e10], a2[-1e10, 1e10]})'
             model:
@@ -459,7 +420,7 @@ DppiKpi:
           #fix_params: ['n', 'f_peak']
           components:
             #sig:
-              #fn: 'Gaussian::sig(m, mean[2.28,2.29], sigma_g1[.005,.005,.015])'
+            #fn: 'Gaussian::sig(m, mean[2.28,2.29], sigma_g1[.005,.005,.015])'
             bkg:
               fn: 'Polynomial::bkg(m, {a0[-1e10, 1e10], a1[-1e10, 1e10], a2[-1e10, 1e10]})'
             model:
@@ -526,7 +487,7 @@ DppiKpi:
 
   systematics:
     probvariation:
-      useperiod: [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1] #period from where to define prob cuts
+      useperiod: [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1] #period from where to define prob cuts
       ncutvar: 10 #number of looser and tighter variations
       maxperccutvar: 0.25 #max diff in efficiency for loosest/tightest var
       cutvarminrange: [0.70, 0.50, 0.50, 0.30, 0.30, 0.30] #Min starting point for scan
