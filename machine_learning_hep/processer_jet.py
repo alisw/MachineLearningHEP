@@ -28,13 +28,14 @@ from machine_learning_hep.utils.hist import bin_array, create_hist, fill_hist, g
 class ProcesserJets(Processer):
     species = "processer"
 
+    # pylint: disable=too-many-arguments
     def __init__(
         self,
         case,
         datap,
         run_param,
         mcordata,
-        p_maxfiles,  # pylint: disable=too-many-arguments
+        p_maxfiles,
         d_root,
         d_pkl,
         d_pklsk,
@@ -555,7 +556,7 @@ class ProcesserJets(Processer):
         for i, v in enumerate(var, 1):
             df = df.loc[(df[v] >= axes_det[i].GetXmin()) & (df[v] < axes_det[i].GetXmax())]
         fill_hist(h_effkine[(cat, "det", "nocuts", obs)], df[["fJetPt", *var]])
-        df = df.loc[(df.fJetPt >= axes_gen[0].GetXmin()) & (df.fJetPt < axes_gen[0].GetXmax())]
+        df = df.loc[(df.fJetPt_gen >= axes_gen[0].GetXmin()) & (df.fJetPt_gen < axes_gen[0].GetXmax())]
         for i, v in enumerate(var, 1):
             df = df.loc[(df[f"{v}_gen"] >= axes_gen[i].GetXmin()) & (df[f"{v}_gen"] < axes_gen[i].GetXmax())]
         fill_hist(h_effkine[(cat, "det", "cut", obs)], df[["fJetPt", *var]])
@@ -565,7 +566,7 @@ class ProcesserJets(Processer):
 
         df = dfi
         df = self._explode_arraycols(df, [var[icol] for icol in arraycols])
-        df = df.loc[(df.fJetPt >= axes_gen[0].GetXmin()) & (df.fJetPt < axes_gen[0].GetXmax())]
+        df = df.loc[(df.fJetPt_gen >= axes_gen[0].GetXmin()) & (df.fJetPt_gen < axes_gen[0].GetXmax())]
         for i, v in enumerate(var, 1):
             df = df.loc[(df[f"{v}_gen"] >= axes_gen[i].GetXmin()) & (df[f"{v}_gen"] < axes_gen[i].GetXmax())]
         fill_hist(h_effkine[(cat, "gen", "nocuts", obs)], df[["fJetPt_gen", *(f"{v}_gen" for v in var)]])
