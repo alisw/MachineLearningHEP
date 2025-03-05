@@ -30,6 +30,9 @@ extend-select = [
   "PD",  # pandas-vet
   "UP",  # pyupgrade
 ]
+ignore = [
+  "PD901", # Avoid using the generic variable name `df` for DataFrames
+]
 
 [project]
 name = "MachineLearningHEP"
