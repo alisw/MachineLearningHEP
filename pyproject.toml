@@ -22,6 +22,15 @@ reportUnboundVariable = false
 [tool.ruff]
 line-length = 120
 
+[tool.ruff.lint]
+extend-select = [
+  "C4",  # flake8-comprehensions
+  "I",   # isort
+  "NPY", # NumPy-specific rules
+  "PD",  # pandas-vet
+  "UP",  # pyupgrade
+]
+
 [project]
 name = "MachineLearningHEP"
 dynamic = ["version"]
