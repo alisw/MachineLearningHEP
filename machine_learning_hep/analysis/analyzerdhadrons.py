@@ -495,10 +495,10 @@ class AnalyzerDhadrons(Analyzer):  # pylint: disable=invalid-name
 
         histonorm = TH1F("histonorm", "histonorm", 1, 0, 1)
 
-        filemass = TFile.Open(self.n_filemass)
-        hevents = filemass.Get("all_events")
-        hselevents = filemass.Get("sel_events")
         if self.p_nevents is None:
+            filemass = TFile.Open(self.n_filemass)
+            hevents = filemass.Get("all_events")
+            hselevents = filemass.Get("sel_events")
             norm, selnorm = self.calculate_norm(self.logger, hevents, hselevents)
             histonorm.SetBinContent(1, selnorm)
             self.logger.warning("Number of events %d", norm)
