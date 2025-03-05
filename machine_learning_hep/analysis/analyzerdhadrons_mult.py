@@ -81,7 +81,7 @@ class AnalyzerDhadrons_mult(Analyzer):  # pylint: disable=invalid-name
         self.lpt_finbinmax = datap["analysis"][self.typean]["sel_an_binmax"]
         self.bin_matching = datap["analysis"][self.typean]["binning_matching"]
         self.p_nptbins = len(self.lpt_finbinmin)
-        self.lpt_probcutfin = datap["mlapplication"]["probcutoptimal"]
+        self.lpt_probcutfin_tmp = datap["mlapplication"]["probcutoptimal"]
 
         self.signal_loss = datap["analysis"][self.typean].get("signal_loss", "")
         self.lvar2_binmin = datap["analysis"][self.typean]["sel_binmin2"]
@@ -296,7 +296,7 @@ class AnalyzerDhadrons_mult(Analyzer):  # pylint: disable=invalid-name
 
         return (fit_res, func_sig, func_bkg)
 
-    # pylint: disable=too-many-branches,too-many-statements,too-many-nested-blocks
+    # pylint: disable=too-many-branches,too-many-statements,too-many-nested-blocks, too-many-locals
     def fit(self):
         self.logger.info("Fitting inclusive mass distributions")
         gStyle.SetOptFit(1111)
@@ -326,7 +326,9 @@ class AnalyzerDhadrons_mult(Analyzer):  # pylint: disable=invalid-name
                         "hSoverB%d" % (ibin2), "", len(self.lpt_finbinmin), array("d", self.bins_candpt)
                     )
 
+                    lpt_probcutfin = [None] * self.nbins
                     for ipt in range(len(self.lpt_finbinmin)):
+                        lpt_probcutfin[ipt] = self.lpt_probcutfin_tmp[self.bin_matching[ipt]]
                         self.logger.debug("fitting %s - %i - %i", level, ipt, ibin2)
                         roows = self.roows.get(ipt)
                         if self.mltype == "MultiClassification":
@@ -334,8 +336,8 @@ class AnalyzerDhadrons_mult(Analyzer):  # pylint: disable=invalid-name
                                 self.v_var_binning,
                                 self.lpt_finbinmin[ipt],
                                 self.lpt_finbinmax[ipt],
-                                self.lpt_probcutfin[ipt][0],
-                                self.lpt_probcutfin[ipt][1],
+                                lpt_probcutfin[ipt][0],
+                                lpt_probcutfin[ipt][1],
                                 self.v_var2_binning,
                                 self.lvar2_binmin[ibin2],
                                 self.lvar2_binmax[ibin2],
@@ -345,7 +347,7 @@ class AnalyzerDhadrons_mult(Analyzer):  # pylint: disable=invalid-name
                                 self.v_var_binning,
                                 self.lpt_finbinmin[ipt],
                                 self.lpt_finbinmax[ipt],
-                                self.lpt_probcutfin[ipt],
+                                lpt_probcutfin[ipt],
                                 self.v_var2_binning,
                                 self.lvar2_binmin[ibin2],
                                 self.lvar2_binmax[ibin2],
