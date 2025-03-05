@@ -162,49 +162,57 @@ class ProcesserJets(Processer):
 
     def _calculate_variables(self, df, verify=False):  # pylint: disable=invalid-name
         self.logger.info("calculating variables")
+        observables = self.cfg("observables", {})
         if len(df) == 0:
-            df["nsub21"] = None
-            df["zg"] = None
-            df["rg"] = None
-            df["nsd"] = None
-            df["lnkt"] = None
-            df["lntheta"] = None
+            for obs in observables:
+                df[obs] = None
             return df
-        df["nsub21"] = df.fNSub2 / df.fNSub1
-        # TODO: catch nsub1 == 0
-        self.logger.debug("zg")
-        df["zg_array"] = np.array(0.5 - abs(df.fPtSubLeading / (df.fPtLeading + df.fPtSubLeading) - 0.5))
-        zcut = self.cfg("zcut", 0.1)
-        df["zg"] = df["zg_array"].apply(lambda ar: next((zg for zg in ar if zg >= zcut), -0.1))
-        df["rg"] = df[["zg_array", "fTheta"]].apply(
-            (lambda ar: next((rg for (zg, rg) in zip(ar.zg_array, ar.fTheta) if zg >= zcut), -0.1)), axis=1
-        )
-        df["nsd"] = df["zg_array"].apply(lambda ar: len([zg for zg in ar if zg >= zcut]))
+        if "nsub21" in observables:
+            df["nsub21"] = df.fNSub2 / df.fNSub1
+            # TODO: catch nsub1 == 0
+        if any(obs in observables for obs in ("zg", "rg", "nsd")):
+            zcut = self.cfg("zcut", 0.1)
+            df["zg_array"] = np.array(0.5 - abs(df.fPtSubLeading / (df.fPtLeading + df.fPtSubLeading) - 0.5))
+            if "zg" in observables:
+                self.logger.debug("zg")
+                df["zg"] = df["zg_array"].apply(lambda ar: next((zg for zg in ar if zg >= zcut), -0.1))
+            if "rg" in observables:
+                df["rg"] = df[["zg_array", "fTheta"]].apply(
+                    (lambda ar: next((rg for (zg, rg) in zip(ar.zg_array, ar.fTheta) if zg >= zcut), -0.1)), axis=1
+                )
+            if "nsd" in observables:
+                df["nsd"] = df["zg_array"].apply(lambda ar: len([zg for zg in ar if zg >= zcut]))
 
-        self.logger.debug("Lund")
-        df["lnkt"] = df[["fPtSubLeading", "fTheta"]].apply(
-            (lambda ar: np.log(ar.fPtSubLeading * np.sin(ar.fTheta))), axis=1
-        )
-        df["lntheta"] = df["fTheta"].apply(lambda x: -np.log(x))
-        # df['lntheta'] = np.array(-np.log(df.fTheta))
+        if any(obs in observables for obs in ("lnkt", "lntheta")):
+            self.logger.debug("Lund")
+        if "lnkt" in observables:
+            df["lnkt"] = df[["fPtSubLeading", "fTheta"]].apply(
+                (lambda ar: np.log(ar.fPtSubLeading * np.sin(ar.fTheta))), axis=1
+            )
+        if "lntheta" in observables:
+            df["lntheta"] = df["fTheta"].apply(lambda x: -np.log(x))
+            # df['lntheta'] = np.array(-np.log(df.fTheta))
 
-        self.logger.debug("EEC")
-        df["eecweight"] = df[["fPairPt", "fJetPt"]].apply((lambda ar: ar.fPairPt / ar.fJetPt**2), axis=1)
+        if "eecweight" in observables:
+            self.logger.debug("EEC")
+            df["eecweight"] = df[["fPairPt", "fJetPt"]].apply((lambda ar: ar.fPairPt / ar.fJetPt**2), axis=1)
 
         if self.cfg("hfjet", True):
-            df["dr"] = np.sqrt(
-                (df.fJetEta - df.fEta) ** 2 + ((df.fJetPhi - df.fPhi + math.pi) % math.tau - math.pi) ** 2
-            )
-            df["jetPx"] = df.fJetPt * np.cos(df.fJetPhi)
-            df["jetPy"] = df.fJetPt * np.sin(df.fJetPhi)
-            df["jetPz"] = df.fJetPt * np.sinh(df.fJetEta)
-            df["hfPx"] = df.fPt * np.cos(df.fPhi)
-            df["hfPy"] = df.fPt * np.sin(df.fPhi)
-            df["hfPz"] = df.fPt * np.sinh(df.fEta)
-            df["zpar_num"] = df.jetPx * df.hfPx + df.jetPy * df.hfPy + df.jetPz * df.hfPz
-            df["zpar_den"] = df.jetPx * df.jetPx + df.jetPy * df.jetPy + df.jetPz * df.jetPz
-            df["zpar"] = df.zpar_num / df.zpar_den
-            df[df["zpar"] >= 1.0]["zpar"] = 0.999  # move 1 to last bin
+            if "dr" in observables:
+                df["dr"] = np.sqrt(
+                    (df.fJetEta - df.fEta) ** 2 + ((df.fJetPhi - df.fPhi + math.pi) % math.tau - math.pi) ** 2
+                )
+            if "zpar" in observables:
+                df["jetPx"] = df.fJetPt * np.cos(df.fJetPhi)
+                df["jetPy"] = df.fJetPt * np.sin(df.fJetPhi)
+                df["jetPz"] = df.fJetPt * np.sinh(df.fJetEta)
+                df["hfPx"] = df.fPt * np.cos(df.fPhi)
+                df["hfPy"] = df.fPt * np.sin(df.fPhi)
+                df["hfPz"] = df.fPt * np.sinh(df.fEta)
+                df["zpar_num"] = df.jetPx * df.hfPx + df.jetPy * df.hfPy + df.jetPz * df.hfPz
+                df["zpar_den"] = df.jetPx * df.jetPx + df.jetPy * df.jetPy + df.jetPz * df.jetPz
+                df["zpar"] = df.zpar_num / df.zpar_den
+                df[df["zpar"] >= 1.0]["zpar"] = 0.999  # move 1 to last bin
 
         self.logger.debug("done")
         if verify:
