@@ -65,7 +65,7 @@ def msg_fatal(message: str):
 
 
 def list_recursive(
-    file: TDirectoryFile, objects: dict | None = None, path_dir: str = "", verbose: bool = False
+    file: TDirectoryFile, objects: dict | None = None, path_dir: str = "", verbose: bool = False, name_pattern: str = ""
 ) -> dict:
     """Recursively load objects from a ROOT file into a dictionary."""
     if objects is None:
@@ -74,11 +74,13 @@ def list_recursive(
         name_obj = key.GetName()
         name_class = key.GetClassName()
         path_obj = f"{path_dir + '/' if path_dir else ''}{name_obj}"
+        if name_pattern and name_pattern not in path_obj:
+            continue
         obj = file.Get(name_obj)
         if verbose:
             print(f"{path_obj}: {name_class}")
         if isinstance(obj, TDirectoryFile):
-            list_recursive(obj, objects, path_obj, verbose)
+            list_recursive(obj, objects, path_obj, verbose, name_pattern)
         else:
             objects[path_obj] = obj
     return objects
@@ -94,9 +96,38 @@ def are_valid(*objects) -> bool:
     return result
 
 
-def are_same_values(val1, val2) -> bool:
+def are_same_values(val1, val2, mag_epsilon: None | int = None) -> bool:
     """Compare two values, even if they are NaN."""
-    return (val1 == val2) or (val1 is val2) or (math.isnan(val1) and math.isnan(val2))
+    return (
+        (val1 == val2)
+        or (val1 is val2)
+        or (math.isnan(val1) and math.isnan(val2))
+        or (diff_rel(val1, val2) < 10**mag_epsilon if isinstance(mag_epsilon, int) else False)
+    )
+
+
+def diff_rel(val1, val2) -> float:
+    """Calculate relative difference between two numbers."""
+    if are_same_values(val1, val2):
+        return 0.0
+    return abs((val2 - val1) / (val1 + val2))
+
+
+def compare_values(val1: float | tuple[float, float], val2: float | tuple[float, float]) -> str:
+    """Format a string comparing two values (with optional uncertainties)
+    and report also the relative difference(s).
+    """
+    unc1, unc2 = None, None
+    if isinstance(val1, tuple):
+        unc1 = val1[1]
+        val1 = val1[0]
+    if isinstance(val2, tuple):
+        unc2 = val2[1]
+        val2 = val2[0]
+    string_val1 = f"{val1}{f' ± {unc1}' if unc1 is not None else ''}"
+    string_val2 = f"{val2}{f' ± {unc2}' if unc2 is not None else ''}"
+    string_diff = f"{diff_rel(val1, val2)}{'' if unc1 is None or unc2 is None else f' ± {diff_rel(unc1, unc2)}'}"
+    return f"{string_val1} vs {string_val2}, rel. diff.: {string_diff}"
 
 
 def are_same_axes(axis1, axis2) -> bool:
@@ -121,14 +152,14 @@ def are_same_axes(axis1, axis2) -> bool:
     return True
 
 
-def are_same_histograms(his1: TH1, his2: TH1) -> bool:
+def are_same_histograms(his1: TH1, his2: TH1, mag_epsilon: None | int = None) -> bool:
     """Tell whether two histograms are same."""
     if not are_valid(his1, his2):
         msg_fatal("Bad input objects")
         return False
     # Compare number of entries
-    if not are_same_values(his1.GetEntries(), his2.GetEntries()):
-        print(f"Different number of entries {his1.GetEntries()} vs {his2.GetEntries()}")
+    if not are_same_values(his1.GetEntries(), his2.GetEntries(), mag_epsilon):
+        print(f"Different number of entries {compare_values(his1.GetEntries(), his2.GetEntries())}")
         return False
     # Compare axes
     for ax1, ax2 in zip(
@@ -142,18 +173,21 @@ def are_same_histograms(his1: TH1, his2: TH1) -> bool:
         for bin_y in range(his1.GetNbinsY() + 2):
             for bin_x in range(his1.GetNbinsX() + 2):
                 i_bin = his1.GetBin(bin_x, bin_y, bin_z)
-                if not are_same_values(his1.GetBinContent(i_bin), his2.GetBinContent(i_bin)) or not are_same_values(
-                    his1.GetBinError(i_bin), his2.GetBinError(i_bin)
-                ):
+                if not are_same_values(
+                    his1.GetBinContent(i_bin), his2.GetBinContent(i_bin), mag_epsilon
+                ) or not are_same_values(his1.GetBinError(i_bin), his2.GetBinError(i_bin), mag_epsilon):
                     print(
-                        f"Different bin {i_bin} content: {his1.GetBinContent(i_bin)} ± {his1.GetBinError(i_bin)} vs "
-                        f"{his2.GetBinContent(i_bin)} ± {his2.GetBinError(i_bin)}"
+                        f"Different bin {i_bin} content: "
+                        + compare_values(
+                            (his1.GetBinContent(i_bin), his1.GetBinError(i_bin)),
+                            (his2.GetBinContent(i_bin), his2.GetBinError(i_bin)),
+                        )
                     )
                     return False
     return True
 
 
-def are_same_thnspare(his1: THnSparse, his2: THnSparse) -> bool:
+def are_same_thnspare(his1: THnSparse, his2: THnSparse, mag_epsilon: None | int = None) -> bool:
     """Tell whether two THnSparse objects are same."""
     if not are_valid(his1, his2):
         msg_fatal("Bad input objects")
@@ -163,8 +197,8 @@ def are_same_thnspare(his1: THnSparse, his2: THnSparse) -> bool:
         print(f"Different number of dimensions {his1.GetNdimensions()} vs {his2.GetNdimensions()}")
         return False
     # Compare number of entries
-    if not are_same_values(his1.GetEntries(), his2.GetEntries()):
-        print(f"Different number of entries {his1.GetEntries()} vs {his2.GetEntries()}")
+    if not are_same_values(his1.GetEntries(), his2.GetEntries(), mag_epsilon):
+        print(f"Different number of entries {compare_values(his1.GetEntries(), his2.GetEntries())}")
         return False
     # Compare number of filled bins
     if his1.GetNbins() != his2.GetNbins():
@@ -177,18 +211,21 @@ def are_same_thnspare(his1: THnSparse, his2: THnSparse) -> bool:
             return False
     # Compare bin content
     for i_bin in range(1, his1.GetNbins() + 1):
-        if not are_same_values(his1.GetBinContent(i_bin), his2.GetBinContent(i_bin)) or not are_same_values(
-            his1.GetBinError(i_bin), his2.GetBinError(i_bin)
-        ):
+        if not are_same_values(
+            his1.GetBinContent(i_bin), his2.GetBinContent(i_bin), mag_epsilon
+        ) or not are_same_values(his1.GetBinError(i_bin), his2.GetBinError(i_bin), mag_epsilon):
             print(
-                f"Different bin {i_bin} content: {his1.GetBinContent(i_bin)} ± {his1.GetBinError(i_bin)} vs "
-                f"{his2.GetBinContent(i_bin)} ± {his2.GetBinError(i_bin)}"
+                f"Different bin {i_bin} content: "
+                + compare_values(
+                    (his1.GetBinContent(i_bin), his1.GetBinError(i_bin)),
+                    (his2.GetBinContent(i_bin), his2.GetBinError(i_bin)),
+                )
             )
             return False
     return True
 
 
-def are_same_response(his1: RooUnfoldResponse, his2: RooUnfoldResponse) -> bool:
+def are_same_response(his1: RooUnfoldResponse, his2: RooUnfoldResponse, mag_epsilon: None | int = None) -> bool:
     """Tell whether two RooUnfoldResponse objects are same."""
     if not are_valid(his1, his2):
         msg_fatal("Bad input objects")
@@ -203,13 +240,13 @@ def are_same_response(his1: RooUnfoldResponse, his2: RooUnfoldResponse) -> bool:
     if his1.GetNbinsMeasured() != his2.GetNbinsMeasured() or his1.GetNbinsTruth() != his2.GetNbinsTruth():
         return False
     # Compare axes and bin content
-    if not are_same_histograms(his1.Hfakes(), his2.Hfakes()):
+    if not are_same_histograms(his1.Hfakes(), his2.Hfakes(), mag_epsilon):
         return False
-    if not are_same_histograms(his1.Hmeasured(), his2.Hmeasured()):
+    if not are_same_histograms(his1.Hmeasured(), his2.Hmeasured(), mag_epsilon):
         return False
-    if not are_same_histograms(his1.Htruth(), his2.Htruth()):
+    if not are_same_histograms(his1.Htruth(), his2.Htruth(), mag_epsilon):
         return False
-    if not are_same_histograms(his1.Hresponse(), his2.Hresponse()):
+    if not are_same_histograms(his1.Hresponse(), his2.Hresponse(), mag_epsilon):
         return False
     return True
 
@@ -232,15 +269,16 @@ def get_object_type(obj) -> ObjectType:
     return ObjectType.UNKNOWN
 
 
-def are_same_objects(obj1, obj2) -> bool:
+def are_same_objects(obj1, obj2, mag_epsilon: None | int = None) -> bool:
     """Tell whether two histogram-like objects are same."""
     if not are_valid(obj1, obj2):
         msg_fatal("Bad input objects")
         return False
     # Compare types
+    passed = True
     if type(obj1) is not type(obj2):
         print(f"Different types {obj1.ClassName()} vs {obj2.ClassName()}")
-        return False
+        passed = False
     # Get ROOT types
     list_type = [get_object_type(o) for o in (obj1, obj2)]
     # Compare ROOT types (is it not covered by type(obj)?)
@@ -250,17 +288,17 @@ def are_same_objects(obj1, obj2) -> bool:
     type_obj = list_type[0]
     # Compare supported ROOT objects
     if type_obj is ObjectType.RESPONSE:
-        return are_same_response(obj1, obj2)
+        return are_same_response(obj1, obj2, mag_epsilon) and passed
     if type_obj in (ObjectType.TH_N_T, ObjectType.TH_N_SPARSE):
-        return are_same_thnspare(obj1, obj2)
+        return are_same_thnspare(obj1, obj2, mag_epsilon) and passed
     if type_obj in (ObjectType.TH_1, ObjectType.TH_2, ObjectType.TH_3):
-        return are_same_histograms(obj1, obj2)
+        return are_same_histograms(obj1, obj2, mag_epsilon) and passed
     print(f"Objects have an unsupported type {type(obj1)}.")
     raise NotImplementedError
 
 
 def are_same_files(
-    dict_obj: dict, verbose: bool = False, diff_only: bool = False
+    dict_obj: dict, verbose: bool = False, diff_only: bool = False, mag_epsilon: None | int = None
 ) -> tuple[bool, bool, bool, bool, dict[str, bool]]:
     """Compare file contents.
 
@@ -311,7 +349,7 @@ def are_same_files(
             print(f"Comparing {key_obj}")
         msg_base = f"Objects {key_obj}"
         try:
-            if same_objects := are_same_objects(obj_1, obj_2):
+            if same_objects := are_same_objects(obj_1, obj_2, mag_epsilon):
                 if not diff_only:
                     print(f"{msg_base} are same ({obj_1.GetEntries()} entries).")
             else:
@@ -365,7 +403,7 @@ def make_plots(
             obj.SetMarkerStyle(dict_markers[key_file])
             obj.SetMarkerColor(dict_colors[key_file])
             obj.SetBit(TH1.kNoTitle)
-            obj.SetBit(TH1.kNoStats)
+            obj.SetStats(0)
             obj.SetTitle(str(i_file))
             if normalize:
                 obj_plot = obj.DrawNormalized(opt)
@@ -379,7 +417,7 @@ def make_plots(
                 # print(f'Drawing {obj.GetName()} with opt "{opt}" on canvas {gPad.GetName()}')
                 # line_1 = TLine(obj.GetXaxis().GetXmin(), 1, obj.GetXaxis().GetXmax(), 1)
                 obj_ratio = obj.Clone(f"{obj.GetName()}_ratio")
-                obj_ratio.SetTitle("ratio")
+                obj_ratio.SetTitle(f"ratio {i_file}/1")
                 obj_ratio.Divide(dict_obj[key_file_first][key_obj])
                 list_canvas.append(obj_ratio.DrawClone(opt))
                 # list_canvas.append(line_1.Draw())
@@ -390,7 +428,7 @@ def make_plots(
             if not (can := list_canvas[i]):
                 continue
             can.cd()
-            leg = TLegend(0.1, 0.9, 0.7, 0.99, can.GetName())
+            leg = TLegend(0.1, 0.9, 0.9, 0.99, can.GetName())
             leg.SetNColumns(2)
             list_canvas.append(leg)
             for prim in can.GetListOfPrimitives():
@@ -423,6 +461,10 @@ def main():
     parser.add_argument("-v", action="store_true", help="verbose mode")
     parser.add_argument("-p", action="store_true", help="plot objects")
     parser.add_argument("-d", action="store_true", help="report and plot only different objects")
+    parser.add_argument("-n", type=str, default="", help="name pattern (substring required in the object path)")
+    parser.add_argument(
+        "-t", type=int, help="tolerance (order of magnitude of the maximum acceptable relative difference of values)"
+    )
 
     args = parser.parse_args()
     path_file_1 = args.file_1
@@ -430,6 +472,8 @@ def main():
     verbose = args.v
     plot = args.p
     diff_only = args.d
+    name_pattern = args.n
+    mag_epsilon = None if args.t is None else args.t
 
     gROOT.SetBatch(True)
     gROOT.ProcessLine("gErrorIgnoreLevel = 1001;")  # suppress INFO messages
@@ -447,19 +491,20 @@ def main():
             if path_file_1 == path_file_2:
                 key_i += f"_{i + 1}"
             print(f"\nLoading objects from file {path_i}.")
-            objects[key_i] = list_recursive(file_i, verbose=verbose)
+            objects[key_i] = list_recursive(file_i, verbose=verbose, name_pattern=name_pattern)
 
         # Compare objects.
         same_structure, common_content, compared_all, same_content, dict_result = are_same_files(
-            objects, verbose, diff_only
+            objects, verbose, diff_only, mag_epsilon
         )
 
         # Report results.
-        print("\nSame structure:\t\t\t\t\t", same_structure)
-        print("Common content:\t\t\t\t\t", common_content)
-        print("Compared all common content:\t", compared_all)
-        print("Same compared content:\t\t\t", same_content)
-        print("Files are same:\t\t\t\t\t", all((same_structure, common_content, compared_all, same_content)))
+        string_tolerance = str(None) if mag_epsilon is None else f"1e{mag_epsilon}"
+        print(f"\nSame structure:\t\t\t\t\t{same_structure}")
+        print(f"Common content:\t\t\t\t\t{common_content}")
+        print(f"Compared all common content:\t{compared_all}")
+        print(f"Same compared content:\t\t\t{same_content} (tolerance {string_tolerance})")
+        print(f"Files are same:\t\t\t\t\t{all((same_structure, common_content, compared_all, same_content))}")
 
         # Plot objects.
         if plot:
