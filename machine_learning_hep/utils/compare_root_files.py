@@ -417,7 +417,7 @@ def make_plots(
                 # print(f'Drawing {obj.GetName()} with opt "{opt}" on canvas {gPad.GetName()}')
                 # line_1 = TLine(obj.GetXaxis().GetXmin(), 1, obj.GetXaxis().GetXmax(), 1)
                 obj_ratio = obj.Clone(f"{obj.GetName()}_ratio")
-                obj_ratio.SetTitle("ratio")
+                obj_ratio.SetTitle(f"ratio {i_file}/1")
                 obj_ratio.Divide(dict_obj[key_file_first][key_obj])
                 list_canvas.append(obj_ratio.DrawClone(opt))
                 # list_canvas.append(line_1.Draw())
