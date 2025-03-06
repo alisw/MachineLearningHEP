@@ -65,7 +65,7 @@ def msg_fatal(message: str):
 
 
 def list_recursive(
-    file: TDirectoryFile, objects: dict | None = None, path_dir: str = "", verbose: bool = False
+    file: TDirectoryFile, objects: dict | None = None, path_dir: str = "", verbose: bool = False, name_pattern: str = ""
 ) -> dict:
     """Recursively load objects from a ROOT file into a dictionary."""
     if objects is None:
@@ -74,11 +74,13 @@ def list_recursive(
         name_obj = key.GetName()
         name_class = key.GetClassName()
         path_obj = f"{path_dir + '/' if path_dir else ''}{name_obj}"
+        if name_pattern and name_pattern not in path_obj:
+            continue
         obj = file.Get(name_obj)
         if verbose:
             print(f"{path_obj}: {name_class}")
         if isinstance(obj, TDirectoryFile):
-            list_recursive(obj, objects, path_obj, verbose)
+            list_recursive(obj, objects, path_obj, verbose, name_pattern)
         else:
             objects[path_obj] = obj
     return objects
@@ -459,6 +461,7 @@ def main():
     parser.add_argument("-v", action="store_true", help="verbose mode")
     parser.add_argument("-p", action="store_true", help="plot objects")
     parser.add_argument("-d", action="store_true", help="report and plot only different objects")
+    parser.add_argument("-n", type=str, default="", help="name pattern (substring required in the object path)")
     parser.add_argument(
         "-t", type=int, help="tolerance (order of magnitude of the maximum acceptable relative difference of values)"
     )
@@ -469,6 +472,7 @@ def main():
     verbose = args.v
     plot = args.p
     diff_only = args.d
+    name_pattern = args.n
     mag_epsilon = None if args.t is None else args.t
 
     gROOT.SetBatch(True)
@@ -487,7 +491,7 @@ def main():
             if path_file_1 == path_file_2:
                 key_i += f"_{i + 1}"
             print(f"\nLoading objects from file {path_i}.")
-            objects[key_i] = list_recursive(file_i, verbose=verbose)
+            objects[key_i] = list_recursive(file_i, verbose=verbose, name_pattern=name_pattern)
 
         # Compare objects.
         same_structure, common_content, compared_all, same_content, dict_result = are_same_files(
