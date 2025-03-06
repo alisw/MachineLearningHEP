@@ -427,7 +427,7 @@ class Processer:  # pylint: disable=too-many-instance-attributes
             return (
                 (level == "all")
                 or (level in ("mc", "gen", "det") and self.datatype == "mc")
-                or (level in ("mc", "gen") and self.datatype == "fd")
+                or (level in ("fd", "gen") and self.datatype == "fd")
                 or (level in ("data") and self.datatype == "data")
             )
 
@@ -542,7 +542,6 @@ class Processer:  # pylint: disable=too-many-instance-attributes
                     write_df(dfo, path)
 
     def skim(self, file_index):
-        print("//////////////// skimming ///////////")
         dfreco = read_df(self.l_reco[file_index]) if self.datatype != "fd" else None
         dfgen = read_df(self.l_gen[file_index]) if self.datatype in ('mc', 'fd') else None
         dfgen_sl = read_df(self.l_gen_sl[file_index]) if self.n_gen_sl and self.datatype in ('mc', 'fd') else None
