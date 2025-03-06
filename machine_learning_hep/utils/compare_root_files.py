@@ -403,7 +403,7 @@ def make_plots(
             obj.SetMarkerStyle(dict_markers[key_file])
             obj.SetMarkerColor(dict_colors[key_file])
             obj.SetBit(TH1.kNoTitle)
-            obj.SetBit(TH1.kNoStats)
+            obj.SetStats(0)
             obj.SetTitle(str(i_file))
             if normalize:
                 obj_plot = obj.DrawNormalized(opt)
@@ -428,7 +428,7 @@ def make_plots(
             if not (can := list_canvas[i]):
                 continue
             can.cd()
-            leg = TLegend(0.1, 0.9, 0.7, 0.99, can.GetName())
+            leg = TLegend(0.1, 0.9, 0.9, 0.99, can.GetName())
             leg.SetNColumns(2)
             list_canvas.append(leg)
             for prim in can.GetListOfPrimitives():
