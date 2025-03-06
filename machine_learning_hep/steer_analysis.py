@@ -28,6 +28,7 @@ import yaml
 
 from .analysis.analyzer_manager import AnalyzerManager
 from .config import update_config
+from .common import DataType
 from .logger import configure_logger, get_logger
 from .utilities_files import checkdirs, checkmakedir, checkmakedirlist, delete_dirlist
 
@@ -92,21 +93,27 @@ def do_entire_analysis(  # pylint: disable=too-many-locals, too-many-statements,
     doanaperperiod = data_config["analysis"]["doperperiod"]
     typean = data_config["analysis"]["type"]
 
-    dp = data_param[case]["multi"]["mc"]
-    dirprefixmc = dp.get("prefix_dir", "")
-    dirpklmc = [dirprefixmc + os.path.expandvars(p) for p in dp["pkl"]]
-    dirpklskmc = [dirprefixmc + os.path.expandvars(p) for p in dp["pkl_skimmed"]]
-    dirpklmlmc = [dirprefixmc + os.path.expandvars(p) for p in dp["pkl_skimmed_merge_for_ml"]]
-    dirpklevtcounter_allmc = dirprefixmc + os.path.expandvars(dp["pkl_evtcounter_all"])
-    dirpklmltotmc = dirprefixmc + os.path.expandvars(dp["pkl_skimmed_merge_for_ml_all"])
+    dirpkl = {}
+    dirpklsk = {}
+    dirpklml = {}
+    dirpklevtcounter_all = {}
+    dirpklmltot = {}
+    dirpklmltotmc = {}
+    dirresults = {}
+    dirresultstot = {}
+    for dt in DataType:
+        dp = data_param[case]["multi"][dt.value]
+        dirprefix = dp.get("prefix_dir", "")
+        dirpkl[dt] = [dirprefix + os.path.expandvars(p) for p in dp["pkl"]]
+        dirpklsk[dt] = [dirprefix + os.path.expandvars(p) for p in dp["pkl_skimmed"]]
+        dirpklml[dt] = [dirprefix + os.path.expandvars(p) for p in dp["pkl_skimmed_merge_for_ml"]]
+        dirpklevtcounter_all[dt] = dirprefix + os.path.expandvars(dp["pkl_evtcounter_all"])
+        dirpklmltot[dt] = dirprefix + os.path.expandvars(dp["pkl_skimmed_merge_for_ml_all"])
 
-    dp = data_param[case]["multi"]["data"]
-    dirprefixdata = dp.get("prefix_dir", "")
-    dirpkldata = [dirprefixdata + os.path.expandvars(p) for p in dp["pkl"]]
-    dirpklskdata = [dirprefixdata + os.path.expandvars(p) for p in dp["pkl_skimmed"]]
-    dirpklmldata = [dirprefixdata + os.path.expandvars(p) for p in dp["pkl_skimmed_merge_for_ml"]]
-    dirpklevtcounter_alldata = dirprefixdata + os.path.expandvars(dp["pkl_evtcounter_all"])
-    dirpklmltotdata = dirprefixdata + os.path.expandvars(dp["pkl_skimmed_merge_for_ml_all"])
+        dp = data_param[case]["analysis"][typean][dt.value]
+        dirprefixres = dp.get("prefix_dir_res", "")
+        dirresults[dt] = [dirprefixres + os.path.expandvars(p) for p in dp["results"]]
+        dirresultstot[dt] = dirprefixres + os.path.expandvars(dp["resultsallp"])
 
     dp = data_param[case]["mlapplication"]["mc"]
     dirprefixmcapp = dp.get("prefix_dir_app", "")
@@ -117,16 +124,6 @@ def do_entire_analysis(  # pylint: disable=too-many-locals, too-many-statements,
     dirprefixdataapp = dp.get("prefix_dir_app", "")
     dirpklskdecdata = [dirprefixdataapp + p for p in dp["pkl_skimmed_dec"]]
     dirpklskdec_mergeddata = [dirprefixdataapp + p for p in dp["pkl_skimmed_decmerged"]]
-
-    dp = data_param[case]["analysis"][typean]["data"]
-    dirprefixdatares = dp.get("prefix_dir_res", "")
-    dirresultsdata = [dirprefixdatares + os.path.expandvars(p) for p in dp["results"]]
-    dirresultsdatatot = dirprefixdatares + os.path.expandvars(dp["resultsallp"])
-
-    dp = data_param[case]["analysis"][typean]["mc"]
-    dirprefixmcres = dp.get("prefix_dir_res", "")
-    dirresultsmc = [dirprefixmcres + os.path.expandvars(p) for p in dp["results"]]
-    dirresultsmctot = dirprefixmcres + os.path.expandvars(dp["resultsallp"])
 
     binminarray = data_param[case]["ml"]["binmin"]
     binmaxarray = data_param[case]["ml"]["binmax"]
@@ -142,31 +139,19 @@ def do_entire_analysis(  # pylint: disable=too-many-locals, too-many-statements,
     proc_type = data_param[case]["analysis"][typean]["proc_type"]
 
     exdirs = []
-    if doconversionmc:
-        exdirs.extend(checkdirs(dirpklmc))
-
-    if doconversiondata:
-        exdirs.extend(checkdirs(dirpkldata))
-
-    if doskimmingmc:
-        exdirs.extend(checkdirs(dirpklskmc))
-        exdirs.extend(checkdirs(dirpklevtcounter_allmc))
-
-    if doskimmingdata:
-        exdirs.extend(checkdirs(dirpklskdata))
-        exdirs.extend(checkdirs(dirpklevtcounter_alldata))
-
-    if domergingmc:
-        exdirs.extend(checkdirs(dirpklmlmc))
-
-    if domergingdata:
-        exdirs.extend(checkdirs(dirpklmldata))
-
-    if domergingperiodsmc:
-        exdirs.extend(checkdirs(dirpklmltotmc))
-
-    if domergingperiodsdata:
-        exdirs.extend(checkdirs(dirpklmltotdata))
+    for dt in DataType:
+        if data_config["conversion"][dt.value]["activate"]:
+            exdirs.extend(checkdirs(dirpkl[dt]))
+        if data_config["skimming"][dt.value]["activate"]:
+            exdirs.extend(checkdirs(dirpklsk[dt]))
+            exdirs.extend(checkdirs(dirpklevtcounter_all[dt]))
+        if data_config["merging"][dt.value]["activate"]:
+            exdirs.extend(checkdirs(dirpklml[dt]))
+        if data_config["mergingperiods"][dt.value]["activate"]:
+            exdirs.extend(checkdirs(dirpklmltot[dt]))
+        if data_config["analysis"][dt.value]["histomass"]:
+            exdirs.extend(checkdirs(dirresults[dt]))
+            exdirs.extend(checkdirs(dirresultstot[dt]))
 
     if not docontinueapplymc:
         if doapplymc:
@@ -181,14 +166,6 @@ def do_entire_analysis(  # pylint: disable=too-many-locals, too-many-statements,
 
         if domergeapplydata:
             exdirs.extend(checkdirs(dirpklskdec_mergeddata))
-
-    if dohistomassmc:
-        exdirs.extend(checkdirs(dirresultsmc))
-        exdirs.extend(checkdirs(dirresultsmctot))
-
-    if dohistomassdata:
-        exdirs.extend(checkdirs(dirresultsdata))
-        exdirs.extend(checkdirs(dirresultsdatatot))
 
     if len(exdirs) > 0:
         logger.info("existing directories must be deleted")
@@ -208,31 +185,21 @@ def do_entire_analysis(  # pylint: disable=too-many-locals, too-many-statements,
             sys.exit()
 
     # check and create directories
-    if doconversionmc:
-        checkmakedirlist(dirpklmc)
-
-    if doconversiondata:
-        checkmakedirlist(dirpkldata)
-
-    if doskimmingmc:
-        checkmakedirlist(dirpklskmc)
-        checkmakedir(dirpklevtcounter_allmc)
-
-    if doskimmingdata:
-        checkmakedirlist(dirpklskdata)
-        checkmakedir(dirpklevtcounter_alldata)
-
-    if domergingmc:
-        checkmakedirlist(dirpklmlmc)
-
-    if domergingdata:
-        checkmakedirlist(dirpklmldata)
-
-    if domergingperiodsmc:
-        checkmakedir(dirpklmltotmc)
-
-    if domergingperiodsdata:
-        checkmakedir(dirpklmltotdata)
+    for dt in DataType:
+        if data_config["conversion"][dt.value]["activate"]:
+            checkmakedirlist(dirpkl[dt])
+        if data_config["skimming"][dt.value]["activate"]:
+            checkmakedirlist(dirpklsk[dt])
+            checkmakedir(dirpklevtcounter_all[dt])
+            exdirs.extend(checkdirs(dirpklsk[dt]))
+            exdirs.extend(checkdirs(dirpklevtcounter_all[dt]))
+        if data_config["merging"][dt.value]["activate"]:
+            checkmakedirlist(dirpklml[dt])
+        if data_config["mergingperiods"][dt.value]["activate"]:
+            checkmakedir(dirpklmltot[dt])
+        if data_config["analysis"][dt.value]["histomass"]:
+            checkmakedirlist(dirresults[dt])
+            checkmakedir(dirresultstot[dt])
 
     if doml:
         checkmakedir(mlout)
@@ -251,12 +218,6 @@ def do_entire_analysis(  # pylint: disable=too-many-locals, too-many-statements,
 
         if domergeapplydata:
             checkmakedirlist(dirpklskdec_mergeddata)
-
-    # Always create result directories. (produces "double free or corruption (!prev)")
-    checkmakedirlist(dirresultsmc)
-    checkmakedir(dirresultsmctot)
-    checkmakedirlist(dirresultsdata)
-    checkmakedir(dirresultsdatatot)
 
     def mlhepmod(name):
         return importlib.import_module(f"..{name}", __name__)
@@ -286,8 +247,12 @@ def do_entire_analysis(  # pylint: disable=too-many-locals, too-many-statements,
         proc_class = mlhepmod("processer").Processer
         ana_class = mlhepmod("analysis.analyzer").Analyzer
 
-    mymultiprocessmc = MultiProcesser(case, proc_class, data_param[case], typean, run_param, "mc")
-    mymultiprocessdata = MultiProcesser(case, proc_class, data_param[case], typean, run_param, "data")
+    multiprocessor = {}
+    for dt in DataType:
+        multiprocessor[dt] = MultiProcesser(case, proc_class, data_param[case], typean, run_param, dt)
+    mymultiprocessmc = multiprocessor[DataType.MC]
+    mymultiprocessdata = multiprocessor[DataType.DATA]
+    mymultiprocessfd = multiprocessor[DataType.FD]
 
     ana_mgr = AnalyzerManager(ana_class, data_param[case], case, typean, doanaperperiod)
 
@@ -308,29 +273,15 @@ def do_entire_analysis(  # pylint: disable=too-many-locals, too-many-statements,
     if dodownloadalice:
         subprocess.call("../cplusutilities/Download.sh")
 
-    if doconversionmc:
-        mymultiprocessmc.multi_unpack_allperiods()
-
-    if doconversiondata:
-        mymultiprocessdata.multi_unpack_allperiods()
-
-    if doskimmingmc:
-        mymultiprocessmc.multi_skim_allperiods()
-
-    if doskimmingdata:
-        mymultiprocessdata.multi_skim_allperiods()
-
-    if domergingmc:
-        mymultiprocessmc.multi_mergeml_allperiods()
-
-    if domergingdata:
-        mymultiprocessdata.multi_mergeml_allperiods()
-
-    if domergingperiodsmc:
-        mymultiprocessmc.multi_mergeml_allinone()
-
-    if domergingperiodsdata:
-        mymultiprocessdata.multi_mergeml_allinone()
+    for dt in DataType:
+        if data_config["conversion"][dt.value]["activate"]:
+            multiprocessor[dt].multi_unpack_allperiods()
+        if data_config["skimming"][dt.value]["activate"]:
+            multiprocessor[dt].multi_skim_allperiods()
+        if data_config["merging"][dt.value]["activate"]:
+            multiprocessor[dt].multi_mergeml_allperiods()
+        if data_config["mergingperiods"][dt.value]["activate"]:
+            multiprocessor[dt].multi_mergeml_allinone()
 
     if doml:
         from machine_learning_hep.optimiser import Optimiser  # pylint: disable=import-outside-toplevel
@@ -392,16 +343,10 @@ def do_entire_analysis(  # pylint: disable=too-many-locals, too-many-statements,
     if domergeapplymc:
         mymultiprocessmc.multi_mergeapply_allperiods()
 
-    if dohistomassmc:
-        mymultiprocessmc.multi_histomass()
-    if dohistomassdata:
-        # After-burner in case of a mult analysis to obtain "correctionsweight.root"
-        # for merged-period data
-        # pylint: disable=fixme
-        # FIXME Can only be run here because result directories are constructed when histomass
-        #       is run. If this step was independent, histomass would always complain that the
-        #       result directory already exists.
-        mymultiprocessdata.multi_histomass()
+    for dt in DataType:
+        if data_config["analysis"][dt.value]["histomass"]:
+            multiprocessor[dt].multi_histomass()
+
     if doefficiency:
         mymultiprocessmc.multi_efficiency()
     analyze_steps = []

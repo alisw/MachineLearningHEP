@@ -170,7 +170,7 @@ class ProcesserDhadrons(Processer):  # pylint: disable=too-many-instance-attribu
             myfile.cd()
             h_invmass.Write()
 
-            if self.mcordata == "mc":
+            if self.datatype == "mc":
                 df_sig = df[df[self.v_ismcsignal] == 1]
                 df_bkg = df[df[self.v_ismcbkg] == 1]
                 h_invmass_sig = TH1F(
@@ -188,7 +188,7 @@ class ProcesserDhadrons(Processer):  # pylint: disable=too-many-instance-attribu
                 h_invmass_bkg.Write()
 
         for sel_name, sel_spec in self.cfg("data_selections", {}).items():
-            if sel_spec["level"] == self.mcordata:
+            if sel_spec["level"] == self.datatype:
                 df_sel = dfquery(df_ptmerged, sel_spec["query"])
                 h = create_hist(
                     f"h_mass-pthf_{sel_name}",
