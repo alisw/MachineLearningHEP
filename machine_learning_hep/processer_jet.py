@@ -161,7 +161,7 @@ class ProcesserJets(Processer):
                 print(dfi[~mask][var], flush=True)
 
     def _calculate_variables(self, df, verify=False):  # pylint: disable=invalid-name
-        self.logger.info("calculating variables")
+        self.logger.info("calculating variables for DF %s", df.info())
         observables = self.cfg("observables", {})
         if len(df) == 0:
             for obs in observables:
@@ -231,7 +231,8 @@ class ProcesserJets(Processer):
     def process_histomass_single(self, index):
         self.logger.info("Processing (histomass) %s", self.l_evtorig[index])
 
-        with TFile.Open(self.l_histomass[index], "recreate") as _:
+        print(f"Opening file {self.l_histomass[index]}", flush=True)
+        with TFile.Open(self.l_histomass[index], "recreate") as rfile:
             dfevtorig = read_df(self.l_evtorig[index])
             histonorm = TH1F("histonorm", "histonorm", 4, 0, 4)
             histonorm.SetBinContent(1, len(dfquery(dfevtorig, self.s_evtsel)))
@@ -255,8 +256,6 @@ class ProcesserJets(Processer):
             get_axis(histonorm, 0).SetBinLabel(4, "N_{BC}^{TVX}")
             histonorm.Write()
 
-            print(f"{self.mptfiles_recosk=}", flush=True)
-            print(f"{self.mptfiles_gensk=}", flush=True)
             if self.datatype != 'fd':
                 df = pd.concat(read_df(self.mptfiles_recosk[bin][index]) for bin in self.active_bins_skim)
             else:
@@ -280,7 +279,12 @@ class ProcesserJets(Processer):
                 self.binarray_ptjet,
                 self.binarray_pthf,
             )
+            print(f"Filling and writing histogram from {df.head()}", flush=True)
             fill_hist(h, df[["fM", "fJetPt", "fPt"]], write=True)
+            h.Write()
+            print("WRITING!!!!!!!!!!!!!!!")
+            rfile.WriteObject(h)
+            # h.Print("all")
 
             for sel_name, sel_spec in self.cfg("data_selections", {}).items():
                 if sel_spec["level"] == self.datatype:
@@ -308,6 +312,7 @@ class ProcesserJets(Processer):
                         df["idx_match"] = df[idx].apply(lambda ar: ar[0] if len(ar) > 0 else -1)
                         dfquery(df, "idx_match >= 0", inplace=True)
 
+            print(f"calculation", flush=True)
             self._calculate_variables(df)
 
             for obs, spec in self.cfg("observables", {}).items():
