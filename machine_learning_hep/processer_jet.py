@@ -255,13 +255,19 @@ class ProcesserJets(Processer):
             get_axis(histonorm, 0).SetBinLabel(4, "N_{BC}^{TVX}")
             histonorm.Write()
 
-            df = pd.concat(read_df(self.mptfiles_recosk[bin][index]) for bin in self.active_bins_skim)
+            print(f"{self.mptfiles_recosk=}", flush=True)
+            print(f"{self.mptfiles_gensk=}", flush=True)
+            if self.datatype != 'fd':
+                df = pd.concat(read_df(self.mptfiles_recosk[bin][index]) for bin in self.active_bins_skim)
+            else:
+                df = pd.concat(read_df(self.mptfiles_gensk[bin][index]) for bin in self.active_bins_skim)
             # remove entries outside of kinematic range (should be taken care of by projections in analyzer)
             df = df.loc[(df.fJetPt >= min(self.binarray_ptjet)) & (df.fJetPt < max(self.binarray_ptjet))]
             df = df.loc[(df.fPt >= min(self.bins_analysis[:, 0])) & (df.fPt < max(self.bins_analysis[:, 1]))]
 
             # Custom skimming cuts
-            df = self.apply_cuts_all_ptbins(df)
+            if self.datatype != "fd":
+                df = self.apply_cuts_all_ptbins(df)
 
             if col_evtidx := self.cfg("cand_collidx"):
                 h = create_hist("h_ncand", ";N_{cand}", 20, 0.0, 20.0)
