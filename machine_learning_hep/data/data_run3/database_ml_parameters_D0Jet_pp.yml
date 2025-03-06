@@ -51,26 +51,53 @@ D0Jet_pp:
   #region dfs
   dfs:
     read:
-      # evtorig:
-      #   index: fIndexHfD0McCollBases
-      #   trees:
-      #     O2hfd0collbase: [fNumContrib, fPosZ]
-      #   filter: "abs(fPosZ) < 10."
-      # collcnt:
-      #   trees:
-      #     O2collcount: [fReadCounts, fReadCountsWithTVX, fReadCountsWithTVXAndZVertexAndSel8, fReadCountsWithTVXAndZVertexAndSelMC]
-      # bccnt:
-      #   trees:
-      #     O2bccount: [fReadCountsWithTVX, fReadCountsWithTVXAndNoTFB, fReadCountsWithTVXAndNoTFBAndNoITSROFB]
+      evtorig:
+        level: data
+        index: fIndexHfD0McCollBases
+        trees:
+          O2hfd0collbase: [fNumContrib, fPosZ]
+        filter: "abs(fPosZ) < 10."
+      collcnt:
+        level: data
+        trees:
+          O2collcount: [fReadCounts, fReadCountsWithTVX, fReadCountsWithTVXAndZVertexAndSel8, fReadCountsWithTVXAndZVertexAndSelMC]
+      bccnt:
+        level: data
+        trees:
+          O2bccount: [fReadCountsWithTVX, fReadCountsWithTVXAndNoTFB, fReadCountsWithTVXAndNoTFBAndNoITSROFB]
 
       collgen: # TODO: check if we can use the HF collision table instead
-        level: gen
+        level: mc
         index: fIndexD0CMCPJETCOS
         trees:
           O2d0cmcpjetco: [fPosZ, fCentrality, fEventSel]
         filter: "abs(fPosZ) < 10."
       jetgen:
-        level: gen
+        level: mc
+        index: fIndexD0CMCPJETOS
+        trees:
+          O2hfd0pbase: [fIndexHfD0McCollBases, fPt, fEta, fPhi, fFlagMcMatchGen, fOriginMcGen]
+          O2d0cmcpjeto: [fIndexD0CMCPJETCOS, fJetPt, fJetPhi, fJetEta, fJetNConstituents, fJetR]
+          # O2d0cmcpjetmo: [fIndexArrayD0CMCDJETOS_hf, fIndexArrayD0CMCDJETOS_geo, fIndexArrayD0CMCDJETOS_pt]
+          O2d0cmcpjetsso: [fEnergyMother, fPtLeading, fPtSubLeading, fTheta, fNSub2DR, fNSub1, fNSub2, fAngularity]
+        extra:
+          fY: log((sqrt(1.864**2 + (fPt * cosh(fEta))**2) + fPt * sinh(fEta)) / sqrt(1.864**2 + fPt**2)) #TODO : change mass or make sure Lc mass is updated
+          fM: 1.864
+        tags:
+          ismcsignal: {var: fFlagMcMatchGen, req: [[0], []], abs: true}
+          ismcbkg: {var: fFlagMcMatchGen, req: [[], [0]], abs: true}
+          ismcprompt: {var: fOriginMcGen, req: [[0], [1]]}
+          ismcfd: {var: fOriginMcGen, req: [[1], [0]]}
+        filter: "fPt >= 1. and abs(fY) <= 0.8 and abs(fJetEta) < (.9 - (fJetR / 100.))" # TODO: check jet eta cut
+
+      collfd: # TODO: check if we can use the HF collision table instead
+        level: fd
+        index: fIndexD0CMCPJETCOS
+        trees:
+          O2d0cmcpjetco: [fPosZ, fCentrality, fEventSel]
+        filter: "abs(fPosZ) < 10."
+      jetfd:
+        level: fd
         index: fIndexD0CMCPJETOS
         trees:
           O2hfd0pbase: [fIndexHFD0MCCOLLBASES, fPt, fEta, fPhi, fFlagMcMatchGen, fOriginMcGen]
@@ -88,13 +115,13 @@ D0Jet_pp:
         filter: "fPt >= 1. and abs(fY) <= 0.8 and abs(fJetEta) < (.9 - (fJetR / 100.))" # TODO: check jet eta cut
 
       colldet:
-        level: det
+        level: mc
         index: fIndexD0CMCDJETCOS
         trees:
           O2d0cmcdjetco: [fPosZ, fCentrality, fEventSel]
         filter: "abs(fPosZ) < 10."
       jetdet:
-        level: det
+        level: mc
         index: fIndexD0CMCDJETOS
         trees: # add EEC columns
           O2hfd0base: [fIndexHfD0CollBases, fPt, fEta, fPhi, fM]
@@ -146,29 +173,52 @@ D0Jet_pp:
           - {var: fMlScores, newvar: mlBkgScore, component: 0}
         filter: "fPt >= 1. and abs(fY) <= 0.8 and abs(fJetEta) < (.9 - (fJetR / 100.))" # TODO: check jet eta cut
 
-    # merge:
-    #   - {base: jetgen, ref: evtorig}
-    #   - {base: jetdet, ref: colldet}
-    #   - {base: jetdata, ref: colldata}
+    merge:
+      - {base: jetgen, ref: collgen}
+      - {base: jetfd, ref: collfd}
+      - {base: jetdet, ref: colldet}
+      - {base: jetdata, ref: colldata}
     # workaround for yamlfmt issue #110
 
     write:
       jetgen:
-        level: gen
+        level: mc
+        file: AnalysisResultsGen.parquet
+      jetfd:
+        level: fd
         file: AnalysisResultsGen.parquet
       jetdet:
-        level: det
+        level: mc
         file: AnalysisResultsReco.parquet
       jetdata:
         level: data
         file: AnalysisResultsReco.parquet
-      evtorig:
-        level: all
+        
+      evtorig_mc:
+        level: mc
         source: collgen
         file: AnalysisResultsEvtOrig.parquet
-      evt:
-        level: all
+      evt_mc:
+        level: mc
         source: collgen
+        file: AnalysisResultsEvt.parquet
+        
+      evtorig_data:
+        level: data
+        source: evtorig
+        file: AnalysisResultsEvtOrig.parquet
+      evt_data:
+        level: data
+        source: evtorig
+        file: AnalysisResultsEvt.parquet
+        
+      evtorig_fd:
+        level: fd
+        source: collfd
+        file: AnalysisResultsEvtOrig.parquet
+      evt_fd:
+        level: fd
+        source: collfd
         file: AnalysisResultsEvt.parquet
       # collcnt:
       #   level: all
@@ -223,10 +273,10 @@ D0Jet_pp:
 
   files_names:
     namefile_unmerged_tree: AO2D.root
-    # namefile_reco: AnalysisResultsReco.parquet
+    namefile_reco: AnalysisResultsReco.parquet
     namefile_evt: AnalysisResultsEvt.parquet
-    # namefile_collcnt: AnalysisResultsCollCnt.parquet
-    # namefile_bccnt: AnalysisResultsBcCnt.parquet
+    namefile_collcnt: AnalysisResultsCollCnt.parquet
+    namefile_bccnt: AnalysisResultsBcCnt.parquet
     namefile_evtvalroot: AnalysisResultsROOTEvtVal.root
     namefile_evtorig: AnalysisResultsEvtOrig.parquet
     namefile_gen: AnalysisResultsGen.parquet
