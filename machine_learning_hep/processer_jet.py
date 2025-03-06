@@ -433,8 +433,8 @@ class ProcesserJets(Processer):
                     "fNSub2",
                     "fJetNConstituents",
                     "fEnergyMother",
-                    "fPairTheta",
-                    "fPairPt",
+                    # "fPairTheta",
+                    # "fPairPt",
                 ]
             )
             cols = None
