@@ -196,8 +196,8 @@ class Processer:  # pylint: disable=too-many-instance-attributes
         self.l_gen = createlist(self.d_pkl, self.l_path, self.n_gen)
         self.l_evt = createlist(self.d_pkl, self.l_path, self.n_evt)
         self.l_evtorig = createlist(self.d_pkl, self.l_path, self.n_evtorig)
-        self.l_collcnt = createlist(self.d_pkl, self.l_path, self.n_collcnt)
-        self.l_bccnt = createlist(self.d_pkl, self.l_path, self.n_bccnt)
+        self.l_collcnt = createlist(self.d_pkl, self.l_path, self.n_collcnt) if self.datatype != "fd" else None
+        self.l_bccnt = createlist(self.d_pkl, self.l_path, self.n_bccnt) if self.datatype != "fd" else None
         self.l_histomass = createlist(self.d_results, self.l_path, self.n_filemass)
         self.l_histoeff = createlist(self.d_results, self.l_path, self.n_fileeff)
         # self.l_historesp = createlist(self.d_results, self.l_path, self.n_fileresp)

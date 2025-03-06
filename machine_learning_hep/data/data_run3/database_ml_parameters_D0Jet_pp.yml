@@ -57,6 +57,14 @@ D0Jet_pp:
         trees:
           O2hfd0collbase: [fNumContrib, fPosZ]
         filter: "abs(fPosZ) < 10."
+      collcnt_mc:
+        level: mc
+        trees:
+          O2collcount: [fReadCounts, fReadCountsWithTVX, fReadCountsWithTVXAndZVertexAndSel8, fReadCountsWithTVXAndZVertexAndSelMC]
+      bccnt_mc:
+        level: mc
+        trees:
+          O2bccount: [fReadCountsWithTVX, fReadCountsWithTVXAndNoTFB, fReadCountsWithTVXAndNoTFBAndNoITSROFB]
       collcnt:
         level: data
         trees:
@@ -220,12 +228,18 @@ D0Jet_pp:
         level: fd
         source: collfd
         file: AnalysisResultsEvt.parquet
-      # collcnt:
-      #   level: all
-      #   file: AnalysisResultsCollCnt.parquet
-      # bccnt:
-      #   level: all
-      #   file: AnalysisResultsBcCnt.parquet
+      collcnt_mc:
+        level: mc
+        file: AnalysisResultsCollCnt.parquet
+      bccnt_mc:
+        level: mc
+        file: AnalysisResultsBcCnt.parquet
+      collcnt:
+        level: data
+        file: AnalysisResultsCollCnt.parquet
+      bccnt:
+        level: data
+        file: AnalysisResultsBcCnt.parquet
 
   variables:
     var_all: [fDecayLength, fDecayLengthXY, fDecayLengthNormalised, fDecayLengthXYNormalised, fCpa, fCpaXY, fImpactParameter0, fImpactParameter1, fErrorImpactParameter0, fErrorImpactParameter1, fNSigTpcPiExpPi, fNSigTpcKaExpPi, fNSigTpcPiExpKa, fNSigTpcKaExpKa]
