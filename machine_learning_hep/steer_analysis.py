@@ -15,11 +15,13 @@ main script for doing data processing, machine learning and analysis
 """
 
 import argparse
+from functools import reduce
 import importlib
 import os
 import shutil
 import subprocess
 import sys
+from typing import TypeVar
 
 # unclear why shap needs to be imported from here,
 # segfaults when imported from within other modules
@@ -32,6 +34,14 @@ from .common import DataType
 from .logger import configure_logger, get_logger
 from .utilities_files import checkdirs, checkmakedir, checkmakedirlist, delete_dirlist
 
+
+T = TypeVar("T")
+def cfg(config: dict, param: str, default: T = None) -> T:
+    return reduce(
+        lambda d, key: d.get(key, default) if isinstance(d, dict) else default,
+        param.split("."),
+        config,
+    )
 
 def do_entire_analysis(  # pylint: disable=too-many-locals, too-many-statements, too-many-branches
     data_config: dict,
@@ -51,14 +61,6 @@ def do_entire_analysis(  # pylint: disable=too-many-locals, too-many-statements,
     update_config(data_param, data_config, data_param_overwrite)
 
     dodownloadalice = data_config["download"]["alice"]["activate"]
-    doconversionmc = data_config["conversion"]["mc"]["activate"]
-    doconversiondata = data_config["conversion"]["data"]["activate"]
-    domergingmc = data_config["merging"]["mc"]["activate"]
-    domergingdata = data_config["merging"]["data"]["activate"]
-    doskimmingmc = data_config["skimming"]["mc"]["activate"]
-    doskimmingdata = data_config["skimming"]["data"]["activate"]
-    domergingperiodsmc = data_config["mergingperiods"]["mc"]["activate"]
-    domergingperiodsdata = data_config["mergingperiods"]["data"]["activate"]
     doml = data_config["ml_study"]["activate"]
     docorrelation = data_config["ml_study"]["docorrelation"]
     dotraining = data_config["ml_study"]["dotraining"]
@@ -83,8 +85,6 @@ def do_entire_analysis(  # pylint: disable=too-many-locals, too-many-statements,
     domergeapplymc = data_config["mlapplication"]["mc"]["domergeapply"]
     docontinueapplydata = data_config["mlapplication"]["data"]["docontinueafterstop"]
     docontinueapplymc = data_config["mlapplication"]["mc"]["docontinueafterstop"]
-    dohistomassmc = data_config["analysis"]["mc"]["histomass"]
-    dohistomassdata = data_config["analysis"]["data"]["histomass"]
     doefficiency = data_config["analysis"]["mc"]["efficiency"]
     efficiency_resp = data_config["analysis"]["mc"].get("efficiency_resp", False)
     do_syst_ml = data_config["systematics"]["cutvar"]["activate"]
@@ -140,16 +140,16 @@ def do_entire_analysis(  # pylint: disable=too-many-locals, too-many-statements,
 
     exdirs = []
     for dt in DataType:
-        if data_config["conversion"][dt.value]["activate"]:
+        if cfg(data_config, f"conversion.{dt.value}.activate"):
             exdirs.extend(checkdirs(dirpkl[dt]))
-        if data_config["skimming"][dt.value]["activate"]:
+        if cfg(data_config, f"skimming.{dt.value}.activate"):
             exdirs.extend(checkdirs(dirpklsk[dt]))
             exdirs.extend(checkdirs(dirpklevtcounter_all[dt]))
-        if data_config["merging"][dt.value]["activate"]:
+        if cfg(data_config, f"merging.{dt.value}.activate"):
             exdirs.extend(checkdirs(dirpklml[dt]))
-        if data_config["mergingperiods"][dt.value]["activate"]:
+        if cfg(data_config, f"mergingperiods.{dt.value}.activate"):
             exdirs.extend(checkdirs(dirpklmltot[dt]))
-        if data_config["analysis"][dt.value]["histomass"]:
+        if cfg(data_config, f"analysis.{dt.value}.histomass"):
             exdirs.extend(checkdirs(dirresults[dt]))
             exdirs.extend(checkdirs(dirresultstot[dt]))
 
@@ -186,18 +186,18 @@ def do_entire_analysis(  # pylint: disable=too-many-locals, too-many-statements,
 
     # check and create directories
     for dt in DataType:
-        if data_config["conversion"][dt.value]["activate"]:
+        if cfg(data_config, f"conversion.{dt.value}.activate"):
             checkmakedirlist(dirpkl[dt])
-        if data_config["skimming"][dt.value]["activate"]:
+        if cfg(data_config, f"skimming.{dt.value}.activate"):
             checkmakedirlist(dirpklsk[dt])
             checkmakedir(dirpklevtcounter_all[dt])
             exdirs.extend(checkdirs(dirpklsk[dt]))
             exdirs.extend(checkdirs(dirpklevtcounter_all[dt]))
-        if data_config["merging"][dt.value]["activate"]:
+        if cfg(data_config, f"merging.{dt.value}.activate"):
             checkmakedirlist(dirpklml[dt])
-        if data_config["mergingperiods"][dt.value]["activate"]:
+        if cfg(data_config, f"mergingperiods.{dt.value}.activate"):
             checkmakedir(dirpklmltot[dt])
-        if data_config["analysis"][dt.value]["histomass"]:
+        if cfg(data_config, f"analysis.{dt.value}.histomass"):
             checkmakedirlist(dirresults[dt])
             checkmakedir(dirresultstot[dt])
 
@@ -274,13 +274,13 @@ def do_entire_analysis(  # pylint: disable=too-many-locals, too-many-statements,
         subprocess.call("../cplusutilities/Download.sh")
 
     for dt in DataType:
-        if data_config["conversion"][dt.value]["activate"]:
+        if cfg(data_config, f"conversion.{dt.value}.activate"):
             multiprocessor[dt].multi_unpack_allperiods()
-        if data_config["skimming"][dt.value]["activate"]:
+        if cfg(data_config, f"skimming.{dt.value}.activate"):
             multiprocessor[dt].multi_skim_allperiods()
-        if data_config["merging"][dt.value]["activate"]:
+        if cfg(data_config, f"merging.{dt.value}.activate"):
             multiprocessor[dt].multi_mergeml_allperiods()
-        if data_config["mergingperiods"][dt.value]["activate"]:
+        if cfg(data_config, f"mergingperiods.{dt.value}.activate"):
             multiprocessor[dt].multi_mergeml_allinone()
 
     if doml:
@@ -344,7 +344,7 @@ def do_entire_analysis(  # pylint: disable=too-many-locals, too-many-statements,
         mymultiprocessmc.multi_mergeapply_allperiods()
 
     for dt in DataType:
-        if data_config["analysis"][dt.value]["histomass"]:
+        if cfg(data_config, f"analysis.{dt.value}.histomass"):
             multiprocessor[dt].multi_histomass()
 
     if doefficiency:

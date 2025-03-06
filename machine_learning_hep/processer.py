@@ -138,9 +138,9 @@ class Processer:  # pylint: disable=too-many-instance-attributes
         # def nget(d : dict, k : list, dd = None):
         #     return nget(d.get(k.pop(0), {}), k, dd) if len(k) > 1 else d.get(k.pop(0), dd)
         # nget(datap, ['dfs', 'write', 'jetsubdet', 'file'])
-        self.n_reco = datap["files_names"]["namefile_reco"]
+        self.n_reco = datap["files_names"].get("namefile_reco", "")
         self.n_evt = datap["files_names"]["namefile_evt"]
-        self.n_collcnt = datap["files_names"]["namefile_collcnt"]
+        self.n_collcnt = datap["files_names"].get("namefile_collcnt")
         self.n_bccnt = datap["files_names"].get("namefile_bccnt")
         self.n_evtorig = datap["files_names"].get("namefile_evtorig")
         self.n_evt_count_ml = datap["files_names"].get("namefile_evt_count", "evtcount.yaml")
@@ -191,6 +191,7 @@ class Processer:  # pylint: disable=too-many-instance-attributes
 
         self.l_root = createlist(self.d_root, self.l_path, self.n_root)
         self.l_reco = createlist(self.d_pkl, self.l_path, self.n_reco)
+        self.l_gen = createlist(self.d_pkl, self.l_path, self.n_gen)
         self.l_evt = createlist(self.d_pkl, self.l_path, self.n_evt)
         self.l_evtorig = createlist(self.d_pkl, self.l_path, self.n_evtorig)
         self.l_collcnt = createlist(self.d_pkl, self.l_path, self.n_collcnt)
@@ -323,20 +324,20 @@ class Processer:  # pylint: disable=too-many-instance-attributes
 
         self.mptfiles_recosk = [
             createlist(self.d_pklsk, self.l_path, self.lpt_recosk[ipt]) for ipt in range(self.p_nptbins)
-        ]
+        ] if self.datatype in ('mc', 'data') else []
         self.mptfiles_recoskmldec = [
             createlist(self.d_pkl_dec, self.l_path, self.lpt_recodec[ipt]) for ipt in range(self.p_nptbins)
         ] if self.datatype in ('mc', 'data') else []
         self.lpt_recodecmerged = [
             os.path.join(self.d_pkl_decmerged, self.lpt_recodec[ipt]) for ipt in range(self.p_nptbins)
         ] if self.datatype in ('mc', 'data') else []
-        if self.datatype == "mc":
+        if self.datatype in ('mc', 'fd'):
             self.mptfiles_gensk = [
                 createlist(self.d_pklsk, self.l_path, self.lpt_gensk[ipt]) for ipt in range(self.p_nptbins)
             ]
             self.lpt_gendecmerged = [
                 os.path.join(self.d_pkl_decmerged, self.lpt_gensk[ipt]) for ipt in range(self.p_nptbins)
-            ]
+            ] if self.d_pkl_decmerged else []
             self.mptfiles_gensk_sl = (
                 [createlist(self.d_pklsk, self.l_path, self.lpt_gensk_sl[ipt]) for ipt in range(self.p_nptbins)]
                 if self.lpt_gensk_sl
@@ -539,9 +540,11 @@ class Processer:  # pylint: disable=too-many-instance-attributes
                     write_df(dfo, path)
 
     def skim(self, file_index):
+        print("//////////////// skimming ///////////")
         dfreco = read_df(self.l_reco[file_index]) if self.datatype != "fd" else None
-        dfgen = read_df(self.l_gen[file_index]) if self.datatype == "mc" else None
-        dfgen_sl = read_df(self.l_gen_sl[file_index]) if self.n_gen_sl and self.datatype == "mc" else None
+        dfgen = read_df(self.l_gen[file_index]) if self.datatype in ('mc', 'fd') else None
+        dfgen_sl = read_df(self.l_gen_sl[file_index]) if self.n_gen_sl and self.datatype in ('mc', 'fd') else None
+        print(dfreco, dfgen, dfgen_sl, flush=True)
 
         for ipt in range(self.p_nptbins):
             if dfreco is not None:
@@ -552,6 +555,7 @@ class Processer:  # pylint: disable=too-many-instance-attributes
             if dfgen is not None:
                 dfgensk = seldf_singlevar(dfgen, self.v_var_binning, self.lpt_anbinmin[ipt], self.lpt_anbinmax[ipt])
                 dfgensk = dfquery(dfgensk, self.s_gen_skim[ipt])
+                print(self.mptfiles_gensk, flush=True)
                 write_df(dfgensk, self.mptfiles_gensk[ipt][file_index])
 
             if dfgen_sl is not None:
@@ -623,7 +627,7 @@ class Processer:  # pylint: disable=too-many-instance-attributes
     def process_skim_par(self):
         self.logger.info("Skimming %s period %s", self.datatype, self.period)
         create_folder_struc(self.d_pklsk, self.l_path)
-        arguments = [(i,) for i in range(len(self.l_reco))]
+        arguments = [(i,) for i in range(len(self.l_gen))]
         self.parallelizer(self.skim, arguments, self.p_chunksizeskim)
         if self.p_dofullevtmerge is True:
             merge_method(self.l_evt, self.f_totevt)
