@@ -99,6 +99,30 @@ def are_same_values(val1, val2) -> bool:
     return (val1 == val2) or (val1 is val2) or (math.isnan(val1) and math.isnan(val2))
 
 
+def diff_rel(val1, val2) -> float:
+    """Calculate relative difference between two numbers."""
+    if are_same_values(val1, val2):
+        return 0.0
+    return abs((val2 - val1) / (val1 + val2))
+
+
+def compare_values(val1: float | tuple[float, float], val2: float | tuple[float, float]) -> str:
+    """Format a string comparing two values (with optional uncertainties)
+    and report also the relative difference(s).
+    """
+    unc1, unc2 = None, None
+    if isinstance(val1, tuple):
+        unc1 = val1[1]
+        val1 = val1[0]
+    if isinstance(val2, tuple):
+        unc2 = val2[1]
+        val2 = val2[0]
+    string_val1 = f"{val1}{f' ± {unc1}' if unc1 is not None else ''}"
+    string_val2 = f"{val2}{f' ± {unc2}' if unc2 is not None else ''}"
+    string_diff = f"{diff_rel(val1, val2)}{'' if unc1 is None or unc2 is None else f' ± {diff_rel(unc1, unc2)}'}"
+    return f"{string_val1} vs {string_val2}, rel. diff.: {string_diff}"
+
+
 def are_same_axes(axis1, axis2) -> bool:
     """Tell whether two axes are same."""
     if not are_valid(axis1, axis2):
@@ -128,7 +152,7 @@ def are_same_histograms(his1: TH1, his2: TH1) -> bool:
         return False
     # Compare number of entries
     if not are_same_values(his1.GetEntries(), his2.GetEntries()):
-        print(f"Different number of entries {his1.GetEntries()} vs {his2.GetEntries()}")
+        print(f"Different number of entries {compare_values(his1.GetEntries(), his2.GetEntries())}")
         return False
     # Compare axes
     for ax1, ax2 in zip(
@@ -146,8 +170,11 @@ def are_same_histograms(his1: TH1, his2: TH1) -> bool:
                     his1.GetBinError(i_bin), his2.GetBinError(i_bin)
                 ):
                     print(
-                        f"Different bin {i_bin} content: {his1.GetBinContent(i_bin)} ± {his1.GetBinError(i_bin)} vs "
-                        f"{his2.GetBinContent(i_bin)} ± {his2.GetBinError(i_bin)}"
+                        f"Different bin {i_bin} content: "
+                        + compare_values(
+                            (his1.GetBinContent(i_bin), his1.GetBinError(i_bin)),
+                            (his2.GetBinContent(i_bin), his2.GetBinError(i_bin)),
+                        )
                     )
                     return False
     return True
@@ -164,7 +191,7 @@ def are_same_thnspare(his1: THnSparse, his2: THnSparse) -> bool:
         return False
     # Compare number of entries
     if not are_same_values(his1.GetEntries(), his2.GetEntries()):
-        print(f"Different number of entries {his1.GetEntries()} vs {his2.GetEntries()}")
+        print(f"Different number of entries {compare_values(his1.GetEntries(), his2.GetEntries())}")
         return False
     # Compare number of filled bins
     if his1.GetNbins() != his2.GetNbins():
@@ -181,8 +208,11 @@ def are_same_thnspare(his1: THnSparse, his2: THnSparse) -> bool:
             his1.GetBinError(i_bin), his2.GetBinError(i_bin)
         ):
             print(
-                f"Different bin {i_bin} content: {his1.GetBinContent(i_bin)} ± {his1.GetBinError(i_bin)} vs "
-                f"{his2.GetBinContent(i_bin)} ± {his2.GetBinError(i_bin)}"
+                f"Different bin {i_bin} content: "
+                + compare_values(
+                    (his1.GetBinContent(i_bin), his1.GetBinError(i_bin)),
+                    (his2.GetBinContent(i_bin), his2.GetBinError(i_bin)),
+                )
             )
             return False
     return True
@@ -238,9 +268,10 @@ def are_same_objects(obj1, obj2) -> bool:
         msg_fatal("Bad input objects")
         return False
     # Compare types
+    passed = True
     if type(obj1) is not type(obj2):
         print(f"Different types {obj1.ClassName()} vs {obj2.ClassName()}")
-        return False
+        passed = False
     # Get ROOT types
     list_type = [get_object_type(o) for o in (obj1, obj2)]
     # Compare ROOT types (is it not covered by type(obj)?)
@@ -250,11 +281,11 @@ def are_same_objects(obj1, obj2) -> bool:
     type_obj = list_type[0]
     # Compare supported ROOT objects
     if type_obj is ObjectType.RESPONSE:
-        return are_same_response(obj1, obj2)
+        return are_same_response(obj1, obj2) and passed
     if type_obj in (ObjectType.TH_N_T, ObjectType.TH_N_SPARSE):
-        return are_same_thnspare(obj1, obj2)
+        return are_same_thnspare(obj1, obj2) and passed
     if type_obj in (ObjectType.TH_1, ObjectType.TH_2, ObjectType.TH_3):
-        return are_same_histograms(obj1, obj2)
+        return are_same_histograms(obj1, obj2) and passed
     print(f"Objects have an unsupported type {type(obj1)}.")
     raise NotImplementedError
 
