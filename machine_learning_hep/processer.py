@@ -541,14 +541,15 @@ class Processer:  # pylint: disable=too-many-instance-attributes
                     write_df(dfo, path)
 
     def skim(self, file_index):
-        dfreco = read_df(self.l_reco[file_index])
+        dfreco = read_df(self.l_reco[file_index]) if self.datatype != "fd" else None
         dfgen = read_df(self.l_gen[file_index]) if self.datatype == "mc" else None
         dfgen_sl = read_df(self.l_gen_sl[file_index]) if self.n_gen_sl and self.datatype == "mc" else None
 
         for ipt in range(self.p_nptbins):
-            dfrecosk = seldf_singlevar(dfreco, self.v_var_binning, self.lpt_anbinmin[ipt], self.lpt_anbinmax[ipt])
-            dfrecosk = dfquery(dfrecosk, self.s_reco_skim[ipt])
-            write_df(dfrecosk, self.mptfiles_recosk[ipt][file_index])
+            if dfreco is not None:
+                dfrecosk = seldf_singlevar(dfreco, self.v_var_binning, self.lpt_anbinmin[ipt], self.lpt_anbinmax[ipt])
+                dfrecosk = dfquery(dfrecosk, self.s_reco_skim[ipt])
+                write_df(dfrecosk, self.mptfiles_recosk[ipt][file_index])
 
             if dfgen is not None:
                 dfgensk = seldf_singlevar(dfgen, self.v_var_binning, self.lpt_anbinmin[ipt], self.lpt_anbinmax[ipt])
