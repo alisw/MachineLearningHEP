@@ -245,7 +245,7 @@ class ProcesserDhadrons_mult(Processer):
                 myfile.cd()
                 h_invmass.Write()
 
-                if self.mcordata == "mc":
+                if self.datatype == "mc":
                     df_bin_sig = df_bin[df_bin[self.v_ismcsignal] == 1]
                     h_invmass_sig = TH1F(
                         "hmass_sig" + suffix, "", self.p_num_bins, self.p_mass_fit_lim[0], self.p_mass_fit_lim[1]
@@ -461,7 +461,7 @@ class ProcesserDhadrons_mult(Processer):
             h_list = []
 
     def process_efficiency(self):
-        print("Doing efficiencies", self.mcordata, self.period)
+        print("Doing efficiencies", self.datatype, self.period)
         if self.doml is True:
             print("Doing ml analysis")
         else:

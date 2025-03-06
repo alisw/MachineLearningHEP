@@ -16,33 +16,44 @@
 main script for doing data processing, machine learning and analysis
 """
 
+from functools import reduce
 import os
 import tempfile
+from typing import TypeVar
 
 from machine_learning_hep.io_ml_utils import dump_yaml_from_dict, parse_yaml
 from machine_learning_hep.logger import get_logger
 from machine_learning_hep.utilities import merge_method, mergerootfiles
-
+from .common import DataType
 
 class MultiProcesser:  # pylint: disable=too-many-instance-attributes, too-many-statements, consider-using-f-string, too-many-branches
     species = "multiprocesser"
     logger = get_logger()
 
-    def __init__(self, case, proc_class, datap, typean, run_param, mcordata):
+    T = TypeVar("T")
+
+    def cfg(self, param: str, default: T = None) -> T:
+        return reduce(
+            lambda d, key: d.get(key, default) if isinstance(d, dict) else default,
+            param.split("."),
+            self.datap,
+        )
+
+    def __init__(self, case, proc_class, datap, typean, run_param, datatype):
         self.case = case
         self.datap = datap
         self.typean = typean
         self.run_param = run_param
-        self.mcordata = mcordata
-        self.prodnumber = len(datap["multi"][self.mcordata]["unmerged_tree_dir"])
-        self.p_period = datap["multi"][self.mcordata]["period"]
-        self.select_period = datap["multi"][self.mcordata]["select_period"]
-        self.p_seedmerge = datap["multi"][self.mcordata]["seedmerge"]
-        self.p_fracmerge = datap["multi"][self.mcordata]["fracmerge"]
-        self.p_maxfiles = datap["multi"][self.mcordata]["maxfiles"]
-        self.p_chunksizeunp = datap["multi"][self.mcordata]["chunksizeunp"]
-        self.p_chunksizeskim = datap["multi"][self.mcordata]["chunksizeskim"]
-        self.p_nparall = datap["multi"][self.mcordata]["nprocessesparallel"]
+        self.datatype = DataType(datatype)
+        self.prodnumber = len(datap["multi"][self.datatype.value]["unmerged_tree_dir"])
+        self.p_period = datap["multi"][self.datatype.value]["period"]
+        self.select_period = datap["multi"][self.datatype.value]["select_period"]
+        self.p_seedmerge = datap["multi"][self.datatype.value]["seedmerge"]
+        self.p_fracmerge = datap["multi"][self.datatype.value]["fracmerge"]
+        self.p_maxfiles = datap["multi"][self.datatype.value]["maxfiles"]
+        self.p_chunksizeunp = datap["multi"][self.datatype.value]["chunksizeunp"]
+        self.p_chunksizeskim = datap["multi"][self.datatype.value]["chunksizeskim"]
+        self.p_nparall = datap["multi"][self.datatype.value]["nprocessesparallel"]
         self.lpt_anbinmin = datap["sel_skim_binmin"]
         self.lpt_anbinmax = datap["sel_skim_binmax"]
         self.p_nptbins = len(datap["sel_skim_binmax"])
@@ -53,18 +64,19 @@ class MultiProcesser:  # pylint: disable=too-many-instance-attributes, too-many-
         self.dlper_pkl = []
         self.dlper_pklsk = []
         self.dlper_pklml = []
-        self.d_prefix = datap["multi"][self.mcordata].get("prefix_dir", "")
-        self.d_prefix_app = datap["mlapplication"][self.mcordata].get("prefix_dir_app", "")
-        self.d_prefix_res = datap["analysis"][self.typean][self.mcordata].get("prefix_dir_res", "")
+        self.d_prefix = datap["multi"][self.datatype.value].get("prefix_dir", "")
+        self.d_prefix_app = self.cfg(f"mlapplication.{self.datatype.value}.prefix_dir_app", "")
+        self.d_prefix_res = self.cfg(f"analysis.{self.typean}.{self.datatype.value}.prefix_dir_res", "")
 
-        dp = datap["multi"][self.mcordata]
+        dp = datap["multi"][self.datatype.value]
         self.dlper_root = [self.d_prefix + os.path.expandvars(p) for p in dp["unmerged_tree_dir"]]
+        print('****', self.dlper_root, flush=True)
         self.dlper_pkl = [self.d_prefix + os.path.expandvars(p) for p in dp["pkl"]]
         self.dlper_pklsk = [self.d_prefix + os.path.expandvars(p) for p in dp["pkl_skimmed"]]
         self.dlper_pklml = [self.d_prefix + os.path.expandvars(p) for p in dp["pkl_skimmed_merge_for_ml"]]
         self.d_pklml_mergedallp = self.d_prefix + os.path.expandvars(dp["pkl_skimmed_merge_for_ml_all"])
         self.d_pklevt_mergedallp = self.d_prefix + os.path.expandvars(dp["pkl_evtcounter_all"])
-        self.dlper_mcreweights = datap["multi"][self.mcordata]["mcreweights"]
+        self.dlper_mcreweights = datap["multi"][self.datatype.value]["mcreweights"]
 
         # namefiles pkl
         self.v_var_binning = datap["var_binning"]
@@ -99,21 +111,21 @@ class MultiProcesser:  # pylint: disable=too-many-instance-attributes, too-many-
         self.lper_evt = [os.path.join(direc, self.n_evt) for direc in self.dlper_pkl]
         self.lper_evtorig = [os.path.join(direc, self.n_evtorig) for direc in self.dlper_pkl]
 
-        dp = datap["mlapplication"][self.mcordata]
-        self.dlper_reco_modapp = [self.d_prefix_app + p for p in dp["pkl_skimmed_dec"]]
-        self.dlper_reco_modappmerged = [self.d_prefix_app + p for p in dp["pkl_skimmed_decmerged"]]
+        dp = self.cfg(f"mlapplication.{self.datatype.value}", {})
+        self.dlper_reco_modapp = [self.d_prefix_app + p for p in dp["pkl_skimmed_dec"]] if dp else [None] * len(self.p_period)
+        self.dlper_reco_modappmerged = [self.d_prefix_app + p for p in dp["pkl_skimmed_decmerged"]] if dp else [None] * len(self.p_period)
 
-        dp = datap["analysis"][self.typean][self.mcordata]
+        dp = self.cfg(f"analysis.{self.typean}.{self.datatype.value}", {})
         self.d_results = [self.d_prefix_res + os.path.expandvars(p) for p in dp["results"]]
         self.d_resultsallp = self.d_prefix_res + os.path.expandvars(dp["resultsallp"])
 
         self.f_evt_mergedallp = os.path.join(self.d_pklevt_mergedallp, self.n_evt)
         self.f_evtorig_mergedallp = os.path.join(self.d_pklevt_mergedallp, self.n_evtorig)
 
-        self.lper_runlistrigger = datap["analysis"][self.typean][self.mcordata]["runselection"]
+        self.lper_runlistrigger = self.cfg(f"analysis.{self.typean}.{self.datatype.value}.runselection", [None] * len(self.p_period))
 
         self.lper_mcreweights = None
-        if self.mcordata == "mc":
+        if self.datatype == DataType.MC:
             self.lper_mcreweights = [os.path.join(direc, self.n_mcreweights) for direc in self.dlper_mcreweights]
 
         self.process_listsample = []
@@ -123,7 +135,7 @@ class MultiProcesser:  # pylint: disable=too-many-instance-attributes, too-many-
                     self.case,
                     self.datap,
                     self.run_param,
-                    self.mcordata,
+                    self.datatype.value,
                     self.p_maxfiles[indexp],
                     self.dlper_root[indexp],
                     self.dlper_pkl[indexp],
@@ -186,10 +198,10 @@ class MultiProcesser:  # pylint: disable=too-many-instance-attributes, too-many-
             for indexp in range(self.prodnumber):
                 if self.select_period[indexp] == 0:
                     self.lptper_recoml[ipt].remove(self.lptper_recoml[ipt][indexp])
-                    if self.mcordata == "mc":
+                    if self.datatype == DataType.MC:
                         self.lptper_genml[ipt].remove(self.lptper_genml[ipt][indexp])
             merge_method(self.lptper_recoml[ipt], self.lpt_recoml_mergedallp[ipt])
-            if self.mcordata == "mc":
+            if self.datatype == DataType.MC:
                 merge_method(self.lptper_genml[ipt], self.lpt_genml_mergedallp[ipt])
 
         count_evt = 0

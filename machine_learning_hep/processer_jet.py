@@ -237,7 +237,7 @@ class ProcesserJets(Processer):
             histonorm.SetBinContent(1, len(dfquery(dfevtorig, self.s_evtsel)))
             if self.l_collcnt:
                 dfcollcnt = read_df(self.l_collcnt[index])
-                ser_collcnt = dfcollcnt[self.cfg(f"counter_read_{self.mcordata}")]
+                ser_collcnt = dfcollcnt[self.cfg(f"counter_read_{self.datatype}")]
                 collcnt_read = functools.reduce(lambda x, y: float(x) + float(y), (ar[0] for ar in ser_collcnt))
                 self.logger.info("sampled %g collisions", collcnt_read)
                 histonorm.SetBinContent(2, collcnt_read)
@@ -277,7 +277,7 @@ class ProcesserJets(Processer):
             fill_hist(h, df[["fM", "fJetPt", "fPt"]], write=True)
 
             for sel_name, sel_spec in self.cfg("data_selections", {}).items():
-                if sel_spec["level"] == self.mcordata:
+                if sel_spec["level"] == self.datatype:
                     df_sel = dfquery(df, sel_spec["query"])
                     h = create_hist(
                         f"h_mass-ptjet-pthf_{sel_name}",
@@ -288,7 +288,7 @@ class ProcesserJets(Processer):
                     )
                     fill_hist(h, df_sel[["fM", "fJetPt", "fPt"]], write=True)
 
-            if self.mcordata == "mc":
+            if self.datatype == "mc":
                 df, _ = self.split_df(df, self.cfg("frac_mcana", 0.2))
                 if len(df) == 0:
                     return
