@@ -80,7 +80,7 @@ class MultiProcesser:  # pylint: disable=too-many-instance-attributes, too-many-
 
         # namefiles pkl
         self.v_var_binning = datap["var_binning"]
-        self.n_reco = datap["files_names"]["namefile_reco"]
+        self.n_reco = datap["files_names"].get("namefile_reco", "")
         self.n_evt = datap["files_names"]["namefile_evt"]
         self.n_evtorig = datap["files_names"]["namefile_evtorig"]
         self.n_evt_count_ml = datap["files_names"].get("namefile_evt_count", "evtcount.yaml")

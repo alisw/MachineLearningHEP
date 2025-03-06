@@ -79,6 +79,7 @@ D0Jet_pp:
           O2d0cmcpjetsso: [fEnergyMother, fPtLeading, fPtSubLeading, fTheta, fNSub2DR, fNSub1, fNSub2, fAngularity]
         extra:
           fY: log((sqrt(1.864**2 + (fPt * cosh(fEta))**2) + fPt * sinh(fEta)) / sqrt(1.864**2 + fPt**2)) #TODO : change mass or make sure Lc mass is updated
+          fM: 1.864
         tags:
           ismcsignal: {var: fFlagMcMatchGen, req: [[0], []], abs: true}
           ismcbkg: {var: fFlagMcMatchGen, req: [[], [0]], abs: true}
@@ -161,13 +162,14 @@ D0Jet_pp:
       jetdata:
         level: data
         file: AnalysisResultsReco.parquet
-      # evtorig:
-      #   level: all
-      #   file: AnalysisResultsEvtOrig.parquet
-      # evt:
-      #   level: all
-      #   source: evtorig
-      #   file: AnalysisResultsEvt.parquet
+      evtorig:
+        level: all
+        source: collgen
+        file: AnalysisResultsEvtOrig.parquet
+      evt:
+        level: all
+        source: collgen
+        file: AnalysisResultsEvt.parquet
       # collcnt:
       #   level: all
       #   file: AnalysisResultsCollCnt.parquet
@@ -221,10 +223,10 @@ D0Jet_pp:
 
   files_names:
     namefile_unmerged_tree: AO2D.root
-    namefile_reco: AnalysisResultsReco.parquet
+    # namefile_reco: AnalysisResultsReco.parquet
     namefile_evt: AnalysisResultsEvt.parquet
-    namefile_collcnt: AnalysisResultsCollCnt.parquet
-    namefile_bccnt: AnalysisResultsBcCnt.parquet
+    # namefile_collcnt: AnalysisResultsCollCnt.parquet
+    # namefile_bccnt: AnalysisResultsBcCnt.parquet
     namefile_evtvalroot: AnalysisResultsROOTEvtVal.root
     namefile_evtorig: AnalysisResultsEvtOrig.parquet
     namefile_gen: AnalysisResultsGen.parquet
