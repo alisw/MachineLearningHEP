@@ -25,6 +25,7 @@ import argparse
 import math
 import sys
 from enum import Enum
+from itertools import permutations
 
 from ROOT import (
     TH1,
@@ -43,8 +44,12 @@ from ROOT import (
     gROOT,
 )
 
+from machine_learning_hep.utils.hist import get_dim, get_nbins, project_hist
+
 
 class ObjectType(Enum):
+    """Enumeration for object type classification"""
+
     UNKNOWN = 0
     TH_1 = 1
     TH_2 = 2
@@ -363,17 +368,26 @@ def are_same_files(
     return (same_structure, common_content, compared_all, same_content, dict_results)
 
 
-def make_projections(objects: dict):
+def make_projections(objects: dict, n_slices_max: int = 0):
     """Make projections of multidimensional objects."""
     for obj_file in objects.values():
         objects_new = {}
         for name, obj in obj_file.items():
             type_obj = get_object_type(obj)
-            if type_obj in (ObjectType.TH_2, ObjectType.TH_3):
-                objects_new[f"{name}_x"] = obj.ProjectionX("_x")
-                objects_new[f"{name}_y"] = obj.ProjectionY("_y")
-            if type_obj is ObjectType.TH_3:
-                objects_new[f"{name}_z"] = obj.ProjectionZ("_z")
+            if type_obj not in (ObjectType.TH_2, ObjectType.TH_3, ObjectType.TH_N_T):
+                continue
+            n_dim = get_dim(obj)
+            for axis_proj in range(n_dim):
+                objects_new[f"{name}_p{axis_proj}"] = project_hist(obj, [axis_proj], {})
+            if n_slices_max > 1:
+                for axis_proj, axis_slice in permutations(range(n_dim), 2):
+                    if (n_bins := get_nbins(obj, axis_slice)) > n_slices_max:
+                        continue
+                    for i_bin in range(n_bins):
+                        i_bin += 1
+                        objects_new[f"{name}_p{axis_proj}_s{axis_slice}-{i_bin}"] = project_hist(
+                            obj, [axis_proj], {axis_slice: (i_bin, i_bin)}
+                        )
         obj_file.update(objects_new)
 
 
@@ -486,6 +500,9 @@ def main():
         "-t", type=int, help="tolerance (order of magnitude of the maximum acceptable relative difference of values)"
     )
     parser.add_argument("--proj", action="store_true", help="make projections for multidimensional objects")
+    parser.add_argument(
+        "--slices", type=int, default=0, help="make projections in bins of each axis with n_bins <= n_slices"
+    )
     parser.add_argument("--norm", action="store_true", help="self-normalise objects by their integral")
 
     args = parser.parse_args()
@@ -498,6 +515,7 @@ def main():
     name_pattern = args.n
     mag_epsilon = None if args.t is None else args.t
     project = args.proj
+    n_slices_max = args.slices
     normalise = args.norm
 
     gROOT.SetBatch(True)
@@ -523,7 +541,7 @@ def main():
 
         # Make projections.
         if project:
-            make_projections(objects)
+            make_projections(objects, n_slices_max)
 
         # Normalise objects.
         if normalise:
