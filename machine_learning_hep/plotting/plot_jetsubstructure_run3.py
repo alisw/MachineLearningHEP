@@ -99,8 +99,10 @@ class Plotter:
         self.species = None
         if "D0Jet" in path_database_analysis:
             self.species = "D0"
-        if "LcJet" in path_database_analysis:
+        elif "LcJet" in path_database_analysis:
             self.species = "Lc"
+        else:
+            self.logger.critical("Jet species could not be determined.")
 
         with open(path_database_analysis, encoding="utf-8") as file_db:
             db_analysis = yaml.safe_load(file_db)
