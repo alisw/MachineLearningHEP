@@ -63,7 +63,7 @@ analysis:
     histomass: true # processer: process_histomass
   mc:
     histomass: true # processer: process_histomass
-    efficiency: false # processer: process_efficiency
+    efficiency: true # processer: process_efficiency
   fd:
     histomass: true
   steps:

@@ -65,15 +65,18 @@ class AnalyzerJets(Analyzer):
         suffix = f"results.{period}" if period is not None else "resultsallp"
         self.d_resultsallpmc = self.cfg(f"mc.{suffix}")
         self.d_resultsallpdata = self.cfg(f"data.{suffix}")
+        self.d_resultsallpfd = self.cfg(f"fd.{suffix}")
 
         # input directories (processor output)
         self.d_resultsallpdata_proc = self.cfg(f"data_proc.{suffix}")
         self.d_resultsallpmc_proc = self.cfg(f"mc_proc.{suffix}")
+        self.d_resultsallpfd_proc = self.cfg(f"fd_proc.{suffix}")
 
         # input files
         n_filemass_name = datap["files_names"]["histofilename"]
         self.n_filemass = os.path.join(self.d_resultsallpdata_proc, n_filemass_name)
         self.n_filemass_mc = os.path.join(self.d_resultsallpmc_proc, n_filemass_name)
+        self.n_filemass_fd = os.path.join(self.d_resultsallpfd_proc, n_filemass_name)
         self.n_fileeff = datap["files_names"]["efffilename"]
         self.n_fileeff = os.path.join(self.d_resultsallpmc_proc, self.n_fileeff)
         self.n_fileresp = datap["files_names"]["respfilename"]
@@ -1063,57 +1066,73 @@ class AnalyzerJets(Analyzer):
         # hres.Sumw2() # TODO: check if we should do this here
         return hres
 
-    # region feeddown
-    # pylint: disable=too-many-statements
+
     def estimate_feeddown(self):
-        self.logger.info("Estimating feeddown")
+        """Estimate feeddown from legacy Run 2 trees or gen-only simulation"""
+        match self.cfg("fd_input", "tree"):
+            case "tree":
+                with TFile(self.cfg("fd_root")) as rfile:
+                    powheg_xsection = rfile.Get("fHistXsection")
+                    powheg_xsection_scale_factor = powheg_xsection.GetBinContent(1) / powheg_xsection.GetEntries()
+                self.logger.info("POWHEG luminosity (mb^{-1}): %g", 1.0 / powheg_xsection_scale_factor)
 
-        with TFile(self.cfg("fd_root")) as rfile:
-            powheg_xsection = rfile.Get("fHistXsection")
-            powheg_xsection_scale_factor = powheg_xsection.GetBinContent(1) / powheg_xsection.GetEntries()
-        self.logger.info("POWHEG luminosity (mb^{-1}): %g", 1.0 / powheg_xsection_scale_factor)
+                df = pd.read_parquet(self.cfg("fd_parquet"))
+                col_mapping = {"dr": "delta_r_jet", "zpar": "z"}  # TODO: check mapping
 
-        df = pd.read_parquet(self.cfg("fd_parquet"))
-        col_mapping = {"dr": "delta_r_jet", "zpar": "z"}  # TODO: check mapping
+                # TODO: generalize to higher dimensions
+                h3_fd_gen_orig = {}
+                for var in self.observables["all"]:
+                    bins_ptjet = np.asarray(self.cfg("bins_ptjet"), "d")
+                    # TODO: generalize or derive from histogram?
+                    bins_obs = {}
+                    if binning := self.cfg(f"observables.{var}.bins_gen_var"):
+                        bins_tmp = np.asarray(binning, "d")
+                    elif binning := self.cfg(f"observables.{var}.bins_gen_fix"):
+                        bins_tmp = bin_array(*binning)
+                    elif binning := self.cfg(f"observables.{var}.bins_var"):
+                        bins_tmp = np.asarray(binning, "d")
+                    elif binning := self.cfg(f"observables.{var}.bins_fix"):
+                        bins_tmp = bin_array(*binning)
+                    else:
+                        self.logger.error("no binning specified for %s, using defaults", var)
+                        bins_tmp = bin_array(10, 0.0, 1.0)
+                    bins_obs[var] = bins_tmp
 
-        # TODO: generalize to higher dimensions
+                    colname = col_mapping.get(var, f"{var}_jet")
+                    if f"{colname}" not in df:
+                        if var is not None:
+                            self.logger.error("No feeddown information for %s (%s), cannot estimate feeddown", var, colname)
+                            # print(df.info(), flush=True)
+                        continue
+
+                    # TODO: derive histogram
+                    h3_fd_gen_orig[var] = create_hist(
+                        "h3_feeddown_gen",
+                        f";p_{{T}}^{{jet}} (GeV/#it{{c}});p_{{T}}^{{HF}} (GeV/#it{{c}});{var}",
+                        bins_ptjet,
+                        self.bins_candpt,
+                        bins_obs[var],
+                    )
+                    fill_hist_fast(h3_fd_gen_orig, df[["pt_jet", "pt_cand", f"{colname}"]])
+                    self._save_hist(project_hist(h3_fd_gen_orig, [0, 2], {}), f"fd/h_ptjet-{var}_feeddown_gen_noeffscaling.png")
+
+            case "sim":
+                # TODO: recover cross section
+                h3_fd_gen_orig = {}
+                with TFile(self.n_filemass_fd) as rfile:
+                    for var in self.observables["all"]:
+                        self.logger.info("Running feeddown analysis for obs. %s", var)
+                        label = f"-{var}" if var else ""
+                        if fh := rfile.Get(f"h_mass-ptjet-pthf{label}"):
+                            h3_fd_gen_orig[var] = project_hist(fh, list(range(1, get_dim(fh))), {})
+                            ensure_sumw2(h3_fd_gen_orig[var])
+
+            case fd_input:
+                self.logger.critical("Invalid feeddown input %s", fd_input)
+
         for var in self.observables["all"]:
-            bins_ptjet = np.asarray(self.cfg("bins_ptjet"), "d")
-            # TODO: generalize or derive from histogram?
-            bins_obs = {}
-            if binning := self.cfg(f"observables.{var}.bins_gen_var"):
-                bins_tmp = np.asarray(binning, "d")
-            elif binning := self.cfg(f"observables.{var}.bins_gen_fix"):
-                bins_tmp = bin_array(*binning)
-            elif binning := self.cfg(f"observables.{var}.bins_var"):
-                bins_tmp = np.asarray(binning, "d")
-            elif binning := self.cfg(f"observables.{var}.bins_fix"):
-                bins_tmp = bin_array(*binning)
-            else:
-                self.logger.error("no binning specified for %s, using defaults", var)
-                bins_tmp = bin_array(10, 0.0, 1.0)
-            bins_obs[var] = bins_tmp
-
-            colname = col_mapping.get(var, f"{var}_jet")
-            if f"{colname}" not in df:
-                if var is not None:
-                    self.logger.error("No feeddown information for %s (%s), cannot estimate feeddown", var, colname)
-                    # print(df.info(), flush=True)
-                continue
-
-            # TODO: derive histogram
-            h3_fd_gen_orig = create_hist(
-                "h3_feeddown_gen",
-                f";p_{{T}}^{{jet}} (GeV/#it{{c}});p_{{T}}^{{HF}} (GeV/#it{{c}});{var}",
-                bins_ptjet,
-                self.bins_candpt,
-                bins_obs[var],
-            )
-            fill_hist_fast(h3_fd_gen_orig, df[["pt_jet", "pt_cand", f"{colname}"]])
-            self._save_hist(project_hist(h3_fd_gen_orig, [0, 2], {}), f"fd/h_ptjet-{var}_feeddown_gen_noeffscaling.png")
-
             # new method
-            h3_fd_gen = h3_fd_gen_orig.Clone()
+            h3_fd_gen = h3_fd_gen_orig[var].Clone()
             ensure_sumw2(h3_fd_gen)
             self._save_hist(project_hist(h3_fd_gen, [0, 2], {}), f"fd/h_ptjet-{var}_fdnew_gen.png")
             # apply np efficiency
