@@ -34,6 +34,7 @@ from ROOT import (
     TAxis,
     TCanvas,
     TColor,
+    TDirectory,
     TDirectoryFile,
     TFile,
     THnSparse,
@@ -362,9 +363,30 @@ def are_same_files(
     return (same_structure, common_content, compared_all, same_content, dict_results)
 
 
-def make_plots(
-    dict_obj: dict, dict_result: dict, verbose: bool = False, diff_only: bool = False, normalize: bool = False
-):
+def make_projections(objects: dict):
+    """Make projections of multidimensional objects."""
+    for obj_file in objects.values():
+        objects_new = {}
+        for name, obj in obj_file.items():
+            type_obj = get_object_type(obj)
+            if type_obj in (ObjectType.TH_2, ObjectType.TH_3):
+                objects_new[f"{name}_x"] = obj.ProjectionX("_x")
+                objects_new[f"{name}_y"] = obj.ProjectionY("_y")
+            if type_obj is ObjectType.TH_3:
+                objects_new[f"{name}_z"] = obj.ProjectionZ("_z")
+        obj_file.update(objects_new)
+
+
+def normalise_objects(objects: dict):
+    """Normalise objects by their integral."""
+    for obj_file in objects.values():
+        for obj in obj_file.values():
+            type_obj = get_object_type(obj)
+            if type_obj in (ObjectType.TH_1, ObjectType.TH_2, ObjectType.TH_3):
+                obj.Scale(1.0 / (obj.Integral() or 1.0))
+
+
+def make_plots(dict_obj: dict, dict_result: dict, verbose: bool = False, diff_only: bool = False):
     """Plot compared objects and their ratios."""
 
     print("\nPlotting")
@@ -405,10 +427,7 @@ def make_plots(
             obj.SetBit(TH1.kNoTitle)
             obj.SetStats(0)
             obj.SetTitle(str(i_file))
-            if normalize:
-                obj_plot = obj.DrawNormalized(opt)
-            else:
-                obj_plot = obj.DrawClone(opt)
+            obj_plot = obj.DrawClone(opt)
             list_canvas.append(obj_plot)
             # Make ratio.
             if not is_first_file and key_obj in dict_obj[key_file_first]:
@@ -460,29 +479,37 @@ def main():
     parser.add_argument("file_2", type=str, help="second ROOT file")
     parser.add_argument("-v", action="store_true", help="verbose mode")
     parser.add_argument("-p", action="store_true", help="plot objects")
+    parser.add_argument("-s", action="store_true", help="skip numeric comparison")
     parser.add_argument("-d", action="store_true", help="report and plot only different objects")
     parser.add_argument("-n", type=str, default="", help="name pattern (substring required in the object path)")
     parser.add_argument(
         "-t", type=int, help="tolerance (order of magnitude of the maximum acceptable relative difference of values)"
     )
+    parser.add_argument("--proj", action="store_true", help="make projections for multidimensional objects")
+    parser.add_argument("--norm", action="store_true", help="self-normalise objects by their integral")
 
     args = parser.parse_args()
     path_file_1 = args.file_1
     path_file_2 = args.file_2
     verbose = args.v
     plot = args.p
+    skip_comparison = args.s
     diff_only = args.d
     name_pattern = args.n
     mag_epsilon = None if args.t is None else args.t
+    project = args.proj
+    normalise = args.norm
 
     gROOT.SetBatch(True)
     gROOT.ProcessLine("gErrorIgnoreLevel = 1001;")  # suppress INFO messages
+    TH1.AddDirectory(False)  # allow same names for different objects
+    TDirectory.AddDirectory(False)  # allow same names for different objects
 
     # Abort if paths are same.
     if path_file_1 == path_file_2:
         msg_fatal("File paths are same.")
 
-    # Load objects.
+    # Process files.
     objects = {}
     with TFile(path_file_1) as file_1, TFile(path_file_2) as file_2:
         for i, (path_i, file_i) in enumerate(zip((path_file_1, path_file_2), (file_1, file_2))):
@@ -490,25 +517,38 @@ def main():
             # For testing purposes, treat identical files as different.
             if path_file_1 == path_file_2:
                 key_i += f"_{i + 1}"
+            # Load objects.
             print(f"\nLoading objects from file {path_i}.")
             objects[key_i] = list_recursive(file_i, verbose=verbose, name_pattern=name_pattern)
 
-        # Compare objects.
-        same_structure, common_content, compared_all, same_content, dict_result = are_same_files(
-            objects, verbose, diff_only, mag_epsilon
-        )
+        # Make projections.
+        if project:
+            make_projections(objects)
 
-        # Report results.
-        string_tolerance = str(None) if mag_epsilon is None else f"1e{mag_epsilon}"
-        print(f"\nSame structure:\t\t\t\t\t{same_structure}")
-        print(f"Common content:\t\t\t\t\t{common_content}")
-        print(f"Compared all common content:\t{compared_all}")
-        print(f"Same compared content:\t\t\t{same_content} (tolerance {string_tolerance})")
-        print(f"Files are same:\t\t\t\t\t{all((same_structure, common_content, compared_all, same_content))}")
+        # Normalise objects.
+        if normalise:
+            normalise_objects(objects)
+
+        # Compare objects.
+        if skip_comparison:
+            list_names_all = sorted({name for obj_file in objects.values() for name in obj_file})
+            dict_result = {name: True for name in list_names_all}
+        else:
+            same_structure, common_content, compared_all, same_content, dict_result = are_same_files(
+                objects, verbose, diff_only, mag_epsilon
+            )
+
+            # Report results.
+            string_tolerance = str(None) if mag_epsilon is None else f"1e{mag_epsilon}"
+            print(f"\nSame structure:\t\t\t\t\t{same_structure}")
+            print(f"Common content:\t\t\t\t\t{common_content}")
+            print(f"Compared all common content:\t{compared_all}")
+            print(f"Same compared content:\t\t\t{same_content} (tolerance {string_tolerance})")
+            print(f"Files are same:\t\t\t\t\t{all((same_structure, common_content, compared_all, same_content))}")
 
         # Plot objects.
         if plot:
-            make_plots(objects, dict_result, verbose, diff_only, normalize=False)
+            make_plots(objects, dict_result, verbose, diff_only)
 
 
 if __name__ == "__main__":
