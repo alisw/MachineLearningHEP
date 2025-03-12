@@ -385,7 +385,7 @@ def make_projections(objects: dict, n_slices_max: int = 0):
                         continue
                     for i_bin in range(n_bins):
                         i_bin += 1
-                        objects_new[f"{name}_p{axis_proj}_s{axis_slice}-{i_bin}"] = project_hist(
+                        objects_new[f"{name}_p{axis_proj}_s{axis_slice}-b{i_bin}"] = project_hist(
                             obj, [axis_proj], {axis_slice: (i_bin, i_bin)}
                         )
         obj_file.update(objects_new)
