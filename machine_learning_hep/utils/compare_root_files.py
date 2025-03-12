@@ -395,8 +395,7 @@ def normalise_objects(objects: dict):
     """Normalise objects by their integral."""
     for obj_file in objects.values():
         for obj in obj_file.values():
-            type_obj = get_object_type(obj)
-            if type_obj in (ObjectType.TH_1, ObjectType.TH_2, ObjectType.TH_3):
+            if get_object_type(obj) in (ObjectType.TH_1, ObjectType.TH_2, ObjectType.TH_3):
                 obj.Scale(1.0 / (obj.Integral() or 1.0))
 
 
