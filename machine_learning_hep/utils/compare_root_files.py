@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 
-#  © Copyright CERN 2024. All rights not expressly granted are reserved.  #
-#                 Author: Gian.Michele.Innocenti@cern.ch                  #
+#  © Copyright CERN 2025. All rights not expressly granted are reserved.  #
 # This program is free software: you can redistribute it and/or modify it #
 #  under the terms of the GNU General Public License as published by the  #
 # Free Software Foundation, either version 3 of the License, or (at your  #
