@@ -29,6 +29,6 @@ for f in "${files[@]}"; do
     echo "Output dir $dir_out"
     mkdir -p "$dir_out"
     cd "$dir_out" || { echo "Cannot enter $dir_out"; exit 1; }
-    "${dir_this}/compare_root_files.py" "$file_1" "$file_2" "$@" > "diff.txt"
+    "${dir_this}/compare_root_files.py" "$file_1" "$file_2" "$@" > "diff.txt" 2>&1
     cd "$dir_pwd" || { echo "Cannot enter $dir_pwd"; exit 1; }
 done
