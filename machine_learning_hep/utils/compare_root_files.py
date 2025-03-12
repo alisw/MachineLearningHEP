@@ -18,8 +18,6 @@
 @date   2025-03-03
 """
 
-# pylint: disable=too-many-return-statements,too-many-branches,too-many-statements
-
 import argparse
 import math
 import sys
