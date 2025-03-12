@@ -398,7 +398,9 @@ def normalise_objects(objects: dict):
                 obj.Scale(1.0 / (obj.Integral() or 1.0))
 
 
-def make_plots(dict_obj: dict, dict_result: dict, verbose: bool = False, diff_only: bool = False):
+def make_plots(
+    dict_obj: dict, dict_result: dict, verbose: bool = False, diff_only: bool = False, common_only: bool = False
+):
     """Plot compared objects and their ratios."""
 
     print("\nPlotting")
@@ -423,6 +425,8 @@ def make_plots(dict_obj: dict, dict_result: dict, verbose: bool = False, diff_on
             if get_object_type(obj) not in (ObjectType.TH_1, ObjectType.TH_2):
                 continue
             if diff_only and dict_result.get(key_obj, False):
+                continue
+            if common_only and key_obj not in dict_result:
                 continue
             # Make the main canvas.
             opt = "LP"
@@ -493,6 +497,7 @@ def main():
     parser.add_argument("-p", action="store_true", help="plot objects")
     parser.add_argument("-s", action="store_true", help="skip numeric comparison")
     parser.add_argument("-d", action="store_true", help="report and plot only different objects")
+    parser.add_argument("-c", action="store_true", help="plot only common objects")
     parser.add_argument("-n", type=str, default="", help="name pattern (substring required in the object path)")
     parser.add_argument(
         "-t", type=int, help="tolerance (order of magnitude of the maximum acceptable relative difference of values)"
@@ -510,6 +515,7 @@ def main():
     plot = args.p
     skip_comparison = args.s
     diff_only = args.d
+    common_only = args.c
     name_pattern = args.n
     mag_epsilon = None if args.t is None else args.t
     project = args.proj
@@ -547,8 +553,11 @@ def main():
 
         # Compare objects.
         if skip_comparison:
-            list_names_all = sorted({name for obj_file in objects.values() for name in obj_file})
-            dict_result = {name: True for name in list_names_all}
+            if common_only:
+                list_names = sorted(set(objects[0].keys()).intersection(objects[1].keys()))
+            else:
+                list_names = sorted(set(objects[0].keys()).union(objects[1].keys()))
+            dict_result = {name: True for name in list_names}
         else:
             same_structure, common_content, compared_all, same_content, dict_result = are_same_files(
                 objects, verbose, diff_only, mag_epsilon
@@ -564,7 +573,7 @@ def main():
 
         # Plot objects.
         if plot:
-            make_plots(objects, dict_result, verbose, diff_only)
+            make_plots(objects, dict_result, verbose, diff_only, common_only)
 
 
 if __name__ == "__main__":
