@@ -498,7 +498,7 @@ def main():
     parser = argparse.ArgumentParser(description="Compare histogram-like objects between two ROOT files.")
     parser.add_argument("file_1", type=str, help="first ROOT file")
     parser.add_argument("file_2", type=str, help="second ROOT file")
-    parser.add_argument("-l", type=str, nargs=2, help="labels for files")
+    parser.add_argument("-l", type=str, nargs=2, default=("1", "2"), help="labels for files")
     parser.add_argument("-v", action="store_true", help="verbose mode")
     parser.add_argument("-p", action="store_true", help="plot objects")
     parser.add_argument("-d", action="store_true", help="report and plot only different objects")
@@ -517,7 +517,7 @@ def main():
     args = parser.parse_args()
     path_file_1 = args.file_1
     path_file_2 = args.file_2
-    labels = args.l if args.l else ("1", "2")
+    labels = args.l
     verbose = args.v
     plot = args.p
     diff_only = args.d
