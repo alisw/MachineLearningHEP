@@ -501,9 +501,9 @@ def main():
     parser.add_argument("-l", type=str, nargs=2, help="labels for files")
     parser.add_argument("-v", action="store_true", help="verbose mode")
     parser.add_argument("-p", action="store_true", help="plot objects")
-    parser.add_argument("-s", action="store_true", help="skip numeric comparison")
     parser.add_argument("-d", action="store_true", help="report and plot only different objects")
     parser.add_argument("-c", action="store_true", help="plot only common objects")
+    parser.add_argument("-s", action="store_true", help="skip numeric comparison")
     parser.add_argument("-n", type=str, default="", help="name pattern (substring required in the object path)")
     parser.add_argument(
         "-t", type=int, help="tolerance (order of magnitude of the maximum acceptable relative difference of values)"
@@ -520,9 +520,9 @@ def main():
     labels = args.l if args.l else ("1", "2")
     verbose = args.v
     plot = args.p
-    skip_comparison = args.s
     diff_only = args.d
     common_only = args.c
+    skip_comparison = args.s
     name_pattern = args.n
     mag_epsilon = None if args.t is None else args.t
     project = args.proj
