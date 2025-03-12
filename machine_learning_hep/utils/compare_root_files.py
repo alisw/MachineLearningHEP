@@ -399,7 +399,12 @@ def normalise_objects(objects: dict):
 
 
 def make_plots(
-    dict_obj: dict, dict_result: dict, verbose: bool = False, diff_only: bool = False, common_only: bool = False
+    dict_obj: dict,
+    dict_result: dict,
+    verbose: bool = False,
+    diff_only: bool = False,
+    common_only: bool = False,
+    labels: tuple[str, str] = ("1", "2"),
 ):
     """Plot compared objects and their ratios."""
 
@@ -415,8 +420,8 @@ def make_plots(
     is_first_file = True
     key_file_first = ""
     for key_file, dict_file in dict_obj.items():
-        i_file = len(dict_colors) + 1
-        print("Entry", i_file, key_file)
+        i_file = len(dict_colors)
+        print("File", i_file + 1, labels[i_file], key_file)
         dict_colors[key_file] = TColor.GetColor(list_colors[len(dict_colors)])
         dict_markers[key_file] = list_markers[len(dict_markers)]
         if is_first_file:
@@ -442,7 +447,7 @@ def make_plots(
             obj.SetMarkerColor(dict_colors[key_file])
             obj.SetBit(TH1.kNoTitle)
             obj.SetStats(0)
-            obj.SetTitle(str(i_file))
+            obj.SetTitle(labels[i_file])
             obj_plot = obj.DrawClone(opt)
             list_canvas.append(obj_plot)
             # Make ratio.
@@ -452,7 +457,7 @@ def make_plots(
                 # print(f'Drawing {obj.GetName()} with opt "{opt}" on canvas {gPad.GetName()}')
                 # line_1 = TLine(obj.GetXaxis().GetXmin(), 1, obj.GetXaxis().GetXmax(), 1)
                 obj_ratio = obj.Clone(f"{obj.GetName()}_ratio")
-                obj_ratio.SetTitle(f"ratio {i_file}/1")
+                obj_ratio.SetTitle(f"ratio {labels[i_file]}/{labels[0]}")
                 obj_ratio.Divide(dict_obj[key_file_first][key_obj])
                 list_canvas.append(obj_ratio.DrawClone(opt))
                 # list_canvas.append(line_1.Draw())
@@ -493,6 +498,7 @@ def main():
     parser = argparse.ArgumentParser(description="Compare histogram-like objects between two ROOT files.")
     parser.add_argument("file_1", type=str, help="first ROOT file")
     parser.add_argument("file_2", type=str, help="second ROOT file")
+    parser.add_argument("-l", type=str, nargs=2, help="labels for files")
     parser.add_argument("-v", action="store_true", help="verbose mode")
     parser.add_argument("-p", action="store_true", help="plot objects")
     parser.add_argument("-s", action="store_true", help="skip numeric comparison")
@@ -511,6 +517,7 @@ def main():
     args = parser.parse_args()
     path_file_1 = args.file_1
     path_file_2 = args.file_2
+    labels = args.l if args.l else ("1", "2")
     verbose = args.v
     plot = args.p
     skip_comparison = args.s
@@ -573,7 +580,7 @@ def main():
 
         # Plot objects.
         if plot:
-            make_plots(objects, dict_result, verbose, diff_only, common_only)
+            make_plots(objects, dict_result, verbose, diff_only, common_only, labels)
 
 
 if __name__ == "__main__":
