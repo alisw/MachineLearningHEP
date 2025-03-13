@@ -373,8 +373,12 @@ class AnalyzerJets(Analyzer):
         if fitcfg is None:
             return None, None
         res, ws, frame, residual_frame = self.fitter.fit_mass_new(hist, pdfnames, fitcfg, level, roows, True)
+        test = [o is None for o in (res, ws, frame, filename)]
+        if any(test):
+            self.logger.critical("fit_mass_new failed: got %s", str(test))
         frame.SetTitle(f"inv. mass for p_{{T}} {self.bins_candpt[ipt]} - {self.bins_candpt[ipt + 1]} GeV/c")
         c = TCanvas()
+        chi2 = 0.0
 
         textInfoRight = create_text_info(0.62, 0.68, 1.0, 0.89)
         add_text_info_fit(textInfoRight, frame, ws, param_names)
@@ -386,18 +390,19 @@ class AnalyzerJets(Analyzer):
             (sig, sig_err, bkg, bkg_err, signif, signif_err, s_over_b, s_over_b_err) = calc_signif(
                 ws, res, pdfnames, param_names, mean_sgn, sigma_sgn
             )
-
             add_text_info_perf(textInfoLeft, sig, sig_err, bkg, bkg_err, s_over_b, s_over_b_err, signif, signif_err)
+            chi2 = frame.chiSquare()
+            self.logger.info("Chi2 = %g", chi2)
 
         frame.Draw()
         textInfoRight.Draw()
         textInfoLeft.Draw()
         if res.status() != 0:
-            self.logger.warning("Invalid fit result for %s", hist.GetName())
+            self.logger.warning("Invalid Roofit fit result for %s", hist.GetName())
             filename = filename.replace(".png", "_invalid.png")
         self._save_canvas(c, filename)
 
-        if level == "data":
+        if level == "data" and residual_frame is not None:
             residual_frame.SetTitle(
                 f"inv. mass for p_{{T}} {self.bins_candpt[ipt]} - {self.bins_candpt[ipt + 1]} GeV/c"
             )
@@ -405,6 +410,9 @@ class AnalyzerJets(Analyzer):
             residual_frame.Draw()
             filename = filename.replace(".png", "_residual.png")
             self._save_canvas(cres, filename)
+
+        if chi2 > 5.0:
+            self.logger.error("Roofit fit is too bad, pthf: %g-%g", self.bins_candpt[ipt], self.bins_candpt[ipt + 1])
 
         return res, ws
 
