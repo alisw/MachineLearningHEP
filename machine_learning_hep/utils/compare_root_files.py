@@ -18,8 +18,6 @@
 @date   2025-03-03
 """
 
-# pylint: disable=too-many-return-statements,too-many-branches,too-many-statements
-
 import argparse
 import math
 import sys
@@ -398,7 +396,14 @@ def normalise_objects(objects: dict):
                 obj.Scale(1.0 / (obj.Integral() or 1.0))
 
 
-def make_plots(dict_obj: dict, dict_result: dict, verbose: bool = False, diff_only: bool = False):
+def make_plots(
+    dict_obj: dict,
+    dict_result: dict,
+    verbose: bool = False,
+    diff_only: bool = False,
+    common_only: bool = False,
+    labels: tuple[str, str] = ("1", "2"),
+):
     """Plot compared objects and their ratios."""
 
     print("\nPlotting")
@@ -413,8 +418,8 @@ def make_plots(dict_obj: dict, dict_result: dict, verbose: bool = False, diff_on
     is_first_file = True
     key_file_first = ""
     for key_file, dict_file in dict_obj.items():
-        i_file = len(dict_colors) + 1
-        print("Entry", i_file, key_file)
+        i_file = len(dict_colors)
+        print("File", i_file + 1, labels[i_file], key_file)
         dict_colors[key_file] = TColor.GetColor(list_colors[len(dict_colors)])
         dict_markers[key_file] = list_markers[len(dict_markers)]
         if is_first_file:
@@ -423,6 +428,8 @@ def make_plots(dict_obj: dict, dict_result: dict, verbose: bool = False, diff_on
             if get_object_type(obj) not in (ObjectType.TH_1, ObjectType.TH_2):
                 continue
             if diff_only and dict_result.get(key_obj, False):
+                continue
+            if common_only and key_obj not in dict_result:
                 continue
             # Make the main canvas.
             opt = "LP"
@@ -438,7 +445,7 @@ def make_plots(dict_obj: dict, dict_result: dict, verbose: bool = False, diff_on
             obj.SetMarkerColor(dict_colors[key_file])
             obj.SetBit(TH1.kNoTitle)
             obj.SetStats(0)
-            obj.SetTitle(str(i_file))
+            obj.SetTitle(labels[i_file])
             obj_plot = obj.DrawClone(opt)
             list_canvas.append(obj_plot)
             # Make ratio.
@@ -448,7 +455,7 @@ def make_plots(dict_obj: dict, dict_result: dict, verbose: bool = False, diff_on
                 # print(f'Drawing {obj.GetName()} with opt "{opt}" on canvas {gPad.GetName()}')
                 # line_1 = TLine(obj.GetXaxis().GetXmin(), 1, obj.GetXaxis().GetXmax(), 1)
                 obj_ratio = obj.Clone(f"{obj.GetName()}_ratio")
-                obj_ratio.SetTitle(f"ratio {i_file}/1")
+                obj_ratio.SetTitle(f"ratio {labels[i_file]}/{labels[0]}")
                 obj_ratio.Divide(dict_obj[key_file_first][key_obj])
                 list_canvas.append(obj_ratio.DrawClone(opt))
                 # list_canvas.append(line_1.Draw())
@@ -489,10 +496,12 @@ def main():
     parser = argparse.ArgumentParser(description="Compare histogram-like objects between two ROOT files.")
     parser.add_argument("file_1", type=str, help="first ROOT file")
     parser.add_argument("file_2", type=str, help="second ROOT file")
+    parser.add_argument("-l", type=str, nargs=2, default=("1", "2"), help="labels for files")
     parser.add_argument("-v", action="store_true", help="verbose mode")
     parser.add_argument("-p", action="store_true", help="plot objects")
-    parser.add_argument("-s", action="store_true", help="skip numeric comparison")
     parser.add_argument("-d", action="store_true", help="report and plot only different objects")
+    parser.add_argument("-c", action="store_true", help="plot only common objects")
+    parser.add_argument("-s", action="store_true", help="skip numeric comparison")
     parser.add_argument("-n", type=str, default="", help="name pattern (substring required in the object path)")
     parser.add_argument(
         "-t", type=int, help="tolerance (order of magnitude of the maximum acceptable relative difference of values)"
@@ -506,10 +515,12 @@ def main():
     args = parser.parse_args()
     path_file_1 = args.file_1
     path_file_2 = args.file_2
+    labels = args.l
     verbose = args.v
     plot = args.p
-    skip_comparison = args.s
     diff_only = args.d
+    common_only = args.c
+    skip_comparison = args.s
     name_pattern = args.n
     mag_epsilon = None if args.t is None else args.t
     project = args.proj
@@ -547,8 +558,11 @@ def main():
 
         # Compare objects.
         if skip_comparison:
-            list_names_all = sorted({name for obj_file in objects.values() for name in obj_file})
-            dict_result = {name: True for name in list_names_all}
+            if common_only:
+                list_names = sorted(set(objects[0].keys()).intersection(objects[1].keys()))
+            else:
+                list_names = sorted(set(objects[0].keys()).union(objects[1].keys()))
+            dict_result = {name: True for name in list_names}
         else:
             same_structure, common_content, compared_all, same_content, dict_result = are_same_files(
                 objects, verbose, diff_only, mag_epsilon
@@ -564,7 +578,7 @@ def main():
 
         # Plot objects.
         if plot:
-            make_plots(objects, dict_result, verbose, diff_only)
+            make_plots(objects, dict_result, verbose, diff_only, common_only, labels)
 
 
 if __name__ == "__main__":
