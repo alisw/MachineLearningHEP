@@ -779,7 +779,7 @@ class AnalyzerJets(Analyzer):
                 for i, h in enumerate(map(lambda h, ibin=iptjet + 1: project_hist(h, [1], {0: (ibin, ibin)}), hists)):
                     hcs.append(h.DrawCopy("same" if i > 0 else ""))
                     hcs[-1].SetLineColor(cmap[i])
-                hcs[0].GetYaxis().SetRangeUser(0.0, 1.1 * max(map(lambda h: h.GetMaximum(), hcs)))
+                hcs[0].GetYaxis().SetRangeUser(0.0, 1.1 * max(h.GetMaximum() for h in hcs))
                 range_ptjet = get_bin_limits(axis_ptjet, iptjet + 1)
                 filename = (
                     f"sideband/h_{label[1:]}_overview_ptjet-pthf_{string_range_ptjet(range_ptjet)}"
