@@ -143,7 +143,7 @@ class Plotter:
         # LaTeX string
         self.latex_hadron = self.db_typean["latexnamehadron"]
         self.latex_ptjet = "#it{p}_{T}^{jet ch}"
-        self.latex_pthf = "#it{p}_{T}^{%s} (GeV/#it{c})" % self.latex_hadron
+        self.latex_pthf = f"#it{{p}}_{{T}}^{{{self.latex_hadron}}} (GeV/#it{{c}})"
         self.latex_obs = self.db_typean["observables"][self.var]["label"]
         self.latex_y = self.db_typean["observables"][self.var]["label_y"]
 
@@ -255,7 +255,7 @@ class Plotter:
         # text
         self.text_alice = "ALICE Preliminary, pp"  # preliminaries
         # self.text_alice = "#bf{ALICE}, pp, #sqrt{#it{s}} = 13.6 TeV"  # paper
-        self.text_tagged = "%s-tagged" % self.latex_hadron
+        self.text_tagged = f"{self.latex_hadron}-tagged"
         # self.text_jets = "charged-particle jets, anti-#it{k}_{T}, #it{R} = 0.4"
         self.text_jets = self.text_tagged + " " + "charged-particle jets, anti-#it{k}_{T}, #it{R} = 0.4"
         self.text_ptjet = "%g #leq %s (GeV/#it{c}) < %g"
@@ -329,7 +329,9 @@ class Plotter:
     def get_object(self, name: str, file=None):
         if file is None:
             file = self.file_results
-        if not (obj := file.Get(name)):
+        if file is None:
+            self.logger.critical("No result file set")
+        if not (obj := file.Get(name)):  # type: ignore
             self.logger.fatal(make_message_notfound(name))
         if isinstance(obj, TH1):
             obj.SetDirectory(0)  # Decouple the object from the file.
@@ -694,15 +696,14 @@ class Plotter:
 
             # Results
 
+            list_iptjet = []
             if self.species == "D0":
                 # list_iptjet = [0, 1, 2, 3]  # indices of jet pt bins to process
                 # list_iptjet = [0, 1, 2, 3, 4, 5, 6, 7]  # indices of jet pt bins to process
                 list_iptjet = [2, 3, 4, 5, 6]  # indices of jet pt bins to process
                 # list_iptjet = [2, 3]  # indices of jet pt bins to process
-            if self.species == "Lc":
+            elif self.species == "Lc":
                 list_iptjet = [1, 2]  # indices of jet pt bins to process
-            if self.species == "incl":
-                list_iptjet = [2]
             plot_lc_vs_d0 = True
             list_stat_all = []
             list_syst_all = []
@@ -1176,7 +1177,7 @@ class Plotter:
             self.list_latex = [
                 self.text_alice,
                 self.text_jets,
-                f"{self.get_text_range_pthf(-1, iptjet)}, {self.text_etajet}",
+                f"{self.get_text_range_pthf(-1, -1)}, {self.text_etajet}",
             ]
             if not plot_run2_data:
                 self.list_latex[0] = f"{self.text_alice}, {self.text_run3}"
@@ -1267,7 +1268,7 @@ class Plotter:
                 self.list_latex = [
                     self.text_alice,
                     self.text_jets,
-                    f"{self.get_text_range_pthf(-1, iptjet)}, {self.text_etajet}",
+                    f"{self.get_text_range_pthf(-1, -1)}, {self.text_etajet}",
                 ]
                 if self.var in ("zg", "rg", "nsd"):
                     self.list_latex.append(self.text_sd)
