@@ -113,7 +113,18 @@ class AnalyzerJets(Analyzer):
         self.h_effnew_ptjet_pthf = {"pr": None, "np": None}
         self.h_effnew_pthf = {"pr": None, "np": None}
         self.hfeeddown_det = {"mc": {}, "data": {}}
-        self.h_reflcorr = create_hist("h_reflcorr", ";p_{T}^{HF} (GeV/#it{c})", self.bins_candpt)
+        self.h_reflcorr = create_hist("h_reflcorr", ";#it{p}_{T}^{HF} (GeV/#it{c})", self.bins_candpt)
+        self.h_fit_results = {}
+        for level in ("data", "mc"):
+            self.h_fit_results[level] = {}
+            for param, symbol in zip(
+                ("mean", "sigma", "significance", "chi2"), ("#it{#mu}", "#it{#sigma}", "significance", "#it{#chi}^{2}")
+            ):
+                self.h_fit_results[level][param] = create_hist(
+                    f"h_fit_{level}_{param}",
+                    f"{level} fit: {symbol}" + ";#it{p}_{T}^{HF} (GeV/#it{c});" + symbol,
+                    self.bins_candpt,
+                )
         self.n_events = {}
         self.n_colls_read = {}
         self.n_colls_tvx = {}
@@ -393,6 +404,9 @@ class AnalyzerJets(Analyzer):
             add_text_info_perf(textInfoLeft, sig, sig_err, bkg, bkg_err, s_over_b, s_over_b_err, signif, signif_err)
             chi2 = frame.chiSquare()
             self.logger.info("Chi2 = %g", chi2)
+            self.h_fit_results[level]["chi2"].SetBinContent(ipt + 1, chi2)
+            self.h_fit_results[level]["significance"].SetBinContent(ipt + 1, signif)
+            self.h_fit_results[level]["significance"].SetBinError(ipt + 1, signif_err)
 
         frame.Draw()
         textInfoRight.Draw()
@@ -585,6 +599,18 @@ class AnalyzerJets(Analyzer):
                                 varname_sigma = fitcfg.get("var_sigma", self.p_param_names["gauss_sigma"])
                                 self.fit_mean[level][ipt] = roo_ws.var(varname_mean).getValV()
                                 self.fit_sigma[level][ipt] = roo_ws.var(varname_sigma).getValV()
+                                self.h_fit_results[level]["mean"].SetBinContent(
+                                    ipt + 1, roo_ws.var(varname_mean).getVal()
+                                )
+                                self.h_fit_results[level]["mean"].SetBinError(
+                                    ipt + 1, roo_ws.var(varname_mean).getError()
+                                )
+                                self.h_fit_results[level]["sigma"].SetBinContent(
+                                    ipt + 1, roo_ws.var(varname_sigma).getVal()
+                                )
+                                self.h_fit_results[level]["sigma"].SetBinError(
+                                    ipt + 1, roo_ws.var(varname_sigma).getError()
+                                )
                             varname_m = fitcfg.get("var", "m")
                             if roo_ws.pdf("bkg"):
                                 self.fit_func_bkg[level][ipt] = roo_ws.pdf("bkg").asTF(roo_ws.var(varname_m))
@@ -593,6 +619,9 @@ class AnalyzerJets(Analyzer):
                                 roo_ws.var(varname_m).getMax("fit"),
                             )
                             self.logger.debug("fit range for %s-%i: %s", level, ipt, self.fit_range[level][ipt])
+        for dict_param in self.h_fit_results.values():
+            for hist in dict_param.values():
+                self._save_hist(hist, f"roofit/{hist.GetName()}.png")
 
     # region sidebands
     # pylint: disable=too-many-branches,too-many-statements,too-many-locals
