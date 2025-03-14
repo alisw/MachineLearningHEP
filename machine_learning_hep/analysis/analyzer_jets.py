@@ -384,9 +384,8 @@ class AnalyzerJets(Analyzer):
         if fitcfg is None:
             return None, None
         res, ws, frame, residual_frame = self.fitter.fit_mass_new(hist, pdfnames, fitcfg, level, roows, True)
-        test = [o is None for o in (res, ws, frame, filename)]
-        if any(test):
-            self.logger.critical("fit_mass_new failed: got %s", str(test))
+        if any(test_none := [o is None for o in (res, ws, frame, filename)]):
+            self.logger.critical("fit_mass_new failed: got %s", str(test_none))
         frame.SetTitle(f"inv. mass for p_{{T}} {self.bins_candpt[ipt]} - {self.bins_candpt[ipt + 1]} GeV/c")
         c = TCanvas()
         chi2 = 0.0
