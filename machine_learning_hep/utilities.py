@@ -439,7 +439,7 @@ def folding(h_input, response_matrix, h_output):
     return h_output
 
 
-def get_plot_range(val_min, val_max, margin_min, margin_max, logscale=False):
+def get_plot_range(val_min, val_max, margin_min, margin_max, logscale=False) -> tuple[float, float] | tuple[None, None]:
     """Return the minimum and maximum of the plotting range so that there are margins
     expressed as fractions of the plotting range."""
     k = 1 - margin_min - margin_max
@@ -461,7 +461,7 @@ def get_plot_range(val_min, val_max, margin_min, margin_max, logscale=False):
     return val_min_plot, val_max_plot
 
 
-def get_x_window_gr(l_gr: list, with_errors=True):
+def get_x_window_gr(l_gr: list, with_errors=True) -> tuple[float, float]:
     """Return the minimum and maximum x value so that all the points of the graphs in the list
     fit in the range (by default including the error bars)."""
 
@@ -482,7 +482,7 @@ def get_x_window_gr(l_gr: list, with_errors=True):
     return x_min, x_max
 
 
-def get_x_window_his(l_his: list):
+def get_x_window_his(l_his: list) -> tuple[float, float]:
     """Return the minimum and maximum x value so that all the bins of the histograms in the list
     fit in the range."""
     if not isinstance(l_his, list):
@@ -495,7 +495,7 @@ def get_x_window_his(l_his: list):
     return x_min, x_max
 
 
-def get_y_window_gr(l_gr: list, with_errors=True, range_x=None):
+def get_y_window_gr(l_gr: list, with_errors=True, range_x: list[float] | None = None) -> tuple[float, float]:
     """Return the minimum and maximum y value so that all the points of the graphs in the list
     fit in the range (by default including the error bars).
     Consider only points within range_x if provided."""
@@ -521,7 +521,7 @@ def get_y_window_gr(l_gr: list, with_errors=True, range_x=None):
     return y_min, y_max
 
 
-def get_y_window_his(l_his: list, with_errors=True, range_x=None):
+def get_y_window_his(l_his: list, with_errors=True, range_x: list[float] | None = None) -> tuple[float, float]:
     """Return the minimum and maximum y value so that all the points of the histograms in the list
     fit in the range (by default including the error bars).
     Consider only bins within range_x if provided."""
@@ -745,36 +745,36 @@ def count_graphs(l_obj: list) -> int:
     return sum(is_graph(o) for o in l_obj)
 
 
-def make_plot(  # pylint: disable=too-many-arguments, too-many-branches, too-many-statements, too-many-locals
-    name,
-    can=None,
-    pad=0,
-    path=None,
-    suffix="eps",
-    title="",
-    size=None,
-    margins_c=None,
-    list_obj=None,
-    labels_obj=None,
-    leg_pos=None,
-    opt_leg_h="P",
-    opt_leg_g="P",
-    opt_plot_h="",
-    opt_plot_g="P0",
-    offsets_xy=None,
-    maxdigits=3,
-    colours=None,
-    markers=None,
-    sizes=None,
-    range_x=None,
-    range_y=None,
-    margins_y=None,
-    with_errors="xy",
-    logscale=None,
-    font_size=0.032,
-    scale=1.0,
-    plot_order=None,
-):
+def make_plot(
+    name: str,
+    can: TCanvas | None = None,
+    pad: int = 0,
+    path: str | None = None,
+    suffix: str = "eps",
+    title: str = "",
+    size: list[int] | None = None,
+    margins_c: list[float] | None = None,
+    list_obj: list | None = None,
+    labels_obj: list[str] | None = None,
+    leg_pos: list[float] | None = None,
+    opt_leg_h: list[str] | str = "P",
+    opt_leg_g: list[str] | str = "P",
+    opt_plot_h: list[str] | str = "",
+    opt_plot_g: list[str] | str = "P0",
+    offsets_xy: list[float] | None = None,
+    maxdigits: int = 3,
+    colours: list[int] | None = None,
+    markers: list[int] | None = None,
+    sizes: list[int] | None = None,
+    range_x: list[float] | None = None,
+    range_y: list[float] | None = None,
+    margins_y: list[float] | None = None,
+    with_errors: str = "xy",
+    logscale: str | None = None,
+    font_size: float = 0.032,
+    scale: float = 1.0,
+    plot_order: list[int] | None = None,
+) -> tuple[TCanvas, list]:
     """
     Make a plot with objects from a list (list_obj).
     Returns a TCanvas and a list of other created ROOT objects.
@@ -840,7 +840,12 @@ def make_plot(  # pylint: disable=too-many-arguments, too-many-branches, too-man
 
     def plot_graph(graph):
         setup_tgraph(
-            graph, get_my_colour(i_obj), get_my_marker(i_obj), get_my_size(i_obj), textsize=(font_size / scale), scale_title=1.3
+            graph,
+            get_my_colour(i_obj),
+            get_my_marker(i_obj),
+            get_my_size(i_obj),
+            textsize=(font_size / scale),
+            scale_title=1.3,
         )
         graph.SetTitle(title)
         graph.GetXaxis().SetLimits(x_min_plot, x_max_plot)
@@ -877,7 +882,12 @@ def make_plot(  # pylint: disable=too-many-arguments, too-many-branches, too-man
             gr.DrawClone("AP")
             list_new.append(gr)
         setup_histogram(
-            histogram, get_my_colour(i_obj), get_my_marker(i_obj), get_my_size(i_obj), textsize=(font_size / scale), scale_title=1.3
+            histogram,
+            get_my_colour(i_obj),
+            get_my_marker(i_obj),
+            get_my_size(i_obj),
+            textsize=(font_size / scale),
+            scale_title=1.3,
         )
         histogram.GetXaxis().SetLimits(x_min_plot, x_max_plot)
         histogram.GetXaxis().SetRangeUser(x_min_plot, x_max_plot)
@@ -893,7 +903,7 @@ def make_plot(  # pylint: disable=too-many-arguments, too-many-branches, too-man
 
     if not (isinstance(list_obj, list) and len(list_obj) > 0):
         print("Error: Empty list of objects")
-        return None, None
+        return None, []
 
     list_new = []  # list of created objects that need to exist outside the function
     if not (isinstance(offsets_xy, list) and len(offsets_xy) == 2):
