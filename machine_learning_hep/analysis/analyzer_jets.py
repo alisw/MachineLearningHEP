@@ -113,7 +113,22 @@ class AnalyzerJets(Analyzer):
         self.h_effnew_ptjet_pthf = {"pr": None, "np": None}
         self.h_effnew_pthf = {"pr": None, "np": None}
         self.hfeeddown_det = {"mc": {}, "data": {}}
-        self.h_reflcorr = create_hist("h_reflcorr", ";p_{T}^{HF} (GeV/#it{c})", self.bins_candpt)
+        self.h_reflcorr = create_hist("h_reflcorr", ";#it{p}_{T}^{HF} (GeV/#it{c})", self.bins_candpt)
+        self.h_fit_results = {}
+        self.h_fit_results = {
+            level: {
+                param: create_hist(
+                    f"h_fit_{level}_{param}",
+                    f"{level} fit: {symbol}" + ";#it{p}_{T}^{HF} (GeV/#it{c});" + symbol,
+                    self.bins_candpt,
+                )
+                for param, symbol in zip(
+                    ("mean", "sigma", "significance", "chi2"),
+                    ("#it{#mu}", "#it{#sigma}", "significance", "#it{#chi}^{2}"),
+                )
+            }
+            for level in ("data", "mc")
+        }
         self.n_events = {}
         self.n_colls_read = {}
         self.n_colls_tvx = {}
@@ -373,8 +388,22 @@ class AnalyzerJets(Analyzer):
         if fitcfg is None:
             return None, None
         res, ws, frame, residual_frame = self.fitter.fit_mass_new(hist, pdfnames, fitcfg, level, roows, True)
+        if any(test_none := [o is None for o in (res, ws, frame, filename)]):
+            self.logger.critical("fit_mass_new failed: got %s", str(test_none))
         frame.SetTitle(f"inv. mass for p_{{T}} {self.bins_candpt[ipt]} - {self.bins_candpt[ipt + 1]} GeV/c")
         c = TCanvas()
+
+        chi2 = frame.chiSquare()
+        self.h_fit_results[level]["chi2"].SetBinContent(ipt + 1, chi2)
+        if chi2 > 5.0:
+            self.logger.error(
+                "Roofit fit is too bad: %s, ipt: %d, pthf: %g-%g, Chi2 = %g",
+                level,
+                ipt,
+                self.bins_candpt[ipt],
+                self.bins_candpt[ipt + 1],
+                chi2,
+            )
 
         textInfoRight = create_text_info(0.62, 0.68, 1.0, 0.89)
         add_text_info_fit(textInfoRight, frame, ws, param_names)
@@ -386,18 +415,19 @@ class AnalyzerJets(Analyzer):
             (sig, sig_err, bkg, bkg_err, signif, signif_err, s_over_b, s_over_b_err) = calc_signif(
                 ws, res, pdfnames, param_names, mean_sgn, sigma_sgn
             )
-
             add_text_info_perf(textInfoLeft, sig, sig_err, bkg, bkg_err, s_over_b, s_over_b_err, signif, signif_err)
+            self.h_fit_results[level]["significance"].SetBinContent(ipt + 1, signif)
+            self.h_fit_results[level]["significance"].SetBinError(ipt + 1, signif_err)
 
         frame.Draw()
         textInfoRight.Draw()
         textInfoLeft.Draw()
         if res.status() != 0:
-            self.logger.warning("Invalid fit result for %s", hist.GetName())
+            self.logger.warning("Invalid Roofit fit result for %s", hist.GetName())
             filename = filename.replace(".png", "_invalid.png")
         self._save_canvas(c, filename)
 
-        if level == "data":
+        if level == "data" and residual_frame is not None:
             residual_frame.SetTitle(
                 f"inv. mass for p_{{T}} {self.bins_candpt[ipt]} - {self.bins_candpt[ipt + 1]} GeV/c"
             )
@@ -577,6 +607,18 @@ class AnalyzerJets(Analyzer):
                                 varname_sigma = fitcfg.get("var_sigma", self.p_param_names["gauss_sigma"])
                                 self.fit_mean[level][ipt] = roo_ws.var(varname_mean).getValV()
                                 self.fit_sigma[level][ipt] = roo_ws.var(varname_sigma).getValV()
+                                self.h_fit_results[level]["mean"].SetBinContent(
+                                    ipt + 1, roo_ws.var(varname_mean).getVal()
+                                )
+                                self.h_fit_results[level]["mean"].SetBinError(
+                                    ipt + 1, roo_ws.var(varname_mean).getError()
+                                )
+                                self.h_fit_results[level]["sigma"].SetBinContent(
+                                    ipt + 1, roo_ws.var(varname_sigma).getVal()
+                                )
+                                self.h_fit_results[level]["sigma"].SetBinError(
+                                    ipt + 1, roo_ws.var(varname_sigma).getError()
+                                )
                             varname_m = fitcfg.get("var", "m")
                             if roo_ws.pdf("bkg"):
                                 self.fit_func_bkg[level][ipt] = roo_ws.pdf("bkg").asTF(roo_ws.var(varname_m))
@@ -585,6 +627,9 @@ class AnalyzerJets(Analyzer):
                                 roo_ws.var(varname_m).getMax("fit"),
                             )
                             self.logger.debug("fit range for %s-%i: %s", level, ipt, self.fit_range[level][ipt])
+        for dict_param in self.h_fit_results.values():
+            for hist in dict_param.values():
+                self._save_hist(hist, f"roofit/{hist.GetName()}.png")
 
     # region sidebands
     # pylint: disable=too-many-branches,too-many-statements,too-many-locals
@@ -742,7 +787,7 @@ class AnalyzerJets(Analyzer):
                 for i, h in enumerate(map(lambda h, ibin=iptjet + 1: project_hist(h, [1], {0: (ibin, ibin)}), hists)):
                     hcs.append(h.DrawCopy("same" if i > 0 else ""))
                     hcs[-1].SetLineColor(cmap[i])
-                hcs[0].GetYaxis().SetRangeUser(0.0, 1.1 * max(map(lambda h: h.GetMaximum(), hcs)))
+                hcs[0].GetYaxis().SetRangeUser(0.0, 1.1 * max(h.GetMaximum() for h in hcs))
                 range_ptjet = get_bin_limits(axis_ptjet, iptjet + 1)
                 filename = (
                     f"sideband/h_{label[1:]}_overview_ptjet-pthf_{string_range_ptjet(range_ptjet)}"
