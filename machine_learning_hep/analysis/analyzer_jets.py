@@ -115,16 +115,20 @@ class AnalyzerJets(Analyzer):
         self.hfeeddown_det = {"mc": {}, "data": {}}
         self.h_reflcorr = create_hist("h_reflcorr", ";#it{p}_{T}^{HF} (GeV/#it{c})", self.bins_candpt)
         self.h_fit_results = {}
-        for level in ("data", "mc"):
-            self.h_fit_results[level] = {}
-            for param, symbol in zip(
-                ("mean", "sigma", "significance", "chi2"), ("#it{#mu}", "#it{#sigma}", "significance", "#it{#chi}^{2}")
-            ):
-                self.h_fit_results[level][param] = create_hist(
+        self.h_fit_results = {
+            level: {
+                param: create_hist(
                     f"h_fit_{level}_{param}",
                     f"{level} fit: {symbol}" + ";#it{p}_{T}^{HF} (GeV/#it{c});" + symbol,
                     self.bins_candpt,
                 )
+                for param, symbol in zip(
+                    ("mean", "sigma", "significance", "chi2"),
+                    ("#it{#mu}", "#it{#sigma}", "significance", "#it{#chi}^{2}"),
+                )
+            }
+            for level in ("data", "mc")
+        }
         self.n_events = {}
         self.n_colls_read = {}
         self.n_colls_tvx = {}
