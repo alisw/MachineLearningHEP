@@ -392,7 +392,18 @@ class AnalyzerJets(Analyzer):
             self.logger.critical("fit_mass_new failed: got %s", str(test_none))
         frame.SetTitle(f"inv. mass for p_{{T}} {self.bins_candpt[ipt]} - {self.bins_candpt[ipt + 1]} GeV/c")
         c = TCanvas()
-        chi2 = 0.0
+
+        chi2 = frame.chiSquare()
+        self.h_fit_results[level]["chi2"].SetBinContent(ipt + 1, chi2)
+        if chi2 > 5.0:
+            self.logger.error(
+                "Roofit fit is too bad: %s, ipt: %d, pthf: %g-%g, Chi2 = %g",
+                level,
+                ipt,
+                self.bins_candpt[ipt],
+                self.bins_candpt[ipt + 1],
+                chi2,
+            )
 
         textInfoRight = create_text_info(0.62, 0.68, 1.0, 0.89)
         add_text_info_fit(textInfoRight, frame, ws, param_names)
@@ -405,9 +416,6 @@ class AnalyzerJets(Analyzer):
                 ws, res, pdfnames, param_names, mean_sgn, sigma_sgn
             )
             add_text_info_perf(textInfoLeft, sig, sig_err, bkg, bkg_err, s_over_b, s_over_b_err, signif, signif_err)
-            chi2 = frame.chiSquare()
-            self.logger.info("Chi2 = %g", chi2)
-            self.h_fit_results[level]["chi2"].SetBinContent(ipt + 1, chi2)
             self.h_fit_results[level]["significance"].SetBinContent(ipt + 1, signif)
             self.h_fit_results[level]["significance"].SetBinError(ipt + 1, signif_err)
 
@@ -427,9 +435,6 @@ class AnalyzerJets(Analyzer):
             residual_frame.Draw()
             filename = filename.replace(".png", "_residual.png")
             self._save_canvas(cres, filename)
-
-        if chi2 > 5.0:
-            self.logger.error("Roofit fit is too bad, pthf: %g-%g", self.bins_candpt[ipt], self.bins_candpt[ipt + 1])
 
         return res, ws
 
