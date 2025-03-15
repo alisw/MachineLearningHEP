@@ -29,12 +29,11 @@ if __name__ == "__main__":
         sys.exit(1)
     outputdirs = [d["outputdir"] for d in train_spec.json()["jobResults"]]
 
-    SBASE = "/alice/cern.ch/user/a/alihyperloop/jobs"
     TBASE = f"/data2/MLhep/trains/{args.train_id}"
-    SCRIPT = "/home/jklein/alisw/Run3Analysisvalidation/exec/download_from_grid.sh"
+    SCRIPT = "/home/jklein/alisw.bak/Run3Analysisvalidation/exec/download_from_grid.sh"
 
     for outputdir in outputdirs:
-        PATH = f"{SBASE}/{outputdir}/AOD"
+        PATH = f"{outputdir}/AOD"
         CMD = f"{SCRIPT} {PATH} {TBASE}/{PATH} AO2D.root"
         if args.dry_run:
             print(f"Dry run: {CMD}")
