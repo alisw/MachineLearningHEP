@@ -239,7 +239,7 @@ LcJet_pp:
       seedmerge: [12] #list of periods
       period: [LHC23] #list of periods
       select_period: [1]
-      prefix_dir: /data2/MLhep/real/train_357222/
+      prefix_dir: /data2/MLhep/trains/369622/
       unmerged_tree_dir: [alice] #list of periods
       pkl: ["${USER}/lcjet/pkl"] #list of periods
       pkl_skimmed: ["${USER}/lcjet/pklsk"] #list of periods
@@ -256,7 +256,7 @@ LcJet_pp:
       seedmerge: [12] #list of periods
       period: [LHC24h1] #list of periods
       select_period: [1]
-      prefix_dir: /data2/MLhep/sim/train_352826/
+      prefix_dir: /data2/MLhep/trains/368429/
       unmerged_tree_dir: [alice]
       pkl: ["${USER}/lcjet/pkl"] #list of periods
       pkl_skimmed: ["${USER}/lcjet/pklsk"] #list of periods
@@ -376,26 +376,26 @@ LcJet_pp:
         zpar:
           # bins_gen_fix: [10, 0., 1.]
           # bins_det_fix: [10, 0., 1.]
-          bins_gen_var: [0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.]
-          bins_det_var: [0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.]
+          bins_gen_var: [0.4, 0.6, 0.7, 0.8, 0.9, 1.]
+          bins_det_var: [0.4, 0.6, 0.7, 0.8, 0.9, 1.]
           label: "#it{z}_{#parallel}"
           label_y: "(1/#it{N}_{jet ch}) d#it{N}/d#it{z}_{#parallel}"
         dr:
           bins_gen_fix: [10, 0., 1.]
           bins_det_fix: [10, 0., 1.]
           label: "#Delta#it{r}"
-        lntheta:
-          bins_gen_fix: [10, 0., 5.]
-          bins_det_fix: [10, 0., 5.]
-          label: "#minusln(#it{#theta})"
-          arraycols: [3]
-        lnkt:
-          bins_gen_fix: [10, -8., 2.]
-          bins_det_fix: [10, -8., 2.]
-          label: "ln(#it{k}_{T}/(GeV/#it{c}))"
-          arraycols: [3]
-        lntheta-lnkt:
-          arraycols: [3, 4]
+        # lntheta:
+        #   bins_gen_fix: [10, 0., 5.]
+        #   bins_det_fix: [10, 0., 5.]
+        #   label: "#minusln(#it{#theta})"
+        #   arraycols: [3]
+        # lnkt:
+        #   bins_gen_fix: [10, -8., 2.]
+        #   bins_det_fix: [10, -8., 2.]
+        #   label: "ln(#it{k}_{T}/(GeV/#it{c}))"
+        #   arraycols: [3]
+        # lntheta-lnkt:
+        #   arraycols: [3, 4]
 
       #n_rebin: [4,4,5,5,6,6,7,7,9,9]
       pdf_names:

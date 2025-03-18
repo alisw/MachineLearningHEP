@@ -437,6 +437,7 @@ class ProcesserJets(Processer):
                     "fPairPt",
                 ]
             )
+            cols = None
 
             # read generator level
             dfgen_orig = pd.concat(
