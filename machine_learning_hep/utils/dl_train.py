@@ -7,7 +7,11 @@ import os
 from pathlib import PurePosixPath
 
 import requests  # pylint: disable=import-error
-from alienpy import alien, xrd_core
+
+try:
+    from alienpy import alien, xrd_core
+except ImportError:
+    print("Could not import alien, install with pip install alienpy")
 
 
 def get_train_spec(train_id: int):
