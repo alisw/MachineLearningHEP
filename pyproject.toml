@@ -89,3 +89,4 @@ Repository = "https://github.com/alisw/MachineLearningHEP"
 
 [project.scripts]
 mlhep = "machine_learning_hep.steer_analysis:main"
+dl_train = "machine_learning_hep.utils.dl_train:main"

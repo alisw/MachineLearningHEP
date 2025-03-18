@@ -17,10 +17,10 @@ except ImportError:
 def get_train_spec(train_id: int):
     """Retrieve train spec from hyperloop interface"""
     # https://alimonitor.cern.ch/hyperloop/train-run/131050
-    URL = f"https://alimonitor.cern.ch/alihyperloop-data/trains/train.jsp?train_id={args.train_id}"
+    url = f"https://alimonitor.cern.ch/alihyperloop-data/trains/train.jsp?train_id={train_id}"
     try:
         return requests.get(
-            URL,
+            url,
             verify=False,
             cert=(f"/tmp/tokencert_{os.getuid()}.pem", f"/tmp/tokenkey_{os.getuid()}.pem"),
             timeout=10,
@@ -30,31 +30,41 @@ def get_train_spec(train_id: int):
         raise
 
 
-def find_ao2ds(a: alien.AliEn, dir: str) -> list[str]:
+def find_ao2ds(ali: alien.AliEn, aliendir: str) -> list[str]:
     """Find AO2Ds in train output directory"""
-    CMD_FIND = f"find {PurePosixPath(dir) / 'AOD'} AO2D.root"
-    ret = a.run(CMD_FIND)
-    if ret.exitcode == 0:
-        return ret.out.split()
-    else:
-        print(f"Failed to run search: {CMD_FIND}\n{ret.out}")
+    cmd_find = f"find {PurePosixPath(aliendir) / 'AOD'} AO2D.root"
+    print(cmd_find)
+    ret = ali.run(cmd_find)
+    if ret.exitcode != 0:
+        print(f"Failed to run search: {cmd_find}\n{ret.out}")
         return []
+    return ret.out.split()
 
 
-if __name__ == "__main__":
+def main():
+    """CLI interface"""
     parser = argparse.ArgumentParser(description="Download AO2Ds from hyperloop train")
     parser.add_argument("train_id", type=int, help="train ID")
     parser.add_argument("--prefix", "-p", default="/data2/MLhep/trains/")
     parser.add_argument("--dry-run", "-n", action="store_true", help="dry run")
     args = parser.parse_args()
 
+    print("Obtaining train spec ..")
     train_spec = get_train_spec(args.train_id)
     outputdirs = [d["outputdir"] for d in train_spec.json()["jobResults"]]
 
+    print("Finding AO2Ds ..")
     a = alien.AliEn()
-    SRC = [dir for outputdir in outputdirs for dir in find_ao2ds(a, outputdir)]
-    DST = ["file:" + str(PurePosixPath(args.prefix) / str(args.train_id) / file.lstrip("/")) for file in SRC]
-    for s, d in zip(SRC, DST):
-        print(f"Copying {s} to {d}")
+    src = [d for outputdir in outputdirs for d in find_ao2ds(a, outputdir)]
+    dst = ["file:" + str(PurePosixPath(args.prefix) / str(args.train_id) / file.lstrip("/")) for file in src]
+    print("Files to copy:")
+    for s, d in zip(src, dst):
+        print(f"{s} -> {d}")
+
     if not args.dry_run:
-        xrd_core.DO_XrootdCp(a.wb(), api_src=SRC, api_dst=DST)
+        print("Copying ..")
+        xrd_core.DO_XrootdCp(a.wb(), api_src=src, api_dst=dst)
+
+
+if __name__ == "__main__":
+    main()
