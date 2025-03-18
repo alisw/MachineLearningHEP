@@ -114,7 +114,6 @@ class AnalyzerJets(Analyzer):
         self.h_effnew_pthf = {"pr": None, "np": None}
         self.hfeeddown_det = {"mc": {}, "data": {}}
         self.h_reflcorr = create_hist("h_reflcorr", ";#it{p}_{T}^{HF} (GeV/#it{c})", self.bins_candpt)
-        self.h_fit_results = {}
         self.h_fit_results = {
             level: {
                 param: create_hist(
@@ -127,7 +126,7 @@ class AnalyzerJets(Analyzer):
                     ("#it{#mu}", "#it{#sigma}", "significance", "#it{#chi}^{2}"),
                 )
             }
-            for level in ("data", "mc")
+            for level in ("data", "mc", "mcsig", "mcrefl")
         }
         self.n_events = {}
         self.n_colls_read = {}
@@ -394,7 +393,8 @@ class AnalyzerJets(Analyzer):
         c = TCanvas()
 
         chi2 = frame.chiSquare()
-        self.h_fit_results[level]["chi2"].SetBinContent(ipt + 1, chi2)
+        if "ptjet" not in filename:
+            self.h_fit_results[level]["chi2"].SetBinContent(ipt + 1, chi2)
         if chi2 > 5.0:
             self.logger.error(
                 "Roofit fit is too bad: %s, ipt: %d, pthf: %g-%g, Chi2 = %g",
@@ -416,8 +416,9 @@ class AnalyzerJets(Analyzer):
                 ws, res, pdfnames, param_names, mean_sgn, sigma_sgn
             )
             add_text_info_perf(textInfoLeft, sig, sig_err, bkg, bkg_err, s_over_b, s_over_b_err, signif, signif_err)
-            self.h_fit_results[level]["significance"].SetBinContent(ipt + 1, signif)
-            self.h_fit_results[level]["significance"].SetBinError(ipt + 1, signif_err)
+            if "ptjet" not in filename:
+                self.h_fit_results[level]["significance"].SetBinContent(ipt + 1, signif)
+                self.h_fit_results[level]["significance"].SetBinError(ipt + 1, signif_err)
 
         frame.Draw()
         textInfoRight.Draw()
