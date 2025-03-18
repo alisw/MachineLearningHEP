@@ -1,17 +1,23 @@
 #!/bin/env python3
 
-"""This script downloads AO2Ds from a hyperloop train"""
+"""This script downloads AO2Ds from an ALICE hyperloop train run"""
 
 import argparse
 import os
-import subprocess
+from pathlib import PurePosixPath
 import sys
 
 import requests  # pylint: disable=import-error
 
+try:
+    from alienpy import alien, xrd_core
+except ImportError:
+    print("Failed to import alien -> no alien support")
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Download AO2Ds from hyperloop train")
     parser.add_argument("train_id", type=int, help="train ID")
+    parser.add_argument("--prefix", "-p", default="/data2/MLhep/trains/")
     parser.add_argument("--dry-run", "-n", action="store_true", help="dry run")
     args = parser.parse_args()
 
@@ -29,13 +35,21 @@ if __name__ == "__main__":
         sys.exit(1)
     outputdirs = [d["outputdir"] for d in train_spec.json()["jobResults"]]
 
-    TBASE = f"/data2/MLhep/trains/{args.train_id}"
-    SCRIPT = "/home/jklein/alisw.bak/Run3Analysisvalidation/exec/download_from_grid.sh"
+    TBASE = PurePosixPath(args.prefix) / str(args.train_id)
+
+    a = alien.AliEn()
 
     for outputdir in outputdirs:
-        PATH = f"{outputdir}/AOD"
-        CMD = f"{SCRIPT} {PATH} {TBASE}/{PATH} AO2D.root"
-        if args.dry_run:
-            print(f"Dry run: {CMD}")
+        PATH = PurePosixPath(f"{outputdir}") / "AOD"
+        CMD_FIND = f"find {PATH} AO2D.root"
+        ret = a.run(CMD_FIND)
+        if ret.exitcode == 0:
+            SRC = ret.out.split()
+            DST = ["file:" + str(PurePosixPath(TBASE) / file.lstrip("/")) for file in SRC]
+            for s, d in zip(SRC, DST):
+                print(f"Copying {s} to {d}")
+            if not args.dry_run:
+                xrd_core.DO_XrootdCp(a.wb(), api_src=SRC, api_dst=DST)
         else:
-            subprocess.run(CMD, shell=True, check=False, stdout=sys.stdout, stderr=sys.stderr)
+            print(f"Failed to run search: {CMD_FIND}\n{ret.out}")
+            continue
