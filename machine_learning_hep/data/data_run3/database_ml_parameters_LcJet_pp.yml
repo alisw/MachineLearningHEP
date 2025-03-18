@@ -19,8 +19,32 @@ LcJet_pp:
   sel_cen_unp: null
   sel_good_evt_unp: null # "fIsEventReject == 0"
   # sel_reco_skim: ["mlPromptScore > 0.96", "mlPromptScore > 0.97", "mlPromptScore > 0.9", "mlPromptScore > 0.85", "mlPromptScore > 0.8", "mlPromptScore > 0.6", null]  # (sel_skim_binmin bins)
-  sel_reco_skim: [null, null, null, null, null, null, null, null, null, null, null] # (sel_skim_binmin bins)
-  sel_gen_skim: [null, null, null, null, null, null, null, null, null, null, null] # (sel_skim_binmin bins)
+  sel_reco_skim: [
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+    ] # (sel_skim_binmin bins)
+  sel_gen_skim: [
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+    ] # (sel_skim_binmin bins)
   sel_skim_binmin: [1, 2, 3, 4, 5, 6, 7, 8, 10, 12] # skimming pt bins (sel_skim_binmin bins)
   sel_skim_binmax: [2, 3, 4, 5, 6, 7, 8, 10, 12, 30] # skimming pt bins (sel_skim_binmin bins)
   var_binning: fPt
@@ -57,10 +81,21 @@ LcJet_pp:
           fIsEventReject: 0
       collcnt:
         trees:
-          O2collcount: [fReadCounts, fReadCountsWithTVX, fReadCountsWithTVXAndZVertexAndSel8, fReadCountsWithTVXAndZVertexAndSelMC]
+          O2collcount:
+            [
+              fReadCounts,
+              fReadCountsWithTVX,
+              fReadCountsWithTVXAndZVertexAndSel8,
+              fReadCountsWithTVXAndZVertexAndSelMC,
+            ]
       bccnt:
         trees:
-          O2bccount: [fReadCountsWithTVX, fReadCountsWithTVXAndNoTFB, fReadCountsWithTVXAndNoTFBAndNoITSROFB]
+          O2bccount:
+            [
+              fReadCountsWithTVX,
+              fReadCountsWithTVXAndNoTFB,
+              fReadCountsWithTVXAndNoTFBAndNoITSROFB,
+            ]
 
       # collgen:
       #   level: gen
@@ -72,15 +107,41 @@ LcJet_pp:
         index: fIndexLCMCPJETOS
         trees:
           O2hflcpbase: [fPt, fY, fEta, fPhi, fFlagMcMatchGen, fOriginMcGen]
-          O2lccmcpjeto: [fIndexLCCMCPJETCOS, fIndexHFLCPBASES_0, fJetPt, fJetPhi, fJetEta, fJetNConstituents, fJetR]
-          O2lccmcpjetmo: [fIndexArrayLCCMCDJETOS_hf, fIndexArrayLCCMCDJETOS_geo, fIndexArrayLCCMCDJETOS_pt]
-          O2lccmcpjetsso: [fEnergyMother, fPtLeading, fPtSubLeading, fTheta, fNSub2DR, fNSub1, fNSub2, fPairTheta, fPairPt, fPairEnergy]
+          O2lccmcpjeto:
+            [
+              fIndexLCCMCPJETCOS,
+              fIndexHFLCPBASES_0,
+              fJetPt,
+              fJetPhi,
+              fJetEta,
+              fJetNConstituents,
+              fJetR,
+            ]
+          O2lccmcpjetmo:
+            [
+              fIndexArrayLCCMCDJETOS_hf,
+              fIndexArrayLCCMCDJETOS_geo,
+              fIndexArrayLCCMCDJETOS_pt,
+            ]
+          O2lccmcpjetsso:
+            [
+              fEnergyMother,
+              fPtLeading,
+              fPtSubLeading,
+              fTheta,
+              fNSub2DR,
+              fNSub1,
+              fNSub2,
+              fPairTheta,
+              fPairPt,
+              fPairEnergy,
+            ]
         tags:
-          isstd: {var: fFlagMcMatchGen, req: [[1], []]}
-          ismcsignal: {var: fFlagMcMatchGen, req: [[1], []], abs: true}
-          ismcbkg: {var: fFlagMcMatchGen, req: [[], [1]], abs: true}
-          ismcprompt: {var: fOriginMcGen, req: [[0], []]}
-          ismcfd: {var: fOriginMcGen, req: [[1], []]}
+          isstd: { var: fFlagMcMatchGen, req: [[1], []] }
+          ismcsignal: { var: fFlagMcMatchGen, req: [[1], []], abs: true }
+          ismcbkg: { var: fFlagMcMatchGen, req: [[], [1]], abs: true }
+          ismcprompt: { var: fOriginMcGen, req: [[0], []] }
+          ismcfd: { var: fOriginMcGen, req: [[1], []] }
         filter: "fPt >= 1. and abs(fY) <= 0.8 and abs(fJetEta) < (.9 - (fJetR / 100.))" # TODO: check jet eta cut
 
       colldet:
@@ -98,18 +159,44 @@ LcJet_pp:
           # O2hflcpare: [fErrorDecayLength, fErrorDecayLengthXY, fErrorImpactParameter0, fErrorImpactParameter1]
           O2hflcsel: [fCandidateSelFlag]
           O2hflcml: [fMlScores]
-          O2lccmcdjeto: [fIndexLCCMCDJETCOS, fIndexHFLCBASES_0, fJetPt, fJetPhi, fJetEta, fJetNConstituents, fJetR]
-          O2lccmcdjetmo: [fIndexArrayLCCMCPJETOS_hf, fIndexArrayLCCMCPJETOS_geo, fIndexArrayLCCMCPJETOS_pt]
-          O2lccmcdjetsso: [fEnergyMother, fPtLeading, fPtSubLeading, fTheta, fNSub2DR, fNSub1, fNSub2, fPairTheta, fPairPt, fPairEnergy]
+          O2lccmcdjeto:
+            [
+              fIndexLCCMCDJETCOS,
+              fIndexHFLCBASES_0,
+              fJetPt,
+              fJetPhi,
+              fJetEta,
+              fJetNConstituents,
+              fJetR,
+            ]
+          O2lccmcdjetmo:
+            [
+              fIndexArrayLCCMCPJETOS_hf,
+              fIndexArrayLCCMCPJETOS_geo,
+              fIndexArrayLCCMCPJETOS_pt,
+            ]
+          O2lccmcdjetsso:
+            [
+              fEnergyMother,
+              fPtLeading,
+              fPtSubLeading,
+              fTheta,
+              fNSub2DR,
+              fNSub1,
+              fNSub2,
+              fPairTheta,
+              fPairPt,
+              fPairEnergy,
+            ]
         tags:
-          isstd: {var: fFlagMcMatchRec, req: [[1], []]}
-          ismcsignal: {var: fFlagMcMatchRec, req: [[1], []], abs: true}
-          ismcbkg: {var: fFlagMcMatchRec, req: [[], [1]], abs: true}
-          ismcprompt: {var: fOriginMcRec, req: [[0], []]}
-          ismcfd: {var: fOriginMcRec, req: [[1], []]}
+          isstd: { var: fFlagMcMatchRec, req: [[1], []] }
+          ismcsignal: { var: fFlagMcMatchRec, req: [[1], []], abs: true }
+          ismcbkg: { var: fFlagMcMatchRec, req: [[], [1]], abs: true }
+          ismcprompt: { var: fOriginMcRec, req: [[0], []] }
+          ismcfd: { var: fOriginMcRec, req: [[1], []] }
         extract_component:
-          - {var: fMlScores, newvar: mlPromptScore, component: 1}
-          - {var: fMlScores, newvar: mlBkgScore, component: 0}
+          - { var: fMlScores, newvar: mlPromptScore, component: 1 }
+          - { var: fMlScores, newvar: mlBkgScore, component: 0 }
         filter: "fPt >= 1. and abs(fY) <= 0.8 and abs(fJetEta) < (.9 - (fJetR / 100.))" # TODO: check jet eta cut
         # swap: {cand: fCandidateSelFlag, var_swap: fIsCandidateSwapped, vars: [ismcsignal, ismcprompt, icmcfd]}
 
@@ -127,18 +214,40 @@ LcJet_pp:
           # O2hflcpare: [fErrorDecayLength, fErrorDecayLengthXY, fErrorImpactParameter0, fErrorImpactParameter1]
           O2hflcsel: [fCandidateSelFlag]
           O2hflcml: [fMlScores]
-          O2lccjeto: [fIndexLCCJETCOS, fIndexHFLCBASES_0, fJetPt, fJetPhi, fJetEta, fJetNConstituents, fJetR]
-          O2lccjetsso: [fIndexLCCJETOS, fEnergyMother, fPtLeading, fPtSubLeading, fTheta, fNSub2DR, fNSub1, fNSub2, fPairTheta, fPairPt, fPairEnergy]
+          O2lccjeto:
+            [
+              fIndexLCCJETCOS,
+              fIndexHFLCBASES_0,
+              fJetPt,
+              fJetPhi,
+              fJetEta,
+              fJetNConstituents,
+              fJetR,
+            ]
+          O2lccjetsso:
+            [
+              fIndexLCCJETOS,
+              fEnergyMother,
+              fPtLeading,
+              fPtSubLeading,
+              fTheta,
+              fNSub2DR,
+              fNSub1,
+              fNSub2,
+              fPairTheta,
+              fPairPt,
+              fPairEnergy,
+            ]
         extract_component:
-          - {var: fMlScores, newvar: mlPromptScore, component: 1}
-          - {var: fMlScores, newvar: mlBkgScore, component: 0}
+          - { var: fMlScores, newvar: mlPromptScore, component: 1 }
+          - { var: fMlScores, newvar: mlBkgScore, component: 0 }
         filter: "fPt >= 1. and abs(fY) <= 0.8 and abs(fJetEta) < (.9 - (fJetR / 100.))" # TODO: check jet eta cut
 
     merge:
       #- {base: jetgen, ref: collgen}
-      - {base: jetdet, ref: colldet}
-      - {base: jetdata, ref: colldata}
-      - {base: jetdata, ref: evtorig}
+      - { base: jetdet, ref: colldet }
+      - { base: jetdata, ref: colldata }
+      - { base: jetdata, ref: evtorig }
     # workaround for yamlfmt issue #110
 
     write:
@@ -167,14 +276,130 @@ LcJet_pp:
         file: AnalysisResultsBcCnt.parquet
 
   variables:
-    var_all: [fIndexCollisions, fFlagMcMatchRec, fCandidateSelFlag, fOriginMcRec, fIsCandidateSwapped, fNProngsContributorsPV, fY, fEta, fPt, fCpa, fCpaXY, fM, fChi2PCA, fDecayLength, fDecayLengthXY, fPtProng0, fPtProng1, fPtProng2, fImpactParameter0, fImpactParameter1, fImpactParameter2, fNSigTpcPi0, fNSigTpcPr0, fNSigTpcKa1, fNSigTpcPi2, fNSigTpcPr2, fNSigTofPi0, fNSigTofPr0, fNSigTofKa1, fNSigTofPi2, fNSigTofPr2, fNSigTpcTofPi0, fNSigTpcTofPr0, fNSigTpcTofKa1, fNSigTpcTofPi2, fNSigTpcTofPr2]
+    var_all:
+      [
+        fIndexCollisions,
+        fFlagMcMatchRec,
+        fCandidateSelFlag,
+        fOriginMcRec,
+        fIsCandidateSwapped,
+        fNProngsContributorsPV,
+        fY,
+        fEta,
+        fPt,
+        fCpa,
+        fCpaXY,
+        fM,
+        fChi2PCA,
+        fDecayLength,
+        fDecayLengthXY,
+        fPtProng0,
+        fPtProng1,
+        fPtProng2,
+        fImpactParameter0,
+        fImpactParameter1,
+        fImpactParameter2,
+        fNSigTpcPi0,
+        fNSigTpcPr0,
+        fNSigTpcKa1,
+        fNSigTpcPi2,
+        fNSigTpcPr2,
+        fNSigTofPi0,
+        fNSigTofPr0,
+        fNSigTofKa1,
+        fNSigTofPi2,
+        fNSigTofPr2,
+        fNSigTpcTofPi0,
+        fNSigTpcTofPr0,
+        fNSigTpcTofKa1,
+        fNSigTpcTofPi2,
+        fNSigTpcTofPr2,
+      ]
     var_training: # sel_skim_binmin bins
-      - [fImpactParameter0, fImpactParameter1, fImpactParameter2, fCpa, fChi2PCA, fDecayLength, fDecayLengthXY, fNSigTpcTofPi0, fNSigTpcTofPr0, fNSigTpcTofKa1, fNSigTpcTofPi2, fNSigTpcTofPr2]
-      - [fImpactParameter0, fImpactParameter1, fImpactParameter2, fCpa, fChi2PCA, fDecayLength, fDecayLengthXY, fNSigTpcTofPi0, fNSigTpcTofPr0, fNSigTpcTofKa1, fNSigTpcTofPi2, fNSigTpcTofPr2]
-      - [fImpactParameter0, fImpactParameter1, fImpactParameter2, fCpa, fChi2PCA, fDecayLength, fDecayLengthXY, fNSigTpcTofPi0, fNSigTpcTofPr0, fNSigTpcTofKa1, fNSigTpcTofPi2, fNSigTpcTofPr2]
-      - [fImpactParameter0, fImpactParameter1, fImpactParameter2, fCpa, fChi2PCA, fDecayLength, fDecayLengthXY, fNSigTpcTofPi0, fNSigTpcTofPr0, fNSigTpcTofKa1, fNSigTpcTofPi2, fNSigTpcTofPr2]
-      - [fImpactParameter0, fImpactParameter1, fImpactParameter2, fCpa, fChi2PCA, fDecayLength, fDecayLengthXY, fNSigTpcTofPi0, fNSigTpcTofPr0, fNSigTpcTofKa1, fNSigTpcTofPi2, fNSigTpcTofPr2]
-      - [fImpactParameter0, fImpactParameter1, fImpactParameter2, fCpa, fChi2PCA, fDecayLength, fDecayLengthXY, fNSigTpcTofPi0, fNSigTpcTofPr0, fNSigTpcTofKa1, fNSigTpcTofPi2, fNSigTpcTofPr2]
+      - [
+          fImpactParameter0,
+          fImpactParameter1,
+          fImpactParameter2,
+          fCpa,
+          fChi2PCA,
+          fDecayLength,
+          fDecayLengthXY,
+          fNSigTpcTofPi0,
+          fNSigTpcTofPr0,
+          fNSigTpcTofKa1,
+          fNSigTpcTofPi2,
+          fNSigTpcTofPr2,
+        ]
+      - [
+          fImpactParameter0,
+          fImpactParameter1,
+          fImpactParameter2,
+          fCpa,
+          fChi2PCA,
+          fDecayLength,
+          fDecayLengthXY,
+          fNSigTpcTofPi0,
+          fNSigTpcTofPr0,
+          fNSigTpcTofKa1,
+          fNSigTpcTofPi2,
+          fNSigTpcTofPr2,
+        ]
+      - [
+          fImpactParameter0,
+          fImpactParameter1,
+          fImpactParameter2,
+          fCpa,
+          fChi2PCA,
+          fDecayLength,
+          fDecayLengthXY,
+          fNSigTpcTofPi0,
+          fNSigTpcTofPr0,
+          fNSigTpcTofKa1,
+          fNSigTpcTofPi2,
+          fNSigTpcTofPr2,
+        ]
+      - [
+          fImpactParameter0,
+          fImpactParameter1,
+          fImpactParameter2,
+          fCpa,
+          fChi2PCA,
+          fDecayLength,
+          fDecayLengthXY,
+          fNSigTpcTofPi0,
+          fNSigTpcTofPr0,
+          fNSigTpcTofKa1,
+          fNSigTpcTofPi2,
+          fNSigTpcTofPr2,
+        ]
+      - [
+          fImpactParameter0,
+          fImpactParameter1,
+          fImpactParameter2,
+          fCpa,
+          fChi2PCA,
+          fDecayLength,
+          fDecayLengthXY,
+          fNSigTpcTofPi0,
+          fNSigTpcTofPr0,
+          fNSigTpcTofKa1,
+          fNSigTpcTofPi2,
+          fNSigTpcTofPr2,
+        ]
+      - [
+          fImpactParameter0,
+          fImpactParameter1,
+          fImpactParameter2,
+          fCpa,
+          fChi2PCA,
+          fDecayLength,
+          fDecayLengthXY,
+          fNSigTpcTofPi0,
+          fNSigTpcTofPr0,
+          fNSigTpcTofKa1,
+          fNSigTpcTofPi2,
+          fNSigTpcTofPr2,
+        ]
     var_boundaries: [fCosThetaStar, fPtProng]
     var_correlation:
       - [fCosThetaStar] # TODO: update
@@ -238,7 +463,7 @@ LcJet_pp:
       seedmerge: [12] #list of periods
       period: [LHC23] #list of periods
       select_period: [1]
-      prefix_dir: /data2/MLhep/real/train_357222/
+      prefix_dir: /data2/MLhep/trains/369622/
       unmerged_tree_dir: [alice] #list of periods
       pkl: ["${USER}/lcjet/pkl"] #list of periods
       pkl_skimmed: ["${USER}/lcjet/pklsk"] #list of periods
@@ -255,7 +480,7 @@ LcJet_pp:
       seedmerge: [12] #list of periods
       period: [LHC24h1] #list of periods
       select_period: [1]
-      prefix_dir: /data2/MLhep/sim/train_352826/
+      prefix_dir: /data2/MLhep/trains/368429/
       unmerged_tree_dir: [alice]
       pkl: ["${USER}/lcjet/pkl"] #list of periods
       pkl_skimmed: ["${USER}/lcjet/pklsk"] #list of periods
@@ -276,7 +501,12 @@ LcJet_pp:
     equalise_sig_bkg: True
     # sampletagforsignal: 1
     # sampletagforbkg: 0
-    sel_ml: [fM < 2.22 or fM > 2.35, ismcsignal == 1 and ismcprompt == 1, ismcsignal == 1 and ismcfd == 1]
+    sel_ml:
+      [
+        fM < 2.22 or fM > 2.35,
+        ismcsignal == 1 and ismcprompt == 1,
+        ismcsignal == 1 and ismcfd == 1,
+      ]
     class_labels: [bkg, prompt, non-prompt]
     nkfolds: 5
     rnd_shuffle: 12
@@ -312,11 +542,15 @@ LcJet_pp:
     data:
       prefix_dir_app: "/data2/${USER}/"
       pkl_skimmed_dec: [LHC23pp/MLapplication/prod_LHC23/skpkldecdata] #list of periods
-      pkl_skimmed_decmerged: [LHC23pp/MLapplication/prod_LHC23/skpkldecdatamerged] #list of periods
+      pkl_skimmed_decmerged: [
+          LHC23pp/MLapplication/prod_LHC23/skpkldecdatamerged,
+        ] #list of periods
     mc:
       prefix_dir_app: "/data2/${USER}/"
       pkl_skimmed_dec: [LHC23pp_mc/MLapplication/prod_LHC24h1/skpkldecmc] #list of periods
-      pkl_skimmed_decmerged: [LHC23pp_mc/MLapplication/prod_LHC24h1/skpkldecmcmerged] #list of periods
+      pkl_skimmed_decmerged: [
+          LHC23pp_mc/MLapplication/prod_LHC24h1/skpkldecmcmerged,
+        ] #list of periods
     modelname: xgboost
     modelsperptbin: # sel_skim_binmin bins
       - xgboost_classifierLcpKpi_dfselection_fPt_1.0_2.0.sav
@@ -330,9 +564,42 @@ LcJet_pp:
       - xgboost_classifierLcpKpi_dfselection_fPt_10.0_12.0.sav
       - xgboost_classifierLcpKpi_dfselection_fPt_12.0_24.0.sav
     probcutpresel:
-      data: [[0.02, 0.0, 0.0], [0.03, 0.0, 0.0], [0.04, 0.0, 0.0], [0.07, 0.0, 0.0], [0.09, 0.0, 0.0], [0.11, 0.0, 0.0], [0.15, 0.0, 0.0], [0.18, 0.0, 0.0], [0.25, 0.0, 0.0], [0.35, 0.0, 0.0]] #list of nbins
-      mc: [[0.02, 0.0, 0.0], [0.03, 0.0, 0.0], [0.04, 0.0, 0.0], [0.07, 0.0, 0.0], [0.09, 0.0, 0.0], [0.11, 0.0, 0.0], [0.15, 0.0, 0.0], [0.18, 0.0, 0.0], [0.25, 0.0, 0.0], [0.35, 0.0, 0.0]] #list of nbins
-    probcutoptimal: [[0.02, 0.0, 0.0], [0.03, 0.0, 0.0], [0.04, 0.0, 0.0], [0.07, 0.0, 0.0], [0.09, 0.0, 0.0], [0.11, 0.0, 0.0], [0.15, 0.0, 0.0], [0.18, 0.0, 0.0], [0.25, 0.0, 0.0], [0.35, 0.0, 0.0]] #list of nbins
+      data: [
+          [0.02, 0.0, 0.0],
+          [0.03, 0.0, 0.0],
+          [0.04, 0.0, 0.0],
+          [0.07, 0.0, 0.0],
+          [0.09, 0.0, 0.0],
+          [0.11, 0.0, 0.0],
+          [0.15, 0.0, 0.0],
+          [0.18, 0.0, 0.0],
+          [0.25, 0.0, 0.0],
+          [0.35, 0.0, 0.0],
+        ] #list of nbins
+      mc: [
+          [0.02, 0.0, 0.0],
+          [0.03, 0.0, 0.0],
+          [0.04, 0.0, 0.0],
+          [0.07, 0.0, 0.0],
+          [0.09, 0.0, 0.0],
+          [0.11, 0.0, 0.0],
+          [0.15, 0.0, 0.0],
+          [0.18, 0.0, 0.0],
+          [0.25, 0.0, 0.0],
+          [0.35, 0.0, 0.0],
+        ] #list of nbins
+    probcutoptimal: [
+        [0.02, 0.0, 0.0],
+        [0.03, 0.0, 0.0],
+        [0.04, 0.0, 0.0],
+        [0.07, 0.0, 0.0],
+        [0.09, 0.0, 0.0],
+        [0.11, 0.0, 0.0],
+        [0.15, 0.0, 0.0],
+        [0.18, 0.0, 0.0],
+        [0.25, 0.0, 0.0],
+        [0.35, 0.0, 0.0],
+      ] #list of nbins
 
   #region analysis
   analysis:
@@ -452,7 +719,7 @@ LcJet_pp:
         func_bkg: "expo"
         # par_start:
         # par_fix: {1: 2.286}
-        par_constrain: {1: [2.28, 2.29], 2: [.005, .03]}
+        par_constrain: { 1: [2.28, 2.29], 2: [.005, .03] }
         range: [2.08, 2.48]
 
       efficiency:
@@ -510,11 +777,15 @@ LcJet_pp:
         mc: null
       data: &data_out_default
         runselection: [null] #FIXME
-        results: ["/home/${USER}/mlhep/lcjet/jet_obs/default/default/data/results"] #list of periods
+        results: [
+            "/home/${USER}/mlhep/lcjet/jet_obs/default/default/data/results",
+          ] #list of periods
         resultsallp: "/home/${USER}/mlhep/lcjet/jet_obs/default/default/data/results_all"
       mc: &mc_out_default
         runselection: [null, null] #FIXME
-        results: ["/home/${USER}/mlhep/lcjet/jet_obs/default/default/mc/results"] #list of periods
+        results: [
+            "/home/${USER}/mlhep/lcjet/jet_obs/default/default/mc/results",
+          ] #list of periods
         resultsallp: "/home/${USER}/mlhep/lcjet/jet_obs/default/default/mc/results_all"
       data_proc: # alternative processor output used as the analyzer input
         <<: *data_out_default
@@ -525,21 +796,110 @@ LcJet_pp:
       sgnfunc: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0] # kGaus=0, k2Gaus=1, k2GausSigmaRatioPar=2 (sel_an_binmin bins)
       bkgfunc: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0] # kExpo=0, kLin=1, kPol2=2, kNoBk=3, kPow=4, kPowEx=5 (sel_an_binmin bins)
       masspeak: 2.286
-      massmin: [1.66, 1.66, 1.66, 1.66, 1.66, 1.66, 1.66, 1.66, 1.66, 1.66, 1.66, 1.66] # sel_an_binmin bins, fit region of the invariant mass distribution [GeV/c^2]
-      massmax: [2.06, 2.06, 2.06, 2.06, 2.06, 2.06, 2.06, 2.06, 2.06, 2.06, 2.06, 2.06] # sel_an_binmin bins, fit region of the invariant mass distribution [GeV/c^2]
+      massmin: [
+          1.66,
+          1.66,
+          1.66,
+          1.66,
+          1.66,
+          1.66,
+          1.66,
+          1.66,
+          1.66,
+          1.66,
+          1.66,
+          1.66,
+        ] # sel_an_binmin bins, fit region of the invariant mass distribution [GeV/c^2]
+      massmax: [
+          2.06,
+          2.06,
+          2.06,
+          2.06,
+          2.06,
+          2.06,
+          2.06,
+          2.06,
+          2.06,
+          2.06,
+          2.06,
+          2.06,
+        ] # sel_an_binmin bins, fit region of the invariant mass distribution [GeV/c^2]
       rebin: [6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6] # sel_an_binmin bins
-      fix_mean: [false, false, false, false, false, false, false, false, false, false, false, false] # sel_an_binmin bins
+      fix_mean: [
+          false,
+          false,
+          false,
+          false,
+          false,
+          false,
+          false,
+          false,
+          false,
+          false,
+          false,
+          false,
+        ] # sel_an_binmin bins
       masspeaksec: 2.286
 
       # If SetArraySigma true: sigma_initial is taken from sigmaarray; false: sigma_initial is taken from MC
       # If SetFixGaussianSigma true: sigma fixed to sigma_initial
       # SetFixGaussianSigma: [false, false, false, false, false, false, false, false, false, false, false, false] # sel_an_binmin bins
-      SetFixGaussianSigma: [true, true, true, true, true, true, true, true, true, true, true] # sel_an_binmin bins
-      SetArraySigma: [false, false, false, false, false, false, false, false, false, false, false, false] # sel_an_binmin bins
-      sigmaarray: [0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01] # initial sigma (sel_an_binmin bins)
+      SetFixGaussianSigma: [
+          true,
+          true,
+          true,
+          true,
+          true,
+          true,
+          true,
+          true,
+          true,
+          true,
+          true,
+        ] # sel_an_binmin bins
+      SetArraySigma: [
+          false,
+          false,
+          false,
+          false,
+          false,
+          false,
+          false,
+          false,
+          false,
+          false,
+          false,
+          false,
+        ] # sel_an_binmin bins
+      sigmaarray: [
+          0.01,
+          0.01,
+          0.01,
+          0.01,
+          0.01,
+          0.01,
+          0.01,
+          0.01,
+          0.01,
+          0.01,
+          0.01,
+          0.01,
+        ] # initial sigma (sel_an_binmin bins)
 
       fix_sigmasec: [true, true, true, true, true, true, true, true, true, true] # sel_an_binmin bins
-      sigmaarraysec: [0.007497, 0.007497, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01] # sel_an_binmin bins
+      sigmaarraysec: [
+          0.007497,
+          0.007497,
+          0.01,
+          0.01,
+          0.01,
+          0.01,
+          0.01,
+          0.01,
+          0.01,
+          0.01,
+          0.01,
+        ] # sel_an_binmin bins
       use_reflections: true
       # simple fitter END
 
@@ -562,17 +922,41 @@ LcJet_pp:
 
       powheg_path_prompt: /data/POWHEG/trees_powheg_pr_central.root
       powheg_prompt_variations_path: /data/POWHEG/trees_powheg_pr_
-      powheg_prompt_variations: ["F1_R05", "F05_R1", "F2_R1", "F1_R2", "F2_R2", "F05_R05", "Mhigh", "Mlow"]
+      powheg_prompt_variations:
+        [
+          "F1_R05",
+          "F05_R1",
+          "F2_R1",
+          "F1_R2",
+          "F2_R2",
+          "F05_R05",
+          "Mhigh",
+          "Mlow",
+        ]
 
       pythia8_prompt_variations_path: /data/PYTHIA8/trees_pythia8_pr_
       pythia8_prompt_variations: ["default", "charm_lo"] #["default","colour0soft"]
-      pythia8_prompt_variations_legend: ["PYTHIA 8 (Monash)", "PYTHIA 8 charm LO"] # ["PYTHIA 8 (Monash)","PYTHIA 8 SoftQCD, mode 0"]
+      pythia8_prompt_variations_legend: [
+          "PYTHIA 8 (Monash)",
+          "PYTHIA 8 charm LO",
+        ] # ["PYTHIA 8 (Monash)","PYTHIA 8 SoftQCD, mode 0"]
 
       variations_db: database_variations_LcJet_pp_jet_obs.yml
 
       # Additional cuts applied before mass histogram is filled
       use_cuts: True
-      cuts: ["mlBkgScore < 0.03", "mlBkgScore < 0.04", "mlBkgScore < 0.07", "mlBkgScore < 0.09", "mlBkgScore < 0.11", "mlBkgScore < 0.15", "mlBkgScore < 0.18", "mlBkgScore < 0.25", "mlBkgScore < 0.35", "mlBkgScore < 0.35"] # (sel_an_binmin bins)
+      cuts: [
+          "mlBkgScore < 0.03",
+          "mlBkgScore < 0.04",
+          "mlBkgScore < 0.07",
+          "mlBkgScore < 0.09",
+          "mlBkgScore < 0.11",
+          "mlBkgScore < 0.15",
+          "mlBkgScore < 0.18",
+          "mlBkgScore < 0.25",
+          "mlBkgScore < 0.35",
+          "mlBkgScore < 0.35",
+        ] # (sel_an_binmin bins)
       #mult_cuts: ["fCentFT0M >= 70 and fCentFT0M <= 100", "fCentFT0M >= 70 and fCentFT0M <= 100", "fCentFT0M >= 70 and fCentFT0M <= 100", "fCentFT0M >= 70 and fCentFT0M <= 100", "fCentFT0M >= 70 and fCentFT0M <= 100", "fCentFT0M >= 70 and fCentFT0M <= 100", "fCentFT0M >= 70 and fCentFT0M <= 100", "fCentFT0M >= 70 and fCentFT0M <= 100", "fCentFT0M >= 70 and fCentFT0M <= 100", "fCentFT0M >= 70 and fCentFT0M <= 100"] # (sel_an_binmin bins) #low mult
       #mult_cuts: ["fCentFT0M >= 20 and fCentFT0M <= 70", "fCentFT0M >= 20 and fCentFT0M <= 70", "fCentFT0M >= 20 and fCentFT0M <= 70", "fCentFT0M >= 20 and fCentFT0M <= 70", "fCentFT0M >= 20 and fCentFT0M <= 70", "fCentFT0M >= 20 and fCentFT0M <= 70", "fCentFT0M >= 20 and fCentFT0M <= 70", "fCentFT0M >= 20 and fCentFT0M <= 70", "fCentFT0M >= 20 and fCentFT0M <= 70", "fCentFT0M >= 20 and fCentFT0M <= 70"] # (sel_an_binmin bins)  #intermediate mult
       #mult_cuts: ["fCentFT0M >= 0 and fCentFT0M <= 20", "fCentFT0M >= 0 and fCentFT0M <= 20", "fCentFT0M >= 0 and fCentFT0M <= 20", "fCentFT0M >= 0 and fCentFT0M <= 20", "fCentFT0M >= 0 and fCentFT0M <= 20", "fCentFT0M >= 0 and fCentFT0M <= 20", "fCentFT0M >= 0 and fCentFT0M <= 20", "fCentFT0M >= 0 and fCentFT0M <= 20", "fCentFT0M >= 0 and fCentFT0M <= 20", "fCentFT0M >= 0 and fCentFT0M <= 20"] # (sel_an_binmin bins) #high mult
