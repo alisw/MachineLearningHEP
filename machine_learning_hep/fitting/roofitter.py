@@ -59,10 +59,10 @@ class RooFitter:
         if range_m := fit_spec.get("range"):
             m.setRange("fit", *range_m)
             # print(f'using fit range: {range_m}, var range: {m.getRange("fit")}')
-            res = model.fitTo(dh, Range=(range_m[0], range_m[1]), Save=True, PrintLevel=-1, Strategy=1)
+            res = model.fitTo(dh, Range=(range_m[0], range_m[1]), Save=True, PrintLevel=-1, Strategy=1, MaxCalls=5000)
             # model.Print('v')
         else:
-            res = model.fitTo(dh, Save=True, PrintLevel=-1, Strategy=1)
+            res = model.fitTo(dh, Save=True, PrintLevel=-1, Strategy=1, MaxCalls=5000)
         frame = None
         residual_frame = None
         if plot:
