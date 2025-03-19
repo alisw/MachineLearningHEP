@@ -278,7 +278,7 @@ DpJet_pp:
       seedmerge: [12] #list of periods
       period: [LHC23] #list of periods
       select_period: [1]
-      prefix_dir: /data2/MLhep/real/train_347181/
+      prefix_dir: /data2/MLhep/trains/364134/
       unmerged_tree_dir: [alice] #list of periods
       pkl: ["${USER}/dpjet/pkl"] #list of periods
       pkl_skimmed: ["${USER}/dpjet/pklsk"] #list of periods
@@ -295,7 +295,7 @@ DpJet_pp:
       seedmerge: [12] #list of periods
       period: [LHC24h1] #list of periods
       select_period: [1]
-      prefix_dir: /data2/MLhep/sim/train_348146/
+      prefix_dir: /data2/MLhep/trains/364345/
       unmerged_tree_dir: [alice]
       pkl: ["${USER}/dpjet/pkl"] #list of periods
       pkl_skimmed: ["${USER}/dpjet/pklsk"] #list of periods
