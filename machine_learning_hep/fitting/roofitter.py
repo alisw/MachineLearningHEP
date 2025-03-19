@@ -33,8 +33,8 @@ class RooFitter:
         ws = roows or ROOT.RooWorkspace("ws")
         var_m = fit_spec.get("var", "m")
 
-        n_signal = RooRealVar("n_signal", "Number of signal events", 100, 0, 100000000)
-        n_background = RooRealVar("n_background", "Number of background events", 100, 0, 100000000)
+        n_signal = RooRealVar("n_signal", "Number of signal events", 1e7, 0, 1.e10)
+        n_background = RooRealVar("n_background", "Number of background events", 1e7, 0, 1e10)
 
         for comp, spec in fit_spec.get("components", {}).items():
             fn = ws.factory(spec["fn"])
@@ -49,7 +49,7 @@ class RooFitter:
             background_pdf = ws.pdf(pdfnames["pdf_bkg"])
             if not background_pdf:
                 raise ValueError("bkg pdf not found")
-            model = RooAddPdf(
+            extmodel = RooAddPdf(
                 "model", "Total model", RooArgList(signal_pdf, background_pdf), RooArgList(n_signal, n_background)
             )
 
@@ -59,10 +59,17 @@ class RooFitter:
         if range_m := fit_spec.get("range"):
             m.setRange("fit", *range_m)
             # print(f'using fit range: {range_m}, var range: {m.getRange("fit")}')
-            res = model.fitTo(dh, Range=(range_m[0], range_m[1]), Save=True, PrintLevel=-1, Strategy=1)
-            # model.Print('v')
+            res = model.fitTo(dh, Range=(range_m[0], range_m[1]), Save=True, PrintLevel=-1, Strategy=1, MaxCalls=5000)
+            if level == 'data':
+                for v in ws.allVars():
+                    v.setConstant(True)
+                res = extmodel.fitTo(dh, Range=(range_m[0], range_m[1]), Save=True, PrintLevel=-1, Strategy=1, MaxCalls=5000)
         else:
-            res = model.fitTo(dh, Save=True, PrintLevel=-1, Strategy=1)
+            res = model.fitTo(dh, Save=True, PrintLevel=-1, Strategy=1, MaxCalls=5000)
+            if level == 'data':
+                for v in ws.allVars():
+                    v.setConstant(True)
+                res = extmodel.fitTo(dh, Save=True, PrintLevel=-1, Strategy=1, MaxCalls=5000)
         frame = None
         residual_frame = None
         if plot:
