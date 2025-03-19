@@ -414,20 +414,20 @@ DpJet_pp:
           bins_gen_fix: [10, 0., 1.]
           bins_det_fix: [10, 0., 1.]
           label: "#Delta#it{r}"
-        lntheta:
-          bins_gen_fix: [10, 0., 5.]
-          bins_det_fix: [10, 0., 5.]
-          label: "#minusln(#it{#theta})"
-          arraycols: [3]
-        lnkt:
-          bins_gen_fix: [10, -8., 2.]
-          bins_det_fix: [10, -8., 2.]
-          label: "ln(#it{k}_{T}/(GeV/#it{c}))"
-          arraycols: [3]
-        lntheta-lnkt:
-          arraycols: [3, 4]
+        # lntheta:
+        #   bins_gen_fix: [10, 0., 5.]
+        #   bins_det_fix: [10, 0., 5.]
+        #   label: "#minusln(#it{#theta})"
+        #   arraycols: [3]
+        # lnkt:
+        #   bins_gen_fix: [10, -8., 2.]
+        #   bins_det_fix: [10, -8., 2.]
+        #   label: "ln(#it{k}_{T}/(GeV/#it{c}))"
+        #   arraycols: [3]
+        # lntheta-lnkt:
+        #   arraycols: [3, 4]
 
-      n_rebin: [3, 3, 3, 3, 3, 3, 3, 4, 5, 5]
+      # n_rebin: [3, 3, 3, 3, 3, 3, 3, 4, 5, 5]
       pdf_names:
         pdf_sig: "sig"
         pdf_bkg: "bkg"
@@ -447,101 +447,101 @@ DpJet_pp:
           components:
             sig:
               fn: 'Gaussian::sig(m[1., 4.], mean[1.8, 1.92], sigma_g1[.006,.006,.025])'
-            #wide:
-            # fn: 'Gaussian::wide(m, mean, expr("n*sigma_g1", n[1.,5.], sigma_g1))'
-            #model:
-            #  fn: 'SUM::sig(f_peak[0.,1.]*peak, wide)'
-            bkg:
-              fn: 'Exponential::mcbkg(m, mcalpha[0.])'
+            wide:
+              fn: 'Gaussian::wide(m, mean, expr("n*sigma_g1", n[1.,20.], sigma_g1))'
             model:
-              fn: 'SUM::mctot(mcfrac[0., 0., 1.0]*sig, mcbkg)'
+             fn: 'SUM::sig(f_peak[0.,1.]*peak, wide)'
+            # bkg:
+            #   fn: 'Exponential::mcbkg(m, mcalpha[0.])'
+            # model:
+            #   fn: 'SUM::mctot(mcfrac[0., 0., 1.0]*sig, mcbkg)'
         - ptrange: [1., 2.]
           range: [1.70, 1.99]
-          #fix_params: ['n', 'f_peak']
+          fix_params: ['n', 'f_peak']
           components:
             #sig:
             #fn: 'Gaussian::sig(m, mean[2.28,2.29], sigma_g1[.005,.005,.015])'
             bkg:
-              fn: 'Polynomial::bkg(m, {a0[-1e10, 1e10], a1[-1e10, 1e10], a2[-1e10, 1e10]})'
+              fn: 'Polynomial::bkg(m, {a1[0., -3., 3.], a2[0., -3., 3.]})'
             model:
               fn: 'SUM::sum(f_sig[0.,1.]*sig, bkg)'
         - ptrange: [2., 3.]
           range: [1.70, 1.99]
-          #fix_params: ['n', 'f_peak']
+          fix_params: ['n', 'f_peak']
           components:
             # sig:
             #   fn: 'Gaussian::sig(m, mean[2.28,2.29], sigma_g1[.005,.005,.015])'
             bkg:
-              fn: 'Polynomial::bkg(m, {a0[-1e10, 1e10], a1[-1e10, 1e10], a2[-1e10, 1e10]})'
+              fn: 'Polynomial::bkg(m, {a1[0., -3., 3.], a2[0., -3., 3.]})'
             model:
               fn: 'SUM::sum(f_sig[0.,1.]*sig, bkg)'
         - ptrange: [3., 4.]
           range: [1.70, 1.99]
-          #fix_params: ['n', 'f_peak']
+          fix_params: ['n', 'f_peak']
           components:
             #sig:
             #fn: 'Gaussian::sig(m, mean[2.28,2.29], sigma_g1[.005,.005,.015])'
             bkg:
-              fn: 'Polynomial::bkg(m, {a0[-1e10, 1e10], a1[-1e10, 1e10], a2[-1e10, 1e10]})'
+              fn: 'Polynomial::bkg(m, {a1[0., -3., 3.], a2[0., -3., 3.]})'
             model:
               fn: 'SUM::sum(f_sig[0., 0., 0.8]*sig, bkg)'
         - ptrange: [4., 5.]
           range: [1.70, 1.99]
-          #fix_params: ['n', 'f_peak']
+          fix_params: ['n', 'f_peak']
           components:
             # sig:
             #   fn: 'Gaussian::sig(m, mean[2.28,2.29], sigma_g1[.005,.005,.015])'
             bkg:
-              fn: 'Polynomial::bkg(m, {a0[5000, -1e10, 1e10], a1[-1e10, 1e10], a2[-1e10, 1e10]})'
+              fn: 'Polynomial::bkg(m, {a1[0., -3., 3.], a2[0., -3., 3.]})'
             model:
               fn: 'SUM::sum(f_sig[0.,1.]*sig, bkg)'
         - ptrange: [5., 6.]
           range: [1.70, 1.99]
-          #fix_params: ['n', 'f_peak']
+          fix_params: ['n', 'f_peak']
           components:
             # sig:
             #   fn: 'Gaussian::sig(m, mean[2.28,2.29], sigma_g1[.005,.005,.015])'
             bkg:
-              fn: 'Polynomial::bkg(m, {a0[8000, -1e10, 1e10], a1[-1e10, 1e10], a2[-1e10, 1e10]})'
+              fn: 'Polynomial::bkg(m, {a1[0., -3., 3.], a2[0., -3., 3.]})'
             model:
               fn: 'SUM::sum(f_sig[0.,1.]*sig, bkg)'
         - ptrange: [6., 7.]
           range: [1.70, 1.99]
-          #fix_params: ['n', 'f_peak']
+          fix_params: ['n', 'f_peak']
           components:
             # sig:
             #   fn: 'Gaussian::sig(m, mean[2.28,2.29], sigma_g1[.005,.03])'
             bkg:
-              fn: 'Polynomial::bkg(m, {a0[219, -1e10, 1e10], a1[-1e10, 1e10], a2[-1e10, 1e10]})'
+              fn: 'Polynomial::bkg(m, {a1[0., -3., 3.], a2[0., -3., 3.]})'
             model:
               fn: 'SUM::sum(f_sig[0.,1.]*sig, bkg)'
         - ptrange: [7., 8.]
           range: [1.70, 1.99]
-          #fix_params: ['n', 'f_peak']
+          fix_params: ['n', 'f_peak']
           components:
             # sig:
             #   fn: 'Gaussian::sig(m, mean[2.28,2.29], sigma_g1[.005,.03])'
             bkg:
-              fn: 'Polynomial::bkg(m, {a0[200, -1e10, 1e10], a1[-1e10, 1e10], a2[-1e10, 1e10]})'
+              fn: 'Polynomial::bkg(m, {a1[0., -3., 3.], a2[0., -3., 3.]})'
             model:
               fn: 'SUM::sum(f_sig[0.,1.]*sig, bkg)'
         - ptrange: [8., 10.]
           range: [1.70, 1.99]
-          #fix_params: ['n', 'f_peak']
+          fix_params: ['n', 'f_peak']
           components:
             # sig:
             #   fn: 'Gaussian::sig(m, mean[2.28,2.29], sigma_g1[.005,.03])'
             bkg:
-              fn: 'Polynomial::bkg(m, {a0[500, -1e10, 1e10], a1[-1e10, 1e10], a2[-1e10, 1e10]})'
+              fn: 'Polynomial::bkg(m, {a1[0., -3., 3.], a2[0., -3., 3.]})'
             model:
               fn: 'SUM::sum(f_sig[0.,1.]*sig, bkg)'
         - range: [1.70, 2.00]
-          #fix_params: ['n', 'f_peak']
+          fix_params: ['n', 'f_peak']
           components:
             # sig:
             #   fn: 'Gaussian::sig(m, mean[2.28,2.29], sigma_g1[.005,.03])'
             bkg:
-              fn: 'Polynomial::bkg(m, {a0[200, -1e10, 1e10], a1[-1e10, 1e10], a2[-1e10, 1e10]})'
+              fn: 'Polynomial::bkg(m, {a1[0., -3., 3.], a2[0., -3., 3.]})'
             model:
               fn: 'SUM::sum(f_sig[0.,1.]*sig, bkg)'
 
