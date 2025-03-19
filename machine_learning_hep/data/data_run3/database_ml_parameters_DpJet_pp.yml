@@ -445,19 +445,24 @@ DpJet_pp:
         - level: mc
           range: [1.70, 1.99]
           components:
-            sig:
-              fn: 'Gaussian::sig(m[1., 4.], mean[1.8, 1.92], sigma_g1[.006,.006,.025])'
-            wide:
-              fn: 'Gaussian::wide(m, mean, expr("n*sigma_g1", n[1.,20.], sigma_g1))'
             model:
-             fn: 'SUM::sig(f_peak[0.,1.]*peak, wide)'
+              fn: 'RooCrystalBall::sig(m[1., 4.], mean[1.87, 1.85, 1.89], sigma_g1[0.006, 0.035], alpha1[0., 2.], n1[0., 100.], alpha1, n1)'
+              
+            # sig:
+            #   fn: 'Gaussian::sig(m[1., 4.], mean[1.85, 1.89], sigma_g1[.006,.006,.035])'
+            # wide:
+            #   fn: 'Gaussian::wide(m, mean, expr("n*sigma_g1", n[1.,200.], sigma_g1))'
+            # model:
+            #  fn: 'SUM::sig(f_peak[1., 0.,1.]*peak, wide)'
+             
             # bkg:
             #   fn: 'Exponential::mcbkg(m, mcalpha[0.])'
             # model:
             #   fn: 'SUM::mctot(mcfrac[0., 0., 1.0]*sig, mcbkg)'
         - ptrange: [1., 2.]
           range: [1.70, 1.99]
-          fix_params: ['n', 'f_peak']
+          # fix_params: ['n', 'f_peak']
+          fix_params: ['alpha1', 'n1']
           components:
             #sig:
             #fn: 'Gaussian::sig(m, mean[2.28,2.29], sigma_g1[.005,.005,.015])'
@@ -467,14 +472,15 @@ DpJet_pp:
               fn: 'SUM::sum(f_sig[0.,1.]*sig, bkg)'
         - ptrange: [2., 3.]
           range: [1.70, 1.99]
-          fix_params: ['n', 'f_peak']
+          # fix_params: ['n', 'f_peak']
+          fix_params: ['alpha1', 'n1']
           components:
             # sig:
             #   fn: 'Gaussian::sig(m, mean[2.28,2.29], sigma_g1[.005,.005,.015])'
             bkg:
-              fn: 'Polynomial::bkg(m, {a1[0., -3., 3.], a2[0., -3., 3.]})'
+              fn: 'Polynomial::bkg(m, {a1[0., -10., 10.], a2[10., 0., 10.]})'
             model:
-              fn: 'SUM::sum(f_sig[0.,1.]*sig, bkg)'
+              fn: 'SUM::sum(f_sig[0.,0.,1.]*sig, bkg)'
         - ptrange: [3., 4.]
           range: [1.70, 1.99]
           fix_params: ['n', 'f_peak']
@@ -482,7 +488,7 @@ DpJet_pp:
             #sig:
             #fn: 'Gaussian::sig(m, mean[2.28,2.29], sigma_g1[.005,.005,.015])'
             bkg:
-              fn: 'Polynomial::bkg(m, {a1[0., -3., 3.], a2[0., -3., 3.]})'
+              fn: 'Polynomial::bkg(m, {a1[0., -1., 1.], a2[10., 0., 10.]})'
             model:
               fn: 'SUM::sum(f_sig[0., 0., 0.8]*sig, bkg)'
         - ptrange: [4., 5.]
@@ -492,7 +498,7 @@ DpJet_pp:
             # sig:
             #   fn: 'Gaussian::sig(m, mean[2.28,2.29], sigma_g1[.005,.005,.015])'
             bkg:
-              fn: 'Polynomial::bkg(m, {a1[0., -3., 3.], a2[0., -3., 3.]})'
+              fn: 'Polynomial::bkg(m, {a1[0., -100., 100.], a2[10., -10., 10.]})'
             model:
               fn: 'SUM::sum(f_sig[0.,1.]*sig, bkg)'
         - ptrange: [5., 6.]
@@ -502,7 +508,7 @@ DpJet_pp:
             # sig:
             #   fn: 'Gaussian::sig(m, mean[2.28,2.29], sigma_g1[.005,.005,.015])'
             bkg:
-              fn: 'Polynomial::bkg(m, {a1[0., -3., 3.], a2[0., -3., 3.]})'
+              fn: 'Polynomial::bkg(m, {a1[0., -100., 100.], a2[10., -10., 10.]})'
             model:
               fn: 'SUM::sum(f_sig[0.,1.]*sig, bkg)'
         - ptrange: [6., 7.]
@@ -512,7 +518,7 @@ DpJet_pp:
             # sig:
             #   fn: 'Gaussian::sig(m, mean[2.28,2.29], sigma_g1[.005,.03])'
             bkg:
-              fn: 'Polynomial::bkg(m, {a1[0., -3., 3.], a2[0., -3., 3.]})'
+              fn: 'Polynomial::bkg(m, {a1[0., -100., 100.], a2[10., -10., 10.]})'
             model:
               fn: 'SUM::sum(f_sig[0.,1.]*sig, bkg)'
         - ptrange: [7., 8.]
@@ -522,7 +528,7 @@ DpJet_pp:
             # sig:
             #   fn: 'Gaussian::sig(m, mean[2.28,2.29], sigma_g1[.005,.03])'
             bkg:
-              fn: 'Polynomial::bkg(m, {a1[0., -3., 3.], a2[0., -3., 3.]})'
+              fn: 'Polynomial::bkg(m, {a1[0., -100., 100.], a2[10., -10., 10.]})'
             model:
               fn: 'SUM::sum(f_sig[0.,1.]*sig, bkg)'
         - ptrange: [8., 10.]
@@ -532,7 +538,7 @@ DpJet_pp:
             # sig:
             #   fn: 'Gaussian::sig(m, mean[2.28,2.29], sigma_g1[.005,.03])'
             bkg:
-              fn: 'Polynomial::bkg(m, {a1[0., -3., 3.], a2[0., -3., 3.]})'
+              fn: 'Polynomial::bkg(m, {a1[0., -100., 100.], a2[10., -10., 10.]})'
             model:
               fn: 'SUM::sum(f_sig[0.,1.]*sig, bkg)'
         - range: [1.70, 2.00]
@@ -541,7 +547,7 @@ DpJet_pp:
             # sig:
             #   fn: 'Gaussian::sig(m, mean[2.28,2.29], sigma_g1[.005,.03])'
             bkg:
-              fn: 'Polynomial::bkg(m, {a1[0., -3., 3.], a2[0., -3., 3.]})'
+              fn: 'Polynomial::bkg(m, {a1[0., -100., 100.], a2[10., -10., 10.]})'
             model:
               fn: 'SUM::sum(f_sig[0.,1.]*sig, bkg)'
 
@@ -552,13 +558,13 @@ DpJet_pp:
             signal: [-2., 2.] # systematics
             right: [3., 5.5] # systematics
 
-      mass_fit:
-        func_sig: "gaus"
-        func_bkg: "expo"
-        # par_start:
-        # par_fix: {1: 2.286}
-        par_constrain: {1: [2.28, 2.29], 2: [.005, .03]}
-        range: [1.7, 2.00]
+      # mass_fit:
+      #   func_sig: "gaus"
+      #   func_bkg: "expo"
+      #   # par_start:
+      #   # par_fix: {1: 2.286}
+      #   par_constrain: {1: [2.28, 2.29], 2: [.005, .03]}
+      #   range: [1.7, 2.00]
 
       efficiency:
         index_match: fIndexArrayDPCMCPJETOS_hf
