@@ -140,10 +140,10 @@ class AnalyzerJets(Analyzer):
         self.file_out_histo = TFile(self.n_fileresult, "recreate")
 
         self.fitter = RooFitter()
+        # ROOT workspaces stored at various levels
         self.roo_ws = {}
-        self.roo_ws_ptjet = {}
+        # ROOT workspaces at latest level
         self.roows = {}
-        self.roows_ptjet = {}
 
     # region helpers
     def _save_canvas(self, canvas, filename):
@@ -496,8 +496,6 @@ class AnalyzerJets(Analyzer):
             self.fit_sigma[level] = [None] * self.nbins
             self.fit_func_bkg[level] = [None] * self.nbins
             self.fit_range[level] = [None] * self.nbins
-            self.roo_ws[level] = [None] * self.nbins
-            self.roo_ws_ptjet[level] = [[None] * self.nbins for _ in range(10)]
             rfilename = self.n_filemass_mc if "mc" in level else self.n_filemass
             fitcfg = None
             self.logger.debug("Opening file %s.", rfilename)
@@ -559,7 +557,7 @@ class AnalyzerJets(Analyzer):
                         if h_invmass.GetEntries() < 100:  # TODO: reconsider criterion
                             self.logger.error("Not enough entries to fit %s iptjet %s ipt %d", level, iptjet, ipt)
                             continue
-                        roows = self.roows.get(ipt) if iptjet is None else self.roows_ptjet.get((iptjet, ipt))
+                        roows = self.roows.get((iptjet, ipt))
                         if roows is None and level != self.fit_levels[0]:
                             self.logger.critical(
                                 "missing previous fit result, cannot fit %s iptjet %s ipt %d", level, iptjet, ipt
@@ -596,18 +594,15 @@ class AnalyzerJets(Analyzer):
                         #     roo_ws.Print()
                         # TODO: save snapshot per level
                         # roo_ws.saveSnapshot(level, None)
-                        if iptjet is not None:
-                            self.logger.debug("Setting roows_ptjet for %s iptjet %s ipt %d", level, iptjet, ipt)
-                            self.roows_ptjet[(iptjet, ipt)] = roo_ws
-                            self.roo_ws_ptjet[level][iptjet][ipt] = roo_ws
-                        else:
-                            self.logger.debug("Setting roows for %s iptjet %s ipt %d", level, iptjet, ipt)
-                            self.roows[ipt] = roo_ws
-                            self.roo_ws[level][ipt] = roo_ws
-                            for jptjet in range(get_nbins(h, 1)):
-                                self.roows_ptjet[(jptjet, ipt)] = roo_ws.Clone()
-                                self.roo_ws_ptjet[level][jptjet][ipt] = roo_ws.Clone()
-                            # TODO: take parameter names from DB
+                        self.logger.info("Setting roows_ptjet for %s iptjet %s ipt %d", level, iptjet, ipt)
+                        self.roows[(iptjet, ipt)] = roo_ws.Clone()
+                        self.roo_ws[(level, iptjet, ipt)] = roo_ws.Clone()
+                        if iptjet is None:
+                            if not fitcfg.get("per_ptjet"):
+                                for jptjet in range(get_nbins(h, 1)):
+                                    self.logger.info('Overwriting roows_ptjet for %s iptjet %s ipt %d', level, jptjet, ipt)
+                                    self.roows[(jptjet, ipt)] = roo_ws.Clone()
+                                    self.roo_ws[(level, jptjet, ipt)] = roo_ws.Clone()
                             if level in ("data", "mc"):
                                 varname_mean = fitcfg.get("var_mean", self.p_param_names["gauss_mean"])
                                 varname_sigma = fitcfg.get("var_sigma", self.p_param_names["gauss_sigma"])
@@ -699,7 +694,7 @@ class AnalyzerJets(Analyzer):
 
         fh = {}
         area = {}
-        var_m = self.roows[ipt].var("m")
+        var_m = self.roows[(None, ipt)].var("m")
         for region in regions:
             # project out the mass regions (first axis)
             axes = list(range(get_dim(hist)))[1:]
@@ -718,47 +713,27 @@ class AnalyzerJets(Analyzer):
         ensure_sumw2(fh_sideband)
 
         subtract_sidebands = False
-        if mcordata == "data" and self.cfg("sidesub_per_ptjet"):
-            self.logger.info("Subtracting sidebands in pt jet bins")
-            for iptjet in range(get_nbins(fh_subtracted, 0)):
-                if rws := self.roo_ws_ptjet[mcordata][iptjet][ipt]:
-                    f = rws.pdf("bkg").asTF(self.roo_ws[mcordata][ipt].var("m"))
+        if mcordata == "data":
+            bins_ptjet = list(range(get_nbins(fh_subtracted, 0))) if self.cfg("sidesub_per_ptjet") else [None]
+            self.logger.info("Subtracting sidebands in ptjet bins: %s", bins_ptjet)
+            for iptjet in bins_ptjet:
+                if rws := self.roo_ws.get((mcordata, iptjet, ipt)):
+                    f = rws.pdf("bkg").asTF(rws.var("m"))
                 else:
-                    self.logger.error("Could not retrieve roows for %s-%i-%i", mcordata, iptjet, ipt)
+                    # FIXME: What to do?
+                    self.logger.error("Could not retrieve roows for %s-iptjet%i-ipt%i", mcordata, iptjet, ipt)
                     continue
                 area = {region: f.Integral(*limits[region]) for region in regions}
-                self.logger.info(
-                    "areas for %s-%s: %g, %g, %g",
-                    mcordata,
-                    ipt,
-                    area["signal"],
-                    area["sideband_left"],
-                    area["sideband_right"],
-                )
+                self.logger.info("areas for %s-iptjet%s-ipt%s: %s", mcordata, iptjet, ipt, area)
                 if (area["sideband_left"] + area["sideband_right"]) > 0.0:
                     subtract_sidebands = True
                     areaNormFactor = area["signal"] / (area["sideband_left"] + area["sideband_right"])
-                    # TODO: extend to higher dimensions
-                    for ibin in range(get_nbins(fh_subtracted, 1)):
-                        scale_bin(fh_sideband, areaNormFactor, iptjet + 1, ibin + 1)
-        else:
-            for region in regions:
-                f = self.roo_ws[mcordata][ipt].pdf("bkg").asTF(self.roo_ws[mcordata][ipt].var("m"))
-                area[region] = f.Integral(*limits[region])
-
-            self.logger.info(
-                "areas for %s-%s: %g, %g, %g",
-                mcordata,
-                ipt,
-                area["signal"],
-                area["sideband_left"],
-                area["sideband_right"],
-            )
-
-            if (area["sideband_left"] + area["sideband_right"]) > 0.0:
-                subtract_sidebands = True
-                areaNormFactor = area["signal"] / (area["sideband_left"] + area["sideband_right"])
-                fh_sideband.Scale(areaNormFactor)
+                    # TODO: generalize and extend to higher dimensions
+                    if iptjet is None:
+                        fh_sideband.Scale(areaNormFactor)
+                    else:
+                        for ibin in range(get_nbins(fh_subtracted, 1)):
+                            scale_bin(fh_sideband, areaNormFactor, iptjet + 1, ibin + 1)
 
         self._save_hist(fh_sideband, f"sideband/h_ptjet{label}_sideband_{string_range_pthf(range_pthf)}_{mcordata}.png")
         if subtract_sidebands:
@@ -802,7 +777,7 @@ class AnalyzerJets(Analyzer):
                 self._save_canvas(c, filename)
 
         # TODO: calculate per ptjet bin
-        roows = self.roows[ipt]
+        roows = self.roows[(None, ipt)]
         roows.var("mean").setVal(self.fit_mean[mcordata][ipt])
         roows.var("sigma_g1").setVal(self.fit_sigma[mcordata][ipt])
         var_m.setRange("signal", *limits["signal"])
@@ -810,9 +785,9 @@ class AnalyzerJets(Analyzer):
         var_m.setRange("sider", *limits["sideband_right"])
         # correct for reflections
         if self.cfg("corr_refl") and (mcordata == "data" or not self.cfg("closure.filter_reflections")):
-            pdf_sig = self.roows[ipt].pdf("sig")
-            pdf_refl = self.roows[ipt].pdf("refl")
-            pdf_bkg = self.roows[ipt].pdf("bkg")
+            pdf_sig = self.roows[(None, ipt)].pdf("sig")
+            pdf_refl = self.roows[(None, ipt)].pdf("refl")
+            pdf_bkg = self.roows[(None, ipt)].pdf("bkg")
             frac_sig = roows.var("frac").getVal() if mcordata == "data" else 1.0
             frac_bkg = 1.0 - frac_sig
             fac_sig = frac_sig * (1.0 - roows.var("frac_refl").getVal())
@@ -862,9 +837,9 @@ class AnalyzerJets(Analyzer):
             self.h_reflcorr.SetBinContent(ipt + 1, corr)
             fh_subtracted.Scale(corr)
 
-        pdf_sig = self.roows[ipt].pdf("sig")
+        pdf_sig = self.roows[(None, ipt)].pdf("sig")
         frac_sig = pdf_sig.createIntegral(var_m, ROOT.RooFit.NormSet(var_m), ROOT.RooFit.Range("signal")).getVal()
-        if pdf_peak := self.roows[ipt].pdf("peak"):
+        if pdf_peak := self.roows[(None, ipt)].pdf("peak"):
             frac_peak = pdf_peak.createIntegral(var_m, ROOT.RooFit.NormSet(var_m), ROOT.RooFit.Range("signal")).getVal()
             self.logger.info(
                 "correcting %s-%i for fractional signal area: %g (Gaussian: %g)", mcordata, ipt, frac_sig, frac_peak
