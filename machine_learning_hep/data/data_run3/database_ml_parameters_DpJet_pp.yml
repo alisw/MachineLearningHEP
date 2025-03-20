@@ -389,25 +389,25 @@ DpJet_pp:
 
       observables:
         zg:
-          bins_gen_fix: [6, -.1, .5]
-          bins_det_fix: [6, -.1, .5]
+          bins_gen_var: [-.1, .0, .05, .1, .15, .2, .25, .3, .35, .4, .45, .5]
+          bins_det_var: [-.1, .0, .05, .1, .15, .2, .25, .3, .35, .4, .45, .5]
           label: "#it{z}_{g}"
           label_y: "(1/#it{N}_{jet ch}) d#it{N}/d#it{z}_{g}"
         nsd:
-          bins_gen_fix: [10, -.5, 9.5]
-          bins_det_fix: [10, -.5, 9.5]
+          bins_gen_fix: [7, -.5, 6.5]
+          bins_det_fix: [7, -.5, 6.5]
           label: "#it{n}_{SD}"
           label_y: "(1/#it{N}_{jet ch}) d#it{N}/d#it{n}_{SD}"
         rg:
-          bins_gen_fix: [11, -.1, 1.]
-          bins_det_fix: [11, -.1, 1.]
+          bins_gen_var: [-.1, .0, .05, .1, .15, .2, .25, .3, .35, .4, .45, .5]
+          bins_det_var: [-.1, .0, .05, .1, .15, .2, .25, .3, .35, .4, .45, .5]
           label: "#it{R}_{g}"
           label_y: "(1/#it{N}_{jet ch}) d#it{N}/d#it{R}_{g}"
         zpar:
           # bins_gen_fix: [10, 0., 1.]
           # bins_det_fix: [10, 0., 1.]
-          bins_gen_var: [0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.]
-          bins_det_var: [0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.]
+          bins_gen_var: [0.2, 0.25, 0.3, 0.35, 0.4, 0.45, 0.5, 0.55, 0.6, 0.65, 0.7, 0.75, 0.8, 0.85, 0.9, 0.95, 1.]
+          bins_det_var: [0.2, 0.25, 0.3, 0.35, 0.4, 0.45, 0.5, 0.55, 0.6, 0.65, 0.7, 0.75, 0.8, 0.85, 0.9, 0.95, 1.]
           label: "#it{z}_{#parallel}"
           label_y: "(1/#it{N}_{jet ch}) d#it{N}/d#it{z}_{#parallel}"
         dr:
@@ -617,12 +617,12 @@ DpJet_pp:
         mc: null
       data: &data_out_default
         runselection: [null] #FIXME
-        results: ["/home/${USER}/mlhep/dpjet/jet_obs/default/default/data/results"] #list of periods
-        resultsallp: "/home/${USER}/mlhep/dpjet/jet_obs/default/default/data/results_all"
+        results: ["/home/${USER}/mlhep/dpjet2/jet_obs/default/default/data/results"] #list of periods
+        resultsallp: "/home/${USER}/mlhep/dpjet2/jet_obs/default/default/data/results_all"
       mc: &mc_out_default
         runselection: [null, null] #FIXME
-        results: ["/home/${USER}/mlhep/dpjet/jet_obs/default/default/mc/results"] #list of periods
-        resultsallp: "/home/${USER}/mlhep/dpjet/jet_obs/default/default/mc/results_all"
+        results: ["/home/${USER}/mlhep/dpjet2/jet_obs/default/default/mc/results"] #list of periods
+        resultsallp: "/home/${USER}/mlhep/dpjet2/jet_obs/default/default/mc/results_all"
       data_proc: # alternative processor output used as the analyzer input
         <<: *data_out_default
       mc_proc: # alternative processor output used as the analyzer input
