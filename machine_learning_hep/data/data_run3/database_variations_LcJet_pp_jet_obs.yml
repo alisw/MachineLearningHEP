@@ -610,20 +610,20 @@ categories:
                         fn: 'Polynomial::bkg(m, {a0[-1e10, 1e10], a1[-1e10, 1e10], a2[-1e10, 1e10]})'
                       model:
                         fn: 'SUM::sum(frac[0.,1.]*sig, bkg)'
-                        #rebin:
-                        #    activate: [yes, yes, yes, yes]
-                        #    label: ["rebin 1", "rebin 2", "rebin 4", "rebin 5"]
-                        #    diffs:
-                        #       analysis:
-                        #            jet_obs:
-                        #                n_rebin: [[1, 2, 4, 5], [1, 2, 4, 5]]
-                        # reflections:
-                        #     activate: [no]
-                        #     label: ["w/o refl."]
-                        #     diffs:
-                        #         analysis:
-                        #             jet_obs:
-                        #                 corr_refl: [false]
+      rebin:
+        activate: [no, no, no, no]
+        label: ["rebin 1", "rebin 2", "rebin 4", "rebin 5"]
+        diffs:
+          analysis:
+            jet_obs:
+              n_rebin: [[1, 2, 4, 5], [1, 2, 4, 5]]
+      reflections:
+        activate: [no]
+        label: ["w/o refl."]
+        diffs:
+          analysis:
+            jet_obs:
+              corr_refl: [false]
   sideband:
     activate: yes
     processor: false
@@ -800,7 +800,7 @@ categories:
     rms_both_sides: true
     variations:
       flatness:
-        activate: [yes, yes, yes, yes, yes, yes, yes, yes, yes, yes]
+        activate: [yes, yes, yes, yes, yes, yes, yes, yes, yes, no]
         label: ["flat 0.1", "flat 0.2", "flat 0.3", "flat 0.4", "flat 0.5", "flat 0.6", "flat 0.7", "flat 0.8", "flat 0.9", "flat 1.0"]
         diffs:
           analysis:
