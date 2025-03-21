@@ -369,8 +369,8 @@ D0Jet_pp:
     jet_obs: &jet_default
       sel_an_binmin: [1, 2, 3, 4, 5, 6, 7, 8, 10, 12, 16, 24] # hadron pt bins (sel_an_binmin bins)
       sel_an_binmax: [2, 3, 4, 5, 6, 7, 8, 10, 12, 16, 24, 48] # hadron pt bins (sel_an_binmin bins) # FIXME: move the last edge in sel_an_binmin
-      bins_ptjet: [5, 7, 15, 30, 50, 70] # systematics, TODO: split rec and gen binning
-      bins_ptjet_eff: [2, 5, 7, 15, 30, 50, 70, 90] # systematics, TODO: split rec and gen binning
+      bins_ptjet: [5, 7, 10, 15, 20, 30, 40, 60, 70] # systematics, TODO: split rec and gen binning
+      bins_ptjet_eff: [2, 5, 7, 10, 15, 20, 30, 40, 60, 70, 90] # systematics, TODO: split rec and gen binning
       cand_collidx: fIndexHfD0CollBases
       counter_read_data: fReadCountsWithTVXAndZVertexAndSel8
       counter_read_mc: fReadCountsWithTVXAndZVertexAndSelMC
