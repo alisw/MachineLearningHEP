@@ -897,12 +897,12 @@ categories:
         activate: [yes, yes]
         label:
           - "#it{p}_{T}^{jet} 5#rightarrow4"
-          - "#it{p}_{T}^{jet} 50#rightarrow55"
+          - "#it{p}_{T}^{jet} 30#rightarrow35"
         diffs:
           analysis:
             jet_obs:
-              bins_ptjet: [[4, 7, 15, 30, 50], [5, 7, 15, 30, 55]]
-              bins_ptjet_eff: [[2, 4, 7, 15, 30, 50, 70], [2, 5, 7, 15, 30, 55, 70]]
+              bins_ptjet: [[4, 7, 15, 30], [5, 7, 15, 35]]
+              bins_ptjet_eff: [[2, 4, 7, 15, 30, 50], [2, 5, 7, 15, 35, 50]]
       observable:
         activate: [no]
         label:
