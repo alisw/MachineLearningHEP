@@ -629,7 +629,7 @@ LcJet_pp:
       efficiency:
         index_match: fIndexArrayLCCMCPJETOS_hf
         #extra_cols: ["mlPromptScore"]
-        extra_cols: ["mlBkgScore", "mlPromptScore"]
+        extra_cols: ["mlBkgScore"]
         correction_method: run3
 
         #reweight: [[0.86,0.89], [0.89,0.91], [0.90,0.93], [0.92,0.93], [0.93,0.93], [0.94,0.93], [0.95,0.93], [0.95,0.94], [0.95,0.94], [0.95,0.94]] #70-100
@@ -744,9 +744,9 @@ LcJet_pp:
       # Additional cuts applied before mass histogram is filled
       use_cuts: True
       cuts: ["mlBkgScore < 0.03", "mlBkgScore < 0.04", "mlBkgScore < 0.07", "mlBkgScore < 0.09", "mlBkgScore < 0.11", "mlBkgScore < 0.15", "mlBkgScore < 0.18", "mlBkgScore < 0.25", "mlBkgScore < 0.35", "mlBkgScore < 0.35"] # (sel_an_binmin bins)
-      #mult_cuts: ["fCentFT0M >= 70 and fCentFT0M <= 100", "fCentFT0M >= 70 and fCentFT0M <= 100", "fCentFT0M >= 70 and fCentFT0M <= 100", "fCentFT0M >= 70 and fCentFT0M <= 100", "fCentFT0M >= 70 and fCentFT0M <= 100", "fCentFT0M >= 70 and fCentFT0M <= 100", "fCentFT0M >= 70 and fCentFT0M <= 100", "fCentFT0M >= 70 and fCentFT0M <= 100", "fCentFT0M >= 70 and fCentFT0M <= 100", "fCentFT0M >= 70 and fCentFT0M <= 100"] # (sel_an_binmin bins)
-      #mult_cuts: ["fCentFT0M >= 20 and fCentFT0M <= 70", "fCentFT0M >= 20 and fCentFT0M <= 70", "fCentFT0M >= 20 and fCentFT0M <= 70", "fCentFT0M >= 20 and fCentFT0M <= 70", "fCentFT0M >= 20 and fCentFT0M <= 70", "fCentFT0M >= 20 and fCentFT0M <= 70", "fCentFT0M >= 20 and fCentFT0M <= 70", "fCentFT0M >= 20 and fCentFT0M <= 70", "fCentFT0M >= 20 and fCentFT0M <= 70", "fCentFT0M >= 20 and fCentFT0M <= 70"] # (sel_an_binmin bins)
-      #mult_cuts: ["fCentFT0M >= 0 and fCentFT0M <= 20", "fCentFT0M >= 0 and fCentFT0M <= 20", "fCentFT0M >= 0 and fCentFT0M <= 20", "fCentFT0M >= 0 and fCentFT0M <= 20", "fCentFT0M >= 0 and fCentFT0M <= 20", "fCentFT0M >= 0 and fCentFT0M <= 20", "fCentFT0M >= 0 and fCentFT0M <= 20", "fCentFT0M >= 0 and fCentFT0M <= 20", "fCentFT0M >= 0 and fCentFT0M <= 20", "fCentFT0M >= 0 and fCentFT0M <= 20"] # (sel_an_binmin bins)
+      #mult_cuts: ["fCentFT0M >= 70 and fCentFT0M <= 100", "fCentFT0M >= 70 and fCentFT0M <= 100", "fCentFT0M >= 70 and fCentFT0M <= 100", "fCentFT0M >= 70 and fCentFT0M <= 100", "fCentFT0M >= 70 and fCentFT0M <= 100", "fCentFT0M >= 70 and fCentFT0M <= 100", "fCentFT0M >= 70 and fCentFT0M <= 100", "fCentFT0M >= 70 and fCentFT0M <= 100", "fCentFT0M >= 70 and fCentFT0M <= 100", "fCentFT0M >= 70 and fCentFT0M <= 100"] # (sel_an_binmin bins) #low mult
+      #mult_cuts: ["fCentFT0M >= 20 and fCentFT0M <= 70", "fCentFT0M >= 20 and fCentFT0M <= 70", "fCentFT0M >= 20 and fCentFT0M <= 70", "fCentFT0M >= 20 and fCentFT0M <= 70", "fCentFT0M >= 20 and fCentFT0M <= 70", "fCentFT0M >= 20 and fCentFT0M <= 70", "fCentFT0M >= 20 and fCentFT0M <= 70", "fCentFT0M >= 20 and fCentFT0M <= 70", "fCentFT0M >= 20 and fCentFT0M <= 70", "fCentFT0M >= 20 and fCentFT0M <= 70"] # (sel_an_binmin bins)  #intermediate mult
+      #mult_cuts: ["fCentFT0M >= 0 and fCentFT0M <= 20", "fCentFT0M >= 0 and fCentFT0M <= 20", "fCentFT0M >= 0 and fCentFT0M <= 20", "fCentFT0M >= 0 and fCentFT0M <= 20", "fCentFT0M >= 0 and fCentFT0M <= 20", "fCentFT0M >= 0 and fCentFT0M <= 20", "fCentFT0M >= 0 and fCentFT0M <= 20", "fCentFT0M >= 0 and fCentFT0M <= 20", "fCentFT0M >= 0 and fCentFT0M <= 20", "fCentFT0M >= 0 and fCentFT0M <= 20"] # (sel_an_binmin bins) #high mult
 
   systematics: # used in machine_learning_hep/analysis/systematics.py
     probvariation:
