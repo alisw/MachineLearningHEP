@@ -397,7 +397,7 @@ LcJet_pp:
           #  arraycols: [3, 4]
 
       #n_rebin: [2, 2, 2, 2, 2, 2, 4, 5, 5, 5]
-      n_rebin: [3]
+      n_rebin: 3
       mass_fit_lim: [1.9, 2.62] # histogram range of the invariant mass distribution [GeV/c^2]
       bin_width: 0.001 # bin width of the invariant mass histogram
       pdf_names:
