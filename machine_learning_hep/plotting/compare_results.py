@@ -24,7 +24,7 @@ from ROOT import TFile, gROOT
 
 from machine_learning_hep.utilities import get_colour, make_plot
 
-config = {
+config = {  # pylint: disable=line-too-long
     "particles": {
         "d0": {
             "activate": 1,
