@@ -24,7 +24,7 @@ from ROOT import TFile, gROOT
 
 from machine_learning_hep.utilities import get_colour, make_plot
 
-config = {  # pylint: disable=line-too-long
+config = {
     "particles": {
         "d0": {
             "activate": 1,
@@ -97,7 +97,8 @@ config = {  # pylint: disable=line-too-long
             "qm25_prv": {
                 "label": "QM25 preview",
                 "activate": 0,
-                "path_file": "/home/vkucera/mlhep/d0jet/jet_obs_qm25_preview_02-13/default/default/data/results_all/results.root",
+                "path_file": "/home/vkucera/mlhep/d0jet/jet_obs_qm25_preview_02-13/"
+                "default/default/data/results_all/results.root",
                 "colour": 1,
                 "name_hist": {
                     "zg": "h_zg_sidesub_unfolded_data_ptjet-15-20_sel_selfnorm",
@@ -109,7 +110,8 @@ config = {  # pylint: disable=line-too-long
             "qm25_pwg": {
                 "label": "QM25 PWG",
                 "activate": 1,
-                "path_file": "/home/vkucera/mlhep/d0jet/jet_obs_qm25_pwg_03-20/default/default/data/results_all/results.root",
+                "path_file": "/home/vkucera/mlhep/d0jet/jet_obs_qm25_pwg_03-20/"
+                "default/default/data/results_all/results.root",
                 "colour": 2,
                 "name_hist": {
                     "zg": "h_zg_sidesub_unfolded_data_ptjet-15-20_sel_selfnorm",
@@ -153,7 +155,8 @@ config = {  # pylint: disable=line-too-long
             "qm25_pwg": {
                 "label": "QM25 PWG",
                 "activate": 1,
-                "path_file": "/home/ldellost/mlhep/lcjet_Crystal/jet_obs/default/default/data/results_all_Jochen/results.root",
+                "path_file": "/home/ldellost/mlhep/lcjet_Crystal/jet_obs/"
+                "default/default/data/results_all_Jochen/results.root",
                 "colour": 2,
                 "name_hist": {
                     "zpar": "h_zpar_sidesub_unfolded_data_ptjet-7-15_sel_selfnorm",
