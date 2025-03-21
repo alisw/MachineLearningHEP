@@ -616,7 +616,7 @@ categories:
         diffs:
           analysis:
             jet_obs:
-              n_rebin: [[1, 2, 4, 5], [1, 2, 4, 5]]
+              n_rebin: [1, 2, 4, 5]
       reflections:
         activate: [no]
         label: ["w/o refl."]
@@ -925,19 +925,20 @@ categories:
     rms_both_sides: true
     variations:
       ml:
-        activate: [no, no, yes, yes, yes, yes, yes, yes, yes, yes, yes, yes]
+        activate: [no, no, no, yes, yes, yes, yes, yes, yes, yes, yes, yes, yes]
         label: [
           # default: working point (for tests, should be same as the default result)
           # null: no cuts (for tests, whatever was applied on Hyperloop)
           # loosest: same cuts as Hyperloop (for tests, should be same as null)
-          "default", "null", "loose 5", "loose 4", "loose 3", "loose 2", "loose 1", "tight 1", "tight 2", "tight 3", "tight 4", "tight 5"]
+          "default", "null", "loosest", "loose 5", "loose 4", "loose 3", "loose 2", "loose 1", "tight 1", "tight 2", "tight 3", "tight 4", "tight 5"]
         diffs:
           analysis:
             jet_obs:
-              use_cuts: [True, True, True, True, True, True, True, True, True, True, True, True]
+              use_cuts: [True, True, True, True, True, True, True, True, True, True, True, True, True]
               cuts:
                 - ["mlBkgScore < 0.03", "mlBkgScore < 0.04", "mlBkgScore < 0.07", "mlBkgScore < 0.09", "mlBkgScore < 0.11", "mlBkgScore < 0.15", "mlBkgScore < 0.18", "mlBkgScore < 0.25", "mlBkgScore < 0.35", "mlBkgScore < 0.35"]
                 - [null, null, null, null, null, null, null, null, null, null]
+                - ["mlBkgScore < 0.08", "mlBkgScore < 0.08", "mlBkgScore < 0.10", "mlBkgScore < 0.20", "mlBkgScore < 0.25", "mlBkgScore < 0.30", "mlBkgScore < 0.40", "mlBkgScore < 0.50", "mlBkgScore < 0.70", "mlBkgScore < 0.7"] # loosest
                 - ["mlBkgScore < 0.0375", "mlBkgScore < 0.0515", "mlBkgScore < 0.097", "mlBkgScore < 0.132", "mlBkgScore < 0.174", "mlBkgScore < 0.273", "mlBkgScore < 0.365", "mlBkgScore < 0.53", "mlBkgScore < 0.8", "mlBkgScore < 0.8"] # loose 5
                 - ["mlBkgScore < 0.036", "mlBkgScore < 0.0492", "mlBkgScore < 0.0916", "mlBkgScore < 0.1236", "mlBkgScore < 0.1612", "mlBkgScore < 0.2484", "mlBkgScore < 0.328", "mlBkgScore < 0.474", "mlBkgScore < 0.71", "mlBkgScore < 0.71"] # loose 4
                 - ["mlBkgScore < 0.0345", "mlBkgScore < 0.0469", "mlBkgScore < 0.0862", "mlBkgScore < 0.1152", "mlBkgScore < 0.1484", "mlBkgScore < 0.2238", "mlBkgScore < 0.291", "mlBkgScore < 0.418", "mlBkgScore < 0.62", "mlBkgScore < 0.62"] # loose 3
