@@ -191,7 +191,7 @@ config = {  # pylint: disable=line-too-long
 }
 
 gROOT.SetBatch(True)
-dir_output = "."
+DIR_OUTPUT = "."
 
 particles = [particle for particle, cfg in config["particles"].items() if cfg["activate"]]
 print(f"Particles: {particles}")
@@ -245,7 +245,7 @@ for obs in observables:
             colours=colours,
             leg_pos=config["observables"][obs]["leg"],
             range_x=config["observables"][obs]["range"],
-            path=dir_output,
+            path=DIR_OUTPUT,
         )
         histograms_obs += histograms
         labels_obs += [f"{config['particles'][particle]['label']}: {lab}" for lab in labels]
@@ -259,5 +259,5 @@ for obs in observables:
         labels_obj=labels_obs,
         leg_pos=config["observables"][obs]["leg"],
         range_x=config["observables"][obs]["range"],
-        path=dir_output,
+        path=DIR_OUTPUT,
     )
