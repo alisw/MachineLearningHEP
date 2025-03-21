@@ -414,18 +414,18 @@ DpJet_pp:
           bins_gen_fix: [10, 0., 1.]
           bins_det_fix: [10, 0., 1.]
           label: "#Delta#it{r}"
-        # lntheta:
-        #   bins_gen_fix: [10, 0., 5.]
-        #   bins_det_fix: [10, 0., 5.]
-        #   label: "#minusln(#it{#theta})"
-        #   arraycols: [3]
-        # lnkt:
-        #   bins_gen_fix: [10, -8., 2.]
-        #   bins_det_fix: [10, -8., 2.]
-        #   label: "ln(#it{k}_{T}/(GeV/#it{c}))"
-        #   arraycols: [3]
-        # lntheta-lnkt:
-        #   arraycols: [3, 4]
+          # lntheta:
+          #   bins_gen_fix: [10, 0., 5.]
+          #   bins_det_fix: [10, 0., 5.]
+          #   label: "#minusln(#it{#theta})"
+          #   arraycols: [3]
+          # lnkt:
+          #   bins_gen_fix: [10, -8., 2.]
+          #   bins_det_fix: [10, -8., 2.]
+          #   label: "ln(#it{k}_{T}/(GeV/#it{c}))"
+          #   arraycols: [3]
+          # lntheta-lnkt:
+          #   arraycols: [3, 4]
 
       # n_rebin: [3, 3, 3, 3, 3, 3, 3, 4, 5, 5]
       pdf_names:
@@ -447,14 +447,14 @@ DpJet_pp:
           components:
             model:
               fn: 'RooCrystalBall::sig(m[1., 4.], mean[1.87, 1.85, 1.89], sigma_g1[0.006, 0.035], alpha1[0., 2.], n1[0., 100.], alpha1, n1)'
-              
+
             # sig:
             #   fn: 'Gaussian::sig(m[1., 4.], mean[1.85, 1.89], sigma_g1[.006,.006,.035])'
             # wide:
             #   fn: 'Gaussian::wide(m, mean, expr("n*sigma_g1", n[1.,200.], sigma_g1))'
             # model:
             #  fn: 'SUM::sig(f_peak[1., 0.,1.]*peak, wide)'
-             
+
             # bkg:
             #   fn: 'Exponential::mcbkg(m, mcalpha[0.])'
             # model:
