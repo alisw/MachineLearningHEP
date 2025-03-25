@@ -51,12 +51,27 @@ D0Jet_pp:
   #region dfs
   dfs:
     read:
-      evtorig:
-        level: data
-        index: fIndexHfD0McCollBases
+      evtorig_mc:
+        level: mc
+        index: fIndexHfD0CollBases
         trees:
           O2hfd0collbase: [fNumContrib, fPosZ]
         filter: "abs(fPosZ) < 10."
+      evtorig_data:
+        level: data
+        index: fIndexHfD0CollBases
+        trees:
+          O2hfd0collbase: [fNumContrib, fPosZ]
+        filter: "abs(fPosZ) < 10."
+      evtorig_fd:
+        level: fd
+        index: fIndexHFD0MCCOLLBASES
+        trees:
+          O2hfd0mccollbase: [fPosZ]
+        filter: "abs(fPosZ) < 10."
+        
+      # powhegcoll:
+          # O2d0cmcpjetmcco: ...
       collcnt_mc:
         level: mc
         trees:
@@ -86,7 +101,7 @@ D0Jet_pp:
         trees:
           O2hfd0pbase: [fIndexHfD0McCollBases, fPt, fEta, fPhi, fFlagMcMatchGen, fOriginMcGen]
           O2d0cmcpjeto: [fIndexD0CMCPJETCOS, fJetPt, fJetPhi, fJetEta, fJetNConstituents, fJetR]
-          # O2d0cmcpjetmo: [fIndexArrayD0CMCDJETOS_hf, fIndexArrayD0CMCDJETOS_geo, fIndexArrayD0CMCDJETOS_pt]
+          O2d0cmcpjetmo: [fIndexArrayD0CMCDJETOS_hf, fIndexArrayD0CMCDJETOS_geo, fIndexArrayD0CMCDJETOS_pt]
           O2d0cmcpjetsso: [fEnergyMother, fPtLeading, fPtSubLeading, fTheta, fNSub2DR, fNSub1, fNSub2, fAngularity]
         extra:
           fY: log((sqrt(1.864**2 + (fPt * cosh(fEta))**2) + fPt * sinh(fEta)) / sqrt(1.864**2 + fPt**2)) #TODO : change mass or make sure Lc mass is updated
@@ -110,7 +125,6 @@ D0Jet_pp:
         trees:
           O2hfd0pbase: [fIndexHFD0MCCOLLBASES, fPt, fEta, fPhi, fFlagMcMatchGen, fOriginMcGen]
           O2d0cmcpjeto: [fIndexD0CMCPJETCOS, fJetPt, fJetPhi, fJetEta, fJetNConstituents, fJetR]
-          # O2d0cmcpjetmo: [fIndexArrayD0CMCDJETOS_hf, fIndexArrayD0CMCDJETOS_geo, fIndexArrayD0CMCDJETOS_pt]
           O2d0cmcpjetsso: [fEnergyMother, fPtLeading, fPtSubLeading, fTheta, fNSub2DR, fNSub1, fNSub2, fAngularity]
         extra:
           fY: log((sqrt(1.864**2 + (fPt * cosh(fEta))**2) + fPt * sinh(fEta)) / sqrt(1.864**2 + fPt**2)) #TODO : change mass or make sure Lc mass is updated
@@ -182,7 +196,7 @@ D0Jet_pp:
         filter: "fPt >= 1. and abs(fY) <= 0.8 and abs(fJetEta) < (.9 - (fJetR / 100.))" # TODO: check jet eta cut
 
     merge:
-      - {base: jetgen, ref: collgen}
+      - {base: jetgen, ref: evtorig_mc}
       - {base: jetfd, ref: collfd}
       - {base: jetdet, ref: colldet}
       - {base: jetdata, ref: colldata}
@@ -349,8 +363,8 @@ D0Jet_pp:
       seedmerge: [12] #list of periods
       period: [LHC24d3b] #list of periods
       select_period: [1]
-      prefix_dir: /home/jklein/mlhep_test/powheg/
-      unmerged_tree_dir: [d0-default/]
+      prefix_dir: /home/jklein/powheg/parallel/
+      unmerged_tree_dir: [default/]
       pkl: ["${USER}/d0jet/pkl"] #list of periods
       pkl_skimmed: ["${USER}/d0jet/pklsk"] #list of periods
       pkl_skimmed_merge_for_ml: ["${USER}/d0jet/pklskml"] #list of periods
@@ -432,6 +446,7 @@ D0Jet_pp:
   #region analysis
   analysis:
     anahptspectrum: "D0Kpi" #D0Kpi, DplusKpipi, DstarD0pi, DsKKpi, LctopKpi, LcK0Sp # used in analysis/analyzerdhadrons_mult.py
+    fd_input: "sim"
     fd_method: "Nb" #fc, Nb
     cctype: "pp"
     inputfonllpred: data/fonll/D0DplusDstarPredictions_13TeV_y05_all_300416_BDShapeCorrected.root # used in machine_learning_hep/hf_pt_spectrum.py
@@ -442,7 +457,7 @@ D0Jet_pp:
       sel_an_binmax: [2, 3, 4, 5, 6, 7, 8, 10, 12, 16, 24, 48] # hadron pt bins (sel_an_binmin bins) # FIXME: move the last edge in sel_an_binmin
       bins_ptjet: [5, 7, 10, 15, 20, 30, 40, 60, 70] # systematics, TODO: split rec and gen binning
       bins_ptjet_eff: [2, 5, 7, 10, 15, 20, 30, 40, 60, 70, 90] # systematics, TODO: split rec and gen binning
-      cand_collidx: fIndexHfD0CollBases
+      # cand_collidx: fIndexHfD0CollBases
       counter_read_data: fReadCountsWithTVXAndZVertexAndSel8
       counter_read_mc: fReadCountsWithTVXAndZVertexAndSelMC
       counter_tvx: fReadCountsWithTVX

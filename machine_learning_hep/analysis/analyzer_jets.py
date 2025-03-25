@@ -212,7 +212,7 @@ class AnalyzerJets(Analyzer):
     # region efficiency
     # pylint: disable=too-many-statements
     def calculate_efficiencies(self):
-        self.logger.info("Calculating efficiencies")
+        self.logger.info("Calculating efficiencies from %s", self.n_fileeff)
         cats = {"pr", "np"}
         with TFile(self.n_fileeff) as rfile:
             h_gen = {cat: rfile.Get(f"h_ptjet-pthf_{cat}_gen") for cat in cats}
@@ -1113,8 +1113,8 @@ class AnalyzerJets(Analyzer):
                         self.bins_candpt,
                         bins_obs[var],
                     )
-                    fill_hist_fast(h3_fd_gen_orig, df[["pt_jet", "pt_cand", f"{colname}"]])
-                    self._save_hist(project_hist(h3_fd_gen_orig, [0, 2], {}), f"fd/h_ptjet-{var}_feeddown_gen_noeffscaling.png")
+                    fill_hist_fast(h3_fd_gen_orig[var], df[["pt_jet", "pt_cand", f"{colname}"]])
+                    self._save_hist(project_hist(h3_fd_gen_orig[var], [0, 2], {}), f"fd/h_ptjet-{var}_feeddown_gen_noeffscaling.png")
 
             case "sim":
                 # TODO: recover cross section
@@ -1177,7 +1177,7 @@ class AnalyzerJets(Analyzer):
             h_fd_det = project_hist(h3_fd_det, [0, 2], {})
 
             # old method
-            h3_fd_gen = h3_fd_gen_orig.Clone()
+            h3_fd_gen = h3_fd_gen_orig[var].Clone()
             ensure_sumw2(h3_fd_gen)
             for ipt in range(get_nbins(h3_fd_gen, 1)):
                 eff_pr = self.hcandeff["pr"].GetBinContent(ipt + 1)
