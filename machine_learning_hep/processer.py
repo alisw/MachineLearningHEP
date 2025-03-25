@@ -90,7 +90,6 @@ class Processer:  # pylint: disable=too-many-instance-attributes
         # directories
         self.d_prefix_ml = datap["ml"].get("prefix_dir_ml", "")
         self.d_root = d_root
-        print('%%%%', self.d_root, flush=True)
         self.d_pkl = d_pkl
         self.d_pklsk = d_pklsk
         self.d_pkl_ml = d_pkl_ml
@@ -180,7 +179,6 @@ class Processer:  # pylint: disable=too-many-instance-attributes
 
         # list of files names
         if os.path.isdir(self.d_root):
-            print(f"{self.d_root=}", flush=True)
             self.l_path = list_folders(self.d_root, self.n_root, self.p_maxfiles, self.select_jobs)
         elif glob.glob(f"{self.d_pkl}/**/{self.n_reco}", recursive=True):
             self.l_path = list_folders(self.d_pkl, self.n_reco, self.p_maxfiles, self.select_jobs)
@@ -189,7 +187,6 @@ class Processer:  # pylint: disable=too-many-instance-attributes
                 ".p", "_%s%d_%d.p" % (self.v_var_binning, self.lpt_anbinmin[0], self.lpt_anbinmax[0])
             )
             self.l_path = list_folders(self.d_pklsk, self.n_sk, self.p_maxfiles, self.select_jobs)
-        print(f"{self.l_path=}", flush=True)
 
         self.l_root = createlist(self.d_root, self.l_path, self.n_root)
         self.l_reco = createlist(self.d_pkl, self.l_path, self.n_reco)
@@ -272,7 +269,6 @@ class Processer:  # pylint: disable=too-many-instance-attributes
         self.mptfiles_gensk_sl = []
 
         self.d_pkl_decmerged = d_pkl_decmerged
-        print(self.d_results, self.n_filemass, flush=True)
         self.n_filemass = os.path.join(self.d_results, self.n_filemass)
         self.n_fileeff = os.path.join(self.d_results, self.n_fileeff)
         self.n_fileresp = os.path.join(self.d_results, self.n_fileresp)
@@ -360,7 +356,7 @@ class Processer:  # pylint: disable=too-many-instance-attributes
 
         # Analysis cuts (loaded in self.process_histomass)
         self.analysis_cuts = None
-        self.analysis_mult_cuts = None
+        self.analysis_multcuts = None
         # Flag if they should be used
         self.do_custom_analysis_cuts = datap["analysis"][self.typean].get("use_cuts", False)
 
@@ -437,7 +433,11 @@ class Processer:  # pylint: disable=too-many-instance-attributes
         with uproot.open(self.l_root[file_index]) as rfile:
             df_processed = set()
             keys = rfile.keys(recursive=False, filter_name="DF_*")
-            self.logger.info("found %d dataframes, reading %s", len(keys), max_no_keys or "all")
+            if len(keys) == 0:
+                self.logger.error("no dataframes found in %s", self.l_root[file_index])
+                return
+            else:
+                self.logger.info("found %d dataframes, reading %s", len(keys), max_no_keys or "all")
             for idx, key in enumerate(keys[:max_no_keys]):
                 if not (df_key := re.match("^DF_(\\d+);", key)):
                     continue
@@ -535,17 +535,16 @@ class Processer:  # pylint: disable=too-many-instance-attributes
         if self.df_write:
             for df_name, df_spec in self.df_write.items():
                 if dfuse(df_spec):
-                    self.logger.info("writing %s to %s", df_name, df_spec["file"])
                     src = df_spec.get("source", df_name)
                     dfo = dfquery(dfs[src], df_spec.get("filter", None))
                     path = os.path.join(self.d_pkl, self.l_path[file_index], df_spec["file"])
+                    self.logger.info("writing %s to %s with info %s", df_name, path, dfo.info())
                     write_df(dfo, path)
 
     def skim(self, file_index):
         dfreco = read_df(self.l_reco[file_index]) if self.datatype != "fd" else None
         dfgen = read_df(self.l_gen[file_index]) if self.datatype in ('mc', 'fd') else None
         dfgen_sl = read_df(self.l_gen_sl[file_index]) if self.n_gen_sl and self.datatype in ('mc', 'fd') else None
-        print(dfreco, dfgen, dfgen_sl, flush=True)
 
         for ipt in range(self.p_nptbins):
             if dfreco is not None:
@@ -556,7 +555,6 @@ class Processer:  # pylint: disable=too-many-instance-attributes
             if dfgen is not None:
                 dfgensk = seldf_singlevar(dfgen, self.v_var_binning, self.lpt_anbinmin[ipt], self.lpt_anbinmax[ipt])
                 dfgensk = dfquery(dfgensk, self.s_gen_skim[ipt])
-                print(self.mptfiles_gensk, flush=True)
                 write_df(dfgensk, self.mptfiles_gensk[ipt][file_index])
 
             if dfgen_sl is not None:
@@ -622,7 +620,7 @@ class Processer:  # pylint: disable=too-many-instance-attributes
         self.logger.info("Unpacking %s period %s", self.datatype, self.period)
         create_folder_struc(self.d_pkl, self.l_path)
         arguments = [(i,) for i in range(len(self.l_root))]
-        self.logger.info("d_pkl: %s, l_path: %s, arguments: %s", self.d_pkl, str(self.l_path), str(arguments))
+        # self.logger.info("d_pkl: %s, l_path: %s, arguments: %s", self.d_pkl, str(self.l_path), str(arguments))
         self.parallelizer(self.unpack, arguments, self.p_chunksizeunp)
 
     def process_skim_par(self):
@@ -749,6 +747,7 @@ class Processer:  # pylint: disable=too-many-instance-attributes
 
     def process_efficiency(self):
         print("Doing efficiencies", self.datatype, self.period)
+        self.load_cuts()
         print("Using run selection for eff histo", self.runlistrigger, "for period", self.period)
         if self.doml is True:
             print("Doing ml analysis")

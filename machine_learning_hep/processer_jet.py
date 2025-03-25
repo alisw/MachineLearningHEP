@@ -161,7 +161,7 @@ class ProcesserJets(Processer):
                 print(dfi[~mask][var], flush=True)
 
     def _calculate_variables(self, df, verify=False):  # pylint: disable=invalid-name
-        self.logger.info("calculating variables for DF %s", df.info())
+        self.logger.info("calculating variables")
         observables = self.cfg("observables", {})
         if len(df) == 0:
             for obs in observables:
@@ -279,12 +279,7 @@ class ProcesserJets(Processer):
                 self.binarray_ptjet,
                 self.binarray_pthf,
             )
-            print(f"Filling and writing histogram from {df.head()}", flush=True)
             fill_hist(h, df[["fM", "fJetPt", "fPt"]], write=True)
-            h.Write()
-            print("WRITING!!!!!!!!!!!!!!!")
-            rfile.WriteObject(h)
-            # h.Print("all")
 
             for sel_name, sel_spec in self.cfg("data_selections", {}).items():
                 if sel_spec["level"] == self.datatype:
@@ -312,7 +307,6 @@ class ProcesserJets(Processer):
                         df["idx_match"] = df[idx].apply(lambda ar: ar[0] if len(ar) > 0 else -1)
                         dfquery(df, "idx_match >= 0", inplace=True)
 
-            print(f"calculation", flush=True)
             self._calculate_variables(df)
 
             for obs, spec in self.cfg("observables", {}).items():
@@ -495,6 +489,7 @@ class ProcesserJets(Processer):
             }
 
             for cat in cats:
+                print(f"Filling histograms for {cat}: {dfgen[cat].info()}, {dfdet[cat].info()}, {dfmatch[cat].info()}", flush=True)
                 fill_hist(h_eff[(cat, "gen")], dfgen[cat][["fJetPt_gen", "fPt_gen"]])
                 fill_hist(h_eff[(cat, "det")], dfdet[cat][["fJetPt", "fPt"]])
                 if cat in dfmatch and dfmatch[cat] is not None:
