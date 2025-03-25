@@ -86,9 +86,8 @@ class AnalyzerJets(Analyzer):
         self.p_pdfnames = datap["analysis"][self.typean].get("pdf_names")
         self.p_param_names = datap["analysis"][self.typean].get("param_names")
 
-        # TODO: should come entirely from DB
         self.observables = {
-            "qa": ["zg", "rg", "nsd", "zpar", "dr", "lntheta", "lnkt", "lntheta-lnkt"],
+            "qa": [*self.cfg("observables", {})],
             "all": [*self.cfg("observables", {})],
         }
 
@@ -117,7 +116,7 @@ class AnalyzerJets(Analyzer):
                 for param, symbol in zip(
                     ("mean", "sigma", "significance", "chi2"),
                     ("#it{#mu}", "#it{#sigma}", "significance", "#it{#chi}^{2}"),
-                    strict=False,
+                    strict=True,
                 )
             }
             for level in self.fit_levels
@@ -212,7 +211,7 @@ class AnalyzerJets(Analyzer):
     # region efficiency
     # pylint: disable=too-many-statements
     def calculate_efficiencies(self):
-        self.logger.info("Calculating efficiencies")
+        self.logger.info("Calculating efficiencies from %s", self.n_fileeff)
         cats = {"pr", "np"}
         with TFile(self.n_fileeff) as rfile:
             h_gen = {cat: rfile.Get(f"h_ptjet-pthf_{cat}_gen") for cat in cats}
@@ -589,9 +588,6 @@ class AnalyzerJets(Analyzer):
                         if iptjet is None:
                             if not fitcfg.get("per_ptjet"):
                                 for jptjet in range(get_nbins(h, 1)):
-                                    self.logger.info(
-                                        "Overwriting roows_ptjet for %s iptjet %s ipt %d", level, jptjet, ipt
-                                    )
                                     self.roows[(jptjet, ipt)] = roo_ws.Clone()
                                     self.roo_ws[(level, jptjet, ipt)] = roo_ws.Clone()
                             if level in ("data", "mc"):
@@ -688,7 +684,6 @@ class AnalyzerJets(Analyzer):
             # project out the mass regions (first axis)
             axes = list(range(get_dim(hist)))[1:]
             fh[region] = project_hist(hist, axes, {0: bins[region]})
-            self.logger.info("Projecting %s to %s in %s: %g entries", hist, axes, bins[region], fh[region].GetEntries())
             self._save_hist(
                 fh[region], f"sideband/h_ptjet{label}_{region}_{string_range_pthf(range_pthf)}_{mcordata}.png"
             )
@@ -705,11 +700,8 @@ class AnalyzerJets(Analyzer):
             self.logger.info("Scaling sidebands in ptjet-%s bins: %s using %s", label, bins_ptjet, fh_sideband)
             hx = project_hist(fh_sideband, (0,), {}) if get_dim(fh_sideband) > 1 else fh_sideband
             for iptjet in bins_ptjet:
-                if iptjet:
-                    n = hx.GetBinContent(iptjet)
-                    self.logger.info("Need to scale in ptjet %i: %g", iptjet, n)
-                    if n <= 0:
-                        continue
+                if iptjet and hx.GetBinContent(iptjet) <= 0:
+                    continue
                 rws = self.roo_ws.get((mcordata, iptjet, ipt))
                 if not rws:
                     self.logger.error("Falling back to incl. roows for %s-iptjet%i-ipt%i", mcordata, iptjet, ipt)
@@ -1066,11 +1058,11 @@ class AnalyzerJets(Analyzer):
         # hres.Sumw2() # TODO: check if we should do this here
         return hres
 
-
     def estimate_feeddown(self):
         """Estimate feeddown from legacy Run 2 trees or gen-only simulation"""
         match self.cfg("fd_input", "tree"):
             case "tree":
+                self.logger.info("Reading feeddown information from trees")
                 with TFile(self.cfg("fd_root")) as rfile:
                     powheg_xsection = rfile.Get("fHistXsection")
                     powheg_xsection_scale_factor = powheg_xsection.GetBinContent(1) / powheg_xsection.GetEntries()
@@ -1101,7 +1093,9 @@ class AnalyzerJets(Analyzer):
                     colname = col_mapping.get(var, f"{var}_jet")
                     if f"{colname}" not in df:
                         if var is not None:
-                            self.logger.error("No feeddown information for %s (%s), cannot estimate feeddown", var, colname)
+                            self.logger.error(
+                                "No feeddown information for %s (%s), cannot estimate feeddown", var, colname
+                            )
                             # print(df.info(), flush=True)
                         continue
 
@@ -1113,8 +1107,10 @@ class AnalyzerJets(Analyzer):
                         self.bins_candpt,
                         bins_obs[var],
                     )
-                    fill_hist_fast(h3_fd_gen_orig, df[["pt_jet", "pt_cand", f"{colname}"]])
-                    self._save_hist(project_hist(h3_fd_gen_orig, [0, 2], {}), f"fd/h_ptjet-{var}_feeddown_gen_noeffscaling.png")
+                    fill_hist_fast(h3_fd_gen_orig[var], df[["pt_jet", "pt_cand", f"{colname}"]])
+                    self._save_hist(
+                        project_hist(h3_fd_gen_orig[var], [0, 2], {}), f"fd/h_ptjet-{var}_feeddown_gen_noeffscaling.png"
+                    )
 
             case "sim":
                 # TODO: recover cross section
@@ -1126,6 +1122,11 @@ class AnalyzerJets(Analyzer):
                         if fh := rfile.Get(f"h_mass-ptjet-pthf{label}"):
                             h3_fd_gen_orig[var] = project_hist(fh, list(range(1, get_dim(fh))), {})
                             ensure_sumw2(h3_fd_gen_orig[var])
+                            self._save_hist(
+                                project_hist(h3_fd_gen_orig[var], [0, 2], {}),
+                                f"fd/h_ptjet-{var}_feeddown_genonly_noeffscaling.png",
+                            )
+                powheg_xsection_scale_factor = 0.  # FIXME: retrieve cross section
 
             case fd_input:
                 self.logger.critical("Invalid feeddown input %s", fd_input)
@@ -1177,7 +1178,7 @@ class AnalyzerJets(Analyzer):
             h_fd_det = project_hist(h3_fd_det, [0, 2], {})
 
             # old method
-            h3_fd_gen = h3_fd_gen_orig.Clone()
+            h3_fd_gen = h3_fd_gen_orig[var].Clone()
             ensure_sumw2(h3_fd_gen)
             for ipt in range(get_nbins(h3_fd_gen, 1)):
                 eff_pr = self.hcandeff["pr"].GetBinContent(ipt + 1)

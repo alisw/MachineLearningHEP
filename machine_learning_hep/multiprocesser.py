@@ -70,7 +70,6 @@ class MultiProcesser:  # pylint: disable=too-many-instance-attributes, too-many-
 
         dp = datap["multi"][self.datatype.value]
         self.dlper_root = [self.d_prefix + os.path.expandvars(p) for p in dp["unmerged_tree_dir"]]
-        print('****', self.dlper_root, flush=True)
         self.dlper_pkl = [self.d_prefix + os.path.expandvars(p) for p in dp["pkl"]]
         self.dlper_pklsk = [self.d_prefix + os.path.expandvars(p) for p in dp["pkl_skimmed"]]
         self.dlper_pklml = [self.d_prefix + os.path.expandvars(p) for p in dp["pkl_skimmed_merge_for_ml"]]
