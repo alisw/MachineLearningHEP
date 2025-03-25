@@ -916,10 +916,14 @@ categories:
       run2:
         activate: [no]
         label:
-          - "Run 2"
+          - "Run 2, HP24"
         diffs:
           analysis:
             jet_obs:
+              sel_an_binmin: [[3, 4, 5, 6, 7, 8, 10, 12, 16]]
+              sel_an_binmax: [[4, 5, 6, 7, 8, 10, 12, 16, 24]]
+              bins_ptjet: [[5, 7, 15, 30, 50]]
+              bins_ptjet_eff: [[2, 5, 7, 15, 30, 50, 70]]
               observables:
                 zpar:
                   bins_gen_var: [[0.4, 0.6, 0.7, 0.8, 0.9, 1.]]
