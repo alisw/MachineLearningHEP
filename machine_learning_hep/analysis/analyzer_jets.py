@@ -424,7 +424,6 @@ class AnalyzerJets(Analyzer):
         textInfoRight.Draw()
         textInfoLeft.Draw()
         if res.status() != 0:
-            self.logger.warning("Invalid Roofit fit result for %s", hist.GetName())
             filename = filename.replace(".png", "_invalid.png")
         self._save_canvas(c, filename)
 
@@ -586,7 +585,13 @@ class AnalyzerJets(Analyzer):
                             f"roofit/h_mass_fitted{jetptlabel}_{string_range_pthf(range_pthf)}_{level}.png",
                         )
                         if roo_res.status() != 0:
-                            self.logger.error("RooFit failed for %s iptjet %s ipt %d", level, iptjet, ipt)
+                            self.logger.error(
+                                "Roofit failed: %s, ipt: %d, pthf: %g-%g",
+                                level,
+                                ipt,
+                                self.bins_candpt[ipt],
+                                self.bins_candpt[ipt + 1]
+                            )
                         # if level == 'mc':
                         #     roo_ws.Print()
                         # TODO: save snapshot per level
