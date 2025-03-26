@@ -126,7 +126,7 @@ class AnalyzerJets(Analyzer):
                     ("#it{#mu}", "#it{#sigma}", "significance", "#it{#chi}^{2}"),
                 )
             }
-            for level in ("data", "mc", "mcsig", "mcrefl")
+            for level in self.fit_levels
         }
         self.n_events = {}
         self.n_colls_read = {}
@@ -395,7 +395,7 @@ class AnalyzerJets(Analyzer):
         chi2 = frame.chiSquare()
         if "ptjet" not in filename:
             self.h_fit_results[level]["chi2"].SetBinContent(ipt + 1, chi2)
-        if chi2 > 5.0:
+        if chi2 > 5.0 and level != "predata":
             self.logger.error(
                 "Roofit fit is too bad: %s, ipt: %d, pthf: %g-%g, Chi2 = %g",
                 level,
@@ -590,7 +590,7 @@ class AnalyzerJets(Analyzer):
                                 level,
                                 ipt,
                                 self.bins_candpt[ipt],
-                                self.bins_candpt[ipt + 1]
+                                self.bins_candpt[ipt + 1],
                             )
                         # if level == 'mc':
                         #     roo_ws.Print()
