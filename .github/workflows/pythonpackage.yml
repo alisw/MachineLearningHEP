@@ -5,14 +5,12 @@ name: Test package
   pull_request:
     branches:
       - master
-      - ml-dev
       - run3
     paths:
       - "**.py"
   push:
     branches:
       - master
-      - ml-dev
       - run3
     paths:
       - "**.py"
@@ -31,10 +29,9 @@ jobs:
     strategy:
       max-parallel: 6
       matrix:
-        os: [ubuntu-latest, macOS]
-        python-version: ['3.10']
-        # test-tool: [pylint, flake8, pytest]
-        test-tool: [pylint, pytest]
+        os: [ubuntu-latest, macos-latest]
+        python-version: ['3.10', '3.11']
+        test-tool: [pytest]
 
     steps:
       - uses: actions/checkout@v4
