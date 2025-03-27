@@ -20,6 +20,7 @@
 
 import argparse
 import math
+import re
 import sys
 from enum import Enum
 from itertools import permutations
@@ -68,7 +69,11 @@ def msg_fatal(message: str):
 
 
 def list_recursive(
-    file: TDirectoryFile, objects: dict | None = None, path_dir: str = "", verbose: bool = False, name_pattern: str = ""
+    file: TDirectoryFile,
+    objects: dict | None = None,
+    path_dir: str = "",
+    verbose: bool = False,
+    name_patterns: list[str] | None = None,
 ) -> dict:
     """Recursively load objects from a ROOT file into a dictionary."""
     if objects is None:
@@ -77,13 +82,13 @@ def list_recursive(
         name_obj = key.GetName()
         name_class = key.GetClassName()
         path_obj = f"{path_dir + '/' if path_dir else ''}{name_obj}"
-        if name_pattern and name_pattern not in path_obj:
+        if name_patterns and not any(re.search(rf"{pattern}", path_obj) for pattern in name_patterns):
             continue
         obj = file.Get(name_obj)
         if verbose:
             print(f"{path_obj}: {name_class}")
         if isinstance(obj, TDirectoryFile):
-            list_recursive(obj, objects, path_obj, verbose, name_pattern)
+            list_recursive(obj, objects, path_obj, verbose, name_patterns)
         else:
             objects[path_obj] = obj
     return objects
@@ -502,7 +507,9 @@ def main():
     parser.add_argument("-d", action="store_true", help="report and plot only different objects")
     parser.add_argument("-c", action="store_true", help="plot only common objects")
     parser.add_argument("-s", action="store_true", help="skip numeric comparison")
-    parser.add_argument("-n", type=str, default="", help="name pattern (substring required in the object path)")
+    parser.add_argument(
+        "-n", type=str, nargs="+", default=None, help="name patterns (substrings required in the object path)"
+    )
     parser.add_argument(
         "-t", type=int, help="tolerance (order of magnitude of the maximum acceptable relative difference of values)"
     )
@@ -521,7 +528,7 @@ def main():
     diff_only = args.d
     common_only = args.c
     skip_comparison = args.s
-    name_pattern = args.n
+    name_patterns = args.n
     mag_epsilon = None if args.t is None else args.t
     project = args.proj
     n_slices_max = args.slices
@@ -546,7 +553,7 @@ def main():
                 key_i += f"_{i + 1}"
             # Load objects.
             print(f"\nLoading objects from file {path_i}.")
-            objects[key_i] = list_recursive(file_i, verbose=verbose, name_pattern=name_pattern)
+            objects[key_i] = list_recursive(file_i, verbose=verbose, name_patterns=name_patterns)
 
         # Make projections.
         if project:
@@ -562,7 +569,7 @@ def main():
                 list_names = sorted(set(objects[0].keys()).intersection(objects[1].keys()))
             else:
                 list_names = sorted(set(objects[0].keys()).union(objects[1].keys()))
-            dict_result = {name: True for name in list_names}
+            dict_result = dict.fromkeys(list_names, True)
         else:
             same_structure, common_content, compared_all, same_content, dict_result = are_same_files(
                 objects, verbose, diff_only, mag_epsilon
