@@ -2,47 +2,6 @@
 requires = ["setuptools >= 61.0", "setuptools-scm>=8.0"]
 build-backend = "setuptools.build_meta"
 
-[tool.setuptools.packages.find]
-where = ["."]
-include = ["machine_learning_hep*"]
-
-[tool.setuptools_scm]
-
-[tool.black]
-line-length = 120
-
-[tool.isort]
-profile = "black"
-multi_line_output = 0
-
-[tool.pyright]
-reportMissingImports = false
-reportUnboundVariable = false
-
-[tool.ruff]
-line-length = 120
-
-[tool.ruff.lint]
-extend-select = [ # in addition to defaults ["E4", "E7", "E9", "F"], see https://docs.astral.sh/ruff/rules/
-  "A",    # flake8-builtins
-  "ARG",  # flake8-unused-arguments
-  "B",    # flake8-bugbear
-  "C4",   # flake8-comprehensions
-  "FLY",  # flynt
-  "FURB", # refurb
-  "I",    # isort
-  "NPY",  # NumPy-specific rules
-  "PD",   # pandas-vet
-  "PL",   # Pylint
-  "RUF",  # Ruff-specific rules
-  "SIM",  # flake8-simplify
-  "UP",   # pyupgrade
-  "W",    # pycodestyle Warning
-]
-ignore = [
-  "PD901", # Avoid using the generic variable name `df` for DataFrames
-]
-
 [project]
 name = "MachineLearningHEP"
 dynamic = ["version"]
@@ -99,3 +58,37 @@ Repository = "https://github.com/alisw/MachineLearningHEP"
 [project.scripts]
 mlhep = "machine_learning_hep.steer_analysis:main"
 dl_train = "machine_learning_hep.utils.dl_train:main"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["machine_learning_hep*"]
+
+[tool.setuptools_scm]
+
+[tool.ruff]
+line-length = 120
+
+[tool.ruff.lint]
+extend-select = [ # in addition to defaults ["E4", "E7", "E9", "F"], see https://docs.astral.sh/ruff/rules/
+  "A",    # flake8-builtins
+  "ARG",  # flake8-unused-arguments
+  "B",    # flake8-bugbear
+  "C4",   # flake8-comprehensions
+  "FLY",  # flynt
+  "FURB", # refurb
+  "I",    # isort
+  "NPY",  # NumPy-specific rules
+  "PD",   # pandas-vet
+  "PL",   # Pylint
+  "RUF",  # Ruff-specific rules
+  "SIM",  # flake8-simplify
+  "UP",   # pyupgrade
+  "W",    # pycodestyle Warning
+]
+ignore = [
+  "PD901", # Avoid using the generic variable name `df` for DataFrames
+]
+
+[tool.pyright]
+reportMissingImports = false
+reportUnboundVariable = false
