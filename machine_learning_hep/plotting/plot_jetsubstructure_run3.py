@@ -15,10 +15,6 @@ Script for plotting figures of the Run 3 HF-jet substructure analyses
 Author: Vit Kucera <vit.kucera@cern.ch>
 """
 
-# pylint: disable=too-many-lines, too-many-instance-attributes, too-many-statements, too-many-locals
-# pylint: disable=too-many-nested-blocks, too-many-branches, consider-using-f-string
-# pylint: disable=unused-variable
-
 import argparse
 import logging
 import os
@@ -99,12 +95,14 @@ class Plotter:
         self.species = None
         if "D0Jet" in path_database_analysis:
             self.species = "D0"
-        if "LcJet" in path_database_analysis:
+        elif "LcJet" in path_database_analysis:
             self.species = "Lc"
+        else:
+            self.logger.critical("Jet species could not be determined.")
 
         with open(path_database_analysis, encoding="utf-8") as file_db:
             db_analysis = yaml.safe_load(file_db)
-        case = list(db_analysis.keys())[0]
+        case = next(iter(db_analysis.keys()))
         self.datap = db_analysis[case]
         self.db_typean = self.datap["analysis"][self.typean]
 
@@ -141,7 +139,7 @@ class Plotter:
         # LaTeX string
         self.latex_hadron = self.db_typean["latexnamehadron"]
         self.latex_ptjet = "#it{p}_{T}^{jet ch}"
-        self.latex_pthf = "#it{p}_{T}^{%s} (GeV/#it{c})" % self.latex_hadron
+        self.latex_pthf = f"#it{{p}}_{{T}}^{{{self.latex_hadron}}} (GeV/#it{{c}})"
         self.latex_obs = self.db_typean["observables"][self.var]["label"]
         self.latex_y = self.db_typean["observables"][self.var]["label_y"]
 
@@ -253,7 +251,7 @@ class Plotter:
         # text
         self.text_alice = "ALICE Preliminary, pp"  # preliminaries
         # self.text_alice = "#bf{ALICE}, pp, #sqrt{#it{s}} = 13.6 TeV"  # paper
-        self.text_tagged = "%s-tagged" % self.latex_hadron
+        self.text_tagged = f"{self.latex_hadron}-tagged"
         # self.text_jets = "charged-particle jets, anti-#it{k}_{T}, #it{R} = 0.4"
         self.text_jets = self.text_tagged + " " + "charged-particle jets, anti-#it{k}_{T}, #it{R} = 0.4"
         self.text_ptjet = "%g #leq %s (GeV/#it{c}) < %g"
@@ -327,7 +325,9 @@ class Plotter:
     def get_object(self, name: str, file=None):
         if file is None:
             file = self.file_results
-        if not (obj := file.Get(name)):
+        if file is None:
+            self.logger.critical("No result file set")
+        if not (obj := file.Get(name)):  # type: ignore
             self.logger.fatal(make_message_notfound(name))
         if isinstance(obj, TH1):
             obj.SetDirectory(0)  # Decouple the object from the file.
@@ -402,7 +402,7 @@ class Plotter:
         source = {"monash": "M", "mode2": "SM2"}
         dict_obj = {}
         with TFile.Open(path_file) as file:
-            for s_obs, obs in obs.items():
+            for s_obs, n_obs in obs.items():
                 dict_obj[s_obs] = {}
                 for s_spec, spec in species.items():
                     dict_obj[s_obs][s_spec] = {}
@@ -414,7 +414,7 @@ class Plotter:
                             name = pattern % (
                                 spec,
                                 src,
-                                obs,
+                                n_obs,
                                 self.edges_ptjet_gen[iptjet],
                                 self.edges_ptjet_gen[iptjet + 1],
                             )
@@ -677,7 +677,7 @@ class Plotter:
                 self.make_plot(f"{self.species}_efficiency_{self.var}")
 
                 bins_ptjet = (0, 1, 2, 3)
-                for cat, label in zip(("pr", "np"), ("prompt", "non-prompt")):
+                for cat, label in zip(("pr", "np"), ("prompt", "non-prompt"), strict=False):
                     self.list_obj = self.get_objects(
                         *(
                             f"h_ptjet-pthf_effnew_{cat}_{string_range_ptjet(get_bin_limits(axis_ptjet, iptjet + 1))}"
@@ -692,11 +692,14 @@ class Plotter:
 
             # Results
 
+            list_iptjet = []
             if self.species == "D0":
                 # list_iptjet = [0, 1, 2, 3]  # indices of jet pt bins to process
-                list_iptjet = [2, 3]  # indices of jet pt bins to process
-            if self.species == "Lc":
-                list_iptjet = [1]  # indices of jet pt bins to process
+                # list_iptjet = [0, 1, 2, 3, 4, 5, 6, 7]  # indices of jet pt bins to process
+                list_iptjet = [2, 3, 4, 5, 6]  # indices of jet pt bins to process
+                # list_iptjet = [2, 3]  # indices of jet pt bins to process
+            elif self.species == "Lc":
+                list_iptjet = [1, 2]  # indices of jet pt bins to process
             plot_lc_vs_d0 = True
             list_stat_all = []
             list_syst_all = []
@@ -794,10 +797,11 @@ class Plotter:
 
                 # Results
                 self.logger.info("Plotting results")
-                plot_run2_data = True
+                plot_run2_data = False
+                # self.list_latex = [
+                # self.text_alice,
                 self.list_latex = [
-                    self.text_alice,
-                    # self.list_latex = [f"{self.text_alice}, {self.text_run3}",
+                    f"{self.text_alice}, {self.text_run3}",
                     self.text_jets,
                     f"{self.get_text_range_ptjet(iptjet)}, {self.text_etajet}",
                     self.get_text_range_pthf(-1, iptjet),
@@ -846,24 +850,24 @@ class Plotter:
                 self.title_full = self.title_full_default
 
                 # Plot additional stuff.
-                plot_run2_lc_ff_data = True
+                plot_run2_lc_ff_data = False
                 plot_run2_lc_ff_sim = False
 
-                plot_run2_d0_ff_data = True
+                plot_run2_d0_ff_data = False
 
-                plot_run2_d0_sd = True
-                plot_run2_d0_sd_hf_data = True
+                plot_run2_d0_sd = False
+                plot_run2_d0_sd_hf_data = False
                 plot_run2_d0_sd_hf_sim = False
                 plot_run2_d0_sd_incl_data = False
                 plot_run2_d0_sd_incl_sim = False
 
                 plot_run3_sim = False
-                plot_run3_d0_sd_hf_sim = True
-                plot_run3_d0_sd_incl_sim = True
+                plot_run3_d0_sd_hf_sim = False
+                plot_run3_d0_sd_incl_sim = False
 
                 plot_data = True
-                plot_sim = True
-                plot_incl = True
+                plot_sim = False
+                plot_incl = False
 
                 # Plot Run 2, Lc, FF, data, 5-7, 7-15, 15-35 GeV/c
                 if (
@@ -1168,8 +1172,8 @@ class Plotter:
             self.plot_errors_x = False
             self.list_latex = [
                 self.text_alice,
-                f"{self.text_tagged} {self.text_jets}",
-                f"{self.get_text_range_pthf(-1, iptjet)}, {self.text_etajet}",
+                self.text_jets,
+                f"{self.get_text_range_pthf(-1, -1)}, {self.text_etajet}",
             ]
             if not plot_run2_data:
                 self.list_latex[0] = f"{self.text_alice}, {self.text_run3}"
@@ -1184,7 +1188,12 @@ class Plotter:
             self.list_markers = list_markers_all * (1 + int(bool(list_syst_all)))
             if plot_run2_data:
                 h_run2, g_run2 = None, None
-                if plot_run2_d0_sd and self.species == "D0" and self.var in ("zg", "rg", "nsd"):
+                if (
+                    plot_run2_d0_sd
+                    and self.species == "D0"
+                    and self.var in ("zg", "rg", "nsd")
+                    and string_ptjet == string_range_ptjet((15, 30))
+                ):  # FIXME
                     h_run2 = run2_d0_sd[self.var]["hf"]["data"]["stat"]
                     g_run2 = run2_d0_sd[self.var]["hf"]["data"]["syst"]
                     if self.var == "nsd":
@@ -1193,7 +1202,7 @@ class Plotter:
                 # TODO: if plot_run2_lc_ff_data
                 if h_run2 is not None:
                     n_obj = len(self.list_obj)
-                    self.plot_order = list(range(n_obj)) + [-1, -0.5]
+                    self.plot_order = [*list(range(n_obj)), -1, -0.5]
                     self.list_obj += [g_run2, h_run2]
                     self.labels_obj += [f"{self.text_run2}, {self.get_text_range_ptjet(2)}", ""]
                     self.list_colours += [get_colour(-1)] * 2
@@ -1218,7 +1227,7 @@ class Plotter:
             self.labels_obj = []
             self.list_latex = []
             self.y_margin_up = 0.06  # to fix cropped number on the axis
-            self.title_full = f";{self.latex_obs};ratio to    "
+            self.title_full = f";{self.latex_obs};ratio to  "
             can, new = self.make_plot(
                 name_can, can=can, pad=2, scale=pad_heights[1], colours=self.list_colours, markers=self.list_markers
             )
@@ -1255,7 +1264,7 @@ class Plotter:
                 self.list_latex = [
                     self.text_alice,
                     self.text_jets,
-                    f"{self.get_text_range_pthf(-1, iptjet)}, {self.text_etajet}",
+                    f"{self.get_text_range_pthf(-1, -1)}, {self.text_etajet}",
                 ]
                 if self.var in ("zg", "rg", "nsd"):
                     self.list_latex.append(self.text_sd)

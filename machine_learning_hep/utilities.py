@@ -128,10 +128,7 @@ def write_df(dfo, path):
 
 def read_df(path, **kwargs):
     try:
-        if path.endswith(".parquet"):
-            df = pd.read_parquet(path, **kwargs)
-        else:
-            df = pickle.load(openfile(path, "rb"))
+        df = pd.read_parquet(path, **kwargs) if path.endswith(".parquet") else pickle.load(openfile(path, "rb"))
     except Exception as e:  # pylint: disable=broad-except
         logger.critical("failed to open file <%s>: %s", path, str(e))
         sys.exit()
@@ -294,12 +291,12 @@ def make_latex_table(column_names, row_names, rows, caption=None, save_path="./t
         columns = "|".join(["c"] * (len(column_names) + 1))
         f.write("\\begin{tabular}{" + columns + "}\n")
         f.write("\\hline\n")
-        columns = "&".join([""] + column_names)
+        columns = "&".join(["", *column_names])
         columns = columns.replace("_", "\\_")
         f.write(columns + "\\\\\n")
         f.write("\\hline\\hline\n")
-        for rn, row in zip(row_names, rows):
-            row_string = "&".join([rn] + row)
+        for rn, row in zip(row_names, rows, strict=False):
+            row_string = "&".join([rn, *row])
             row_string = row_string.replace("_", "\\_")
             f.write(row_string + "\\\\\n")
         f.write("\\end{tabular}\n")
@@ -349,12 +346,12 @@ def make_message_notfound(name, location=None):
 
 
 def z_calc(pt_1, phi_1, eta_1, pt_2, phi_2, eta_2):
-    np_pt_1 = pt_1.values
-    np_pt_2 = pt_2.values
-    np_phi_1 = phi_1.values
-    np_phi_2 = phi_2.values
-    np_eta_1 = eta_1.values
-    np_eta_2 = eta_2.values
+    np_pt_1 = pt_1.to_numpy()
+    np_pt_2 = pt_2.to_numpy()
+    np_phi_1 = phi_1.to_numpy()
+    np_phi_2 = phi_2.to_numpy()
+    np_eta_1 = eta_1.to_numpy()
+    np_eta_2 = eta_2.to_numpy()
 
     cos_phi_1 = np.cos(np_phi_1)
     cos_phi_2 = np.cos(np_phi_2)
@@ -397,10 +394,7 @@ def equal_axis_list(axis1, list2, precision=10):
     bins = get_bins(axis1)
     if len(bins) != len(list2):
         return False
-    for i, j in zip(bins, list2):
-        if round(i, precision) != round(j, precision):
-            return False
-    return True
+    return all(round(i, precision) == round(j, precision) for i, j in zip(bins, list2, strict=False))
 
 
 def equal_binning(his1, his2):
@@ -418,9 +412,7 @@ def equal_binning_lists(his, list_x=None, list_y=None, list_z=None):
         return False
     if list_y is not None and not equal_axis_list(his.GetYaxis(), list_y):
         return False
-    if list_z is not None and not equal_axis_list(his.GetZaxis(), list_z):
-        return False
-    return True
+    return not (list_z is not None and not equal_axis_list(his.GetZaxis(), list_z))
 
 
 def folding(h_input, response_matrix, h_output):
@@ -439,7 +431,7 @@ def folding(h_input, response_matrix, h_output):
     return h_output
 
 
-def get_plot_range(val_min, val_max, margin_min, margin_max, logscale=False):
+def get_plot_range(val_min, val_max, margin_min, margin_max, logscale=False) -> tuple[float, float] | tuple[None, None]:
     """Return the minimum and maximum of the plotting range so that there are margins
     expressed as fractions of the plotting range."""
     k = 1 - margin_min - margin_max
@@ -461,7 +453,7 @@ def get_plot_range(val_min, val_max, margin_min, margin_max, logscale=False):
     return val_min_plot, val_max_plot
 
 
-def get_x_window_gr(l_gr: list, with_errors=True):
+def get_x_window_gr(l_gr: list, with_errors=True) -> tuple[float, float]:
     """Return the minimum and maximum x value so that all the points of the graphs in the list
     fit in the range (by default including the error bars)."""
 
@@ -482,7 +474,7 @@ def get_x_window_gr(l_gr: list, with_errors=True):
     return x_min, x_max
 
 
-def get_x_window_his(l_his: list):
+def get_x_window_his(l_his: list) -> tuple[float, float]:
     """Return the minimum and maximum x value so that all the bins of the histograms in the list
     fit in the range."""
     if not isinstance(l_his, list):
@@ -495,7 +487,7 @@ def get_x_window_his(l_his: list):
     return x_min, x_max
 
 
-def get_y_window_gr(l_gr: list, with_errors=True, range_x=None):
+def get_y_window_gr(l_gr: list, with_errors=True, range_x: list[float] | None = None) -> tuple[float, float]:
     """Return the minimum and maximum y value so that all the points of the graphs in the list
     fit in the range (by default including the error bars).
     Consider only points within range_x if provided."""
@@ -521,7 +513,7 @@ def get_y_window_gr(l_gr: list, with_errors=True, range_x=None):
     return y_min, y_max
 
 
-def get_y_window_his(l_his: list, with_errors=True, range_x=None):
+def get_y_window_his(l_his: list, with_errors=True, range_x: list[float] | None = None) -> tuple[float, float]:
     """Return the minimum and maximum y value so that all the points of the histograms in the list
     fit in the range (by default including the error bars).
     Consider only bins within range_x if provided."""
@@ -641,7 +633,7 @@ def get_markersize(marker: int, size_def=1.5):
     return size_def
 
 
-def setup_histogram(hist, colour=1, markerstyle=kOpenCircle, size=1.5, textsize=0.05, scale_title=1.3):
+def setup_histogram(hist, colour=1, markerstyle=kOpenCircle, size=1.5, textsize=0.05, scale_title=1.0):
     hist.SetStats(0)
     hist.GetXaxis().SetLabelSize(textsize)
     hist.GetYaxis().SetLabelSize(textsize)
@@ -658,7 +650,7 @@ def setup_histogram(hist, colour=1, markerstyle=kOpenCircle, size=1.5, textsize=
 
 
 def setup_tgraph(
-    tg_, colour=1, markerstyle=kOpenCircle, size=1.5, alphastyle=0.8, fillstyle=1001, textsize=0.05, scale_title=1.3
+    tg_, colour=1, markerstyle=kOpenCircle, size=1.5, alphastyle=0.8, fillstyle=1001, textsize=0.05, scale_title=1.0
 ):
     tg_.GetXaxis().SetLabelSize(textsize)
     tg_.GetYaxis().SetLabelSize(textsize)
@@ -745,36 +737,36 @@ def count_graphs(l_obj: list) -> int:
     return sum(is_graph(o) for o in l_obj)
 
 
-def make_plot(  # pylint: disable=too-many-arguments, too-many-branches, too-many-statements, too-many-locals
-    name,
-    can=None,
-    pad=0,
-    path=None,
-    suffix="eps",
-    title="",
-    size=None,
-    margins_c=None,
-    list_obj=None,
-    labels_obj=None,
-    leg_pos=None,
-    opt_leg_h="P",
-    opt_leg_g="P",
-    opt_plot_h="",
-    opt_plot_g="P0",
-    offsets_xy=None,
-    maxdigits=3,
-    colours=None,
-    markers=None,
-    sizes=None,
-    range_x=None,
-    range_y=None,
-    margins_y=None,
-    with_errors="xy",
-    logscale=None,
-    font_size=0.032,
-    scale=1.0,
-    plot_order=None,
-):
+def make_plot(
+    name: str,
+    can: TCanvas | None = None,
+    pad: int = 0,
+    path: str | None = None,
+    suffix: str = "eps",
+    title: str = "",
+    size: list[int] | None = None,
+    margins_c: list[float] | None = None,
+    list_obj: list | None = None,
+    labels_obj: list[str] | None = None,
+    leg_pos: list[float] | None = None,
+    opt_leg_h: list[str] | str = "P",
+    opt_leg_g: list[str] | str = "P",
+    opt_plot_h: list[str] | str = "",
+    opt_plot_g: list[str] | str = "P0",
+    offsets_xy: list[float] | None = None,
+    maxdigits: int = 3,
+    colours: list[int] | None = None,
+    markers: list[int] | None = None,
+    sizes: list[int] | None = None,
+    range_x: list[float] | None = None,
+    range_y: list[float] | None = None,
+    margins_y: list[float] | None = None,
+    with_errors: str = "xy",
+    logscale: str | None = None,
+    font_size: float = 0.032,
+    scale: float = 1.0,
+    plot_order: list[int] | None = None,
+) -> tuple[TCanvas, list]:
     """
     Make a plot with objects from a list (list_obj).
     Returns a TCanvas and a list of other created ROOT objects.
@@ -840,7 +832,12 @@ def make_plot(  # pylint: disable=too-many-arguments, too-many-branches, too-man
 
     def plot_graph(graph):
         setup_tgraph(
-            graph, get_my_colour(i_obj), get_my_marker(i_obj), get_my_size(i_obj), textsize=(font_size / scale)
+            graph,
+            get_my_colour(i_obj),
+            get_my_marker(i_obj),
+            get_my_size(i_obj),
+            textsize=(font_size / scale),
+            scale_title=1.3,
         )
         graph.SetTitle(title)
         graph.GetXaxis().SetLimits(x_min_plot, x_max_plot)
@@ -861,7 +858,7 @@ def make_plot(  # pylint: disable=too-many-arguments, too-many-branches, too-man
         # If nothing has been plotted yet, plot an empty graph to set the exact ranges.
         if counter_plot_obj == 0:
             gr = TGraph(histogram)
-            setup_tgraph(gr, textsize=font_size / scale)
+            setup_tgraph(gr, textsize=(font_size / scale), scale_title=1.3)
             gr.SetMarkerSize(0)
             gr.SetTitle(title)
             gr.GetXaxis().SetLimits(x_min_plot, x_max_plot)
@@ -877,7 +874,12 @@ def make_plot(  # pylint: disable=too-many-arguments, too-many-branches, too-man
             gr.DrawClone("AP")
             list_new.append(gr)
         setup_histogram(
-            histogram, get_my_colour(i_obj), get_my_marker(i_obj), get_my_size(i_obj), textsize=(font_size / scale)
+            histogram,
+            get_my_colour(i_obj),
+            get_my_marker(i_obj),
+            get_my_size(i_obj),
+            textsize=(font_size / scale),
+            scale_title=1.3,
         )
         histogram.GetXaxis().SetLimits(x_min_plot, x_max_plot)
         histogram.GetXaxis().SetRangeUser(x_min_plot, x_max_plot)
@@ -893,7 +895,7 @@ def make_plot(  # pylint: disable=too-many-arguments, too-many-branches, too-man
 
     if not (isinstance(list_obj, list) and len(list_obj) > 0):
         print("Error: Empty list of objects")
-        return None, None
+        return None, []
 
     list_new = []  # list of created objects that need to exist outside the function
     if not (isinstance(offsets_xy, list) and len(offsets_xy) == 2):
@@ -929,13 +931,13 @@ def make_plot(  # pylint: disable=too-many-arguments, too-many-branches, too-man
     # set canvas margins
     if isinstance(margins_c, list) and len(margins_c) > 0:
         for setter, value in zip(
-            [can.SetBottomMargin, can.SetLeftMargin, can.SetTopMargin, can.SetRightMargin], margins_c
+            [can.SetBottomMargin, can.SetLeftMargin, can.SetTopMargin, can.SetRightMargin], margins_c, strict=False
         ):
             setter(value)
     # set logarithmic scale for selected axes
     log_y = False
     if isinstance(logscale, str) and len(logscale) > 0:
-        for setter, axis in zip([can.SetLogx, can.SetLogy, can.SetLogz], ["x", "y", "z"]):
+        for setter, axis in zip([can.SetLogx, can.SetLogy, can.SetLogz], ["x", "y", "z"], strict=False):
             if axis in logscale:
                 setter()
                 if axis == "y":
@@ -1308,18 +1310,23 @@ def format_number_prec(num, prec):
     return f"{round(num, prec):.{max(0, prec)}f}"
 
 
+def magnitude(num):
+    """Decimal magnitude of a number."""
+    return math.floor(math.log10(abs(num)))
+
+
 def format_value_with_unc(y, e_stat=None, e_syst_plus=None, e_syst_minus=None, n_sig=2):  # pylint: disable=invalid-name
     """Format a value with uncertainties so that the main value is reported with a decimal precision
     given by the number of significant figures of the smallest uncertainty."""
-    mag_y = math.floor(math.log10(y))
+    mag_y = magnitude(y)
     mag_e_stat = mag_y
     mag_e_syst = mag_y
     if e_stat:
-        mag_e_stat = math.floor(math.log10(e_stat))
+        mag_e_stat = magnitude(e_stat)
     if e_syst_plus:
         if not e_syst_minus:
             e_syst_minus = e_syst_plus
-        mag_e_syst = math.floor(math.log10(min(e_syst_plus, e_syst_minus)))
+        mag_e_syst = magnitude(min(e_syst_plus, e_syst_minus))
     mag_y = min(mag_y, mag_e_stat, mag_e_syst)
     # print(f"Mag stat {mag_e_stat}, sys {mag_e_syst}")
     prec_y = n_sig - 1 - mag_y
@@ -1334,7 +1341,7 @@ def format_value_with_unc(y, e_stat=None, e_syst_plus=None, e_syst_minus=None, n
         if str_e_syst_plus == str_e_syst_minus:
             str_value += f" ± {str_e_syst_plus} (syst.)"
         else:
-            str_value += f" +{str_e_syst_plus} −{str_e_syst_minus} (syst.)"
+            str_value += f" +{str_e_syst_plus} −{str_e_syst_minus} (syst.)"  # noqa: RUF001
     return str_value
 
 

@@ -15,9 +15,6 @@ Calculate and plot systematic uncertainties
 Author: Vit Kucera <vit.kucera@cern.ch>
 """
 
-# pylint: disable=too-many-lines, too-many-instance-attributes, too-many-statements, too-many-locals
-# pylint: disable=too-many-nested-blocks, too-many-branches, consider-using-f-string
-
 import argparse
 import logging
 import os
@@ -94,7 +91,7 @@ class AnalyzerJetSystematics:
 
         with open(path_database_analysis, encoding="utf-8") as file_in:
             db_analysis = yaml.safe_load(file_in)
-        case = list(db_analysis.keys())[0]
+        case = next(iter(db_analysis.keys()))
         self.datap = db_analysis[case]
         self.db_typean = self.datap["analysis"][self.typean]
 
@@ -210,7 +207,7 @@ class AnalyzerJetSystematics:
         # text
         self.text_alice = "ALICE Preliminary, pp, #sqrt{#it{s}} = 13.6 TeV"
         # self.text_alice = "#bf{ALICE}, pp, #sqrt{#it{s}} = 13.6 TeV"
-        self.text_jets = "%s-tagged charged jets, anti-#it{k}_{T}, #it{R} = 0.4" % self.latex_hadron
+        self.text_jets = f"{self.latex_hadron}-tagged charged jets, anti-#it{{k}}_{{T}}, #it{{R}} = 0.4"
         self.text_ptjet = "%g #leq %s < %g GeV/#it{c}, |#it{#eta}_{jet ch}| < 0.5"
         self.text_pth = "%g #leq #it{p}_{T}^{%s} < %g GeV/#it{c}, |#it{y}_{%s}| < 0.8"
         self.text_sd = "Soft drop (#it{z}_{cut} = 0.1, #it{#beta} = 0)"
@@ -275,7 +272,7 @@ class AnalyzerJetSystematics:
         """Do systematics for all variables"""
         for var in list_vars:
             # self.logger.info("Processing observable %s", var)
-            print("Processing observable %s" % var)
+            print(f"Processing observable {var}")
             self.do_jet_systematics(var)
 
     def do_jet_systematics(self, var: str):
@@ -351,7 +348,7 @@ class AnalyzerJetSystematics:
             input_histograms_default.append(input_file_default.Get(name_his))
             if not input_histograms_default[iptjet]:
                 self.logger.critical(make_message_notfound(name_his, path_def))
-            # self.crop_histogram(input_histograms_default[iptjet], var)
+            self.crop_histogram(input_histograms_default[iptjet], var)
             print(f"Default histogram ({range_ptjet[0]} to {range_ptjet[1]})")
             print_histogram(input_histograms_default[iptjet], self.verbose)
             # name_eff = f"h_ptjet-pthf_effnew_pr_{string_range_ptjet(range_ptjet)}"
@@ -397,8 +394,7 @@ class AnalyzerJetSystematics:
                 input_histograms_eff = []
                 for sys_var in range(self.systematic_variations[sys_cat]):
                     print(
-                        "Variation: %s, %s"
-                        % (self.systematic_catnames[sys_cat], self.systematic_varnames[sys_cat][sys_var])
+                        f"Variation: {self.systematic_catnames[sys_cat]}, {self.systematic_varnames[sys_cat][sys_var]}"
                     )
                     name_hist_unfold_2d = f"h_ptjet-{var}_{self.method}_unfolded_data_0"
                     if not (hist_unfold := input_files_sys[sys_cat][sys_var].Get(name_hist_unfold_2d)):
@@ -419,29 +415,17 @@ class AnalyzerJetSystematics:
                     path_eff_file = path_eff.replace(self.string_default, string_catvar)
                     if not sys_var_histo_eff:
                         self.logger.critical(make_message_notfound(name_eff, path_eff_file))
-                    # self.crop_histogram(sys_var_histo, var)
+                    self.crop_histogram(sys_var_histo, var)
                     input_histograms_syscatvar.append(sys_var_histo)
                     input_histograms_eff.append(sys_var_histo_eff)
                     print_histogram(sys_var_histo_eff, self.verbose)
                     print_histogram(sys_var_histo, self.verbose)
                     if self.debug:
                         print(
-                            "Variation: %s, %s: got histogram %s from file %s"
-                            % (
-                                self.systematic_catnames[sys_cat],
-                                self.systematic_varnames[sys_cat][sys_var],
-                                name_his,
-                                path_file,
-                            )
+                            f"Variation: {self.systematic_catnames[sys_cat]}, {self.systematic_varnames[sys_cat][sys_var]}: got histogram {name_his} from file {path_file}"
                         )
                         print(
-                            "Variation: %s, %s: got efficiency histogram %s from file %s"
-                            % (
-                                self.systematic_catnames[sys_cat],
-                                self.systematic_varnames[sys_cat][sys_var],
-                                name_eff,
-                                path_eff_file,
-                            )
+                            f"Variation: {self.systematic_catnames[sys_cat]}, {self.systematic_varnames[sys_cat][sys_var]}: got efficiency histogram {name_eff} from file {path_eff_file}"
                         )
                 input_histograms_syscat.append(input_histograms_syscatvar)
                 input_histograms_syscat_eff.append(input_histograms_eff)
@@ -457,7 +441,7 @@ class AnalyzerJetSystematics:
             # plot all the variations together
             suffix = self.get_suffix_ptjet(iptjet)
             nsys = 0
-            csysvar = TCanvas("csysvar_%s" % suffix, "systematic variations" + suffix)
+            csysvar = TCanvas(f"csysvar_{suffix}", "systematic variations" + suffix)
             setup_canvas(csysvar)
             leg_sysvar = TLegend(0.75, 0.15, 0.95, 0.85, "variation")
             setup_legend(leg_sysvar)
@@ -482,48 +466,34 @@ class AnalyzerJetSystematics:
             print_histogram(input_histograms_default[iptjet], self.verbose)
 
             self.logger.info("Categories: %d", self.n_sys_cat)
-            print("Categories: %d" % self.n_sys_cat)
+            print(f"Categories: {self.n_sys_cat}")
 
             for sys_cat in range(self.n_sys_cat):
                 self.logger.info("Category: %s", self.systematic_catlabels[sys_cat])
-                print("Category: %s" % self.systematic_catlabels[sys_cat])
+                print(f"Category: {self.systematic_catlabels[sys_cat]}")
                 for sys_var in range(self.systematic_variations[sys_cat]):
                     self.logger.info("Variation: %s", self.systematic_varlabels[sys_cat][sys_var])
-                    print("Variation: %s" % self.systematic_varlabels[sys_cat][sys_var])
+                    print(f"Variation: {self.systematic_varlabels[sys_cat][sys_var]}")
                     leg_sysvar.AddEntry(
                         input_histograms_sys[iptjet][sys_cat][sys_var],
-                        (
-                            "{}, {}".format(
-                                self.systematic_catlabels[sys_cat], self.systematic_varlabels[sys_cat][sys_var]
-                            )
-                        ),
+                        (f"{self.systematic_catlabels[sys_cat]}, {self.systematic_varlabels[sys_cat][sys_var]}"),
                         "P",
                     )
                     self.logger.info(
                         "Adding label %s",
-                        (
-                            "{}, {}".format(
-                                self.systematic_catlabels[sys_cat], self.systematic_varlabels[sys_cat][sys_var]
-                            )
-                        ),
+                        (f"{self.systematic_catlabels[sys_cat]}, {self.systematic_varlabels[sys_cat][sys_var]}"),
                     )
                     print(
-                        "Adding label %s"
-                        % (
-                            "{}, {}".format(
-                                self.systematic_catlabels[sys_cat], self.systematic_varlabels[sys_cat][sys_var]
-                            )
-                        )
+                        f"Adding label {self.systematic_catlabels[sys_cat]}, {self.systematic_varlabels[sys_cat][sys_var]}"
                     )
-                    setup_histogram(input_histograms_sys[iptjet][sys_cat][sys_var], get_colour(nsys + 1))
+                    setup_histogram(input_histograms_sys[iptjet][sys_cat][sys_var], get_colour(nsys))
                     input_histograms_sys[iptjet][sys_cat][sys_var].Draw("same")
                     nsys = nsys + 1
 
             latex = TLatex(
                 0.15,
                 0.82,
-                "%g #leq %s < %g GeV/#it{c}"
-                % (self.edges_ptjet_gen_min[iptjet], self.latex_ptjet, self.edges_ptjet_gen_max[iptjet]),
+                f"{self.edges_ptjet_gen_min[iptjet]:g} #leq {self.latex_ptjet} < {self.edges_ptjet_gen_max[iptjet]:g} GeV/#it{{c}}",
             )
             draw_latex(latex)
             # leg_sysvar.Draw("same")
@@ -561,16 +531,10 @@ class AnalyzerJetSystematics:
                     leg_sysvar_each.AddEntry(
                         input_histograms_sys[iptjet][sys_cat][sys_var], self.systematic_varlabels[sys_cat][sys_var], "P"
                     )
-                    setup_histogram(
-                        input_histograms_sys[iptjet][sys_cat][sys_var], get_colour(nsys + 1), get_marker(nsys + 1)
-                    )
+                    setup_histogram(input_histograms_sys[iptjet][sys_cat][sys_var], get_colour(nsys), get_marker(nsys))
                     input_histograms_sys[iptjet][sys_cat][sys_var].Draw("same")
                     nsys = nsys + 1
-                latex_text = "{:g} #leq {} < {:g} GeV/#it{{c}}".format(
-                    self.edges_ptjet_gen_min[iptjet],
-                    self.latex_ptjet,
-                    self.edges_ptjet_gen_max[iptjet],
-                )
+                latex_text = f"{self.edges_ptjet_gen_min[iptjet]:g} #leq {self.latex_ptjet} < {self.edges_ptjet_gen_max[iptjet]:g} GeV/#it{{c}}"
                 latex = TLatex(
                     0.15,
                     0.82,
@@ -628,14 +592,13 @@ class AnalyzerJetSystematics:
                         histo_ratio[sys_var].SetYTitle("variation/default")
                         histo_ratio[sys_var].Draw()
                     leg_sysvar_ratio.AddEntry(histo_ratio[sys_var], self.systematic_varlabels[sys_cat][sys_var], "P")
-                    setup_histogram(histo_ratio[sys_var], get_colour(nsys + 1), get_marker(nsys + 1))
+                    setup_histogram(histo_ratio[sys_var], get_colour(nsys), get_marker(nsys))
                     histo_ratio[sys_var].Draw("same")
                     nsys = nsys + 1
                 latex = TLatex(
                     0.15,
                     0.82,
-                    "%g #leq %s < %g GeV/#it{c}"
-                    % (self.edges_ptjet_gen_min[iptjet], self.latex_ptjet, self.edges_ptjet_gen_max[iptjet]),
+                    f"{self.edges_ptjet_gen_min[iptjet]:g} #leq {self.latex_ptjet} < {self.edges_ptjet_gen_max[iptjet]:g} GeV/#it{{c}}",
                 )
                 draw_latex(latex)
                 # line = TLine(obs_rec_min, 1, obs_rec_max, 1)
@@ -693,8 +656,8 @@ class AnalyzerJetSystematics:
                             *get_plot_range(y_min, y_max, y_margin_down, y_margin_up)
                         )
                         eff_default[iptjet].SetTitle("")
-                        eff_default[iptjet].SetXTitle("#it{p}_{T}^{%s} (GeV/#it{c})" % self.latex_hadron)
-                        eff_default[iptjet].SetYTitle("prompt %s-jet efficiency" % self.latex_hadron)
+                        eff_default[iptjet].SetXTitle(f"#it{{p}}_{{T}}^{{{self.latex_hadron}}} (GeV/#it{{c}})")
+                        eff_default[iptjet].SetYTitle(f"prompt {self.latex_hadron}-jet efficiency")
                         eff_default[iptjet].Draw()
                     leg_sysvar_eff.AddEntry(
                         input_histograms_sys_eff[iptjet][sys_cat][sys_var],
@@ -703,16 +666,15 @@ class AnalyzerJetSystematics:
                     )
                     setup_histogram(
                         input_histograms_sys_eff[iptjet][sys_cat][sys_var],
-                        get_colour(nsys + 1),
-                        get_marker(nsys + 1),
+                        get_colour(nsys),
+                        get_marker(nsys),
                     )
                     input_histograms_sys_eff[iptjet][sys_cat][sys_var].Draw("same")
                     nsys = nsys + 1
                 latex = TLatex(
                     0.15,
                     0.82,
-                    "%g #leq %s < %g GeV/#it{c}"
-                    % (self.edges_ptjet_gen_min[iptjet], self.latex_ptjet, self.edges_ptjet_gen_max[iptjet]),
+                    f"{self.edges_ptjet_gen_min[iptjet]:g} #leq {self.latex_ptjet} < {self.edges_ptjet_gen_max[iptjet]:g} GeV/#it{{c}}",
                 )
                 draw_latex(latex)
                 leg_sysvar_eff.Draw("same")
@@ -754,7 +716,7 @@ class AnalyzerJetSystematics:
                     leg_sysvar_eff_ratio.AddEntry(
                         histo_ratio[sys_var], self.systematic_varlabels[sys_cat][sys_var], "P"
                     )
-                    setup_histogram(histo_ratio[sys_var], get_colour(nsys + 1), get_marker(nsys + 1))
+                    setup_histogram(histo_ratio[sys_var], get_colour(nsys), get_marker(nsys))
                     histo_ratio[sys_var].Draw("same")
                     nsys = nsys + 1
                 # line = TLine(obs_rec_min, 1, obs_rec_max, 1)
@@ -763,8 +725,7 @@ class AnalyzerJetSystematics:
                 latex = TLatex(
                     0.15,
                     0.82,
-                    "%g #leq %s < %g GeV/#it{c}"
-                    % (self.edges_ptjet_gen_min[iptjet], self.latex_ptjet, self.edges_ptjet_gen_max[iptjet]),
+                    f"{self.edges_ptjet_gen_min[iptjet]:g} #leq {self.latex_ptjet} < {self.edges_ptjet_gen_max[iptjet]:g} GeV/#it{{c}}",
                 )
                 draw_latex(latex)
                 leg_sysvar_eff_ratio.Draw("same")
@@ -826,28 +787,21 @@ class AnalyzerJetSystematics:
                                     count_sys_up = count_sys_up + 1
                             else:
                                 error_var_up = max(error_var_up, error)
-                        else:
-                            if self.systematic_rms[sys_cat] is True:
-                                if self.systematic_rms_both_sides[sys_cat] is True:
-                                    error_var_up += error * error
-                                    if not out_sys:
-                                        count_sys_up = count_sys_up + 1
-                                else:
-                                    error_var_down += error * error
-                                    if not out_sys:
-                                        count_sys_down = count_sys_down + 1
+                        elif self.systematic_rms[sys_cat] is True:
+                            if self.systematic_rms_both_sides[sys_cat] is True:
+                                error_var_up += error * error
+                                if not out_sys:
+                                    count_sys_up = count_sys_up + 1
                             else:
-                                error_var_down = max(error_var_down, abs(error))
+                                error_var_down += error * error
+                                if not out_sys:
+                                    count_sys_down = count_sys_down + 1
+                        else:
+                            error_var_down = max(error_var_down, abs(error))
                     if self.systematic_rms[sys_cat] is True:
-                        if count_sys_up != 0:
-                            error_var_up = error_var_up / count_sys_up
-                        else:
-                            error_var_up = 0.0
+                        error_var_up = error_var_up / count_sys_up if count_sys_up != 0 else 0.0
                         error_var_up = sqrt(error_var_up)
-                        if count_sys_down != 0:
-                            error_var_down = error_var_down / count_sys_down
-                        else:
-                            error_var_down = 0.0
+                        error_var_down = error_var_down / count_sys_down if count_sys_down != 0 else 0.0
                         if self.systematic_rms_both_sides[sys_cat] is True:
                             error_var_down = error_var_up
                         else:
@@ -954,7 +908,8 @@ class AnalyzerJetSystematics:
                 shapebins_error_down_cat = []
                 for ibinshape in range(n_bins_obs_gen):
                     shapebins_contents_cat.append(0)
-                    if abs(input_histograms_default[iptjet].GetBinContent(ibinshape + 1)) < 1.0e-7:
+                    epsilon_float = 1.0e-7
+                    if abs(input_histograms_default[iptjet].GetBinContent(ibinshape + 1)) < epsilon_float:
                         print("WARNING!!! Input histogram at bin", iptjet, " equal 0", suffix)
                         e_up = 0
                         e_down = 0
@@ -1003,14 +958,14 @@ class AnalyzerJetSystematics:
             suffix = self.get_suffix_ptjet(iptjet)
             self.file_sys_out.WriteObject(tgsys[iptjet], f"sys_{var}_{suffix}")
             unc_hist_up = TH1F(
-                "unc_hist_up_%s" % suffix,
+                f"unc_hist_up_{suffix}",
                 "",
                 n_bins_obs_gen,
                 obs_gen_min,
                 obs_gen_max,
             )
             unc_hist_down = TH1F(
-                "unc_hist_down_%s" % suffix,
+                f"unc_hist_down_{suffix}",
                 "",
                 n_bins_obs_gen,
                 obs_gen_min,
@@ -1028,7 +983,8 @@ class AnalyzerJetSystematics:
             suffix = self.get_suffix_ptjet(iptjet)
             h_default_stat_err.append(input_histograms_default[iptjet].Clone("h_default_stat_err" + suffix))
             for i in range(h_default_stat_err[iptjet].GetNbinsX()):
-                if abs(input_histograms_default[iptjet].GetBinContent(i + 1)) < 1.0e-7:
+                epsilon_float = 1.0e-7
+                if abs(input_histograms_default[iptjet].GetBinContent(i + 1)) < epsilon_float:
                     print("WARNING!!! Input histogram at bin", iptjet, " equal 0", suffix)
                     h_default_stat_err[iptjet].SetBinContent(i + 1, 0)
                     h_default_stat_err[iptjet].SetBinError(i + 1, 0)
@@ -1048,9 +1004,9 @@ class AnalyzerJetSystematics:
             leg_finalwsys = TLegend(0.7, 0.78, 0.85, 0.88)
             setup_legend(leg_finalwsys)
             leg_finalwsys.AddEntry(input_histograms_default[iptjet], "data", "P")
-            # self.crop_histogram(input_histograms_default[iptjet], var)
-            # self.crop_graph(tgsys[iptjet], var)
-            setup_histogram(input_histograms_default[iptjet], get_colour(0, 0))
+            self.crop_histogram(input_histograms_default[iptjet], var)
+            self.crop_graph(tgsys[iptjet], var)
+            setup_histogram(input_histograms_default[iptjet], get_colour(-1))
             y_min_g, y_max_g = get_y_window_gr([tgsys[iptjet]])
             y_min_h, y_max_h = get_y_window_his([input_histograms_default[iptjet]])
             y_min = min(y_min_g, y_min_h)
@@ -1071,7 +1027,7 @@ class AnalyzerJetSystematics:
             input_histograms_default[iptjet].SetYTitle(latex_y)
             input_histograms_default[iptjet].Draw("AXIS")
             # input_histograms_default[iptjet].Draw("")
-            setup_tgraph(tgsys[iptjet], get_colour(7, 0))
+            setup_tgraph(tgsys[iptjet], get_colour(-1, 2))
             tgsys[iptjet].Draw("5")
             input_histograms_default[iptjet].Draw("SAME")
             leg_finalwsys.AddEntry(tgsys[iptjet], "syst. unc.", "F")
@@ -1079,25 +1035,18 @@ class AnalyzerJetSystematics:
             latex = TLatex(0.15, 0.82, self.text_alice)
             # latex = TLatex(0.15, 0.82, "pp, #sqrt{#it{s}} = 13.6 TeV")
             draw_latex(latex)
-            latex1 = TLatex(0.15, 0.77, "%s in charged jets, anti-#it{k}_{T}, #it{R} = 0.4" % self.latex_hadron)
+            latex1 = TLatex(0.15, 0.77, f"{self.latex_hadron} in charged jets, anti-#it{{k}}_{{T}}, #it{{R}} = 0.4")
             draw_latex(latex1)
             latex2 = TLatex(
                 0.15,
                 0.72,
-                "%g #leq %s < %g GeV/#it{c}, #left|#it{#eta}_{jet}#right| #leq 0.5"
-                % (self.edges_ptjet_rec[iptjet], self.latex_ptjet, self.edges_ptjet_rec[iptjet + 1]),
+                f"{self.edges_ptjet_rec[iptjet]:g} #leq {self.latex_ptjet} < {self.edges_ptjet_rec[iptjet + 1]:g} GeV/#it{{c}}, #left|#it{{#eta}}_{{jet}}#right| #leq 0.5",
             )
             draw_latex(latex2)
             latex3 = TLatex(
                 0.15,
                 0.67,
-                "%g #leq #it{p}_{T}^{%s} < %g GeV/#it{c}, #left|#it{y}_{%s}#right| #leq 0.8"
-                % (
-                    self.edges_pthf_min[0],
-                    self.latex_hadron,
-                    min(self.edges_pthf_max[-1], self.edges_ptjet_rec[iptjet + 1]),
-                    self.latex_hadron,
-                ),
+                f"{self.edges_pthf_min[0]:g} #leq #it{{p}}_{{T}}^{{{self.latex_hadron}}} < {min(self.edges_pthf_max[-1], self.edges_ptjet_rec[iptjet + 1]):g} GeV/#it{{c}}, #left|#it{{y}}_{{{self.latex_hadron}}}#right| #leq 0.8",
             )
             draw_latex(latex3)
             leg_finalwsys.Draw("same")
@@ -1122,9 +1071,9 @@ class AnalyzerJetSystematics:
             crelativesys.SetRightMargin(0.25)
             leg_relativesys = TLegend(0.77, 0.2, 0.95, 0.85)
             setup_legend(leg_relativesys, textsize=self.fontsize)
-            # for g in tgsys_cat[iptjet]:
-            #     self.crop_graph(g, var)
-            # self.crop_histogram(h_default_stat_err[iptjet], var)
+            for g in tgsys_cat[iptjet]:
+                self.crop_graph(g, var)
+            self.crop_histogram(h_default_stat_err[iptjet], var)
             y_min_g, y_max_g = get_y_window_gr(tgsys_cat[iptjet])
             y_min_h, y_max_h = get_y_window_his([h_default_stat_err[iptjet]])
             y_min = min(y_min_g, y_min_h)
@@ -1137,7 +1086,7 @@ class AnalyzerJetSystematics:
             h_default_stat_err[iptjet].SetMarkerSize(0)
             leg_relativesys.AddEntry(h_default_stat_err[iptjet], "stat. unc.", "E")
             for sys_cat in range(self.n_sys_cat):
-                setup_tgraph(tgsys_cat[iptjet][sys_cat], get_colour(sys_cat + 1, 0))
+                setup_tgraph(tgsys_cat[iptjet][sys_cat], get_colour(sys_cat, 0))
                 tgsys_cat[iptjet][sys_cat].SetTitle("")
                 tgsys_cat[iptjet][sys_cat].SetLineWidth(3)
                 tgsys_cat[iptjet][sys_cat].SetFillStyle(0)
@@ -1229,9 +1178,9 @@ class AnalyzerJetSystematics:
             # leg_relativesys_gr = TLegend(.77, .2, 0.95, .85)
             leg_relativesys_gr = TLegend(0.77 * 9 / 10, 0.5, 0.95, 0.85)  # scale for width 900 -> 1000
             setup_legend(leg_relativesys_gr, textsize=self.fontsize)
-            # for g in tgsys_gr[iptjet]:
-            #     self.crop_graph(g, var)
-            # self.crop_histogram(h_default_stat_err[iptjet], var)
+            for g in tgsys_gr[iptjet]:
+                self.crop_graph(g, var)
+            self.crop_histogram(h_default_stat_err[iptjet], var)
             y_min_g, y_max_g = get_y_window_gr(tgsys_gr[iptjet])
             y_min_h, y_max_h = get_y_window_his([h_default_stat_err[iptjet]])
             y_min = min(y_min_g, y_min_h)
@@ -1244,7 +1193,7 @@ class AnalyzerJetSystematics:
             h_default_stat_err[iptjet].SetMarkerSize(0)
             leg_relativesys_gr.AddEntry(h_default_stat_err[iptjet], "stat. unc.", "E")
             for sys_gr, gr in enumerate(self.systematic_catgroups_list):
-                setup_tgraph(tgsys_gr[iptjet][sys_gr], get_colour(sys_gr + 1, 0))
+                setup_tgraph(tgsys_gr[iptjet][sys_gr], get_colour(sys_gr, 0))
                 tgsys_gr[iptjet][sys_gr].SetTitle("")
                 tgsys_gr[iptjet][sys_gr].SetLineWidth(3)
                 tgsys_gr[iptjet][sys_gr].SetFillStyle(0)

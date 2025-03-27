@@ -41,6 +41,7 @@ extend-select = [ # in addition to defaults ["E4", "E7", "E9", "F"], see https:/
 ]
 ignore = [
   "PD901", # Avoid using the generic variable name `df` for DataFrames
+  "PLR09", # Too many ...
 ]
 
 [project]
