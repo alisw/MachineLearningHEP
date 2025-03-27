@@ -17,6 +17,7 @@ from math import sqrt
 import ROOT
 from ROOT import RooAddPdf, RooArgList, RooArgSet, RooFit, RooRealVar, TPaveText
 
+USE_EXTMODEL = True
 
 # pylint: disable=too-few-public-methods, too-many-statements
 # (temporary until we add more functionality)
@@ -42,7 +43,7 @@ class RooFitter:
                 model = fn
         m = ws.var(var_m)
 
-        if level == "data":
+        if level == "data" and USE_EXTMODEL:
             signal_pdf = ws.pdf(pdfnames["pdf_sig"])
             if not signal_pdf:
                 raise ValueError("sig PDF not found")
@@ -60,13 +61,13 @@ class RooFitter:
             m.setRange("fit", *range_m)
             # print(f'using fit range: {range_m}, var range: {m.getRange("fit")}')
             res = model.fitTo(dh, Range=(range_m[0], range_m[1]), Save=True, PrintLevel=-1, Strategy=1, MaxCalls=5000)
-            if level == 'data':
+            if level == 'data' and USE_EXTMODEL:
                 for v in ws.allVars():
                     v.setConstant(True)
                 res = extmodel.fitTo(dh, Range=(range_m[0], range_m[1]), Save=True, PrintLevel=-1, Strategy=1, MaxCalls=5000)
         else:
             res = model.fitTo(dh, Save=True, PrintLevel=-1, Strategy=1, MaxCalls=5000)
-            if level == 'data':
+            if level == 'data' and USE_EXTMODEL:
                 for v in ws.allVars():
                     v.setConstant(True)
                 res = extmodel.fitTo(dh, Save=True, PrintLevel=-1, Strategy=1, MaxCalls=5000)
@@ -108,7 +109,7 @@ class RooFitter:
             # c.Modified()
             # c.Update()
 
-        if level == "data":
+        if level == "data" and USE_EXTMODEL:
             residuals = frame.residHist("data", "pdf_bkg")
             residual_frame = m.frame()
             residual_frame.addPlotable(residuals, "P")
@@ -153,6 +154,8 @@ class RooFitter:
 
 
 def calc_signif(roows, res, pdfnames, param_names, mean_sgn, sigma_sgn):
+    if not USE_EXTMODEL:
+        return (0., 0., 0., 0., 0., 0, 0, 0.)
     f_sig = roows.pdf(pdfnames["pdf_sig"])
     n_signal = res.floatParsFinal().find("n_signal").getVal()
     sigma_n_signal = res.floatParsFinal().find("n_signal").getError()
@@ -239,6 +242,14 @@ def add_text_info_fit(text_info, frame, roows, param_names):
         text_info.AddText(f"#sigma wide = {sigmawide_sgn.getVal():.3f} #pm {sigmawide_sgn.getError():.3f}")
     if refl_frac:
         text_info.AddText(f"refl.frac. = {refl_frac.getVal():.3f} #pm {refl_frac.getError():.3f}")
+    if a0 := roows.var("a0"):
+        text_info.AddText(f"a0 = {a0.getVal():.3f} #pm {a0.getError():.3f}")
+    if a1 := roows.var("a1"):
+        text_info.AddText(f"a1 = {a1.getVal():.3f} #pm {a1.getError():.3f}")
+    if a2 := roows.var("a2"):
+        text_info.AddText(f"a2 = {a2.getVal():.3f} #pm {a2.getError():.3f}")
+    if offset := roows.var("offset"):
+        text_info.AddText(f"offset = {offset.getVal():.3f} #pm {offset.getError():.3f}")
 
 
 def add_text_info_perf(text_info, sig, sig_err, bkg, bkg_err, s_over_b, s_over_b_err, signif, signif_err):
