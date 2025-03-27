@@ -15,9 +15,6 @@ Calculate and plot systematic uncertainties
 Author: Vit Kucera <vit.kucera@cern.ch>
 """
 
-# pylint: disable=too-many-lines, too-many-instance-attributes, too-many-statements, too-many-locals
-# pylint: disable=too-many-nested-blocks, too-many-branches, consider-using-f-string
-
 import argparse
 import logging
 import os
@@ -94,7 +91,7 @@ class AnalyzerJetSystematics:
 
         with open(path_database_analysis, encoding="utf-8") as file_in:
             db_analysis = yaml.safe_load(file_in)
-        case = list(db_analysis.keys())[0]
+        case = next(iter(db_analysis.keys()))
         self.datap = db_analysis[case]
         self.db_typean = self.datap["analysis"][self.typean]
 
@@ -790,28 +787,21 @@ class AnalyzerJetSystematics:
                                     count_sys_up = count_sys_up + 1
                             else:
                                 error_var_up = max(error_var_up, error)
-                        else:
-                            if self.systematic_rms[sys_cat] is True:
-                                if self.systematic_rms_both_sides[sys_cat] is True:
-                                    error_var_up += error * error
-                                    if not out_sys:
-                                        count_sys_up = count_sys_up + 1
-                                else:
-                                    error_var_down += error * error
-                                    if not out_sys:
-                                        count_sys_down = count_sys_down + 1
+                        elif self.systematic_rms[sys_cat] is True:
+                            if self.systematic_rms_both_sides[sys_cat] is True:
+                                error_var_up += error * error
+                                if not out_sys:
+                                    count_sys_up = count_sys_up + 1
                             else:
-                                error_var_down = max(error_var_down, abs(error))
+                                error_var_down += error * error
+                                if not out_sys:
+                                    count_sys_down = count_sys_down + 1
+                        else:
+                            error_var_down = max(error_var_down, abs(error))
                     if self.systematic_rms[sys_cat] is True:
-                        if count_sys_up != 0:
-                            error_var_up = error_var_up / count_sys_up
-                        else:
-                            error_var_up = 0.0
+                        error_var_up = error_var_up / count_sys_up if count_sys_up != 0 else 0.0
                         error_var_up = sqrt(error_var_up)
-                        if count_sys_down != 0:
-                            error_var_down = error_var_down / count_sys_down
-                        else:
-                            error_var_down = 0.0
+                        error_var_down = error_var_down / count_sys_down if count_sys_down != 0 else 0.0
                         if self.systematic_rms_both_sides[sys_cat] is True:
                             error_var_down = error_var_up
                         else:
@@ -918,7 +908,8 @@ class AnalyzerJetSystematics:
                 shapebins_error_down_cat = []
                 for ibinshape in range(n_bins_obs_gen):
                     shapebins_contents_cat.append(0)
-                    if abs(input_histograms_default[iptjet].GetBinContent(ibinshape + 1)) < 1.0e-7:
+                    epsilon_float = 1.0e-7
+                    if abs(input_histograms_default[iptjet].GetBinContent(ibinshape + 1)) < epsilon_float:
                         print("WARNING!!! Input histogram at bin", iptjet, " equal 0", suffix)
                         e_up = 0
                         e_down = 0
@@ -992,7 +983,8 @@ class AnalyzerJetSystematics:
             suffix = self.get_suffix_ptjet(iptjet)
             h_default_stat_err.append(input_histograms_default[iptjet].Clone("h_default_stat_err" + suffix))
             for i in range(h_default_stat_err[iptjet].GetNbinsX()):
-                if abs(input_histograms_default[iptjet].GetBinContent(i + 1)) < 1.0e-7:
+                epsilon_float = 1.0e-7
+                if abs(input_histograms_default[iptjet].GetBinContent(i + 1)) < epsilon_float:
                     print("WARNING!!! Input histogram at bin", iptjet, " equal 0", suffix)
                     h_default_stat_err[iptjet].SetBinContent(i + 1, 0)
                     h_default_stat_err[iptjet].SetBinError(i + 1, 0)

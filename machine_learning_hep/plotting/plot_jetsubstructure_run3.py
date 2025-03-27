@@ -15,10 +15,6 @@ Script for plotting figures of the Run 3 HF-jet substructure analyses
 Author: Vit Kucera <vit.kucera@cern.ch>
 """
 
-# pylint: disable=too-many-lines, too-many-instance-attributes, too-many-statements, too-many-locals
-# pylint: disable=too-many-nested-blocks, too-many-branches, consider-using-f-string
-# pylint: disable=unused-variable
-
 import argparse
 import logging
 import os
@@ -106,7 +102,7 @@ class Plotter:
 
         with open(path_database_analysis, encoding="utf-8") as file_db:
             db_analysis = yaml.safe_load(file_db)
-        case = list(db_analysis.keys())[0]
+        case = next(iter(db_analysis.keys()))
         self.datap = db_analysis[case]
         self.db_typean = self.datap["analysis"][self.typean]
 
@@ -406,7 +402,7 @@ class Plotter:
         source = {"monash": "M", "mode2": "SM2"}
         dict_obj = {}
         with TFile.Open(path_file) as file:
-            for s_obs, obs in obs.items():
+            for s_obs, n_obs in obs.items():
                 dict_obj[s_obs] = {}
                 for s_spec, spec in species.items():
                     dict_obj[s_obs][s_spec] = {}
@@ -418,7 +414,7 @@ class Plotter:
                             name = pattern % (
                                 spec,
                                 src,
-                                obs,
+                                n_obs,
                                 self.edges_ptjet_gen[iptjet],
                                 self.edges_ptjet_gen[iptjet + 1],
                             )
@@ -681,7 +677,7 @@ class Plotter:
                 self.make_plot(f"{self.species}_efficiency_{self.var}")
 
                 bins_ptjet = (0, 1, 2, 3)
-                for cat, label in zip(("pr", "np"), ("prompt", "non-prompt")):
+                for cat, label in zip(("pr", "np"), ("prompt", "non-prompt"), strict=False):
                     self.list_obj = self.get_objects(
                         *(
                             f"h_ptjet-pthf_effnew_{cat}_{string_range_ptjet(get_bin_limits(axis_ptjet, iptjet + 1))}"
@@ -1206,7 +1202,7 @@ class Plotter:
                 # TODO: if plot_run2_lc_ff_data
                 if h_run2 is not None:
                     n_obj = len(self.list_obj)
-                    self.plot_order = list(range(n_obj)) + [-1, -0.5]
+                    self.plot_order = [*list(range(n_obj)), -1, -0.5]
                     self.list_obj += [g_run2, h_run2]
                     self.labels_obj += [f"{self.text_run2}, {self.get_text_range_ptjet(2)}", ""]
                     self.list_colours += [get_colour(-1)] * 2
