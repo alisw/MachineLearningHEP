@@ -12,6 +12,8 @@
 ##   along with this program. if not, see <https://www.gnu.org/licenses/>. ##
 #############################################################################
 
+"""Definition of the RooFitter class and helper functions"""
+
 from math import sqrt
 
 import ROOT
@@ -22,25 +24,34 @@ USE_EXTMODEL = True
 # pylint: disable=too-few-public-methods, too-many-statements
 # (temporary until we add more functionality)
 class RooFitter:
+    """Fitter using Roofit for combined fits of invariant-mass distributions"""
+
     def __init__(self):
         ROOT.gErrorIgnoreLevel = ROOT.kError
         ROOT.RooMsgService.instance().setSilentMode(True)
         ROOT.RooMsgService.instance().setGlobalKillBelow(ROOT.RooFit.WARNING)
         ROOT.RooMsgService.instance().setGlobalKillBelow(ROOT.RooFit.ERROR)
 
-    def fit_mass_new(self, hist, pdfnames, fit_spec, level, roows=None, plot=False):
+    def fit_mass_new(
+        self, hist, pdfnames: dict, fit_spec: dict, level: str, roows: ROOT.RooWorkspace = None, plot: bool = False
+    ):
+        """New fit method"""
         if hist.GetEntries() == 0:
             raise UserWarning("Cannot fit histogram with no entries")
         ws = roows or ROOT.RooWorkspace("ws")
         var_m = fit_spec.get("var", "m")
 
-        n_signal = RooRealVar("n_signal", "Number of signal events", 1e7, 0, 1.e10)
+        n_signal = RooRealVar("n_signal", "Number of signal events", 1e7, 0, 1e10)
         n_background = RooRealVar("n_background", "Number of background events", 1e7, 0, 1e10)
 
+        model = None
         for comp, spec in fit_spec.get("components", {}).items():
             fn = ws.factory(spec["fn"])
             if comp == "model":
                 model = fn
+        if model is None:
+            raise ValueError("model not set")
+
         m = ws.var(var_m)
 
         if level == "data" and USE_EXTMODEL:
@@ -54,8 +65,6 @@ class RooFitter:
                 "model", "Total model", RooArgList(signal_pdf, background_pdf), RooArgList(n_signal, n_background)
             )
 
-        # if range_m := fit_spec.get('range'):
-        #     m.setRange(range_m[0], range_m[1])
         dh = ROOT.RooDataHist("dh", "dh", [m], Import=hist)
         if range_m := fit_spec.get("range"):
             m.setRange("fit", *range_m)
@@ -64,7 +73,9 @@ class RooFitter:
             if level == 'data' and USE_EXTMODEL:
                 for v in ws.allVars():
                     v.setConstant(True)
-                res = extmodel.fitTo(dh, Range=(range_m[0], range_m[1]), Save=True, PrintLevel=-1, Strategy=1, MaxCalls=5000)
+                res = extmodel.fitTo(
+                    dh, Range=(range_m[0], range_m[1]), Save=True, PrintLevel=-1, Strategy=1, MaxCalls=5000
+                )
         else:
             res = model.fitTo(dh, Save=True, PrintLevel=-1, Strategy=1, MaxCalls=5000)
             if level == 'data' and USE_EXTMODEL:
@@ -83,7 +94,8 @@ class RooFitter:
             model.paramOn(frame, Layout=(0.65, 1.0, 0.9))
             frame.getAttText().SetTextFont(42)
             frame.getAttText().SetTextSize(0.001)
-            frame.SetAxisRange(range_m[0], range_m[1], "X")
+            if range_m:
+                frame.SetAxisRange(range_m[0], range_m[1], "X")
             frame.SetAxisRange(0.0, frame.GetMaximum() + (frame.GetMaximum() * 0.3), "Y")
 
             try:
@@ -99,8 +111,7 @@ class RooFitter:
                     )
                     # model.SetName("bkg")
                 model.plotOn(frame, ROOT.RooFit.Name("model"))
-            # pylint: disable=bare-except
-            except:
+            except:  # pylint: disable=bare-except  # noqa: E722
                 pass
             # for comp in fit_spec.get('components', {}):
             #     if comp != 'model':
@@ -109,7 +120,7 @@ class RooFitter:
             # c.Modified()
             # c.Update()
 
-        if level == "data" and USE_EXTMODEL:
+        if level == "data" and USE_EXTMODEL and frame is not None:
             residuals = frame.residHist("data", "pdf_bkg")
             residual_frame = m.frame()
             residual_frame.addPlotable(residuals, "P")
@@ -123,19 +134,26 @@ class RooFitter:
                 ROOT.RooFit.Normalization(1.0, ROOT.RooAbsReal.RelativeExpected),
             )
 
-            residual_frame.SetAxisRange(range_m[0], range_m[1], "X")
+            if range_m:
+                residual_frame.SetAxisRange(range_m[0], range_m[1], "X")
             residual_frame.SetYTitle("Residuals")
 
         return (res, ws, frame, residual_frame)
 
     def fit_mass(self, hist, fit_spec, plot=False):
+        """Old fit method"""
         if hist.GetEntries() == 0:
             raise UserWarning("Cannot fit histogram with no entries")
         ws = ROOT.RooWorkspace("ws")
+
+        model = None
         for comp, spec in fit_spec.get("components", {}).items():
             ws.factory(spec["fn"])
             if comp == "sum":
                 model = ws.pdf(comp)
+        if model is None:
+            raise ValueError("model not set")
+
         m = ws.var("m")
         # m.setRange('full', 0., 3.)
         dh = ROOT.RooDataHist("dh", "dh", [m], Import=hist)
@@ -154,6 +172,7 @@ class RooFitter:
 
 
 def calc_signif(roows, res, pdfnames, param_names, mean_sgn, sigma_sgn):
+    """Calculate significance, signal, background, signal/background ratio."""
     if not USE_EXTMODEL:
         return (0., 0., 0., 0., 0., 0, 0, 0.)
     f_sig = roows.pdf(pdfnames["pdf_sig"])
@@ -217,6 +236,7 @@ def calc_signif(roows, res, pdfnames, param_names, mean_sgn, sigma_sgn):
 
 
 def create_text_info(x_1, y_1, x_2, y_2):
+    """Create an info box for fit plots and set its style."""
     text_info = TPaveText(x_1, y_1, x_2, y_2, "NDC")
     text_info.SetBorderSize(0)
     text_info.SetFillColor(0)  # Transparent fill
@@ -230,6 +250,7 @@ def create_text_info(x_1, y_1, x_2, y_2):
 
 
 def add_text_info_fit(text_info, frame, roows, param_names):
+    """Add fit info on the info box."""
     chi2 = frame.chiSquare()
     mean_sgn = roows.var(param_names["gauss_mean"])
     sigma_sgn = roows.var(param_names["gauss_sigma"])
@@ -253,6 +274,7 @@ def add_text_info_fit(text_info, frame, roows, param_names):
 
 
 def add_text_info_perf(text_info, sig, sig_err, bkg, bkg_err, s_over_b, s_over_b_err, signif, signif_err):
+    """Add signal, background, signal/background and significance on the info box."""
     text_info.AddText(f"S(3#sigma) = {sig:.0f} #pm {sig_err:.0f}")
     text_info.AddText(f"B(3#sigma) = {bkg:.0f} #pm {bkg_err:.0f}")
     text_info.AddText(f"S/B(3#sigma) = {s_over_b:.3f} #pm {s_over_b_err:.3f}")
