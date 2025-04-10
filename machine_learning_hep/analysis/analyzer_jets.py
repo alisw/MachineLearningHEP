@@ -589,9 +589,6 @@ class AnalyzerJets(Analyzer):
                         if iptjet is None:
                             if not fitcfg.get("per_ptjet"):
                                 for jptjet in range(get_nbins(h, 1)):
-                                    self.logger.info(
-                                        "Overwriting roows_ptjet for %s iptjet %s ipt %d", level, jptjet, ipt
-                                    )
                                     self.roows[(jptjet, ipt)] = roo_ws.Clone()
                                     self.roo_ws[(level, jptjet, ipt)] = roo_ws.Clone()
                             if level in ("data", "mc"):
@@ -705,10 +702,7 @@ class AnalyzerJets(Analyzer):
             self.logger.info("Scaling sidebands in ptjet-%s bins: %s using %s", label, bins_ptjet, fh_sideband)
             hx = project_hist(fh_sideband, (0,), {}) if get_dim(fh_sideband) > 1 else fh_sideband
             for iptjet in bins_ptjet:
-                if iptjet:
-                    n = hx.GetBinContent(iptjet)
-                    self.logger.info("Need to scale in ptjet %i: %g", iptjet, n)
-                    if n <= 0:
+                if iptjet and hx.GetBinContent(iptjet) <= 0:
                         continue
                 rws = self.roo_ws.get((mcordata, iptjet, ipt))
                 if not rws:
@@ -1071,6 +1065,7 @@ class AnalyzerJets(Analyzer):
         """Estimate feeddown from legacy Run 2 trees or gen-only simulation"""
         match self.cfg("fd_input", "tree"):
             case "tree":
+                self.logger.info("Reading feeddown information from trees")
                 with TFile(self.cfg("fd_root")) as rfile:
                     powheg_xsection = rfile.Get("fHistXsection")
                     powheg_xsection_scale_factor = powheg_xsection.GetBinContent(1) / powheg_xsection.GetEntries()
@@ -1126,6 +1121,8 @@ class AnalyzerJets(Analyzer):
                         if fh := rfile.Get(f"h_mass-ptjet-pthf{label}"):
                             h3_fd_gen_orig[var] = project_hist(fh, list(range(1, get_dim(fh))), {})
                             ensure_sumw2(h3_fd_gen_orig[var])
+                            self._save_hist(project_hist(h3_fd_gen_orig[var], [0, 2], {}), f"fd/h_ptjet-{var}_feeddown_genonly_noeffscaling.png")
+                powheg_xsection_scale_factor = 1. # FIXME: retrieve cross section
 
             case fd_input:
                 self.logger.critical("Invalid feeddown input %s", fd_input)
