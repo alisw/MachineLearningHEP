@@ -117,7 +117,7 @@ class AnalyzerJets(Analyzer):
                 for param, symbol in zip(
                     ("mean", "sigma", "significance", "chi2"),
                     ("#it{#mu}", "#it{#sigma}", "significance", "#it{#chi}^{2}"),
-                    strict=False,
+                    strict=True,
                 )
             }
             for level in self.fit_levels
@@ -703,7 +703,7 @@ class AnalyzerJets(Analyzer):
             hx = project_hist(fh_sideband, (0,), {}) if get_dim(fh_sideband) > 1 else fh_sideband
             for iptjet in bins_ptjet:
                 if iptjet and hx.GetBinContent(iptjet) <= 0:
-                        continue
+                    continue
                 rws = self.roo_ws.get((mcordata, iptjet, ipt))
                 if not rws:
                     self.logger.error("Falling back to incl. roows for %s-iptjet%i-ipt%i", mcordata, iptjet, ipt)
@@ -1060,7 +1060,6 @@ class AnalyzerJets(Analyzer):
         # hres.Sumw2() # TODO: check if we should do this here
         return hres
 
-
     def estimate_feeddown(self):
         """Estimate feeddown from legacy Run 2 trees or gen-only simulation"""
         match self.cfg("fd_input", "tree"):
@@ -1096,7 +1095,9 @@ class AnalyzerJets(Analyzer):
                     colname = col_mapping.get(var, f"{var}_jet")
                     if f"{colname}" not in df:
                         if var is not None:
-                            self.logger.error("No feeddown information for %s (%s), cannot estimate feeddown", var, colname)
+                            self.logger.error(
+                                "No feeddown information for %s (%s), cannot estimate feeddown", var, colname
+                            )
                             # print(df.info(), flush=True)
                         continue
 
@@ -1109,7 +1110,9 @@ class AnalyzerJets(Analyzer):
                         bins_obs[var],
                     )
                     fill_hist_fast(h3_fd_gen_orig[var], df[["pt_jet", "pt_cand", f"{colname}"]])
-                    self._save_hist(project_hist(h3_fd_gen_orig[var], [0, 2], {}), f"fd/h_ptjet-{var}_feeddown_gen_noeffscaling.png")
+                    self._save_hist(
+                        project_hist(h3_fd_gen_orig[var], [0, 2], {}), f"fd/h_ptjet-{var}_feeddown_gen_noeffscaling.png"
+                    )
 
             case "sim":
                 # TODO: recover cross section
@@ -1121,8 +1124,11 @@ class AnalyzerJets(Analyzer):
                         if fh := rfile.Get(f"h_mass-ptjet-pthf{label}"):
                             h3_fd_gen_orig[var] = project_hist(fh, list(range(1, get_dim(fh))), {})
                             ensure_sumw2(h3_fd_gen_orig[var])
-                            self._save_hist(project_hist(h3_fd_gen_orig[var], [0, 2], {}), f"fd/h_ptjet-{var}_feeddown_genonly_noeffscaling.png")
-                powheg_xsection_scale_factor = 1. # FIXME: retrieve cross section
+                            self._save_hist(
+                                project_hist(h3_fd_gen_orig[var], [0, 2], {}),
+                                f"fd/h_ptjet-{var}_feeddown_genonly_noeffscaling.png",
+                            )
+                powheg_xsection_scale_factor = 1.0  # FIXME: retrieve cross section
 
             case fd_input:
                 self.logger.critical("Invalid feeddown input %s", fd_input)
