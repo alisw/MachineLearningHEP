@@ -86,9 +86,8 @@ class AnalyzerJets(Analyzer):
         self.p_pdfnames = datap["analysis"][self.typean].get("pdf_names")
         self.p_param_names = datap["analysis"][self.typean].get("param_names")
 
-        # TODO: should come entirely from DB
         self.observables = {
-            "qa": ["zg", "rg", "nsd", "zpar", "dr", "lntheta", "lnkt", "lntheta-lnkt"],
+            "qa": [*self.cfg("observables", {})],
             "all": [*self.cfg("observables", {})],
         }
 
@@ -685,7 +684,6 @@ class AnalyzerJets(Analyzer):
             # project out the mass regions (first axis)
             axes = list(range(get_dim(hist)))[1:]
             fh[region] = project_hist(hist, axes, {0: bins[region]})
-            self.logger.info("Projecting %s to %s in %s: %g entries", hist, axes, bins[region], fh[region].GetEntries())
             self._save_hist(
                 fh[region], f"sideband/h_ptjet{label}_{region}_{string_range_pthf(range_pthf)}_{mcordata}.png"
             )
@@ -1128,7 +1126,7 @@ class AnalyzerJets(Analyzer):
                                 project_hist(h3_fd_gen_orig[var], [0, 2], {}),
                                 f"fd/h_ptjet-{var}_feeddown_genonly_noeffscaling.png",
                             )
-                powheg_xsection_scale_factor = 1.0  # FIXME: retrieve cross section
+                powheg_xsection_scale_factor = 0.  # FIXME: retrieve cross section
 
             case fd_input:
                 self.logger.critical("Invalid feeddown input %s", fd_input)

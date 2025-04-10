@@ -14,6 +14,7 @@
 
 from functools import reduce
 from os.path import join
+from typing import TypeVar
 
 # pylint: disable=import-error, no-name-in-module
 from ROOT import gStyle
@@ -37,7 +38,8 @@ class WorkflowBase:
         self.typean = typean
         self.period = period
 
-    def cfg(self, param, default=None):
+    T = TypeVar("T")
+    def cfg(self, param: str, default: T = None) -> T:
         return reduce(
             lambda d, key: d.get(key, default) if isinstance(d, dict) else default,
             param.split("."),
