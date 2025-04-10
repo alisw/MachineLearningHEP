@@ -62,7 +62,7 @@ class AnalyzerJets(Analyzer):
         super().__init__(datap, case, typean, period)
 
         # output directories
-        suffix =  f"results.{period}" if period is not None else "resultsallp"
+        suffix = f"results.{period}" if period is not None else "resultsallp"
         self.d_resultsallpmc = self.cfg(f"mc.{suffix}")
         self.d_resultsallpdata = self.cfg(f"data.{suffix}")
 
@@ -114,6 +114,7 @@ class AnalyzerJets(Analyzer):
                 for param, symbol in zip(
                     ("mean", "sigma", "significance", "chi2"),
                     ("#it{#mu}", "#it{#sigma}", "significance", "#it{#chi}^{2}"),
+                    strict=False,
                 )
             }
             for level in self.fit_levels
@@ -130,8 +131,8 @@ class AnalyzerJets(Analyzer):
         self.file_out_histo = TFile(self.n_fileresult, "recreate")
 
         self.fitter = RooFitter()
-        self.roo_ws = {} # ROOT workspaces stored at various levels
-        self.roows = {} # ROOT workspaces at latest level
+        self.roo_ws = {}  # ROOT workspaces stored at various levels
+        self.roows = {}  # ROOT workspaces at latest level
 
     # region helpers
     def _save_canvas(self, canvas, filename):
@@ -512,7 +513,7 @@ class AnalyzerJets(Analyzer):
                         if h_invmass.GetEntries() < 100:  # TODO: reconsider criterion
                             self.logger.error("Not enough entries to fit %s iptjet %s ipt %d", level, iptjet, ipt)
                             continue
-                        fit_res, _, func_bkg = self._fit_mass(
+                        fit_res, _, _ = self._fit_mass(
                             h_invmass, f"fit/h_mass_fitted_{string_range_pthf(range_pthf)}_{level}.png"
                         )
                         if fit_res and fit_res.Get() and fit_res.IsValid():
@@ -522,12 +523,12 @@ class AnalyzerJets(Analyzer):
                             self.logger.error("Fit failed for %s bin %d", level, ipt)
                     if self.cfg("mass_roofit"):
                         for entry in self.cfg("mass_roofit", []):
-                            if lvl := entry.get("level"):
-                                if lvl != level:
-                                    continue
-                            if ptspec := entry.get("ptrange"):
-                                if ptspec[0] > range_pthf[0] or ptspec[1] < range_pthf[1]:
-                                    continue
+                            if (lvl := entry.get("level")) and lvl != level:
+                                continue
+                            if (ptspec := entry.get("ptrange")) and (
+                                ptspec[0] > range_pthf[0] or ptspec[1] < range_pthf[1]
+                            ):
+                                continue
                             fitcfg = entry
                             break
                         self.logger.debug("Using fit config for %i: %s", ipt, fitcfg)
@@ -585,7 +586,9 @@ class AnalyzerJets(Analyzer):
                         if iptjet is None:
                             if not fitcfg.get("per_ptjet"):
                                 for jptjet in range(get_nbins(h, 1)):
-                                    self.logger.info('Overwriting roows_ptjet for %s iptjet %s ipt %d', level, jptjet, ipt)
+                                    self.logger.info(
+                                        "Overwriting roows_ptjet for %s iptjet %s ipt %d", level, jptjet, ipt
+                                    )
                                     self.roows[(jptjet, ipt)] = roo_ws.Clone()
                                     self.roo_ws[(level, jptjet, ipt)] = roo_ws.Clone()
                             if level in ("data", "mc"):
@@ -638,12 +641,12 @@ class AnalyzerJets(Analyzer):
             return None
 
         for entry in self.cfg("sidesub", []):
-            if level := entry.get("level"):
-                if level != mcordata:
-                    continue
-            if ptrange_sel := entry.get("ptrange"):
-                if ptrange_sel[0] > self.bins_candpt[ipt] or ptrange_sel[1] < self.bins_candpt[ipt + 1]:
-                    continue
+            if (level := entry.get("level")) and level != mcordata:
+                continue
+            if (ptrange_sel := entry.get("ptrange")) and (
+                ptrange_sel[0] > self.bins_candpt[ipt] or ptrange_sel[1] < self.bins_candpt[ipt + 1]
+            ):
+                continue
             regcfg = entry["regions"]
             break
         regions = {
@@ -706,10 +709,10 @@ class AnalyzerJets(Analyzer):
                         continue
                 rws = self.roo_ws.get((mcordata, iptjet, ipt))
                 if not rws:
-                    self.logger.error("Could not retrieve roows for %s-iptjet%i-ipt%i using incl. ws instead", mcordata, iptjet, ipt)
+                    self.logger.error("Falling back to incl. roows for %s-iptjet%i-ipt%i", mcordata, iptjet, ipt)
                     rws = self.roo_ws.get((mcordata, None, ipt))
                 if not rws:
-                    self.logger.critical("Could not retrieve roows for %s-iptjet%i-ipt%i using incl. ws instead", mcordata, iptjet, ipt)
+                    self.logger.critical("Could not retrieve roows for %s-iptjet%i-ipt%i", mcordata, iptjet, ipt)
                 f = rws.pdf("bkg").asTF(rws.var("m"))
                 area = {region: f.Integral(*limits[region]) for region in regions}
                 self.logger.info("areas for %s-iptjet%s-ipt%s: %s", mcordata, iptjet, ipt, area)
