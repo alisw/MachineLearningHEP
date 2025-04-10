@@ -696,14 +696,21 @@ class AnalyzerJets(Analyzer):
         ensure_sumw2(fh_sideband)
         if mcordata == "data":
             bins_ptjet = list(range(get_nbins(fh_subtracted, 0))) if self.cfg("sidesub_per_ptjet") else [None]
-            self.logger.info("Scaling sidebands in ptjet bins: %s", bins_ptjet)
+            self.logger.info("Scaling sidebands in ptjet-%s bins: %s using %s", label, bins_ptjet, fh_sideband)
+            hx = project_hist(fh_sideband, (0,), {}) if get_dim(fh_sideband) > 1 else fh_sideband
             for iptjet in bins_ptjet:
-                if rws := self.roo_ws.get((mcordata, iptjet, ipt)):
-                    f = rws.pdf("bkg").asTF(rws.var("m"))
-                else:
-                    # FIXME: What to do?
-                    self.logger.error("Could not retrieve roows for %s-iptjet%i-ipt%i", mcordata, iptjet, ipt)
-                    continue
+                if iptjet:
+                    n = hx.GetBinContent(iptjet)
+                    self.logger.info("Need to scale in ptjet %i: %g", iptjet, n)
+                    if n <= 0:
+                        continue
+                rws = self.roo_ws.get((mcordata, iptjet, ipt))
+                if not rws:
+                    self.logger.error("Could not retrieve roows for %s-iptjet%i-ipt%i using incl. ws instead", mcordata, iptjet, ipt)
+                    rws = self.roo_ws.get((mcordata, None, ipt))
+                if not rws:
+                    self.logger.critical("Could not retrieve roows for %s-iptjet%i-ipt%i using incl. ws instead", mcordata, iptjet, ipt)
+                f = rws.pdf("bkg").asTF(rws.var("m"))
                 area = {region: f.Integral(*limits[region]) for region in regions}
                 self.logger.info("areas for %s-iptjet%s-ipt%s: %s", mcordata, iptjet, ipt, area)
                 if (area["sideband_left"] + area["sideband_right"]) > 0.0:
