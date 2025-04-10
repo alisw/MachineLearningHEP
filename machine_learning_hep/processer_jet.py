@@ -83,8 +83,10 @@ class ProcesserJets(Processer):
         self.s_evtsel = datap["analysis"][self.typean]["evtsel"]
 
         # bins: 2d array [[low, high], ...]
-        self.bins_skimming = np.array(list(zip(self.lpt_anbinmin, self.lpt_anbinmax)), "d")  # TODO: replace with cfg
-        self.bins_analysis = np.array(list(zip(self.lpt_finbinmin, self.lpt_finbinmax)), "d")
+        self.bins_skimming = np.array(
+            list(zip(self.lpt_anbinmin, self.lpt_anbinmax, strict=True)), "d"
+        )  # TODO: replace with cfg
+        self.bins_analysis = np.array(list(zip(self.lpt_finbinmin, self.lpt_finbinmax, strict=True)), "d")
 
         # skimming bins in overlap with the analysis range
         self.active_bins_skim = [
@@ -143,7 +145,7 @@ class ProcesserJets(Processer):
         for idx, row in df.iterrows():
             isSoftDropped = False
             nsd = 0
-            for zg, theta in zip(row["zg_array"], row["fTheta"]):
+            for zg, theta in zip(row["zg_array"], row["fTheta"], strict=True):
                 if zg >= self.cfg("zcut", 0.1):
                     if not isSoftDropped:
                         df.loc[idx, "zg"] = zg
@@ -178,7 +180,12 @@ class ProcesserJets(Processer):
                 df["zg"] = df["zg_array"].apply(lambda ar: next((zg for zg in ar if zg >= zcut), -0.1))
             if "rg" in observables:
                 df["rg"] = df[["zg_array", "fTheta"]].apply(
-                    (lambda ar: next((rg for (zg, rg) in zip(ar.zg_array, ar.fTheta) if zg >= zcut), -0.1)), axis=1
+                    (
+                        lambda ar: next(
+                            (rg for (zg, rg) in zip(ar.zg_array, ar.fTheta, strict=True) if zg >= zcut), -0.1
+                        )
+                    ),
+                    axis=1,
                 )
             if "nsd" in observables:
                 df["nsd"] = df["zg_array"].apply(lambda ar: len([zg for zg in ar if zg >= zcut]))
@@ -232,7 +239,7 @@ class ProcesserJets(Processer):
         self.logger.info("Processing (histomass) %s", self.l_evtorig[index])
 
         print(f"Opening file {self.l_histomass[index]}", flush=True)
-        with TFile.Open(self.l_histomass[index], "recreate") as rfile:
+        with TFile.Open(self.l_histomass[index], "recreate") as _:
             dfevtorig = read_df(self.l_evtorig[index])
             histonorm = TH1F("histonorm", "histonorm", 4, 0, 4)
             histonorm.SetBinContent(1, len(dfquery(dfevtorig, self.s_evtsel)))
@@ -256,7 +263,7 @@ class ProcesserJets(Processer):
             get_axis(histonorm, 0).SetBinLabel(4, "N_{BC}^{TVX}")
             histonorm.Write()
 
-            if self.datatype != 'fd':
+            if self.datatype != "fd":
                 df = pd.concat(read_df(self.mptfiles_recosk[bin][index]) for bin in self.active_bins_skim)
             else:
                 df = pd.concat(read_df(self.mptfiles_gensk[bin][index]) for bin in self.active_bins_skim)
@@ -489,7 +496,10 @@ class ProcesserJets(Processer):
             }
 
             for cat in cats:
-                print(f"Filling histograms for {cat}: {dfgen[cat].info()}, {dfdet[cat].info()}, {dfmatch[cat].info()}", flush=True)
+                print(
+                    f"Filling histograms for {cat}: {dfgen[cat].info()}, {dfdet[cat].info()}, {dfmatch[cat].info()}",
+                    flush=True,
+                )
                 fill_hist(h_eff[(cat, "gen")], dfgen[cat][["fJetPt_gen", "fPt_gen"]])
                 fill_hist(h_eff[(cat, "det")], dfdet[cat][["fJetPt", "fPt"]])
                 if cat in dfmatch and dfmatch[cat] is not None:
