@@ -179,6 +179,7 @@ def hf_pt_spectrum(
     )
     hnorm = TH1F("hnorm", "hnorm", 1, 0, 1)
 
+    crosssec_nonprompt_fonll = []
     for i_pt, (ptmin, ptmax) in enumerate(zip(ptlims["rawyields"][:-1], ptlims["rawyields"][1:], strict=False)):
         pt_cent = (ptmax + ptmin) / 2
         pt_delta = ptmax - ptmin
