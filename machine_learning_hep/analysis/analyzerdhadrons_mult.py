@@ -370,7 +370,9 @@ class AnalyzerDhadrons_mult(Analyzer):  # pylint: disable=invalid-name
                             for entry in self.cfg("mass_roofit", []):
                                 if (lvl := entry.get("level")) and lvl != level:
                                     continue
-                                if (ptspec := entry.get("ptrange")) and (ptspec[0] > ptrange[0] or ptspec[1] < ptrange[1]):
+                                if (ptspec := entry.get("ptrange")) and (
+                                    ptspec[0] > ptrange[0] or ptspec[1] < ptrange[1]
+                                ):
                                     continue
                                 fitcfg = entry
                                 break
