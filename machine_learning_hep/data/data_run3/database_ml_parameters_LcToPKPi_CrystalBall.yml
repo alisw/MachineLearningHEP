@@ -1,0 +1,612 @@
+---
+#############################################################################
+##  © Copyright CERN 2023. All rights not expressly granted are reserved.  ##
+##                 Author: Gian.Michele.Innocenti@cern.ch                  ##
+## This program is free software: you can redistribute it and/or modify it ##
+##  under the terms of the GNU General Public License as published by the  ##
+## Free Software Foundation, either version 3 of the License, or (at your  ##
+## option) any later version. This program is distributed in the hope that ##
+##  it will be useful, but WITHOUT ANY WARRANTY; without even the implied  ##
+##     warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.    ##
+##           See the GNU General Public License for more details.          ##
+##    You should have received a copy of the GNU General Public License    ##
+##   along with this program. if not, see <https://www.gnu.org/licenses/>. ##
+#############################################################################
+
+LcpKpi:
+  doml: true
+  mass: 2.286
+  sel_reco_unp: "fPt>0"
+  sel_gen_unp: "fPt>0"
+  sel_cen_unp: null
+  sel_good_evt_unp: null
+  #sel_reco_skim: ["fDecayLength > 0.015","fDecayLength > 0.015","fDecayLength > 0.015","fDecayLength > 0.015","fDecayLength > 0.015","fDecayLength > 0.015"]
+  sel_reco_skim: [null, null, null, null, null, null, null, null, null, null]
+  sel_gen_skim: [null, null, null, null, null, null, null, null, null, null]
+  sel_skim_binmin: [1, 2, 3, 4, 5, 6, 7, 8, 10, 12] #list of nbins
+  sel_skim_binmax: [2, 3, 4, 5, 6, 7, 8, 10, 12, 24] #list of nbins
+  apply_yptacccut: false
+  var_binning: fPt
+  dofullevtmerge: false
+  var_cand: fCandidateSelFlag
+  var_swap: fIsCandidateSwapped
+  bitmap_sel:
+    var_name: fFlagMcMatchRec
+    var_name_gen: fFlagMcMatchGen
+    var_name_origgen: fOriginMcGen
+    var_name_origrec: fOriginMcRec
+    var_isstd: isstd
+    var_ismcsignal: ismcsignal
+    var_ismcprompt: ismcprompt
+    var_ismcfd: ismcfd
+    var_ismcbkg: ismcbkg
+    var_ismcrefl: ismcref
+    isstd: [[1], []]
+    ismcsignal: [[1], []]
+    ismcprompt: [[0], []]
+    ismcfd: [[1], []]
+    ismcbkg: [[], [1]]
+    ismcrefl: [[1], [1]]
+
+  dfs:
+    read:
+      evtorig:
+        level: all
+        index: fIndexHFLCCOLLBASES
+        trees:
+          O2hflccollbase: [fNumContrib, fMultZeqNTracksPV, fCentFT0M]
+        extra:
+          fIsEventReject: 0
+
+      evtoriggen:
+        level: gen
+        index: fIndexHFLCMCCOLLBASES
+        trees:
+          O2hflcmccollbase: [fPosX, fPosY, fPosZ, fCentFT0M]
+          O2hflcmcrcollid: [fIndexArrayHFLCCOLLBASES]
+        rename: {old: fCentFT0M, new: fCentFT0Mmc}
+
+      reco:
+        level: all
+        index: fIndexHfLcBases
+        trees:
+          O2hflcbase: [fIndexHFLCCOLLBASES, fPt, fY, fEta, fPhi, fM]
+          O2hflcpar: [fNProngsContributorsPV, fCpa, fCpaXY, fChi2PCA, fDecayLength, fDecayLengthXY, fPtProng0, fPtProng1, fPtProng2, fImpactParameter0, fImpactParameter1, fImpactParameter2, fNSigTpcPi0, fNSigTpcPr0, fNSigTpcKa1, fNSigTpcPi2, fNSigTpcPr2, fNSigTofPi0, fNSigTofPr0, fNSigTofKa1, fNSigTofPi2, fNSigTofPr2, fNSigTpcTofPi0, fNSigTpcTofPr0, fNSigTpcTofKa1, fNSigTpcTofPi2, fNSigTpcTofPr2]
+          O2hflcmc:
+            level: mc
+            vars: [fFlagMcMatchRec, fOriginMcRec, fIsCandidateSwapped]
+          O2hflcsel:
+            level: mc
+            vars: [fCandidateSelFlag]
+        filter: "fPt > 0."
+        #extra:
+        #fY: log((sqrt(2.28646**2 + (fPt * cosh(fEta))**2) + fPt * sinh(fEta)) / sqrt(2.28646**2 + fPt**2)) #TODO : change mass or make sure Lc mass is updated
+        tags:
+          isstd: {var: fFlagMcMatchRec, req: [[1], []], level: mc}
+          ismcsignal: {var: fFlagMcMatchRec, req: [[1], []], abs: true, level: mc}
+          ismcbkg: {var: fFlagMcMatchRec, req: [[], [1]], abs: true, level: mc}
+          ismcprompt: {var: fOriginMcRec, req: [[0], []], level: mc}
+          ismcfd: {var: fOriginMcRec, req: [[1], []], level: mc}
+        swap: {cand: fCandidateSelFlag, var_swap: fIsCandidateSwapped, vars: [ismcsignal, ismcprompt, ismcfd], level: mc}
+
+      gen:
+        level: mc
+        trees:
+          O2hflcpbase: [fIndexHFLCMCCOLLBASES, fPt, fY, fEta, fPhi, fFlagMcMatchGen, fOriginMcGen]
+        tags:
+          isstd: {var: fFlagMcMatchGen, req: [[1], []], level: mc}
+          ismcsignal: {var: fFlagMcMatchGen, req: [[1], []], abs: true, level: mc}
+          ismcbkg: {var: fFlagMcMatchGen, req: [[], [1]], abs: true, level: mc}
+          ismcprompt: {var: fOriginMcGen, req: [[0], []], level: mc}
+          ismcfd: {var: fOriginMcGen, req: [[1], []], level: mc}
+          #extra:
+          #fY: log((sqrt(2.28646**2 + (fPt * cosh(fEta))**2) + fPt * sinh(fEta)) / sqrt(2.28646**2 + fPt**2)) #TODO : change mass or make sure Lc mass is updated
+
+    merge:
+      - {base: reco, ref: evtorig, extra: {fMultZeqNTracksPV_sub: fMultZeqNTracksPV - fNProngsContributorsPV}}
+      - {base: gen, ref: evtoriggen}
+    # workaround for yamlfmt issue #110
+    #- {base: gen, ref: evtorig, left_on: fIndexArrayHFLCCOLLBASES, out: genrec}
+
+    write:
+      evtorig:
+        level: all
+        file: AnalysisResultsEvtOrig.parquet
+      evt:
+        level: all
+        source: evtorig
+        file: AnalysisResultsEvt.parquet
+      evtmc:
+        level: mc
+        source: evtoriggen
+        file: AnalysisResultsEvtGen.parquet
+      reco:
+        level: all
+        file: AnalysisResultsReco.parquet
+      gen:
+        level: mc
+        file: AnalysisResultsGen.parquet
+
+  variables:
+    var_all: [fIndexCollisions, fFlagMcMatchRec, fCandidateSelFlag, fOriginMcRec, fIsCandidateSwapped, fNProngsContributorsPV, fY, fEta, fPt, fCpa, fCpaXY, fM, fChi2PCA, fDecayLength, fDecayLengthXY, fPtProng0, fPtProng1, fPtProng2, fImpactParameter0, fImpactParameter1, fImpactParameter2, fNSigTpcPi0, fNSigTpcPr0, fNSigTpcKa1, fNSigTpcPi2, fNSigTpcPr2, fNSigTofPi0, fNSigTofPr0, fNSigTofKa1, fNSigTofPi2, fNSigTofPr2, fNSigTpcTofPi0, fNSigTpcTofPr0, fNSigTpcTofKa1, fNSigTpcTofPi2, fNSigTpcTofPr2]
+    var_jet: [fJetPt, fJetEta, fJetPhi]
+    var_jetsub: [fZg, fRg, fNsd]
+    var_jet_match: [df, fIndexHfCand2Prong]
+    var_jetsub_match: [df, fIndexLcChargedJets]
+    var_evt:
+      data: [fIndexCollisions, fPosX, fPosY, fPosZ, fNumContrib, fMultZeqNTracksPV, fCentFT0M]
+      mc: [fIndexCollisions, fPosX, fPosY, fPosZ, fMultZeqNTracksPV, fCentFT0M]
+      #mc:   [fIndexCollisions, fPosX, fPosY, fPosZ, fNumContrib, fMultZeqNTracksPV, fCentFT0A, fCentFT0C, fCentFT0M, fCentFV0A]
+    var_gen: [fIndexMcCollisions, fPosX, fPosY, fPosZ, fPt, fY, fFlagMcMatchGen, fOriginMcGen]
+    var_training: [[fImpactParameter0, fImpactParameter1, fImpactParameter2, fCpa, fChi2PCA, fDecayLength, fDecayLengthXY, fNSigTpcTofPi0, fNSigTpcTofPr0, fNSigTpcTofKa1, fNSigTpcTofPi2, fNSigTpcTofPr2], [fImpactParameter0, fImpactParameter1, fImpactParameter2, fCpa, fChi2PCA, fDecayLength, fDecayLengthXY, fNSigTpcTofPi0, fNSigTpcTofPr0, fNSigTpcTofKa1, fNSigTpcTofPi2, fNSigTpcTofPr2], [fImpactParameter0, fImpactParameter1, fImpactParameter2, fCpa, fChi2PCA, fDecayLength, fDecayLengthXY, fNSigTpcTofPi0, fNSigTpcTofPr0, fNSigTpcTofKa1, fNSigTpcTofPi2, fNSigTpcTofPr2], [fImpactParameter0, fImpactParameter1, fImpactParameter2, fCpa, fChi2PCA, fDecayLength, fDecayLengthXY, fNSigTpcTofPi0, fNSigTpcTofPr0, fNSigTpcTofKa1, fNSigTpcTofPi2, fNSigTpcTofPr2], [fImpactParameter0, fImpactParameter1, fImpactParameter2, fCpa, fChi2PCA, fDecayLength, fDecayLengthXY, fNSigTpcTofPi0, fNSigTpcTofPr0, fNSigTpcTofKa1, fNSigTpcTofPi2, fNSigTpcTofPr2], [fImpactParameter0, fImpactParameter1, fImpactParameter2, fCpa, fChi2PCA, fDecayLength, fDecayLengthXY, fNSigTpcTofPi0, fNSigTpcTofPr0, fNSigTpcTofKa1, fNSigTpcTofPi2, fNSigTpcTofPr2], [fImpactParameter0, fImpactParameter1, fImpactParameter2, fCpa, fChi2PCA, fDecayLength, fDecayLengthXY, fNSigTpcTofPi0, fNSigTpcTofPr0, fNSigTpcTofKa1, fNSigTpcTofPi2, fNSigTpcTofPr2], [fImpactParameter0, fImpactParameter1, fImpactParameter2, fCpa, fChi2PCA, fDecayLength, fDecayLengthXY, fNSigTpcTofPi0, fNSigTpcTofPr0, fNSigTpcTofKa1, fNSigTpcTofPi2, fNSigTpcTofPr2], [fImpactParameter0, fImpactParameter1, fImpactParameter2, fCpa, fChi2PCA, fDecayLength, fDecayLengthXY, fNSigTpcTofPi0, fNSigTpcTofPr0, fNSigTpcTofKa1, fNSigTpcTofPi2, fNSigTpcTofPr2], [fImpactParameter0, fImpactParameter1, fImpactParameter2, fCpa, fChi2PCA, fDecayLength, fDecayLengthXY, fNSigTpcTofPi0, fNSigTpcTofPr0, fNSigTpcTofKa1, fNSigTpcTofPi2, fNSigTpcTofPr2], [fImpactParameter0, fImpactParameter1, fImpactParameter2, fCpa, fChi2PCA, fDecayLength, fDecayLengthXY, fNSigTpcTofPi0, fNSigTpcTofPr0, fNSigTpcTofKa1, fNSigTpcTofPi2, fNSigTpcTofPr2]]
+    var_selected: [fM, fY, fEta, fPt, fCpa, fCpaXY, fChi2PCA, fDecayLength, fDecayLengthXY, fPtProng0, fPtProng1, fPtProng2, fImpactParameter0, fImpactParameter1, fImpactParameter2, fNSigTpcPi0, fNSigTpcPr0, fNSigTpcKa1, fNSigTpcPi2, fNSigTpcPr2, fNSigTofPi0, fNSigTofPr0, fNSigTofKa1, fNSigTofPi2, fNSigTofPr2, fNSigTpcTofPi0, fNSigTpcTofPr0, fNSigTpcTofKa1, fNSigTpcTofPi2, fNSigTpcTofPr2]
+    var_boundaries: [fDecayLength, fPt]
+    var_correlation:
+      - [fDecayLength, fChi2PCA, fCpa]
+      - [fPt, fPt, fPt]
+    var_class: class
+    var_inv_mass: fM
+    var_y: fY
+    var_cuts:
+      - [fPtProng0, lt, null]
+      - [fPtProng1, lt, null]
+      - [fPtProng2, lt, null]
+      - [fCpa, lt, null]
+      - [fDecayLength, lt, null]
+      - [fChi2PCA, lt, null]
+
+    plot_options:
+      prob_cut_scan:
+        pt_prong0:
+          xlim:
+            - 0
+            - 8
+        pt_prong1:
+          xlim:
+            - 0
+            - 8
+        pt_prong2:
+          xlim:
+            - 0
+            - 8
+        fDecayLength:
+          xlim:
+            - 0
+            - 0.08
+        fChi2PCA:
+          xlim:
+            - 0
+            - 20.
+        fNSigTofPr0:
+          xlim: [-50, 50]
+          xlabel: "n\\sigma_\\mathrm{TOF}(p)0"
+        fNSigTofPi0:
+          xlim: [-50, 50]
+          xlabel: "n\\sigma_\\mathrm{TOF}(\\pi)0"
+        fNSigTofKa1:
+          xlim: [-10, 10]
+          xlabel: "n\\sigma_\\mathrm{TOF}(K)1"
+        fNSigTofPr2:
+          xlim: [-50, 50]
+          xlabel: "n\\sigma_\\mathrm{TOF}(p)2"
+        fNSigTofPi2:
+          xlim: [-50, 50]
+          xlabel: "n\\sigma_\\mathrm{TOF}(\\pi)2"
+        fNSigTpcPr0:
+          xlim: [-50, 50]
+          xlabel: "n\\sigma_\\mathrm{TPC}(p)0"
+        fNSigTpcPi0:
+          xlim: [-50, 50]
+          xlabel: "n\\sigma_\\mathrm{TPC}(\\pi)0"
+        fNSigTpcKa1:
+          xlim: [-10, 10]
+          xlabel: "n\\sigma_\\mathrm{TPC}(K)1"
+        fNSigTpcPr2:
+          xlim: [-50, 50]
+          xlabel: "n\\sigma_\\mathrm{TPC}(p)2"
+        fNSigTpcPi2:
+          xlim: [-50, 50]
+          xlabel: "n\\sigma_\\mathrm{TPC}(\\pi)2"
+      eff_cut_scan:
+        pt_prong0:
+          xlim:
+            - 0
+            - 8
+        pt_prong1:
+          xlim:
+            - 0
+            - 8
+        pt_prong2:
+          xlim:
+            - 0
+            - 8
+        fDecayLength:
+          xlim:
+            - 0
+            - 0.08
+        fChi2PCA:
+          xlim:
+            - 0
+            - 20.
+  files_names:
+    namefile_unmerged_tree: AO2D.root
+    namefile_reco: AnalysisResultsReco.parquet
+    namefile_evt: AnalysisResultsEvt.parquet
+    namefile_collcnt: AnalysisResultsCollCnt.parquet
+    namefile_bccnt: AnalysisResultsBcCnt.parquet
+    namefile_evtvalroot: AnalysisResultsROOTEvtVal.root
+    namefile_evtorig: AnalysisResultsEvtOrig.parquet
+    namefile_gen: AnalysisResultsGen.parquet
+    namefile_reco_applieddata: AnalysisResultsRecoAppliedData.parquet
+    namefile_reco_appliedmc: AnalysisResultsRecoAppliedMC.parquet
+    namefile_mcweights: mcweights.root
+    treeoutput: "Lctree"
+    histofilename: "masshisto.root"
+    efffilename: "effhisto.root"
+    respfilename: "resphisto.root"
+    crossfilename: "cross_section_tot.root"
+    resultfilename: "finalcrossLcpKpiRun3analysis.root"
+
+  multi:
+    data:
+      nprocessesparallel: 80
+      maxfiles: [-1] #list of periods
+      chunksizeunp: [100] #list of periods
+      chunksizeskim: [100] #list of periods
+      fracmerge: [0.05] #list of periods
+      seedmerge: [12] #list of periods
+      period: [LHC23] #list of periods
+      select_period: [1]
+      prefix_dir: /data2/MLhep/
+      #unmerged_tree_dir: [real/train_339425/alice/cern.ch/user/a/alihyperloop/jobs/0130] #list of periods small
+      unmerged_tree_dir: [real/train_342351/alice/cern.ch/user/a/alihyperloop/jobs/0133] #list of periods
+      pkl: [LHC23pp_mb/period_LHC23/pkldata] #list of periods
+      pkl_skimmed: [LHC23pp_mb/period_LHC23/pklskdata] #list of periods
+      pkl_skimmed_merge_for_ml: [LHC23pp_mb/period_LHC23/pklskmldata] #list of periods
+      pkl_skimmed_merge_for_ml_all: LHC23pp_mb/mltotdata
+      pkl_evtcounter_all: LHC23pp_mb/evttotdata
+      #select_jobs: [[hy_189959], [hy_189000]]
+      mcreweights: [../Analyses]
+    mc:
+      nprocessesparallel: 80
+      maxfiles: [-1] #list of periods
+      chunksizeunp: [100] #list of periods
+      chunksizeskim: [100] #list of periods
+      fracmerge: [1.0] #list of periods
+      seedmerge: [1] #list of periods
+      period: [LHC24h1] #list of periods
+      select_period: [1]
+      prefix_dir: /data2/MLhep/
+      #unmerged_tree_dir: [sim/train_339426/alice/cern.ch/user/a/alihyperloop/jobs/0130] #list of periods training
+      unmerged_tree_dir: [sim/train_341075/alice/cern.ch/user/a/alihyperloop/jobs/0132] #list of periods
+      pkl: [LHC23pp_mc_tuner_mb/prod_LHC24h1/pklmc] #list of periods
+      pkl_skimmed: [LHC23pp_mc_tuner_mb/prod_LHC24h1/pklskmc] #list of periods
+      pkl_skimmed_merge_for_ml: [LHC23pp_mc_tuner_mb/prod_LHC24h1/pklskmlmc] #list of periods
+      pkl_skimmed_merge_for_ml_all: LHC23pp_mc_tuner_mb/prod_LHC24_ana/mltotmc
+      pkl_evtcounter_all: LHC23pp_mc_tuner_mb/prod_LHC24_ana/evttotmc
+      #select_jobs: [[hy_396609], [hy_396597]]
+      mcreweights: [../Analyses]
+  ml:
+    evtsel: null
+    triggersel:
+      data: null
+      mc: null
+
+    nclasses: [200000, 200000, 200000]
+    #nclasses: [16557, 16557, 16557]
+    equalise_sig_bkg: True
+    #mult_bkg: [30,2,2,3,3,5]
+    mult_bkg: [1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
+    sampletags: [0, 1, 1]
+    sel_bkg: fM < 2.22 or fM > 2.35 # for plotting significance; should agree with bkg selection in sel_ml
+    # best to have non-prompt (the smallest class) last, so the plots won't complain about the middle class missing
+    sel_ml: [fM < 2.22 or fM > 2.35, ismcsignal == 1 and ismcprompt == 1, ismcsignal == 1 and ismcfd == 1]
+    class_labels: [bkg, prompt, non-prompt]
+    nkfolds: 5
+    rnd_shuffle: 12
+    rnd_splt: 12
+    rnd_all: 12 # Set to None for pure randomness
+    test_frac: 0.2
+    binmin: [1, 2, 3, 4, 5, 6, 7, 8, 10, 12] # must be equal to sel_skim_binmin (sel_skim_binmin bins)
+    binmax: [2, 3, 4, 5, 6, 7, 8, 10, 12, 24] # must be equal to sel_skim_binmax (sel_skim_binmin bins)
+    mltype: MultiClassification
+    ncorescrossval: 10
+    prefix_dir_ml: /data2/ldellost/MLhep/
+    mlplot: mlplot_Lc2023 # to be removed
+    mlout: mlout_Lc2023 # to be removed
+
+    opt:
+      isFONLLfromROOT: true
+      filename_fonll: 'data/fonll/DmesonLcPredictions_13TeV_y05_FFptDepLHCb_BRpythia8_PDG2020.root' # file with FONLL predictions
+      fonll_particle: 'hLcpkpipred'
+      fonll_pred: 'max' # edge of the FONLL prediction
+      FF: 0.204 # fragmentation fraction
+      sigma_MB: 57.8e-3 # Minimum Bias cross section (pp) 50.87e-3 [b], 1 for Pb-Pb
+      Taa: 1 # 23260 [b^-1] in 0-10% Pb-Pb, 3917 [b^-1] in 30-50% Pb-Pb, 1 for pp
+      BR: 6.23e-2 # branching ratio of the decay Lc -> p K- pi+
+      f_prompt: 0.9 # estimated fraction of prompt candidates
+      bkg_data_fraction: 0.05 # fraction of real data used in the estimation
+      num_steps: 111 # number of steps used in efficiency and signif. estimation
+      bkg_function: pol2 # fit function for bkg (among TH1 predefined fit functions, e.g. expo, pol1, pol2, ...)
+      save_fit: True # save bkg fits with the various cuts on ML output
+      raahp: [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1] # sel_skim_binmin bins
+      presel_gen_eff: "abs(fY) < 0.8"
+      #presel_gen_eff: "abs(fY) < 0.8 and abs(fPosZ) < 10"
+
+  mlapplication:
+    data:
+      prefix_dir_app: /data2/ldellost/MLhep_newformat_mb_DD/
+      pkl_skimmed_dec: [LHC23pp/MLapplication/prod_LHC23/skpkldecdata] #list of periods
+      pkl_skimmed_decmerged: [LHC23pp/MLapplication/prod_LHC23/skpkldecdatamerged] #list of periods
+    mc:
+      prefix_dir_app: /data2/ldellost/MLhep_newformat_mb_DD/
+      pkl_skimmed_dec: [LHC23pp_mc/MLapplication_mult/prod_LHC24h1/skpkldecmc] #list of periods
+      pkl_skimmed_decmerged: [LHC23pp_mc/MLapplication_mult/prod_LHC24h1/skpkldecmcmerged] #list of periods
+    modelname: xgboost
+    modelsperptbin: [xgboost_classifierLcpKpi_dfselection_fPt_1.0_2.0.sav, xgboost_classifierLcpKpi_dfselection_fPt_2.0_3.0.sav, xgboost_classifierLcpKpi_dfselection_fPt_3.0_4.0.sav, xgboost_classifierLcpKpi_dfselection_fPt_4.0_5.0.sav, xgboost_classifierLcpKpi_dfselection_fPt_5.0_6.0.sav, xgboost_classifierLcpKpi_dfselection_fPt_6.0_7.0.sav, xgboost_classifierLcpKpi_dfselection_fPt_7.0_8.0.sav, xgboost_classifierLcpKpi_dfselection_fPt_8.0_10.0.sav, xgboost_classifierLcpKpi_dfselection_fPt_10.0_12.0.sav, xgboost_classifierLcpKpi_dfselection_fPt_12.0_24.0.sav]
+    probcutpresel:
+      data: [[0.05, 0.0, 0.0], [0.05, 0.0, 0.0], [0.08, 0.0, 0.0], [0.15, 0.0, 0.0], [0.20, 0.0, 0.0], [0.30, 0.0, 0.0], [0.40, 0.0, 0.0], [0.50, 0.0, 0.0], [0.60, 0.0, 0.0], [0.80, 0.0, 0.0]] #list of nbins
+      mc: [[0.05, 0.0, 0.0], [0.05, 0.0, 0.0], [0.08, 0.0, 0.0], [0.15, 0.0, 0.0], [0.20, 0.0, 0.0], [0.30, 0.0, 0.0], [0.40, 0.0, 0.0], [0.50, 0.0, 0.0], [0.60, 0.0, 0.0], [0.80, 0.0, 0.0]] #list of nbins
+    probcutoptimal: [[0.02, 0.40, 0.0], [0.03, 0.25, 0.0], [0.04, 0.25, 0.0], [0.07, 0.25, 0.0], [0.10, 0.25, 0.0], [0.11, 0.25, 0.0], [0.15, 0.25, 0.0], [0.18, 0.25, 0.0], [0.25, 0.25, 0.0], [0.35, 0.25, 0.0]] #list of nbins
+    #probcutoptimal: [[0.02, 0.0, 0.0], [0.03, 0.0, 0.0], [0.04, 0.0, 0.0], [0.07, 0.0, 0.0], [0.10, 0.0, 0.0], [0.11, 0.0, 0.0], [0.15, 0.0, 0.0], [0.18, 0.0, 0.0], [0.25, 0.0, 0.0], [0.35, 0.0, 0.0]] #list of nbins
+
+  analysis:
+    anahptspectrum: "LctopKpi" #D0Kpi, DplusKpipi, DstarD0pi, DsKKpi, LctopKpi, LcK0Sp
+    fd_method: "dd" # fc, Nb, ext, dd, dd_N
+    crosssec_prompt: True # True for prompt, False for non-prompt
+    cctype: "pp"
+    sigmamb: 59.4e+9 # 50.87e+9 pp5TeV, 57.8e+9 pp13TeV, 59.4e+9 pp Run3, pb
+    inputfonllpred: data/fonll/CutVarLc_pp13TeV_LHC23_pass4_wide.root #data/fonll/DmesonLcPredictions_13TeV_y05_FFptDepLHCb_BRpythia8_PDG2020.root # data/fonll/CutVarLc_pp13TeV_LHC23_pass4_wide.root #
+    dir_general_plots: analysis_plots
+
+    Run3analysis:
+      proc_type: Dhadrons
+      useperiod: [1]
+      plotbin: [1]
+      usesinglebineff: null
+      triggerbit: ''
+
+      variations_db: database_variations_LcToPKPi_mult.yml
+      observables:
+        hptspectrum:
+          bins_gen_var: [1, 2, 3, 4, 5, 6, 7, 8, 10, 12, 16, 24]
+          bins_det_var: [1, 2, 3, 4, 5, 6, 7, 8, 10, 12, 16, 24]
+          label: "#it{p}_{T}"
+          label_y: "#Lambda_{c} Cross section"
+
+      use_cuts: False
+      cuts:
+        - "fDecayLength > 0.02"
+        - "fDecayLength > 0.02"
+        - "fDecayLength > 0.02"
+        - "fDecayLength > 0.02"
+        - "fDecayLength > 0.02"
+        - "fDecayLength > 0.02"
+        - "fDecayLength > 0.02"
+        - "fDecayLength > 0.02"
+        - "fDecayLength > 0.02"
+        - "fDecayLength > 0.02"
+        - "fDecayLength > 0.02"
+
+      sel_an_binmin: [1, 2, 3, 4, 5, 6, 7, 8, 10, 12, 16]
+      sel_an_binmax: [2, 3, 4, 5, 6, 7, 8, 10, 12, 16, 24]
+      binning_matching: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 9]
+      presel_gen_eff: "abs(fY) < 0.5"
+      evtsel: null
+      #evtsel: "abs(fPosZ)<10"
+      triggersel:
+        data: null
+        mc: null
+        weighttrig: false
+
+      data:
+        runselection: [null] #FIXME
+        prefix_dir_res: ""
+        results: [/home/ldellost/MLhep_newformat_mb_DD/LHC23pp_forw/ResultsFit/prod_LHC23/resultsdata/default/default] #list of periods
+        resultsallp: /home/ldellost/MLhep_newformat_mb_DD/LHC23pp_forw/ResultsFit/resultsdatatot/default/default
+      mc:
+        runselection: [null] #FIXME
+        prefix_dir_res: ""
+        results: [/home/ldellost/MLhep_newformat_mb_DD/LHC23pp_mc_forw/ResultsFit/prod_LHC24h1/resultsmc/default/default] #list of periods
+        resultsallp: /home/ldellost/MLhep_newformat_mb_DD/LHC23pp_mc_forw/ResultsFit/prod_LHC23/resultsmctot/default/default
+
+      fitcase: Lc
+      latexnamehadron: "#Lambda_{c}^{pK#pi}"
+      #nevents: 258442910841
+      nevents: 290860860000
+      dobkgfromsideband: false
+      mass_fit_lim: [2.10, 2.47] # region for the fit of the invariant mass distribution [GeV/c^2]
+      bin_width: 0.001 # bin width of the invariant mass histogram
+      n_rebin: [2, 2, 2, 2, 2, 3, 3, 4, 5, 6, 6] # number of mass bins to merge
+
+      pdf_names:
+        pdf_sig: "sig"
+        pdf_bkg: "bkg"
+      param_names:
+        mass: "m"
+        gauss_mean: "mean"
+        gauss_sigma: "sigma_g1"
+        double_gauss_sigma: "sigma_wide"
+        alpha_l: "alpha1"
+        alpha_r: "alpha2"
+        n_l: "n1"
+        n_r: "n2"
+        fraction_refl: "frac_refl"
+
+      # To initialize the individual fits in pT bins
+      # Decide whether to take the sigma from MC or data for individual fits
+      mass_roofit:
+        - level: mc
+          ptrange: [0., 3.]
+          range: [2.18, 2.39]
+          components:
+            sig:
+              #fn: 'Gaussian::sig(m[1., 10], mean[2.286, 2.2832,2.289], sigma_g1[.007,.007,.012])'
+              fn: 'RooCrystalBall::sig(m[1., 10], mean[2.286, 2.283, 2.289], sigma_g1[0.007, 0.007, 0.012], alpha1[1.0, 0.8, 2.0], n1[30., 30., 100.0], alpha2[1.0, 0.8, 2.0], n2[30., 30., 100.0])'
+              #wide:
+            # fn: 'Gaussian::wide(m, mean, expr("n*sigma_g1", n[1.,5.], sigma_g1))'
+            #model:
+            #  fn: 'SUM::sig(f_peak[0.,1.]*peak, wide)'
+            bkg:
+              fn: 'Exponential::mcbkg(m, mcalpha[0.])'
+            model:
+              fn: 'SUM::mctot(mcfrac[0., 0., 1.0]*sig, mcbkg)'
+        - level: mc
+          ptrange: [3., 4.]
+          range: [2.18, 2.39]
+          components:
+            sig:
+              #fn: 'Gaussian::sig(m[1., 10], mean[2.286, 2.2832,2.289], sigma_g1[.007,.007,.012])'
+              fn: 'RooCrystalBall::sig(m[1., 10], mean[2.286, 2.283, 2.289], sigma_g1[0.007, 0.007, 0.012], alpha1[1.0, 0.8, 2.0], n1[20., 20., 100.0], alpha2[1.0, 0.8, 2.0], n2[20., 20., 100.0])'
+              #wide:
+            # fn: 'Gaussian::wide(m, mean, expr("n*sigma_g1", n[1.,5.], sigma_g1))'
+            #model:
+            #  fn: 'SUM::sig(f_peak[0.,1.]*peak, wide)'
+            bkg:
+              fn: 'Exponential::mcbkg(m, mcalpha[0.])'
+            model:
+              fn: 'SUM::mctot(mcfrac[0., 0., 1.0]*sig, mcbkg)'
+        - level: mc
+          ptrange: [4., 7.]
+          range: [2.18, 2.39]
+          components:
+            sig:
+              #fn: 'Gaussian::sig(m[1., 10], mean[2.286, 2.283,2.289], sigma_g1[.012,.01,.016])'
+              fn: 'RooCrystalBall::sig(m[1., 10], mean[2.286, 2.283, 2.289], sigma_g1[0.008, 0.008, 0.018], alpha1[1.0, 0.8, 2.0], n1[6.0, 6.0, 100.0], alpha2[1.0, 0.8, 2.0], n2[6.0, 6.0, 100.0])'
+              #wide:
+            # fn: 'Gaussian::wide(m, mean, expr("n*sigma_g1", n[1.,5.], sigma_g1))'
+            #model:
+            #  fn: 'SUM::sig(f_peak[0.,1.]*peak, wide)'
+            bkg:
+              fn: 'Exponential::mcbkg(m, mcalpha[0.])'
+            model:
+              fn: 'SUM::mctot(mcfrac[0., 0., 1.0]*sig, mcbkg)'
+        - level: mc
+          ptrange: [7., 12.]
+          range: [2.10, 2.45]
+          components:
+            sig:
+              #fn: 'Gaussian::sig(m[1., 10], mean[2.2865, 2.283,2.289], sigma_g1[.013,.013,.020])'
+              fn: 'RooCrystalBall::sig(m[1., 10], mean[2.286, 2.283, 2.289], sigma_g1[0.010, 0.010, 0.022], alpha1[1.0, 0.8, 2.0], n1[5.0, 5.0, 100.0], alpha2[1.0, 0.8, 2.0], n2[5.0, 5.0, 100.0])'
+              #wide:
+            # fn: 'Gaussian::wide(m, mean, expr("n*sigma_g1", n[1.,5.], sigma_g1))'
+            #model:
+            #  fn: 'SUM::sig(f_peak[0.,1.]*peak, wide)'
+            bkg:
+              fn: 'Exponential::mcbkg(m, mcalpha[0.])'
+            model:
+              fn: 'SUM::mctot(mcfrac[0., 0., 1.0]*sig, mcbkg)'
+        - level: mc
+          ptrange: [12., 24.]
+          range: [2.10, 2.45]
+          components:
+            sig:
+              #fn: 'Gaussian::sig(m[1., 10], mean[2.2865, 2.283,2.289], sigma_g1[.020,.020,.029])'
+              fn: 'RooCrystalBall::sig(m[1., 10], mean[2.286, 2.283, 2.289], sigma_g1[0.016, 0.016, 0.029], alpha1[1.0, 0.8, 2.0], n1[6.0, 6.0, 100.0], alpha2[1.0, 0.8, 2.0], n2[6.0, 6.0, 100.0])'
+              #wide:
+            # fn: 'Gaussian::wide(m, mean, expr("n*sigma_g1", n[1.,5.], sigma_g1))'
+            #model:
+            #  fn: 'SUM::sig(f_peak[0.,1.]*peak, wide)'
+            bkg:
+              fn: 'Exponential::mcbkg(m, mcalpha[0.])'
+            model:
+              fn: 'SUM::mctot(mcfrac[0., 0., 1.0]*sig, mcbkg)'
+        - ptrange: [0., 2.]
+          range: [2.216, 2.36] #2.216, 2.36
+          #fix_params: ['n', 'f_peak']
+          components:
+            #sig:
+            #fn: 'Gaussian::sig(m, mean[2.28,2.29], sigma_g1[.005,.005,.015])'
+            bkg:
+              fn: 'Polynomial::bkg(m, {a0[-1e10, 1e10], a1[-1e10, 1e10], a2[-1e10, 1e10]})'
+            model:
+              fn: 'SUM::sum(f_sig[0.,1.]*sig, bkg)'
+        - ptrange: [2., 3.]
+          range: [2.20, 2.37]
+          #fix_params: ['n', 'f_peak']
+          components:
+            #sig:
+            #   fn: 'Gaussian::sig(m, mean[2.28,2.29], sigma_g1[.005,.005,.015])'
+            bkg:
+              fn: 'Polynomial::bkg(m, {a0[-1e8, 1e8], a1[-1e8, 1e8], a2[-1e8, 1e8]})'
+            model:
+              fn: 'SUM::sum(f_sig[0.,1.]*sig, bkg)'
+        - ptrange: [3., 4.]
+          range: [2.19, 2.38]
+          #fix_params: ['n', 'f_peak']
+          components:
+            #sig:
+            #fn: 'Gaussian::sig(m, mean[2.28,2.29], sigma_g1[.005,.005,.015])'
+            bkg:
+              fn: 'Polynomial::bkg(m, {a0[-1e8, 1e8], a1[-1e8, 1e8], a2[-1e8, 1e8]})'
+            model:
+              fn: 'SUM::sum(f_sig[0., 0., 0.8]*sig, bkg)'
+        - ptrange: [4., 5.]
+          range: [2.19, 2.38]
+          #fix_params: ['n', 'f_peak']
+          components:
+            # sig:
+            #   fn: 'Gaussian::sig(m, mean[2.28,2.29], sigma_g1[.005,.005,.015])'
+            bkg:
+              fn: 'Polynomial::bkg(m, {a0[2000, -1e10, 1e10], a1[-1e10, 1e10], a2[-1e10, 1e10]})'
+            model:
+              fn: 'SUM::sum(f_sig[0.,1.]*sig, bkg)'
+        - ptrange: [5., 6.]
+          range: [2.18, 2.39]
+          #fix_params: ['n', 'f_peak']
+          components:
+            # sig:
+            #   fn: 'Gaussian::sig(m, mean[2.28,2.29], sigma_g1[.005,.005,.015])'
+            bkg:
+              fn: 'Polynomial::bkg(m, {a0[5000, -1e10, 1e10], a1[-1e10, 1e10], a2[-1e10, 1e10]})'
+            model:
+              fn: 'SUM::sum(f_sig[0.,1.]*sig, bkg)'
+        - ptrange: [6., 7.]
+          range: [2.16, 2.40]
+          #fix_params: ['n', 'f_peak']
+          components:
+            # sig:
+            #   fn: 'Gaussian::sig(m, mean[2.28,2.29], sigma_g1[.005,.03])'
+            bkg:
+              fn: 'Polynomial::bkg(m, {a0[2000, -1e10, 1e10], a1[-1e10, 1e10], a2[-1e10, 1e10]})'
+            model:
+              fn: 'SUM::sum(f_sig[0.,1.]*sig, bkg)'
+        - ptrange: [7., 8.]
+          range: [2.16, 2.40]
+          #fix_params: ['n', 'f_peak']
+          components:
+            # sig:
+            #   fn: 'Gaussian::sig(m, mean[2.28,2.29], sigma_g1[.005,.03])'
+            bkg:
+              fn: 'Polynomial::bkg(m, {a0[1000, -1e10, 1e10], a1[-1e10, 1e10], a2[-1e10, 1e10]})'
+            model:
+              fn: 'SUM::sum(f_sig[0.,1.]*sig, bkg)'
+        - ptrange: [8., 10.]
+          range: [2.1, 2.46]
+          #fix_params: ['n', 'f_peak']
+          components:
+            # sig:
+            #   fn: 'Gaussian::sig(m, mean[2.28,2.29], sigma_g1[.005,.03])'
+            bkg:
+              fn: 'Polynomial::bkg(m, {a0[1000, -1e10, 1e10], a1[-1e10, 1e10], a2[-1e10, 1e10]})'
+            model:
+              fn: 'SUM::sum(f_sig[0.,1.]*sig, bkg)'
+        - range: [2.1, 2.46]
+          #fix_params: ['n', 'f_peak']
+          components:
+            # sig:
+            #   fn: 'Gaussian::sig(m, mean[2.28,2.29], sigma_g1[.005,.03])'
+            bkg:
+              fn: 'Polynomial::bkg(m, {a0[2000, -1e10, 1e10], a1[-1e10, 1e10], a2[-1e10, 1e10]})'
+            model:
+              fn: 'SUM::sum(f_sig[0.,1.]*sig, bkg)'
+
+  systematics:
+    probvariation:
+      useperiod: [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1] #period from where to define prob cuts
+      ncutvar: 10 #number of looser and tighter variations
+      maxperccutvar: 0.25 #max diff in efficiency for loosest/tightest var
+      cutvarminrange: [[0.1, 0.3], [0.1, 0.3], [0.1, 0.3], [0.1, 0.3], [0.1, 0.3], [0.7, 0.9], [0.1, 0.3], [0.1, 0.3], [0.1, 0.3], [0.1, 0.3], [0.1, 0.3]] #Min starting point for scan
+      cutvarmaxrange: [[0.7, 0.9], [0.7, 0.9], [0.7, 0.9], [0.7, 0.9], [0.7, 0.9], [0.7, 0.9], [0.1, 0.3], [0.1, 0.3], [0.1, 0.3], [0.1, 0.3], [0.1, 0.3]] #Max starting point for scan
+      fixedmean: true #Fix mean cutvar histo to central fit
+      fixedsigma: true #Fix sigma cutvar histo to central fit

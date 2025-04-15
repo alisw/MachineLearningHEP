@@ -16,7 +16,7 @@
 file: hf_analysis_utils.py
 brief: script with miscellanea utils methods for the HF analyses
 author: Fabrizio Grosa <fabrizio.grosa@cern.ch>, CERN
-Macro committed and manteined in O2Physics:
+Macro committed and mantained in O2Physics:
 https://github.com/AliceO2Group/O2Physics/tree/master/PWGHF/D2H/Macros
 """
 
@@ -62,6 +62,11 @@ def compute_crosssection(
     if rawy <= 0:
         crosssection = -9999
         crosssec_unc = -1
+    elif method_frac == "dd_N":
+        crosssection = frac * sigma_mb / (2 * delta_pt * delta_y * n_events * b_ratio)
+        # TODO: How to calculate the uncertainty?
+        # frac_unc / frac * crosssection?
+        crosssec_unc = 0.0
     else:
         crosssection = rawy * frac * sigma_mb / (2 * delta_pt * delta_y * eff_times_acc * n_events * b_ratio)
         if method_frac in ("Nb", "ext"):
@@ -124,8 +129,8 @@ def compute_fraction_fc(
         frac_fd = [frac_fd_cent, frac_fd_cent, frac_fd_cent]
         return frac_prompt, frac_fd
 
-    for i_sigma, (sigma_p, sigma_f) in enumerate(zip(cross_sec_prompt, cross_sec_fd)):
-        for i_raa, (raa_p, raa_f) in enumerate(zip(raa_prompt, raa_fd)):
+    for i_sigma, (sigma_p, sigma_f) in enumerate(zip(cross_sec_prompt, cross_sec_fd, strict=False)):
+        for i_raa, (raa_p, raa_f) in enumerate(zip(raa_prompt, raa_fd, strict=False)):
             if i_sigma == 0 and i_raa == 0:
                 frac_prompt_cent = 1.0 / (1 + acc_eff_fd / acc_eff_prompt * sigma_f / sigma_p * raa_f / raa_p)
                 frac_fd_cent = 1.0 / (1 + acc_eff_prompt / acc_eff_fd * sigma_p / sigma_f * raa_p / raa_f)
@@ -218,34 +223,20 @@ def compute_fraction_nb(
                             frac_cent * rawy * sigma_mb / 2 / acc_eff_same / delta_pt / delta_y / b_ratio / n_events
                         )
                         delta_raa = abs((raa_other - raa_other_old) / raa_other)
-            else:
-                if raa_rat == 1.0 and taa == 1.0:  # pp
-                    frac.append(
-                        1 - sigma * delta_pt * delta_y * acc_eff_other * b_ratio * n_events * 2 / rawy / sigma_mb
+            elif raa_rat == 1.0 and taa == 1.0:  # pp
+                frac.append(1 - sigma * delta_pt * delta_y * acc_eff_other * b_ratio * n_events * 2 / rawy / sigma_mb)
+            else:  # p-Pb or Pb-Pb: iterative evaluation of Raa needed
+                delta_raa = 1.0
+                frac_tmp = 1.0
+                while delta_raa > 1.0e-3:
+                    raw_fd = (
+                        taa * raa_rat * raa_other * sigma * delta_pt * delta_y * acc_eff_other * b_ratio * n_events * 2
                     )
-                else:  # p-Pb or Pb-Pb: iterative evaluation of Raa needed
-                    delta_raa = 1.0
-                    frac_tmp = 1.0
-                    while delta_raa > 1.0e-3:
-                        raw_fd = (
-                            taa
-                            * raa_rat
-                            * raa_other
-                            * sigma
-                            * delta_pt
-                            * delta_y
-                            * acc_eff_other
-                            * b_ratio
-                            * n_events
-                            * 2
-                        )
-                        frac_tmp = 1 - raw_fd / rawy
-                        raa_other_old = raa_other
-                        raa_other = (
-                            frac_tmp * rawy * sigma_mb / 2 / acc_eff_same / delta_pt / delta_y / b_ratio / n_events
-                        )
-                        delta_raa = abs((raa_other - raa_other_old) / raa_other)
-                    frac.append(frac_tmp)
+                    frac_tmp = 1 - raw_fd / rawy
+                    raa_other_old = raa_other
+                    raa_other = frac_tmp * rawy * sigma_mb / 2 / acc_eff_same / delta_pt / delta_y / b_ratio / n_events
+                    delta_raa = abs((raa_other - raa_other_old) / raa_other)
+                frac.append(frac_tmp)
 
     if frac:
         frac.sort()
@@ -254,6 +245,44 @@ def compute_fraction_nb(
         frac = [frac_cent, frac_cent, frac_cent]
 
     return frac
+
+
+def compute_fraction_dd(acc_eff_same, acc_eff_other, corryields_same, corryields_other, cov_same, cov_other, cov_comb):
+    """
+    Method to get fraction of prompt / FD fraction with data-driven method
+    Parameters
+    ----------
+    - acc_eff_same: efficiency times acceptance of prompt (non-prompt) D
+    - acc_eff_other: efficiency times acceptance of non-prompt (prompt) D
+    - corryields_same: corrected yield of prompt (non-prompt) D computed with cut variation
+    - corryields_other: corrected yield of non-prompt (prompt) D computed with cut variation
+    - cov_same: covariance of prompt (non-prompt) D computed with cut variation
+    - cov_other: covariance of non-prompt (prompt) D computed with cut variation
+    - cov_comb: covariance of prompt and non-prompt D computed with cut variation
+    Returns
+    ----------
+    - frac: list of fraction of prompt (non-prompt) D (central, min, max)
+            where min = frac - unc, max = frac + unc, and unc is the statistical
+            uncertainty propagated from efficiency and corrected yield uncertainties
+    """
+    yield_times_acceff_same = corryields_same * acc_eff_same
+    yield_times_acceff_other = corryields_other * acc_eff_other
+    frac_v = yield_times_acceff_same / (yield_times_acceff_same + yield_times_acceff_other)
+    # print(f"same yield times acceff: {yield_times_acceff_same} " \
+    #      f"other {yield_times_acceff_other} final frac: {frac_v}")
+
+    denom = (yield_times_acceff_same + yield_times_acceff_other) ** 2
+    der_same_same = (
+        acc_eff_same * (yield_times_acceff_same + yield_times_acceff_other) - acc_eff_same**2 * corryields_same
+    ) / denom
+    der_same_other = -acc_eff_same * acc_eff_other * corryields_same / denom
+    unc = np.sqrt(
+        der_same_same**2 * cov_same + der_same_other**2 * cov_other + 2 * der_same_same * der_same_other * cov_comb
+    )
+    # print(f"denom {denom} der_same_same {der_same_same} der_same_other {der_same_other} " \
+    #      f"cov same {cov_same} cov other {cov_other} cov comb {cov_comb} final unc {unc}")
+
+    return [frac_v, frac_v - unc, frac_v + unc]
 
 
 def get_hist_binlimits(histo):

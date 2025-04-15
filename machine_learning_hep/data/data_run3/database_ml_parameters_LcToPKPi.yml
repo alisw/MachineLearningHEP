@@ -350,10 +350,11 @@ LcpKpi:
 
   analysis:
     anahptspectrum: "LctopKpi" #D0Kpi, DplusKpipi, DstarD0pi, DsKKpi, LctopKpi, LcK0Sp
-    fd_method: "Nb" # fc, Nb, ext
+    fd_method: "Nb" # fc, Nb, ext,  dd, dd_N
+    crosssec_prompt: true # true for prompt, false for non-prompt
     cctype: "pp"
     sigmamb: 59.4e+9 # 50.87e+9 pp5TeV, 57.8e+9 pp13TeV, 59.4e+9 pp Run3, pb
-    inputfonllpred: data/fonll/DmesonLcPredictions_13TeV_y05_FFptDepLHCb_BRpythia8_PDG2020.root
+    inputfonllpred: data/fonll/DmesonLcPredictions_13TeV_y05_FFptDepLHCb_BRpythia8_PDG2020.root #data/fonll/CutVarLc_pp13TeV_LHC23_pass4_wide.root
     dir_general_plots: analysis_plots
 
     Run3analysis:
