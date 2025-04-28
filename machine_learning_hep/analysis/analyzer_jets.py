@@ -1126,7 +1126,10 @@ class AnalyzerJets(Analyzer):
                                 project_hist(h3_fd_gen_orig[var], [0, 2], {}),
                                 f"fd/h_ptjet-{var}_feeddown_genonly_noeffscaling.png",
                             )
-                powheg_xsection_scale_factor = 0.  # FIXME: retrieve cross section
+                    h_norm = rfile.Get("histonorm")
+                    powheg_xsection_scale_factor = h_norm.GetBinContent(5)
+                    self.logger.info("powheg_xsection_scale_factor = %f", powheg_xsection_scale_factor)
+                    self.logger.info("POWHEG luminosity (mb^{-1}): %g", 1.0 / powheg_xsection_scale_factor)
 
             case fd_input:
                 self.logger.critical("Invalid feeddown input %s", fd_input)
