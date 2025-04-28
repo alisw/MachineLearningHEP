@@ -541,7 +541,6 @@ class Processer:  # pylint: disable=too-many-instance-attributes
                     if src in dfs:
                         dfo = dfquery(dfs[src], df_spec.get("filter", None))
                         path = os.path.join(self.d_pkl, self.l_path[file_index], df_spec["file"])
-                        self.logger.info("writing %s to %s with info %s", df_name, path, dfo.info())
                         write_df(dfo, path)
                     else:
                         self.logger.error("could not write tree, missing source %s", src)
