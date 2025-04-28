@@ -141,6 +141,7 @@ class Processer:  # pylint: disable=too-many-instance-attributes
         self.n_evt = datap["files_names"]["namefile_evt"]
         self.n_collcnt = datap["files_names"].get("namefile_collcnt")
         self.n_bccnt = datap["files_names"].get("namefile_bccnt")
+        self.n_wgt = datap["files_names"].get("namefile_wgt", None)
         self.n_evtorig = datap["files_names"].get("namefile_evtorig")
         self.n_evt_count_ml = datap["files_names"].get("namefile_evt_count", "evtcount.yaml")
         self.n_gen = datap["files_names"]["namefile_gen"]
@@ -193,6 +194,7 @@ class Processer:  # pylint: disable=too-many-instance-attributes
         self.l_evtorig = createlist(self.d_pkl, self.l_path, self.n_evtorig)
         self.l_collcnt = createlist(self.d_pkl, self.l_path, self.n_collcnt) if self.datatype != "fd" else None
         self.l_bccnt = createlist(self.d_pkl, self.l_path, self.n_bccnt) if self.datatype != "fd" else None
+        self.l_wgt = createlist(self.d_pkl, self.l_path, self.n_wgt) if self.datatype == "fd" and self.n_wgt else None
         self.l_histomass = createlist(self.d_results, self.l_path, self.n_filemass)
         self.l_histoeff = createlist(self.d_results, self.l_path, self.n_fileeff)
         # self.l_historesp = createlist(self.d_results, self.l_path, self.n_fileresp)
@@ -217,18 +219,18 @@ class Processer:  # pylint: disable=too-many-instance-attributes
         # Potentially mask certain values (e.g. nsigma TOF of -999)
         self.p_mask_values = datap["ml"].get("mask_values", None)
 
-        self.bins_skimming = np.array(list(zip(self.lpt_anbinmin, self.lpt_anbinmax, strict=False)), "d")
-        self.bins_analysis = np.array(list(zip(self.lpt_finbinmin, self.lpt_finbinmax, strict=False)), "d")
+        self.bins_skimming = np.array(list(zip(self.lpt_anbinmin, self.lpt_anbinmax, strict=True)), "d")
+        self.bins_analysis = np.array(list(zip(self.lpt_finbinmin, self.lpt_finbinmax, strict=True)), "d")
         bin_matching = [
             [ptrange[0] <= bin[0] and ptrange[1] >= bin[1] for ptrange in self.bins_skimming].index(True)
             for bin in self.bins_analysis
         ]
 
         self.lpt_probcutpre = self.cfg_global(f"mlapplication.probcutpresel.{self.datatype}", [None] * self.p_nptbins)
-        lpt_probcutfin_tmp = self.cfg_global(f"mlapplication.probcutoptimal", [None] * self.p_nptfinbins)
+        lpt_probcutfin_tmp = self.cfg_global("mlapplication.probcutoptimal", [None] * self.p_nptfinbins)
         self.lpt_probcutfin = [lpt_probcutfin_tmp[bin_matching[ibin]] for ibin in range(self.p_nptfinbins)]
 
-        if self.datatype in ('mc', 'data'):
+        if self.datatype in ("mc", "data"):
             for ibin, probcutfin in enumerate(self.lpt_probcutfin):
                 probcutpre = self.lpt_probcutpre[bin_matching[ibin]]
                 if self.mltype == "MultiClassification":
@@ -252,7 +254,7 @@ class Processer:  # pylint: disable=too-many-instance-attributes
                 for ipt in range(self.p_nptfinbins):
                     mlsel_multi = [
                         f"y_test_prob{self.p_modelname}{label.replace('-', '_')} {comp} {probcut}"
-                        for label, comp, probcut in zip(self.class_labels, comps, self.lpt_probcutfin[ipt], strict=False)
+                        for label, comp, probcut in zip(self.class_labels, comps, self.lpt_probcutfin[ipt], strict=True)
                 ]
 
         self.d_pkl_dec = d_pkl_dec
@@ -289,7 +291,7 @@ class Processer:  # pylint: disable=too-many-instance-attributes
         )
 
         self.lpt_recodec = None
-        if self.doml and self.datatype in ('mc', 'data'):
+        if self.doml and self.datatype in ("mc", "data"):
             if self.mltype == "MultiClassification":
                 self.lpt_recodec = [
                     self.n_reco.replace(
@@ -318,22 +320,30 @@ class Processer:  # pylint: disable=too-many-instance-attributes
                 for i in range(self.p_nptbins)
             ]
 
-        self.mptfiles_recosk = [
-            createlist(self.d_pklsk, self.l_path, self.lpt_recosk[ipt]) for ipt in range(self.p_nptbins)
-        ] if self.datatype in ('mc', 'data') else []
-        self.mptfiles_recoskmldec = [
-            createlist(self.d_pkl_dec, self.l_path, self.lpt_recodec[ipt]) for ipt in range(self.p_nptbins)
-        ] if self.datatype in ('mc', 'data') else []
-        self.lpt_recodecmerged = [
-            os.path.join(self.d_pkl_decmerged, self.lpt_recodec[ipt]) for ipt in range(self.p_nptbins)
-        ] if self.datatype in ('mc', 'data') else []
-        if self.datatype in ('mc', 'fd'):
+        self.mptfiles_recosk = (
+            [createlist(self.d_pklsk, self.l_path, self.lpt_recosk[ipt]) for ipt in range(self.p_nptbins)]
+            if self.datatype in ("mc", "data")
+            else []
+        )
+        self.mptfiles_recoskmldec = (
+            [createlist(self.d_pkl_dec, self.l_path, self.lpt_recodec[ipt]) for ipt in range(self.p_nptbins)]
+            if self.datatype in ("mc", "data")
+            else []
+        )
+        self.lpt_recodecmerged = (
+            [os.path.join(self.d_pkl_decmerged, self.lpt_recodec[ipt]) for ipt in range(self.p_nptbins)]
+            if self.datatype in ("mc", "data")
+            else []
+        )
+        if self.datatype in ("mc", "fd"):
             self.mptfiles_gensk = [
                 createlist(self.d_pklsk, self.l_path, self.lpt_gensk[ipt]) for ipt in range(self.p_nptbins)
             ]
-            self.lpt_gendecmerged = [
-                os.path.join(self.d_pkl_decmerged, self.lpt_gensk[ipt]) for ipt in range(self.p_nptbins)
-            ] if self.d_pkl_decmerged else []
+            self.lpt_gendecmerged = (
+                [os.path.join(self.d_pkl_decmerged, self.lpt_gensk[ipt]) for ipt in range(self.p_nptbins)]
+                if self.d_pkl_decmerged
+                else []
+            )
             self.mptfiles_gensk_sl = (
                 [createlist(self.d_pklsk, self.l_path, self.lpt_gensk_sl[ipt]) for ipt in range(self.p_nptbins)]
                 if self.lpt_gensk_sl
@@ -376,8 +386,10 @@ class Processer:  # pylint: disable=too-many-instance-attributes
                     trees = [trees]
                     cols = [cols]
                 # if all(type(var) is str for var in vars): vars = [vars]
+                if not all(name in rdir for name in trees):
+                    self.logger.critical("Missing trees: %s", trees)
                 df = None
-                for tree, col in zip([rdir[name] for name in trees], cols, strict=False):
+                for tree, col in zip([rdir[name] for name in trees], cols, strict=True):
                     try:
                         data = tree.arrays(expressions=col, library="np")
                         dfnew = pd.DataFrame(columns=col, data=data)
@@ -444,7 +456,7 @@ class Processer:  # pylint: disable=too-many-instance-attributes
                     if dfuse(df_spec):
                         trees = []
                         cols = []
-                        for tree, spec in zip(df_spec["trees"].keys(), df_spec["trees"].values(), strict=False):
+                        for tree, spec in zip(df_spec["trees"].keys(), df_spec["trees"].values(), strict=True):
                             if isinstance(spec, list):
                                 trees.append(tree)
                                 cols.append(spec)
@@ -534,15 +546,17 @@ class Processer:  # pylint: disable=too-many-instance-attributes
             for df_name, df_spec in self.df_write.items():
                 if dfuse(df_spec):
                     src = df_spec.get("source", df_name)
-                    dfo = dfquery(dfs[src], df_spec.get("filter", None))
-                    path = os.path.join(self.d_pkl, self.l_path[file_index], df_spec["file"])
-                    self.logger.info("writing %s to %s with info %s", df_name, path, dfo.info())
-                    write_df(dfo, path)
+                    if src in dfs:
+                        dfo = dfquery(dfs[src], df_spec.get("filter", None))
+                        path = os.path.join(self.d_pkl, self.l_path[file_index], df_spec["file"])
+                        write_df(dfo, path)
+                    else:
+                        self.logger.error("could not write tree, missing source %s", src)
 
     def skim(self, file_index):
         dfreco = read_df(self.l_reco[file_index]) if self.datatype != "fd" else None
-        dfgen = read_df(self.l_gen[file_index]) if self.datatype in ('mc', 'fd') else None
-        dfgen_sl = read_df(self.l_gen_sl[file_index]) if self.n_gen_sl and self.datatype in ('mc', 'fd') else None
+        dfgen = read_df(self.l_gen[file_index]) if self.datatype in ("mc", "fd") else None
+        dfgen_sl = read_df(self.l_gen_sl[file_index]) if self.n_gen_sl and self.datatype in ("mc", "fd") else None
 
         for ipt in range(self.p_nptbins):
             if dfreco is not None:

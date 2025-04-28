@@ -238,10 +238,9 @@ class ProcesserJets(Processer):
     def process_histomass_single(self, index):
         self.logger.info("Processing (histomass) %s", self.l_evtorig[index])
 
-        print(f"Opening file {self.l_histomass[index]}", flush=True)
         with TFile.Open(self.l_histomass[index], "recreate") as _:
             dfevtorig = read_df(self.l_evtorig[index])
-            histonorm = TH1F("histonorm", "histonorm", 4, 0, 4)
+            histonorm = TH1F("histonorm", "histonorm", 6, 0, 6)
             histonorm.SetBinContent(1, len(dfquery(dfevtorig, self.s_evtsel)))
             if self.l_collcnt:
                 dfcollcnt = read_df(self.l_collcnt[index])
@@ -257,10 +256,19 @@ class ProcesserJets(Processer):
                 ser_bccnt = dfbccnt[self.cfg("counter_tvx")]
                 bccnt_tvx = functools.reduce(lambda x, y: float(x) + float(y), (ar[0] for ar in ser_bccnt))
                 histonorm.SetBinContent(4, bccnt_tvx)
+            if self.l_wgt:
+                self.logger.info("Filling event weights")
+                dfwgt = read_df(self.l_wgt[index])
+                histonorm.SetBinContent(5, len(dfwgt["fEventWeight"]))
+                histonorm.SetBinContent(6, dfwgt["fEventWeight"].sum())
+            elif self.datatype == "fd":
+                self.logger.warning("No event weights found, empty list: %s", self.l_wgt)
             get_axis(histonorm, 0).SetBinLabel(1, "N_{evt}")
             get_axis(histonorm, 0).SetBinLabel(2, "N_{coll}")
             get_axis(histonorm, 0).SetBinLabel(3, "N_{coll}^{TVX}")
             get_axis(histonorm, 0).SetBinLabel(4, "N_{BC}^{TVX}")
+            get_axis(histonorm, 0).SetBinLabel(5, "N_{POWHEG}")
+            get_axis(histonorm, 0).SetBinLabel(6, "sum_xs_{POWHEG}")
             histonorm.Write()
 
             if self.datatype != "fd":
@@ -496,10 +504,6 @@ class ProcesserJets(Processer):
             }
 
             for cat in cats:
-                print(
-                    f"Filling histograms for {cat}: {dfgen[cat].info()}, {dfdet[cat].info()}, {dfmatch[cat].info()}",
-                    flush=True,
-                )
                 fill_hist(h_eff[(cat, "gen")], dfgen[cat][["fJetPt_gen", "fPt_gen"]])
                 fill_hist(h_eff[(cat, "det")], dfdet[cat][["fJetPt", "fPt"]])
                 if cat in dfmatch and dfmatch[cat] is not None:
