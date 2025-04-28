@@ -70,8 +70,9 @@ D0Jet_pp:
           O2hfd0mccollbase: [fPosZ]
         filter: "abs(fPosZ) < 10."
         
-      # powhegcoll:
-          # O2d0cmcpjetmcco: ...
+      coll_powheg_fd:
+        trees:
+          O2d0cmcpjetmcco: [fEventWeight]
       collcnt_mc:
         level: mc
         trees:
@@ -234,6 +235,9 @@ D0Jet_pp:
         source: colldata
         file: AnalysisResultsEvt.parquet
         
+      coll_powheg_fd:
+        level: fd
+        file: AnalysisResultsPowheg.parquet
       evtorig_fd:
         level: fd
         source: collfd
@@ -311,6 +315,7 @@ D0Jet_pp:
     namefile_reco_applieddata: AnalysisResultsRecoAppliedData.parquet
     namefile_reco_appliedmc: AnalysisResultsRecoAppliedMC.parquet
     namefile_mcweights: mcweights.root
+    namefile_wgt: AnalysisResultsPowheg.parquet
     treeoutput: "D0tree"
     histofilename: "masshisto.root"
     efffilename: "effhisto.root"

@@ -241,7 +241,7 @@ class ProcesserJets(Processer):
         print(f"Opening file {self.l_histomass[index]}", flush=True)
         with TFile.Open(self.l_histomass[index], "recreate") as _:
             dfevtorig = read_df(self.l_evtorig[index])
-            histonorm = TH1F("histonorm", "histonorm", 4, 0, 4)
+            histonorm = TH1F("histonorm", "histonorm", 5, 0, 5)
             histonorm.SetBinContent(1, len(dfquery(dfevtorig, self.s_evtsel)))
             if self.l_collcnt:
                 dfcollcnt = read_df(self.l_collcnt[index])
@@ -257,10 +257,18 @@ class ProcesserJets(Processer):
                 ser_bccnt = dfbccnt[self.cfg("counter_tvx")]
                 bccnt_tvx = functools.reduce(lambda x, y: float(x) + float(y), (ar[0] for ar in ser_bccnt))
                 histonorm.SetBinContent(4, bccnt_tvx)
+            if self.l_wgt:
+                self.logger.info("Filling event weights")
+                dfwgt = read_df(self.l_wgt[index])
+                print(dfwgt.info())
+                histonorm.SetBinContent(5, dfwgt["fEventWeight"].sum())
+            else:
+                self.logger.warning("No event weights found, empty list: %s", self.l_wgt)
             get_axis(histonorm, 0).SetBinLabel(1, "N_{evt}")
             get_axis(histonorm, 0).SetBinLabel(2, "N_{coll}")
             get_axis(histonorm, 0).SetBinLabel(3, "N_{coll}^{TVX}")
             get_axis(histonorm, 0).SetBinLabel(4, "N_{BC}^{TVX}")
+            get_axis(histonorm, 0).SetBinLabel(5, "w_{POWHEG}")
             histonorm.Write()
 
             if self.datatype != "fd":

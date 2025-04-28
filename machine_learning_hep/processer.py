@@ -141,6 +141,7 @@ class Processer:  # pylint: disable=too-many-instance-attributes
         self.n_evt = datap["files_names"]["namefile_evt"]
         self.n_collcnt = datap["files_names"].get("namefile_collcnt")
         self.n_bccnt = datap["files_names"].get("namefile_bccnt")
+        self.n_wgt = datap["files_names"].get("namefile_wgt", None)
         self.n_evtorig = datap["files_names"].get("namefile_evtorig")
         self.n_evt_count_ml = datap["files_names"].get("namefile_evt_count", "evtcount.yaml")
         self.n_gen = datap["files_names"]["namefile_gen"]
@@ -193,6 +194,7 @@ class Processer:  # pylint: disable=too-many-instance-attributes
         self.l_evtorig = createlist(self.d_pkl, self.l_path, self.n_evtorig)
         self.l_collcnt = createlist(self.d_pkl, self.l_path, self.n_collcnt) if self.datatype != "fd" else None
         self.l_bccnt = createlist(self.d_pkl, self.l_path, self.n_bccnt) if self.datatype != "fd" else None
+        self.l_wgt = createlist(self.d_pkl, self.l_path, self.n_wgt) if self.datatype == "fd" and self.n_wgt else None
         self.l_histomass = createlist(self.d_results, self.l_path, self.n_filemass)
         self.l_histoeff = createlist(self.d_results, self.l_path, self.n_fileeff)
         # self.l_historesp = createlist(self.d_results, self.l_path, self.n_fileresp)
@@ -376,6 +378,8 @@ class Processer:  # pylint: disable=too-many-instance-attributes
                     trees = [trees]
                     cols = [cols]
                 # if all(type(var) is str for var in vars): vars = [vars]
+                if not all((name in rdir for name in trees)):
+                    self.logger.critical("Missing trees: %s", trees)
                 df = None
                 for tree, col in zip([rdir[name] for name in trees], cols, strict=False):
                     try:
@@ -534,10 +538,13 @@ class Processer:  # pylint: disable=too-many-instance-attributes
             for df_name, df_spec in self.df_write.items():
                 if dfuse(df_spec):
                     src = df_spec.get("source", df_name)
-                    dfo = dfquery(dfs[src], df_spec.get("filter", None))
-                    path = os.path.join(self.d_pkl, self.l_path[file_index], df_spec["file"])
-                    self.logger.info("writing %s to %s with info %s", df_name, path, dfo.info())
-                    write_df(dfo, path)
+                    if src in dfs:
+                        dfo = dfquery(dfs[src], df_spec.get("filter", None))
+                        path = os.path.join(self.d_pkl, self.l_path[file_index], df_spec["file"])
+                        self.logger.info("writing %s to %s with info %s", df_name, path, dfo.info())
+                        write_df(dfo, path)
+                    else:
+                        self.logger.error("could not write tree, missing source %s", src)
 
     def skim(self, file_index):
         dfreco = read_df(self.l_reco[file_index]) if self.datatype != "fd" else None
