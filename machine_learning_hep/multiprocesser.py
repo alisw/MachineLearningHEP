@@ -16,15 +16,17 @@
 main script for doing data processing, machine learning and analysis
 """
 
-from functools import reduce
 import os
 import tempfile
+from functools import reduce
 from typing import TypeVar
 
 from machine_learning_hep.io import dump_yaml_from_dict, parse_yaml
 from machine_learning_hep.logger import get_logger
 from machine_learning_hep.utilities import merge_method, mergerootfiles
+
 from .common import DataType
+
 
 class MultiProcesser:  # pylint: disable=too-many-instance-attributes, too-many-statements, consider-using-f-string, too-many-branches
     species = "multiprocesser"
@@ -111,8 +113,12 @@ class MultiProcesser:  # pylint: disable=too-many-instance-attributes, too-many-
         self.lper_evtorig = [os.path.join(direc, self.n_evtorig) for direc in self.dlper_pkl]
 
         dp = self.cfg(f"mlapplication.{self.datatype.value}", {})
-        self.dlper_reco_modapp = [self.d_prefix_app + p for p in dp["pkl_skimmed_dec"]] if dp else [None] * len(self.p_period)
-        self.dlper_reco_modappmerged = [self.d_prefix_app + p for p in dp["pkl_skimmed_decmerged"]] if dp else [None] * len(self.p_period)
+        self.dlper_reco_modapp = (
+            [self.d_prefix_app + p for p in dp["pkl_skimmed_dec"]] if dp else [None] * len(self.p_period)
+        )
+        self.dlper_reco_modappmerged = (
+            [self.d_prefix_app + p for p in dp["pkl_skimmed_decmerged"]] if dp else [None] * len(self.p_period)
+        )
 
         dp = self.cfg(f"analysis.{self.typean}.{self.datatype.value}", {})
         self.d_results = [self.d_prefix_res + os.path.expandvars(p) for p in dp["results"]]
@@ -121,7 +127,9 @@ class MultiProcesser:  # pylint: disable=too-many-instance-attributes, too-many-
         self.f_evt_mergedallp = os.path.join(self.d_pklevt_mergedallp, self.n_evt)
         self.f_evtorig_mergedallp = os.path.join(self.d_pklevt_mergedallp, self.n_evtorig)
 
-        self.lper_runlistrigger = self.cfg(f"analysis.{self.typean}.{self.datatype.value}.runselection", [None] * len(self.p_period))
+        self.lper_runlistrigger = self.cfg(
+            f"analysis.{self.typean}.{self.datatype.value}.runselection", [None] * len(self.p_period)
+        )
 
         self.lper_mcreweights = None
         if self.datatype == DataType.MC:
