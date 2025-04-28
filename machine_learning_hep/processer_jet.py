@@ -238,7 +238,6 @@ class ProcesserJets(Processer):
     def process_histomass_single(self, index):
         self.logger.info("Processing (histomass) %s", self.l_evtorig[index])
 
-        print(f"Opening file {self.l_histomass[index]}", flush=True)
         with TFile.Open(self.l_histomass[index], "recreate") as _:
             dfevtorig = read_df(self.l_evtorig[index])
             histonorm = TH1F("histonorm", "histonorm", 5, 0, 5)
@@ -260,9 +259,8 @@ class ProcesserJets(Processer):
             if self.l_wgt:
                 self.logger.info("Filling event weights")
                 dfwgt = read_df(self.l_wgt[index])
-                print(dfwgt.info())
                 histonorm.SetBinContent(5, dfwgt["fEventWeight"].sum())
-            else:
+            elif self.datatype == "fd":
                 self.logger.warning("No event weights found, empty list: %s", self.l_wgt)
             get_axis(histonorm, 0).SetBinLabel(1, "N_{evt}")
             get_axis(histonorm, 0).SetBinLabel(2, "N_{coll}")
@@ -504,10 +502,6 @@ class ProcesserJets(Processer):
             }
 
             for cat in cats:
-                print(
-                    f"Filling histograms for {cat}: {dfgen[cat].info()}, {dfdet[cat].info()}, {dfmatch[cat].info()}",
-                    flush=True,
-                )
                 fill_hist(h_eff[(cat, "gen")], dfgen[cat][["fJetPt_gen", "fPt_gen"]])
                 fill_hist(h_eff[(cat, "det")], dfdet[cat][["fJetPt", "fPt"]])
                 if cat in dfmatch and dfmatch[cat] is not None:

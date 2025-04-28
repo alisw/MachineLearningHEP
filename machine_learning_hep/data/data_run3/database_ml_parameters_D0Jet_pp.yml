@@ -69,7 +69,7 @@ D0Jet_pp:
         trees:
           O2hfd0mccollbase: [fPosZ]
         filter: "abs(fPosZ) < 10."
-        
+
       coll_powheg_fd:
         trees:
           O2d0cmcpjetmcco: [fEventWeight]
@@ -216,7 +216,7 @@ D0Jet_pp:
       jetdata:
         level: data
         file: AnalysisResultsReco.parquet
-        
+
       evtorig_mc:
         level: mc
         source: collgen
@@ -225,7 +225,7 @@ D0Jet_pp:
         level: mc
         source: collgen
         file: AnalysisResultsEvt.parquet
-        
+
       evtorig_data:
         level: data
         source: colldata
@@ -234,7 +234,7 @@ D0Jet_pp:
         level: data
         source: colldata
         file: AnalysisResultsEvt.parquet
-        
+
       coll_powheg_fd:
         level: fd
         file: AnalysisResultsPowheg.parquet

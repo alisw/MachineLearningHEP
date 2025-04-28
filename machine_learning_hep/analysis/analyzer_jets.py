@@ -1113,7 +1113,6 @@ class AnalyzerJets(Analyzer):
                     )
 
             case "sim":
-                # TODO: recover cross section
                 h3_fd_gen_orig = {}
                 with TFile(self.n_filemass_fd) as rfile:
                     for var in self.observables["all"]:
