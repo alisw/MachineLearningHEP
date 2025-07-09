@@ -18,7 +18,7 @@ brief: script for computation of pT-differential yields (cross sections)
 usage: python3 HfPtSpectrum.py CONFIG
 authors: Fabrizio Grosa <fabrizio.grosa@cern.ch>, CERN
          Luigi Dello Stritto <luigi.dello.stritto@cern.ch>, CERN
-Macro committed and manteined in O2Physics:
+Macro committed and mantained in O2Physics:
 https://github.com/AliceO2Group/O2Physics/tree/master/PWGHF/D2H/Macros
 """
 
@@ -40,6 +40,7 @@ from ROOT import (  # pylint: disable=import-error,no-name-in-module
 
 from machine_learning_hep.hf_analysis_utils import (  # pylint: disable=import-error
     compute_crosssection,
+    compute_fraction_dd,
     compute_fraction_fc,
     compute_fraction_nb,
     get_hist_binlimits,
@@ -49,7 +50,7 @@ from machine_learning_hep.hf_analysis_utils import (  # pylint: disable=import-e
 def hf_pt_spectrum(
     channel,  # pylint: disable=too-many-locals, too-many-arguments, too-many-statements, too-many-branches
     b_ratio,
-    inputfonllpred,
+    input_fonll_or_fdd_pred,
     frac_method,
     prompt_frac,
     eff_filename,
@@ -59,6 +60,7 @@ def hf_pt_spectrum(
     yield_histoname,
     norm,
     sigmamb,
+    crosssec_prompt,
     output_prompt,
     output_file,
 ):
@@ -89,7 +91,7 @@ def hf_pt_spectrum(
         print(f"\033[91mERROR: channel {channel} not supported. Exit\033[0m")
         sys.exit(2)
 
-    if frac_method not in ["Nb", "fc", "ext"]:
+    if frac_method not in ["Nb", "fc", "ext", "dd", "dd_N"]:
         print(f"\033[91mERROR: method to subtract nonprompt {frac_method} not supported. Exit\033[0m")
         sys.exit(5)
 
@@ -104,16 +106,24 @@ def hf_pt_spectrum(
 
     histos = {}
 
-    histos["FONLL"] = {"prompt": {}, "nonprompt": {}}
-    infile_fonll = TFile.Open(inputfonllpred)
-    for pred in ("central", "min", "max"):
-        histos["FONLL"]["nonprompt"][pred] = infile_fonll.Get(f"{fonll_hist_name[channel]}fromBpred_{pred}_corr")
-        histos["FONLL"]["nonprompt"][pred].SetDirectory(0)
-        if frac_method == "fc":
-            histos["FONLL"]["prompt"][pred] = infile_fonll.Get(f"{fonll_hist_name[channel]}pred_{pred}")
-            histos["FONLL"]["prompt"][pred].SetDirectory(0)
+    infile_pred = TFile.Open(input_fonll_or_fdd_pred)
+    if frac_method in ("dd", "dd_N"):
+        histos["corryields_fdd"] = [infile_pred.Get("hCorrYieldsPrompt"), infile_pred.Get("hCorrYieldsNonPrompt")]
+        histos["covariances"] = [
+            infile_pred.Get("hCovPromptPrompt"),
+            infile_pred.Get("hCovNonPromptNonPrompt"),
+            infile_pred.Get("hCovPromptNonPrompt"),
+        ]
+    else:
+        histos["FONLL"] = {"prompt": {}, "nonprompt": {}}
+        for pred in ("central", "min", "max"):
+            histos["FONLL"]["nonprompt"][pred] = infile_pred.Get(f"{fonll_hist_name[channel]}fromBpred_{pred}_corr")
+            histos["FONLL"]["nonprompt"][pred].SetDirectory(0)
+            if frac_method == "fc":
+                histos["FONLL"]["prompt"][pred] = infile_pred.Get(f"{fonll_hist_name[channel]}pred_{pred}")
+                histos["FONLL"]["prompt"][pred].SetDirectory(0)
 
-    infile_fonll.Close()
+    infile_pred.Close()
 
     infile_rawy = TFile.Open(yield_filename)
     histos["rawyields"] = infile_rawy.Get(yield_histoname)
@@ -151,7 +161,7 @@ def hf_pt_spectrum(
     axistit_cross = "d#sigma/d#it{p}_{T} (pb GeV^{-1} #it{c})"
     axistit_cross_times_br = "d#sigma/d#it{p}_{T} #times BR (pb GeV^{-1} #it{c})"
     axistit_pt = "#it{p}_{T} (GeV/#it{c})"
-    axistit_fprompt = "#if{f}_{prompt}"
+    axistit_fprompt = "#it{f}_{prompt}"
     gfraction = TGraphAsymmErrors()
     gfraction.SetNameTitle("gfraction", f";{axistit_pt};{axistit_fprompt}")
 
@@ -169,19 +179,21 @@ def hf_pt_spectrum(
     )
     hnorm = TH1F("hnorm", "hnorm", 1, 0, 1)
 
-    for i_pt, (ptmin, ptmax) in enumerate(zip(ptlims["rawyields"][:-1], ptlims["rawyields"][1:])):
+    crosssec_nonprompt_fonll = []
+    for i_pt, (ptmin, ptmax) in enumerate(zip(ptlims["rawyields"][:-1], ptlims["rawyields"][1:], strict=False)):
         pt_cent = (ptmax + ptmin) / 2
         pt_delta = ptmax - ptmin
         rawy = histos["rawyields"].GetBinContent(i_pt + 1)
         rawy_unc = histos["rawyields"].GetBinError(i_pt + 1)
         eff_times_acc_prompt = histos["acceffp"].GetBinContent(i_pt + 1)
         eff_times_acc_nonprompt = histos["acceffnp"].GetBinContent(i_pt + 1)
-        ptmin_fonll = histos["FONLL"]["nonprompt"]["central"].GetXaxis().FindBin(ptmin * 1.0001)
-        ptmax_fonll = histos["FONLL"]["nonprompt"]["central"].GetXaxis().FindBin(ptmax * 0.9999)
-        crosssec_nonprompt_fonll = [
-            histos["FONLL"]["nonprompt"][pred].Integral(ptmin_fonll, ptmax_fonll, "width") / (ptmax - ptmin)
-            for pred in histos["FONLL"]["nonprompt"]
-        ]
+        if frac_method not in ("dd", "dd_N"):
+            ptmin_fonll = histos["FONLL"]["nonprompt"]["central"].GetXaxis().FindBin(ptmin * 1.0001)
+            ptmax_fonll = histos["FONLL"]["nonprompt"]["central"].GetXaxis().FindBin(ptmax * 0.9999)
+            crosssec_nonprompt_fonll = [
+                histos["FONLL"]["nonprompt"][pred].Integral(ptmin_fonll, ptmax_fonll, "width") / (ptmax - ptmin)
+                for pred in histos["FONLL"]["nonprompt"]
+            ]
 
         # compute prompt fraction
         frac = [0, 0, 0]
@@ -210,13 +222,34 @@ def hf_pt_spectrum(
             )
         elif frac_method == "ext":
             frac[0] = prompt_frac[i_pt]
+        elif frac_method == "dd":
+            eff_times_acc_own = eff_times_acc_prompt if crosssec_prompt else eff_times_acc_nonprompt
+            eff_times_acc_other = eff_times_acc_nonprompt if crosssec_prompt else eff_times_acc_prompt
+            pnp_ind = 0 if crosssec_prompt else 1
+            frac = compute_fraction_dd(
+                eff_times_acc_own,
+                eff_times_acc_other,
+                histos["corryields_fdd"][pnp_ind].GetBinContent(i_pt + 1),
+                histos["corryields_fdd"][1 - pnp_ind].GetBinContent(i_pt + 1),
+                histos["covariances"][pnp_ind].GetBinContent(i_pt + 1),
+                histos["covariances"][1 - pnp_ind].GetBinContent(i_pt + 1),
+                histos["covariances"][2].GetBinContent(i_pt + 1),
+            )
+            print("FRACTION HEREEEEEEEE: ")
+            print(histos["corryields_fdd"][pnp_ind].GetBinContent(i_pt + 1))
+            print(histos["corryields_fdd"][1 - pnp_ind].GetBinContent(i_pt + 1))
+            print("FRACTION HEREEEEEEEE: ")
+        elif frac_method == "dd_N":
+            pnp_ind = 0 if crosssec_prompt else 1
+            frac = [histos["corryields_fdd"][pnp_ind].GetBinContent(i_pt + 1)] * 3
 
         # compute cross section times BR
+        eff_times_acc = eff_times_acc_prompt if crosssec_prompt else eff_times_acc_nonprompt
         crosssec, crosssec_unc = compute_crosssection(
             rawy,
             rawy_unc,
             frac[0],
-            eff_times_acc_prompt,
+            eff_times_acc,
             ptmax - ptmin,
             1.0,
             sigmamb,

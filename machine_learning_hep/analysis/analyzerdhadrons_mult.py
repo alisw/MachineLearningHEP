@@ -28,22 +28,10 @@ import numpy as np
 from ROOT import (
     TF1,
     TH1,
-    TH1D,
     TH1F,
-    TH2F,
-    TArrow,
     TCanvas,
-    TDirectory,
     TFile,
     TLegend,
-    TLine,
-    TPad,
-    TPaveLabel,
-    TPaveText,
-    TStyle,
-    TText,
-    gInterpreter,
-    gPad,
     gROOT,
     gStyle,
     kBlue,
@@ -62,7 +50,6 @@ from machine_learning_hep.fitting.roofitter import (
 )
 from machine_learning_hep.hf_pt_spectrum import hf_pt_spectrum
 from machine_learning_hep.logger import get_logger
-from machine_learning_hep.root import save_root_object
 from machine_learning_hep.utils.hist import get_dim, project_hist
 
 
@@ -144,7 +131,8 @@ class AnalyzerDhadrons_mult(Analyzer):  # pylint: disable=invalid-name
         self.fit_func_bkg = {}
         self.fit_range = {}
 
-        self.path_fig = Path(f"fig/{self.case}/{self.typean}")
+        # self.path_fig = Path(f"fig/{self.case}/{self.typean}")
+        self.path_fig = Path(f"{os.path.expandvars(self.d_resultsallpdata)}/fig")
         for folder in ["qa", "fit", "roofit", "sideband", "signalextr", "fd", "uf"]:
             (self.path_fig / folder).mkdir(parents=True, exist_ok=True)
 
@@ -156,6 +144,7 @@ class AnalyzerDhadrons_mult(Analyzer):  # pylint: disable=invalid-name
 
         self.p_anahpt = datap["analysis"]["anahptspectrum"]
         self.p_fd_method = datap["analysis"]["fd_method"]
+        self.p_crosssec_prompt = datap["analysis"]["crosssec_prompt"]
         self.p_cctype = datap["analysis"]["cctype"]
         self.p_sigmamb = datap["analysis"]["sigmamb"]
         self.p_inputfonllpred = datap["analysis"]["inputfonllpred"]
@@ -190,7 +179,8 @@ class AnalyzerDhadrons_mult(Analyzer):  # pylint: disable=invalid-name
     # region helpers
     def _save_canvas(self, canvas, filename):
         # folder = self.d_resultsallpmc if mcordata == 'mc' else self.d_resultsallpdata
-        canvas.SaveAs(f"fig/{self.case}/{self.typean}/{filename}")
+        # canvas.SaveAs(f"fig/{self.case}/{self.typean}/{filename}")
+        canvas.SaveAs(f"{self.path_fig}/{filename}")
 
     def _save_hist(self, hist, filename, option=""):
         if not hist:
@@ -378,12 +368,12 @@ class AnalyzerDhadrons_mult(Analyzer):  # pylint: disable=invalid-name
 
                         if self.cfg("mass_roofit"):
                             for entry in self.cfg("mass_roofit", []):
-                                if lvl := entry.get("level"):
-                                    if lvl != level:
-                                        continue
-                                if ptspec := entry.get("ptrange"):
-                                    if ptspec[0] > ptrange[0] or ptspec[1] < ptrange[1]:
-                                        continue
+                                if (lvl := entry.get("level")) and lvl != level:
+                                    continue
+                                if (ptspec := entry.get("ptrange")) and (
+                                    ptspec[0] > ptrange[0] or ptspec[1] < ptrange[1]
+                                ):
+                                    continue
                                 fitcfg = entry
                                 break
                             self.logger.debug("Using fit config for %i: %s", ipt, fitcfg)
@@ -491,14 +481,8 @@ class AnalyzerDhadrons_mult(Analyzer):  # pylint: disable=invalid-name
             legsl.SetTextSize(0.035)
 
         for imult in range(self.p_nbin2):
-            stringbin2 = "_{}_{:.2f}_{:.2f}".format(
-                self.v_var2_binning, self.lvar2_binmin[imult], self.lvar2_binmax[imult]
-            )
-            legeffstring = "{:.1f} #leq {} < {:.1f}".format(
-                self.lvar2_binmin[imult],
-                self.p_latexbin2var,
-                self.lvar2_binmax[imult],
-            )
+            stringbin2 = f"_{self.v_var2_binning}_{self.lvar2_binmin[imult]:.2f}_{self.lvar2_binmax[imult]:.2f}"
+            legeffstring = f"{self.lvar2_binmin[imult]:.1f} #leq {self.p_latexbin2var} < {self.lvar2_binmax[imult]:.1f}"
 
             if self.signal_loss:
                 h_gen_pr_sl = lfileeff.Get("h_signal_loss_gen_pr" + stringbin2)
@@ -571,13 +555,9 @@ class AnalyzerDhadrons_mult(Analyzer):  # pylint: disable=invalid-name
         legeffFD.SetTextSize(0.035)
 
         for imult in range(self.p_nbin2):
-            stringbin2 = "_{}_{:.2f}_{:.2f}".format(
-                self.v_var2_binning, self.lvar2_binmin[imult], self.lvar2_binmax[imult]
-            )
-            legeffFDstring = "{:.1f} #leq {} < {:.1f}".format(
-                self.lvar2_binmin[imult],
-                self.p_latexbin2var,
-                self.lvar2_binmax[imult],
+            stringbin2 = f"_{self.v_var2_binning}_{self.lvar2_binmin[imult]:.2f}_{self.lvar2_binmax[imult]:.2f}"
+            legeffFDstring = (
+                f"{self.lvar2_binmin[imult]:.1f} #leq {self.p_latexbin2var} < {self.lvar2_binmax[imult]:.1f}"
             )
 
             if self.signal_loss:
@@ -674,10 +654,8 @@ class AnalyzerDhadrons_mult(Analyzer):  # pylint: disable=invalid-name
             hcross.GetYaxis().SetTitle(f"d#sigma/d#it{{p}}_{{T}} ({self.p_latexnhadron}) {self.typean}")
             hcross.SetName("hcross%d" % imult)
             hcross.GetYaxis().SetRangeUser(1e1, 1e10)
-            legvsvar1endstring = "{:.1f} < {} < {:.1f}".format(
-                self.lvar2_binmin[imult],
-                self.p_latexbin2var,
-                self.lvar2_binmax[imult],
+            legvsvar1endstring = (
+                f"{self.lvar2_binmin[imult]:.1f} < {self.p_latexbin2var} < {self.lvar2_binmax[imult]:.1f}"
             )
             legvsvar1.AddEntry(hcross, legvsvar1endstring, "LEP")
             hcross.Draw("same")
@@ -781,14 +759,12 @@ class AnalyzerDhadrons_mult(Analyzer):  # pylint: disable=invalid-name
             # pylint: disable=logging-not-lazy
             self.logger.warning("Number of events %d for mult bin %d" % (norm, imult))
 
+            if self.p_nevents is not None:
+                norm = self.p_nevents
             if self.p_fprompt_from_mb:
                 if imult == 0:
-                    fileoutcrossmb = "{}/finalcross{}{}mult0.root".format(
-                        self.d_resultsallpdata, self.case, self.typean
-                    )
+                    fileoutcrossmb = f"{self.d_resultsallpdata}/finalcross{self.case}{self.typean}mult0.root"
                     output_prompt = []
-                    if self.p_nevents is not None:
-                        norm = self.p_nevents
                     self.logger.warning("Corrected Number of events %d for mult bin %d" % (norm, imult))
                     hf_pt_spectrum(
                         self.p_anahpt,
@@ -803,6 +779,7 @@ class AnalyzerDhadrons_mult(Analyzer):  # pylint: disable=invalid-name
                         nameyield,
                         norm,
                         self.p_sigmamb,
+                        self.p_crosssec_prompt,
                         output_prompt,
                         fileoutcrossmb,
                     )
@@ -824,10 +801,12 @@ class AnalyzerDhadrons_mult(Analyzer):  # pylint: disable=invalid-name
                         nameyield,
                         norm,
                         self.p_sigmamb,
+                        self.p_crosssec_prompt,
                         output_prompt,
                         fileoutcrossmult,
                     )
             else:
+                output_prompt = []
                 hf_pt_spectrum(
                     self.p_anahpt,
                     self.p_br,
@@ -841,6 +820,7 @@ class AnalyzerDhadrons_mult(Analyzer):  # pylint: disable=invalid-name
                     nameyield,
                     norm,
                     self.p_sigmamb,
+                    self.p_crosssec_prompt,
                     output_prompt,
                     fileoutcrossmult,
                 )
@@ -884,17 +864,13 @@ class AnalyzerDhadrons_mult(Analyzer):  # pylint: disable=invalid-name
             hcross.GetYaxis().SetTitleOffset(1.3)
             hcross.GetYaxis().SetTitle(f"Corrected yield/events ({self.p_latexnhadron}) {self.typean}")
             hcross.GetYaxis().SetRangeUser(1e-10, 1)
-            legvsvar1endstring = "{:.1f} #leq {} < {:.1f}".format(
-                self.lvar2_binmin[imult],
-                self.p_latexbin2var,
-                self.lvar2_binmax[imult],
+            legvsvar1endstring = (
+                f"{self.lvar2_binmin[imult]:.1f} #leq {self.p_latexbin2var} < {self.lvar2_binmax[imult]:.1f}"
             )
             legvsvar1.AddEntry(hcross, legvsvar1endstring, "LEP")
             hcross.Draw("same")
         legvsvar1.Draw()
         cCrossvsvar1.SaveAs(
-            "{}/CorrectedYieldsNorm{}{}Vs{}.eps".format(
-                self.d_resultsallpdata, self.case, self.typean, self.v_var_binning
-            )
+            f"{self.d_resultsallpdata}/CorrectedYieldsNorm{self.case}{self.typean}Vs{self.v_var_binning}.eps"
         )
         fileoutcrosstot.Close()
