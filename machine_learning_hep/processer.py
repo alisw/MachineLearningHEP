@@ -33,7 +33,7 @@ import uproot
 from pandas.api.types import is_numeric_dtype
 
 from .bitwise import tag_bit_df
-from .io import dump_yaml_from_dict
+from .io_ml_utils import dump_yaml_from_dict
 from .logger import get_logger
 from .utilities import (
     count_df_length_pkl,

@@ -44,7 +44,7 @@ from machine_learning_hep.correlations import (
     vardistplot,
     vardistplot_probscan,
 )
-from machine_learning_hep.io import dump_yaml_from_dict, parse_yaml
+from machine_learning_hep.io_ml_utils import dump_yaml_from_dict, parse_yaml
 from machine_learning_hep.logger import get_logger
 from machine_learning_hep.models import (
     apply,

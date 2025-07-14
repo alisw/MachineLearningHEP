@@ -28,7 +28,7 @@ from os.path import join
 # pylint: disable=import-error, no-name-in-module, unused-import
 from ROOT import TFile
 
-from machine_learning_hep.io import checkdir, dump_yaml_from_dict, parse_yaml
+from machine_learning_hep.io_ml_utils import checkdir, dump_yaml_from_dict, parse_yaml
 from machine_learning_hep.logger import get_logger
 
 

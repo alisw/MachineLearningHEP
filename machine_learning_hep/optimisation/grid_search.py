@@ -24,7 +24,7 @@ import matplotlib.pyplot as plt
 import pandas as pd
 from sklearn.model_selection import GridSearchCV
 
-from machine_learning_hep.io import dump_yaml_from_dict, parse_yaml, print_dict
+from machine_learning_hep.io_ml_utils import dump_yaml_from_dict, parse_yaml, print_dict
 from machine_learning_hep.logger import get_logger
 from machine_learning_hep.models import savemodels
 from machine_learning_hep.optimisation.metrics import get_scorers

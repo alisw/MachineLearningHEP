@@ -24,7 +24,7 @@ from ROOT import TCanvas, TFile  # pylint: disable=import-error, no-name-in-modu
 
 from machine_learning_hep.fitting.fitters import FitAliHF, FitROOTGauss
 from machine_learning_hep.fitting.utils import save_fit
-from machine_learning_hep.io import parse_yaml
+from machine_learning_hep.io_ml_utils import parse_yaml
 from machine_learning_hep.logger import configure_logger  # , get_logger
 
 #############################################################################
