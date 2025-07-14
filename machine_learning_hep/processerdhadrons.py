@@ -206,6 +206,7 @@ class ProcesserDhadrons(Processer):  # pylint: disable=too-many-instance-attribu
         analysis_bin_lims_temp = self.lpt_finbinmin.copy()
         analysis_bin_lims_temp.append(self.lpt_finbinmax[n_bins - 1])
         analysis_bin_lims = array.array("f", analysis_bin_lims_temp)
+
         h_gen_pr = TH1F("h_gen_pr", "Prompt Generated in acceptance |y|<0.5", n_bins, analysis_bin_lims)
         h_presel_pr = TH1F("h_presel_pr", "Prompt Reco in acc |#eta|<0.8 and sel", n_bins, analysis_bin_lims)
         h_sel_pr = TH1F("h_sel_pr", "Prompt Reco and sel in acc |#eta|<0.8 and sel", n_bins, analysis_bin_lims)
@@ -220,105 +221,47 @@ class ProcesserDhadrons(Processer):  # pylint: disable=too-many-instance-attribu
             h_sel_fd_ptshape = TH1F("h_sel_fd_ptshape", "FD Reco and sel in acc |#eta|<0.8 and sel", \
                                     n_bins, analysis_bin_lims)
 
-        bincounter = 0
-        bincounter2 = 0
-        for ipt in range(self.p_nptfinbins):
-            bin_id = self.bin_matching[ipt]
-            df_mc_reco = read_df(self.mptfiles_recoskmldec[bin_id][index])
+        def get_eff_dfs(ipt, bin_id, gen_files, reco_files, var_binning):
+            df_mc_reco = read_df(reco_files[bin_id][index])
             if self.s_evtsel is not None:
                 df_mc_reco = df_mc_reco.query(self.s_evtsel)
-            df_mc_gen = read_df(self.mptfiles_gensk[bin_id][index])
+            df_mc_gen = read_df(gen_files[bin_id][index])
             df_mc_gen = df_mc_gen.query(self.s_presel_gen_eff)
             df_mc_reco = seldf_singlevar(
-                df_mc_reco, self.v_var_binning, self.lpt_finbinmin[ipt], self.lpt_finbinmax[ipt]
+                df_mc_reco, var_binning, self.lpt_finbinmin[ipt], self.lpt_finbinmax[ipt]
             )
-            df_mc_gen = seldf_singlevar(df_mc_gen, self.v_var_binning, self.lpt_finbinmin[ipt], self.lpt_finbinmax[ipt])
-            df_gen_sel_pr = df_mc_gen.loc[(df_mc_gen.ismcprompt == 1) & (df_mc_gen.ismcsignal == 1)]
-            df_reco_presel_pr = df_mc_reco.loc[(df_mc_reco.ismcprompt == 1) & (df_mc_reco.ismcsignal == 1)]
-            df_reco_sel_pr = None
-            if self.doml is True:
-                df_reco_sel_pr = df_reco_presel_pr.query(self.l_selml[bin_id])
-            else:
-                df_reco_sel_pr = df_reco_presel_pr.copy()
-            df_gen_sel_fd = df_mc_gen.loc[(df_mc_gen.ismcfd == 1) & (df_mc_gen.ismcsignal == 1)]
-            df_reco_presel_fd = df_mc_reco.loc[(df_mc_reco.ismcfd == 1) & (df_mc_reco.ismcsignal == 1)]
-            df_reco_sel_fd = None
-            if self.doml is True:
-                df_reco_sel_fd = df_reco_presel_fd.query(self.l_selml[bin_id])
-            else:
-                df_reco_sel_fd = df_reco_presel_fd.copy()
+            df_mc_gen = seldf_singlevar(df_mc_gen, var_binning, self.lpt_finbinmin[ipt], self.lpt_finbinmax[ipt])
+            return df_mc_gen, df_mc_reco
 
+        def do_eff_single(ipt, bin_id, df_mc_gen, df_mc_reco, sel_column, bincounter, hists):
+            df_gen_sel = df_mc_gen.loc[(df_mc_gen[sel_column] == 1) & (df_mc_gen.ismcsignal == 1)]
+            df_reco_presel = df_mc_reco.loc[(df_mc_reco[sel_column] == 1) & (df_mc_reco.ismcsignal == 1)]
+            df_reco_sel = None
+            if self.doml is True:
+                df_reco_sel = df_reco_presel.query(self.l_selml[bin_id])
+            else:
+                df_reco_sel = df_reco_presel.copy()
             if self.do_custom_analysis_cuts:
-                df_reco_sel_pr = self.apply_cuts_ptbin(df_reco_sel_pr, ipt)
-                df_reco_sel_fd = self.apply_cuts_ptbin(df_reco_sel_fd, ipt)
+                df_reco_sel = self.apply_cuts_ptbin(df_reco_sel, ipt)
 
-            val = len(df_gen_sel_pr)
-            err = math.sqrt(val)
-            h_gen_pr.SetBinContent(bincounter + 1, val)
-            h_gen_pr.SetBinError(bincounter + 1, err)
-            val = len(df_reco_presel_pr)
-            err = math.sqrt(val)
-            h_presel_pr.SetBinContent(bincounter + 1, val)
-            h_presel_pr.SetBinError(bincounter + 1, err)
-            val = len(df_reco_sel_pr)
-            err = math.sqrt(val)
-            h_sel_pr.SetBinContent(bincounter + 1, val)
-            h_sel_pr.SetBinError(bincounter + 1, err)
-
-            val = len(df_gen_sel_fd)
-            err = math.sqrt(val)
-            h_gen_fd.SetBinContent(bincounter + 1, val)
-            h_gen_fd.SetBinError(bincounter + 1, err)
-            val = len(df_reco_presel_fd)
-            err = math.sqrt(val)
-            h_presel_fd.SetBinContent(bincounter + 1, val)
-            h_presel_fd.SetBinError(bincounter + 1, err)
-            val = len(df_reco_sel_fd)
-            err = math.sqrt(val)
-            h_sel_fd.SetBinContent(bincounter + 1, val)
-            h_sel_fd.SetBinError(bincounter + 1, err)
+            for df, hist in zip((df_gen_sel, df_reco_presel, df_reco_sel), hists):
+                val = len(df)
+                err = math.sqrt(val)
+                hist.SetBinContent(bincounter + 1, val)
+                hist.SetBinError(bincounter + 1, err)
             bincounter = bincounter + 1
 
+        bincounter_pr = bincounter_fd = bincounter_ptshape = 0
+        for ipt in range(self.p_nptfinbins):
+            bin_id = self.bin_matching[ipt]
+            df_mc_gen, df_mc_reco = get_eff_dfs(ipt, bin_id, self.mptfiles_gensk, self.mptfiles_recoskmldec, self.v_var_binning)
+
+            do_eff_single(ipt, bin_id, df_mc_gen, df_mc_reco, "ismcprompt", bincounter_pr, (h_gen_pr, h_presel_pr, h_sel_pr))
+            do_eff_single(ipt, bin_id, df_mc_gen, df_mc_reco, "ismcfd", bincounter_fd, (h_gen_fd, h_presel_fd, h_sel_fd))
+
             if self.do_ptshape:
-
-                df_mc_reco_ptshape = read_df(self.mptfiles_recoskmldec_ptshape[bin_id][index])
-
-                if self.s_evtsel is not None:
-                    df_mc_reco_ptshape = df_mc_reco_ptshape.query(self.s_evtsel)
-
-                df_mc_gen_ptshape = read_df(self.mptfiles_gensk_ptshape[bin_id][index])
-
-                df_mc_gen_ptshape = df_mc_gen_ptshape.query(self.s_presel_gen_eff)
-
-                df_mc_reco_ptshape = seldf_singlevar(df_mc_reco_ptshape, self.v_var_binning_ptshape, \
-                                    self.lpt_finbinmin[ipt], self.lpt_finbinmax[ipt])
-                df_mc_gen_ptshape = seldf_singlevar(df_mc_gen_ptshape, self.v_var_binning_ptshape, \
-                                    self.lpt_finbinmin[ipt], self.lpt_finbinmax[ipt])
-
-                df_gen_sel_fd_ptshape = df_mc_gen_ptshape.loc[(df_mc_gen_ptshape.ismcfd == 1) & (df_mc_gen_ptshape.ismcsignal == 1)]
-                df_reco_presel_fd_ptshape = df_mc_reco_ptshape.loc[(df_mc_reco_ptshape.ismcfd == 1) & (df_mc_reco_ptshape.ismcsignal == 1)]
-                df_reco_sel_fd_ptshape = None
-                if self.doml is True:
-                    df_reco_sel_fd_ptshape = df_reco_presel_fd_ptshape.query(self.l_selml[bin_id])
-                else:
-                    df_reco_sel_fd_ptshape = df_reco_presel_fd_ptshape.copy()
-
-                if self.do_custom_analysis_cuts:
-                    df_reco_sel_fd_ptshape = self.apply_cuts_ptbin(df_reco_sel_fd_ptshape, ipt)
-
-                val2 = len(df_gen_sel_fd_ptshape)
-                err2 = math.sqrt(val2)
-                h_gen_fd_ptshape.SetBinContent(bincounter2 + 1, val2)
-                h_gen_fd_ptshape.SetBinError(bincounter2 + 1, err2)
-                val2 = len(df_reco_presel_fd_ptshape)
-                err2 = math.sqrt(val2)
-                h_presel_fd_ptshape.SetBinContent(bincounter2 + 1, val2)
-                h_presel_fd_ptshape.SetBinError(bincounter2 + 1, err2)
-                val2 = len(df_reco_sel_fd_ptshape)
-                err2 = math.sqrt(val2)
-                h_sel_fd_ptshape.SetBinContent(bincounter2 + 1, val2)
-                h_sel_fd_ptshape.SetBinError(bincounter2 + 1, err2)
-                bincounter2 = bincounter2 + 1
+                df_mc_gen_ptshape, df_mc_reco_ptshape = get_eff_dfs(ipt, bin_id, self.mptfiles_gensk_ptshape, self.mptfiles_recoskmldec_ptshape, self.v_var_binning_ptshape)
+                do_eff_single(ipt, bin_id, df_mc_gen_ptshape, df_mc_reco_ptshape, "ismcfd", bincounter_ptshape, (h_gen_fd_ptshape, h_presel_fd_ptshape, h_sel_fd_ptshape))
 
         out_file.cd()
         h_gen_pr.Write()
