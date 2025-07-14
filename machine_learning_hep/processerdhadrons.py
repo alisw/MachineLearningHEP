@@ -200,7 +200,7 @@ class ProcesserDhadrons(Processer):  # pylint: disable=too-many-instance-attribu
 
     # pylint: disable=line-too-long
     def process_efficiency_single(self, index):
-        # TO UPDATE TO DHADRON_MULT VERSION
+        # TODO: UPDATE TO DHADRON_MULT VERSION
         out_file = TFile.Open(self.l_histoeff[index], "recreate")
         n_bins = len(self.lpt_finbinmin)
         analysis_bin_lims_temp = self.lpt_finbinmin.copy()
@@ -212,8 +212,16 @@ class ProcesserDhadrons(Processer):  # pylint: disable=too-many-instance-attribu
         h_gen_fd = TH1F("h_gen_fd", "FD Generated in acceptance |y|<0.5", n_bins, analysis_bin_lims)
         h_presel_fd = TH1F("h_presel_fd", "FD Reco in acc |#eta|<0.8 and sel", n_bins, analysis_bin_lims)
         h_sel_fd = TH1F("h_sel_fd", "FD Reco and sel in acc |#eta|<0.8 and sel", n_bins, analysis_bin_lims)
+        if self.do_ptshape:
+            h_gen_fd_ptshape = TH1F("h_gen_fd_ptshape", "FD Generated in acceptance |y|<0.5", \
+                                    n_bins, analysis_bin_lims)
+            h_presel_fd_ptshape = TH1F("h_presel_fd_ptshape", "FD Reco in acc |#eta|<0.8 and sel", \
+                                    n_bins, analysis_bin_lims)
+            h_sel_fd_ptshape = TH1F("h_sel_fd_ptshape", "FD Reco and sel in acc |#eta|<0.8 and sel", \
+                                    n_bins, analysis_bin_lims)
 
         bincounter = 0
+        bincounter2 = 0
         for ipt in range(self.p_nptfinbins):
             bin_id = self.bin_matching[ipt]
             df_mc_reco = read_df(self.mptfiles_recoskmldec[bin_id][index])
@@ -271,6 +279,47 @@ class ProcesserDhadrons(Processer):  # pylint: disable=too-many-instance-attribu
             h_sel_fd.SetBinError(bincounter + 1, err)
             bincounter = bincounter + 1
 
+            if self.do_ptshape:
+
+                df_mc_reco_ptshape = read_df(self.mptfiles_recoskmldec_ptshape[bin_id][index])
+
+                if self.s_evtsel is not None:
+                    df_mc_reco_ptshape = df_mc_reco_ptshape.query(self.s_evtsel)
+
+                df_mc_gen_ptshape = read_df(self.mptfiles_gensk_ptshape[bin_id][index])
+
+                df_mc_gen_ptshape = df_mc_gen_ptshape.query(self.s_presel_gen_eff)
+
+                df_mc_reco_ptshape = seldf_singlevar(df_mc_reco_ptshape, self.v_var_binning_ptshape, \
+                                    self.lpt_finbinmin[ipt], self.lpt_finbinmax[ipt])
+                df_mc_gen_ptshape = seldf_singlevar(df_mc_gen_ptshape, self.v_var_binning_ptshape, \
+                                    self.lpt_finbinmin[ipt], self.lpt_finbinmax[ipt])
+
+                df_gen_sel_fd_ptshape = df_mc_gen_ptshape.loc[(df_mc_gen_ptshape.ismcfd == 1) & (df_mc_gen_ptshape.ismcsignal == 1)]
+                df_reco_presel_fd_ptshape = df_mc_reco_ptshape.loc[(df_mc_reco_ptshape.ismcfd == 1) & (df_mc_reco_ptshape.ismcsignal == 1)]
+                df_reco_sel_fd_ptshape = None
+                if self.doml is True:
+                    df_reco_sel_fd_ptshape = df_reco_presel_fd_ptshape.query(self.l_selml[bin_id])
+                else:
+                    df_reco_sel_fd_ptshape = df_reco_presel_fd_ptshape.copy()
+
+                if self.do_custom_analysis_cuts:
+                    df_reco_sel_fd_ptshape = self.apply_cuts_ptbin(df_reco_sel_fd_ptshape, ipt)
+
+                val2 = len(df_gen_sel_fd_ptshape)
+                err2 = math.sqrt(val2)
+                h_gen_fd_ptshape.SetBinContent(bincounter2 + 1, val2)
+                h_gen_fd_ptshape.SetBinError(bincounter2 + 1, err2)
+                val2 = len(df_reco_presel_fd_ptshape)
+                err2 = math.sqrt(val2)
+                h_presel_fd_ptshape.SetBinContent(bincounter2 + 1, val2)
+                h_presel_fd_ptshape.SetBinError(bincounter2 + 1, err2)
+                val2 = len(df_reco_sel_fd_ptshape)
+                err2 = math.sqrt(val2)
+                h_sel_fd_ptshape.SetBinContent(bincounter2 + 1, val2)
+                h_sel_fd_ptshape.SetBinError(bincounter2 + 1, err2)
+                bincounter2 = bincounter2 + 1
+
         out_file.cd()
         h_gen_pr.Write()
         h_presel_pr.Write()
@@ -278,3 +327,8 @@ class ProcesserDhadrons(Processer):  # pylint: disable=too-many-instance-attribu
         h_gen_fd.Write()
         h_presel_fd.Write()
         h_sel_fd.Write()
+
+        if self.do_ptshape:
+            h_gen_fd_ptshape.Write()
+            h_presel_fd_ptshape.Write()
+            h_sel_fd_ptshape.Write()
