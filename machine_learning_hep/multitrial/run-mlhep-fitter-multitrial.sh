@@ -18,11 +18,11 @@ MC_HIST="LHC24pp_mc/Results/resultsmctot/masshisto.root"
 # The output analysis dir is set in databases to DIR_PATTERN + suffix with trial name
 python run-mlhep-fitter-multitrial.py "${DB_PATTERN}" "${DB_DIR}" "${OUT_DB_DIR}" "${DIR_PATTERN}" || exit 1
 
-for db in ${OUT_DB_DIR}/*.yml ; do
-  db_basename=`basename ${db}`
-  db_basename_no_ext=${db_basename%%${ext}}
-  echo ${db_basename_no_ext}
-  suffix=${db_basename_no_ext##${DB_PATTERN}}
+for db in "${OUT_DB_DIR}"/*.yml ; do
+  db_basename=$(basename "${db}")
+  db_basename_no_ext=${db_basename%%"${ext}"}
+  echo "${db_basename_no_ext}"
+  suffix=${db_basename_no_ext##"${DB_PATTERN}"}
   echo "suffix: ${suffix}"
   RESPATH="${DIR_PATH}/${DIR_PATTERN}${suffix}"
   echo "respath: ${RESPATH}"
@@ -33,9 +33,9 @@ for db in ${OUT_DB_DIR}/*.yml ; do
   cp "${BASE_DIR}/${DATA_HIST}" "${RESPATH}/${DATA_HIST}"
   cp "${BASE_DIR}/${MC_HIST}" "${RESPATH}/${MC_HIST}"
 
-  mlhep logfile_${db_basename}.log \
+  mlhep "logfile_${db_basename}.log" \
     -a Run3analysis \
     --run-config submission/analyzer.yml \
-    --database-analysis ${db}
+    --database-analysis "${db}"
 done
 

@@ -51,7 +51,7 @@ def get_yields(cfg):
             trial_name = dirname.replace(cfg["dir_pattern"], "")
             for ind, (pt_bin_min, pt_bin_max) in enumerate(zip(cfg["pt_bins_min"],
                                                                cfg["pt_bins_max"])):
-                if eval(cfg["selection"])(hist_sel.GetBinContent(ind + 1)) \
+                if eval(cfg["selection"])(hist_sel.GetBinContent(ind + 1)) \ # pylint: disable=eval-used
                         and hist.GetBinContent(ind + 1) > 1.0 :
                     yields[f"{pt_bin_min}_{pt_bin_max}"].append(hist.GetBinContent(ind + 1))
                     yields_err[f"{pt_bin_min}_{pt_bin_max}"].append(hist.GetBinError(ind + 1))
@@ -65,7 +65,7 @@ def get_yields(cfg):
     return yields, yields_err, trials, chis
 
 
-def prepare_figure(cfg, y_label, ticks):
+def prepare_figure(y_label, ticks):
     fig = plt.figure(figsize=(20, 15))
     ax = plt.subplot(1, 1, 1)
     ax.set_xlabel("Trial #", fontsize=20)
@@ -79,10 +79,9 @@ def prepare_figure(cfg, y_label, ticks):
     return fig, ax
 
 
-def set_ax_limits(ax, pt_string, values, errs):
+def set_ax_limits(ax, pt_string, values):
     ax.margins(0.01, 0.2)
     np_values = np.array(values, dtype="float32")
-    np_errs = np.array(errs, dtype="float32")
     if ax.get_ylim()[1] - ax.get_ylim()[0] > 30.0 * np.std(np_values):
         ax.set_ylim(np.mean(np_values) - 10.0 * np.std(np_values),
                     np.mean(np_values) + 10.0 * np.std(np_values))
@@ -98,11 +97,11 @@ def plot_trial_line(ax, central_trial_ind):
 
 def plot_yields_trials(yields, yields_err, trials, cfg, pt_string, plot_pt_string,
                        central_trial_ind, central_yield):
-    fig, ax = prepare_figure(cfg, "Raw yield", 100)
+    fig, ax = prepare_figure("Raw yield", 100)
     x_axis = range(len(trials))
     ax.errorbar(x_axis, yields, yerr=yields_err,
                 fmt="o", c="b", elinewidth=2.5, linewidth=4.0)
-    set_ax_limits(ax, pt_string, yields, yields_err)
+    set_ax_limits(ax, pt_string, yields)
     central_line = np.array([central_yield] * len(x_axis), dtype="float32")
     ax.plot(x_axis, central_line, c="orange", ls="--", linewidth=4.0)
     central_err = np.array([yields_err[central_trial_ind]] * len(x_axis), dtype="float32")
@@ -116,10 +115,10 @@ def plot_yields_trials(yields, yields_err, trials, cfg, pt_string, plot_pt_strin
 
 
 def plot_chis(chis, cfg, pt_string, plot_pt_string):
-    fig, ax = prepare_figure(cfg, "Chi2/ndf", 100)
+    fig, ax = prepare_figure("Chi2/ndf", 100)
     x_axis = range(len(chis))
     ax.scatter(x_axis, chis, c="b", marker="o")
-    set_ax_limits(ax, pt_string, chis, [0.0] * len(chis))
+    set_ax_limits(ax, pt_string, chis)
     plot_text_box(ax, plot_pt_string)
     fig.savefig(f'{cfg["outdir"]}/{cfg["outfile"]}_chis_{pt_string}.png',
                 bbox_inches='tight')
@@ -175,7 +174,7 @@ def main():
                 plot_yields_distr(yields[pt_string], cfg, pt_string, plot_pt_string,
                                   central_trial_ind, central_yield)
                 plot_chis(chis[pt_string], cfg, pt_string, plot_pt_string)
-            except:
+            except: # pylint: disable=bare-except
                 pass
 
             with open(f'{cfg["outdir"]}/{cfg["outfile"]}_trials_{pt_string}.txt',
