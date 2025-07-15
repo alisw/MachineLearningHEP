@@ -26,8 +26,6 @@ LcpKpi:
   sel_skim_binmax: [2, 4, 6, 8, 12, 24] #list of nbins
   apply_yptacccut: false
   var_binning: fPt
-  do_ptshape: true
-  var_binning_ptshape: fPtWeighted
   dofullevtmerge: false
   var_cand: fCandidateSelFlag
   var_swap: fIsCandidateSwapped
@@ -71,7 +69,6 @@ LcpKpi:
           O2hf3psel:
             level: mc
             vars: [fCandidateSelFlag]
-          O2hf3pml: [fMlScores]
         filter: "fPt > 1."
         extra:
           fY: log((sqrt(2.28646**2 + (fPt * cosh(fEta))**2) + fPt * sinh(fEta)) / sqrt(2.28646**2 + fPt**2)) #TODO : change mass or make sure Lc mass is updated
@@ -82,9 +79,6 @@ LcpKpi:
           ismcprompt: {var: fOriginMcRec, req: [[0], []], level: mc}
           ismcfd: {var: fOriginMcRec, req: [[1], []], level: mc}
         swap: {cand: fCandidateSelFlag, var_swap: fIsCandidateSwapped, vars: [ismcsignal, ismcprompt, ismcfd], level: mc}
-        extract_component:
-          - {var: fMlScores, newvar: fMlBkgScore, component: 0}
-          - {var: fMlScores, newvar: fMlNonPromptScore, component: 2}
 
       gen:
         level: mc
@@ -229,22 +223,18 @@ LcpKpi:
             - 20.
   files_names:
     namefile_unmerged_tree: AO2D.root
-    namefile_reco: AnalysisResultsReco.parquet
-    namefile_evt: AnalysisResultsEvt.parquet
     namefile_collcnt: AnalysisResultsCollCnt.parquet
     namefile_evtvalroot: AnalysisResultsROOTEvtVal.root
     namefile_evtorig: AnalysisResultsEvtOrig.parquet
     namefile_gen: AnalysisResultsGen.parquet
     namefile_reco_applieddata: AnalysisResultsRecoAppliedData.parquet
     namefile_reco_appliedmc: AnalysisResultsRecoAppliedMC.parquet
-    namefile_mcweights: NonPromptLcPtWeigths.root
+    namefile_mcweights: mcweights.root
     treeoutput: "Lctree"
     histofilename: "masshisto.root"
     efffilename: "effhisto.root"
-    histoweights: "ptWeigths"
     respfilename: "resphisto.root"
     crossfilename: "cross_section_tot.root"
-    namefile_bccnt: "bccnt.root"
 
   multi:
     data:
@@ -256,13 +246,13 @@ LcpKpi:
       seedmerge: [12] #list of periods
       period: [LHC22o] #list of periods
       select_period: [1]
-      prefix_dir: /data8/majak/MLHEP-data/23082024/
-      unmerged_tree_dir: [LHC22o_ml/alice/cern.ch/user/a/alihyperloop/jobs/0064] #list of periods
-      pkl: [LHC22pp_ml/period_LHC22o/pkldata] #list of periods
-      pkl_skimmed: [LHC22pp_ml_16/period_LHC22o/pklskdata] #list of periods
-      pkl_skimmed_merge_for_ml: [LHC22pp_ml_16/period_LHC22o/pklskmldata] #list of periods
-      pkl_skimmed_merge_for_ml_all: LHC22pp_ml_16/mltotdata
-      pkl_evtcounter_all: LHC22pp_ml_16/evttotdata
+      prefix_dir: /data2/MLhep/
+      unmerged_tree_dir: [real/train_158254/alice/cern.ch/user/a/alihyperloop/jobs/0029] #list of periods
+      pkl: [LHC22pp/period_LHC22o/pkldata] #list of periods
+      pkl_skimmed: [LHC22pp/period_LHC22o/pklskdata] #list of periods
+      pkl_skimmed_merge_for_ml: [LHC22pp/period_LHC22o/pklskmldata] #list of periods
+      pkl_skimmed_merge_for_ml_all: LHC22pp/mltotdata
+      pkl_evtcounter_all: LHC22pp/evttotdata
       #select_jobs: [[hy_189959], [hy_189000]]
       mcreweights: [../Analyses]
     mc:
@@ -305,7 +295,7 @@ LcpKpi:
     binmax: [2, 4, 6, 8, 12, 24] # must be equal to sel_skim_binmax (sel_skim_binmin bins)
     mltype: MultiClassification
     ncorescrossval: 10
-    prefix_dir_ml: /data8/majak/MLHEP/results-data-1006-finer-bins-1224-merged/
+    prefix_dir_ml: /data2/MLhep/
     mlplot: mlplot # to be removed
     mlout: mlout # to be removed
 
@@ -329,7 +319,7 @@ LcpKpi:
 
   mlapplication:
     data:
-      prefix_dir_app: /data8/majak/MLHEP/results-data-2308-finer-bins-1224-merged-16/
+      prefix_dir_app: /data2/MLhep/
       pkl_skimmed_dec: [LHC22pp/MLapplication/prod_LHC22o/skpkldecdata] #list of periods
       pkl_skimmed_decmerged: [LHC22pp/MLapplication/prod_LHC22o/skpkldecdatamerged] #list of periods
     mc:
@@ -339,17 +329,15 @@ LcpKpi:
     modelname: xgboost
     modelsperptbin: [xgboost_classifierLcpKpi_dfselection_fPt_1.0_2.0.sav, xgboost_classifierLcpKpi_dfselection_fPt_2.0_4.0.sav, xgboost_classifierLcpKpi_dfselection_fPt_4.0_6.0.sav, xgboost_classifierLcpKpi_dfselection_fPt_6.0_8.0.sav, xgboost_classifierLcpKpi_dfselection_fPt_8.0_12.0.sav, xgboost_classifierLcpKpi_dfselection_fPt_12.0_24.0.sav]
     probcutpresel:
-      data: [[0.5, 0.0, 0.0], [0.5, 0.0, 0.0], [0.5, 0.0, 0.0], [0.5, 0.0, 0.0], [0.5, 0.0, 0.0], [0.5, 0.0, 0.0], [0.8, 0.0, 0.0], [0.8, 0.0, 0.0], [0.8, 0.0, 0.0]] #list of nbins
-      mc: [[0.5, 0.0, 0.0], [0.5, 0.0, 0.0], [0.5, 0.0, 0.0], [0.5, 0.0, 0.0], [0.5, 0.0, 0.0], [0.5, 0.0, 0.0], [0.8, 0.0, 0.0], [0.8, 0.0, 0.0], [0.8, 0.0, 0.0]] #list of nbins
-    probcutoptimal: [[0.02, 0.0, %fd12%], [0.02, 0.0, %fd23%], [0.02, 0.0, %fd34%], [0.06, 0.0, %fd45%], [0.06, 0.0, %fd56%], [0.10, 0.0, %fd68%], [0.20, 0.0, %fd812%], [%bkg1216%, 0.0, %fd1216%], [%bkg1624%, 0.0, %fd1624%]] #list of nbins
+      data: [[0.5, 0.0, 0.0], [0.5, 0.0, 0.0], [0.5, 0.0, 0.0], [0.5, 0.0, 0.0], [0.7, 0.0, 0.0], [0.7, 0.0, 0.0]] #list of nbins
+      mc: [[0.5, 0.0, 0.0], [0.5, 0.0, 0.0], [0.5, 0.0, 0.0], [0.5, 0.0, 0.0], [0.7, 0.0, 0.0], [0.7, 0.0, 0.0]] #list of nbins
+    probcutoptimal: [[0.2, 0.15, 0.0], [0.2, 0.15, 0.0], [0.2, 0.15, 0.0], [0.2, 0.15, 0.0], [0.5, 0.2, 0.0], [0.5, 0.2, 0.0]] #list of nbins
   analysis:
-    anahptspectrum: "LctopKpi" #D0Kpi, DplusKpipi, DstarD0pi, DsKKpi, LctopKpi, LcK0Sp
-    fd_method: "dd" # fc, Nb, dd, dd_N
-    crosssec_prompt: True # True for prompt, False for non-prompt
+    anahptspectrum: "LctopKpi" # D0Kpi, DplusKpipi, DstarD0pi, DsKKpi, LctopKpi, LcK0Sp
+    fd_method: "Nb" # fc, Nb
     cctype: "pp"
     sigmamb: 59.4e+9 # 50.87e+9 pp5TeV, 57.8e+9 pp13TeV, 59.4e+9 pp Run3, pb
-    inputfonllpred: /data8/majak/fdd-results/07112024-check-approvals/fdd-results-merged-sept-yields-eff/CutVarLc_pp13TeV_LHC24d3.root
-    #inputfonllpred: data/fonll/DmesonLcPredictions_13TeV_y05_FFptDepLHCb_BRpythia8_PDG2020.root
+    inputfonllpred: data/fonll/DmesonLcPredictions_13TeV_y05_FFptDepLHCb_BRpythia8_PDG2020.root
     dir_general_plots: analysis_plots
 
     Run3analysis:
@@ -361,17 +349,14 @@ LcpKpi:
       sel_binmax2: [2, 4, 6, 8, 12, 24] #list of nbins
       var_binning2: null
       triggerbit: ''
-      use_cuts: false
+      use_cuts: False
       cuts:
-        - "fMlNonPromptScore >= %fd12%"
-        - "fMlNonPromptScore >= %fd23%"
-        - "fMlNonPromptScore >= %fd34%"
-        - "fMlNonPromptScore >= %fd45%"
-        - "fMlNonPromptScore >= %fd56%"
-        - "fMlNonPromptScore >= %fd68%"
-        - "fMlBkgScore <= 0.20 and fMlNonPromptScore >= %fd812%"
-        - "fMlBkgScore <= %bkg1216% and fMlNonPromptScore >= %fd1216%"
-        - "fMlBkgScore <= %bkg1624% and fMlNonPromptScore >= %fd1624%"
+        - "fDecayLength > 0.02"
+        - "fDecayLength > 0.02"
+        - "fDecayLength > 0.02"
+        - "fDecayLength > 0.02"
+        - "fDecayLength > 0.02"
+        - "fDecayLength > 0.02"
 
       sel_an_binmin: [1, 2, 4, 6, 8, 12]
       sel_an_binmax: [2, 4, 6, 8, 12, 24]
@@ -385,7 +370,7 @@ LcpKpi:
 
       data:
         runselection: [null] #FIXME
-        prefix_dir_res: /data8/majak/MLHEP/%resdir%/
+        prefix_dir_res: /data2/MLhep/
         results: [LHC22pp/Results/prod_LHC22o/resultsdata] #list of periods
         resultsallp: LHC22pp/Results/resultsdatatot
       mc:
@@ -427,7 +412,7 @@ LcpKpi:
       fitcase: Lc
       latexnamehadron: "#Lambda_{c}^{pK#pi}"
       latexbin2var: "n_{trkl}"
-      nevents: 47092223770
+      nevents: null
       dodoublecross: false
       dobkgfromsideband: false
 
@@ -436,7 +421,7 @@ LcpKpi:
       useperiod: [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1] #period from where to define prob cuts
       ncutvar: 10 #number of looser and tighter variations
       maxperccutvar: 0.25 #max diff in efficiency for loosest/tightest var
-      cutvarminrange: [[0.1, 0.3], [0.1, 0.3], [0.1, 0.3], [0.1, 0.3], [0.1, 0.3], [0.1, 0.3], [0.1, 0.3], [0.7, 0.9], [0.7, 0.9]] #Min starting point for scan
-      cutvarmaxrange: [[0.7, 0.9], [0.7, 0.9], [0.7, 0.9], [0.7, 0.9], [0.7, 0.9], [0.7, 0.9], [0.7, 0.9], [0.7, 0.9], [0.7, 0.9]] #Max starting point for scan
+      cutvarminrange: [[0.1, 0.3], [0.1, 0.3], [0.1, 0.3], [0.1, 0.3], [0.1, 0.3], [0.7, 0.9]] #Min starting point for scan
+      cutvarmaxrange: [[0.7, 0.9], [0.7, 0.9], [0.7, 0.9], [0.7, 0.9], [0.7, 0.9], [0.7, 0.9]] #Max starting point for scan
       fixedmean: True #Fix mean cutvar histo to central fit
       fixedsigma: True #Fix sigma cutvar histo to central fit

@@ -60,22 +60,22 @@ analysis:
   # Do only merged (false)
   doperperiod: false
   data:
-    histomass: true # processer: process_histomass
+    histomass: false # processer: process_histomass
   mc:
-    histomass: true # processer: process_histomass
-    efficiency: true # processer: process_efficiency
+    histomass: false # processer: process_histomass
+    efficiency: false # processer: process_efficiency
   steps: # analyzer methods to run (uncomment to activate)
     ##### Inclusive hadrons
-    #fit:
-    efficiency:
-    makenormyields:
+    # fit:
+    # efficiency:
+    # makenormyields:
     ##### Jets
-    #init:
-    #calculate_efficiencies:
-    #qa:
-    #fit:
-    #estimate_feeddown:
-    #analyze_with_sidesub:
+    init:
+    calculate_efficiencies:
+    qa:
+    fit:
+    estimate_feeddown:
+    analyze_with_sidesub:
     # analyze_with_sigextr:
 
 systematics:
