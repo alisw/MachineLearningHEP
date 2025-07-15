@@ -1,14 +1,15 @@
 #!/bin/bash
 
-if [ "$#" -ne 2 ]; then
+if [ "$#" -ne 3 ]; then
   echo "Wrong number of parameters"
   exit 1
 fi
 
 DB=$1
-LOGFILE=$2
+CONFIG=$2
+LOGFILE=$3
 
 mlhep --log-file ${LOGFILE} \
-  --run-config submission/default_complete.yml \
-  --database-analysis ${DB} \
-  --delete
+  -a Run3analysis \
+  --run-config ${CONFIG} \
+  --database-analysis ${DB}
