@@ -107,7 +107,6 @@ def hf_pt_spectrum(
 
     histos = {}
 
-    infile_pred = TFile.Open(input_fonll_or_fdd_pred)
     with TFile.Open(input_fonll_or_fdd_pred) as infile_pred:
         if frac_method in ("dd", "dd_N"):
             histos["corryields_fdd"] = [infile_pred.Get("hCorrYieldsPrompt"), infile_pred.Get("hCorrYieldsNonPrompt")]

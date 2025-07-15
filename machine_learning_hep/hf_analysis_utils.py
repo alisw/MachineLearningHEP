@@ -202,10 +202,6 @@ def compute_fraction_nb(
                     frac_cent = (
                         1 - sigma * delta_pt * delta_y * acc_eff_other * b_ratio * n_events * 2 / rawy / sigma_mb
                     )
-                    print(f"Nb pp fraction {i_sigma} raa ratio {i_raa_ratio} sigma {sigma} "
-                          f"delta_pt {delta_pt} delta_y {delta_y} " \
-                          f"acceff other {acc_eff_other} b_ratio {b_ratio} n_events {n_events} " \
-                          f"rawyields {rawy} sigmamb {sigma_mb} final frac {frac_cent}")
                 else:  # p-Pb or Pb-Pb: iterative evaluation of Raa needed
                     delta_raa = 1.0
                     while delta_raa > 1.0e-3:
