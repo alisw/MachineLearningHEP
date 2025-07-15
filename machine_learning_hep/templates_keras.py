@@ -14,12 +14,11 @@
 
 from copy import deepcopy
 
-from keras.layers import Input, Dense
-from keras.models import Model
-from keras.wrappers.scikit_learn import KerasClassifier
-
 from hyperopt import hp
 from hyperopt.pyll import scope
+from keras.layers import Dense, Input
+from keras.models import Model
+from keras.wrappers.scikit_learn import KerasClassifier
 
 from machine_learning_hep.optimisation.bayesian_opt import BayesianOpt
 from machine_learning_hep.optimisation.metrics import get_scorers
@@ -31,39 +30,44 @@ def keras_classifier_(model_config, input_length):
     """
     # Create layers
     inputs = Input(shape=(input_length,))
-    layer = Dense(model_config["layers"][0]["n_nodes"],
-                  activation=model_config["layers"][0]["activation"])(inputs)
-    predictions = Dense(1, activation='sigmoid')(layer)
+    layer = Dense(model_config["layers"][0]["n_nodes"], activation=model_config["layers"][0]["activation"])(inputs)
+    predictions = Dense(1, activation="sigmoid")(layer)
     # Build model from layers
     model = Model(inputs=inputs, outputs=predictions)
-    model.compile(loss=model_config["loss"], optimizer=model_config["optimizer"],
-                  metrics=['accuracy'])
+    model.compile(loss=model_config["loss"], optimizer=model_config["optimizer"], metrics=["accuracy"])
     return model
 
 
 def keras_classifier(model_config, input_length):
-    return KerasClassifier(build_fn=lambda: \
-                    keras_classifier_(model_config, input_length), \
-                                      epochs=model_config["epochs"], \
-                                      batch_size=model_config["batch_size"], \
-                                      verbose=1)
+    return KerasClassifier(
+        build_fn=lambda: keras_classifier_(model_config, input_length),
+        epochs=model_config["epochs"],
+        batch_size=model_config["batch_size"],
+        verbose=1,
+    )
 
 
 def keras_classifier_bayesian_space():
-    return {"n_nodes": hp.choice("x_n_nodes", [[scope.int(hp.quniform("x_n_nodes_1", 12, 64, 1)),
-                                                scope.int(hp.quniform("x_n_nodes_2", 12, 64, 1))],
-                                               [scope.int(hp.quniform("x_n_nodes_1", 12, 64, 1)),
-                                                scope.int(hp.quniform("x_n_nodes_2", 12, 64, 1)),
-                                                scope.int(hp.quniform("x_n_nodes_3", 12, 64, 1))]]),
-            "activation_0": hp.choice("x_activation_0", ["relu", "sigmoid"]),
-            "activation_1": hp.choice("x_activation_1", ["relu", "sigmoid"]),
-            "epochs": scope.int(hp.quniform("x_epochs", 50, 100, 1)),
-            "batch_size": scope.int(hp.quniform("x_batch_size", 28, 256, 1))}
+    return {
+        "n_nodes": hp.choice(
+            "x_n_nodes",
+            [
+                [scope.int(hp.quniform("x_n_nodes_1", 12, 64, 1)), scope.int(hp.quniform("x_n_nodes_2", 12, 64, 1))],
+                [
+                    scope.int(hp.quniform("x_n_nodes_1", 12, 64, 1)),
+                    scope.int(hp.quniform("x_n_nodes_2", 12, 64, 1)),
+                    scope.int(hp.quniform("x_n_nodes_3", 12, 64, 1)),
+                ],
+            ],
+        ),
+        "activation_0": hp.choice("x_activation_0", ["relu", "sigmoid"]),
+        "activation_1": hp.choice("x_activation_1", ["relu", "sigmoid"]),
+        "epochs": scope.int(hp.quniform("x_epochs", 50, 100, 1)),
+        "batch_size": scope.int(hp.quniform("x_batch_size", 28, 256, 1)),
+    }
 
 
-class KerasClassifierBayesianOpt(BayesianOpt): # pylint: disable=too-many-instance-attributes
-
-
+class KerasClassifierBayesianOpt(BayesianOpt):  # pylint: disable=too-many-instance-attributes
     def __init__(self, model_config, space, input_length):
         super().__init__(model_config, space)
         self.input_length = input_length
@@ -72,7 +76,6 @@ class KerasClassifierBayesianOpt(BayesianOpt): # pylint: disable=too-many-instan
         self.model_config_tmp = None
         self.space_tmp = None
 
-
     def get_scikit_model(self):
         """Just a helper funtion
 
@@ -80,37 +83,31 @@ class KerasClassifierBayesianOpt(BayesianOpt): # pylint: disable=too-many-instan
 
         """
         inputs = Input(shape=(self.input_length,))
-        layer = Dense(self.space_tmp["n_nodes"][0],
-                      activation=self.space_tmp["activation_0"])(inputs)
+        layer = Dense(self.space_tmp["n_nodes"][0], activation=self.space_tmp["activation_0"])(inputs)
         for i, n_nodes in enumerate(self.space_tmp["n_nodes"][1:]):
-            layer = Dense(n_nodes,
-                          activation=self.space_tmp[f"activation_{(i+1)%2}"])(layer)
-        predictions = Dense(1, activation='sigmoid')(layer)
+            layer = Dense(n_nodes, activation=self.space_tmp[f"activation_{(i + 1) % 2}"])(layer)
+        predictions = Dense(1, activation="sigmoid")(layer)
         # Build model from layers
         model = Model(inputs=inputs, outputs=predictions)
-        model.compile(loss=self.model_config_tmp["loss"],
-                      optimizer=self.model_config_tmp["optimizer"],
-                      metrics=['accuracy'])
+        model.compile(
+            loss=self.model_config_tmp["loss"], optimizer=self.model_config_tmp["optimizer"], metrics=["accuracy"]
+        )
         return model
 
-
     def yield_model_(self, model_config, space):
-
         self.space_tmp = deepcopy(space)
         self.model_config_tmp = deepcopy(model_config)
 
-        return KerasClassifier(build_fn=self.get_scikit_model, epochs=space["epochs"],
-                               batch_size=space["batch_size"], verbose=1), space
-
+        return KerasClassifier(
+            build_fn=self.get_scikit_model, epochs=space["epochs"], batch_size=space["batch_size"], verbose=1
+        ), space
 
     def save_model_(self, model, out_dir):
-        """Not implemented yet
-        """
+        """Not implemented yet"""
 
 
 def keras_classifier_bayesian_opt(model_config, input_length):
-    bayesian_opt = KerasClassifierBayesianOpt(model_config, keras_classifier_bayesian_space(),
-                                              input_length)
+    bayesian_opt = KerasClassifierBayesianOpt(model_config, keras_classifier_bayesian_space(), input_length)
     bayesian_opt.nkfolds = 3
     bayesian_opt.scoring = get_scorers(["AUC", "Accuracy"])
     bayesian_opt.scoring_opt = "AUC"

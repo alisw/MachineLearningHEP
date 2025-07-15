@@ -28,8 +28,16 @@ from pathlib import Path
 
 import numpy as np
 import yaml
-from ROOT import TLegend  # , TLine
-from ROOT import TH1F, TCanvas, TFile, TGraphAsymmErrors, TLatex, gROOT, gStyle
+from ROOT import (
+    TH1F,
+    TCanvas,
+    TFile,
+    TGraphAsymmErrors,
+    TLatex,
+    TLegend,  # , TLine
+    gROOT,
+    gStyle,
+)
 
 from machine_learning_hep.analysis.analyzer_jets import string_range_ptjet
 from machine_learning_hep.do_variations import (
@@ -41,7 +49,6 @@ from machine_learning_hep.logger import get_logger
 
 # HF specific imports
 from machine_learning_hep.utilities import (
-    make_plot,
     combine_graphs,
     draw_latex,
     get_colour,
@@ -50,6 +57,7 @@ from machine_learning_hep.utilities import (
     get_y_window_gr,
     get_y_window_his,
     make_message_notfound,
+    make_plot,
     print_histogram,
     reset_graph_outside_range,
     reset_hist_outside_range,
@@ -84,7 +92,7 @@ class AnalyzerJetSystematics:
         self.logger.setLevel(logging.INFO)
         self.verbose = False
 
-        with open(path_database_analysis, "r", encoding="utf-8") as file_in:
+        with open(path_database_analysis, encoding="utf-8") as file_in:
             db_analysis = yaml.safe_load(file_in)
         case = list(db_analysis.keys())[0]
         self.datap = db_analysis[case]
@@ -127,7 +135,7 @@ class AnalyzerJetSystematics:
             self.logger.critical(make_message_notfound("the variation database"))
         if "/" not in path_database_variations:
             path_database_variations = f"{os.path.dirname(path_database_analysis)}/{path_database_variations}"
-        with open(path_database_variations, "r", encoding="utf-8") as file_sys:
+        with open(path_database_variations, encoding="utf-8") as file_sys:
             db_variations = yaml.safe_load(file_sys)
 
         if not healthy_structure(db_variations):
@@ -484,16 +492,28 @@ class AnalyzerJetSystematics:
                     print("Variation: %s" % self.systematic_varlabels[sys_cat][sys_var])
                     leg_sysvar.AddEntry(
                         input_histograms_sys[iptjet][sys_cat][sys_var],
-                        ("%s, %s" % (self.systematic_catlabels[sys_cat], self.systematic_varlabels[sys_cat][sys_var])),
+                        (
+                            "{}, {}".format(
+                                self.systematic_catlabels[sys_cat], self.systematic_varlabels[sys_cat][sys_var]
+                            )
+                        ),
                         "P",
                     )
                     self.logger.info(
                         "Adding label %s",
-                        ("%s, %s" % (self.systematic_catlabels[sys_cat], self.systematic_varlabels[sys_cat][sys_var])),
+                        (
+                            "{}, {}".format(
+                                self.systematic_catlabels[sys_cat], self.systematic_varlabels[sys_cat][sys_var]
+                            )
+                        ),
                     )
                     print(
                         "Adding label %s"
-                        % ("%s, %s" % (self.systematic_catlabels[sys_cat], self.systematic_varlabels[sys_cat][sys_var]))
+                        % (
+                            "{}, {}".format(
+                                self.systematic_catlabels[sys_cat], self.systematic_varlabels[sys_cat][sys_var]
+                            )
+                        )
                     )
                     setup_histogram(input_histograms_sys[iptjet][sys_cat][sys_var], get_colour(nsys + 1))
                     input_histograms_sys[iptjet][sys_cat][sys_var].Draw("same")
@@ -514,7 +534,7 @@ class AnalyzerJetSystematics:
             for sys_cat in range(self.n_sys_cat):
                 suffix2 = self.systematic_catnames[sys_cat]
                 nsys = 0
-                csysvar_each = TCanvas("csysvar_%s_%s" % (suffix2, suffix), "systematic variations" + suffix2 + suffix)
+                csysvar_each = TCanvas(f"csysvar_{suffix2}_{suffix}", "systematic variations" + suffix2 + suffix)
                 setup_canvas(csysvar_each)
                 csysvar_each.SetRightMargin(0.25)
                 leg_sysvar_each = TLegend(0.77, 0.2, 0.95, 0.85, self.systematic_catlabels[sys_cat])  # Rg
@@ -546,8 +566,11 @@ class AnalyzerJetSystematics:
                     )
                     input_histograms_sys[iptjet][sys_cat][sys_var].Draw("same")
                     nsys = nsys + 1
-                latex_text = "%g #leq %s < %g GeV/#it{c}" % (self.edges_ptjet_gen_min[iptjet],
-                                                             self.latex_ptjet, self.edges_ptjet_gen_max[iptjet])
+                latex_text = "{:g} #leq {} < {:g} GeV/#it{{c}}".format(
+                    self.edges_ptjet_gen_min[iptjet],
+                    self.latex_ptjet,
+                    self.edges_ptjet_gen_max[iptjet],
+                )
                 latex = TLatex(
                     0.15,
                     0.82,
@@ -560,9 +583,7 @@ class AnalyzerJetSystematics:
                 # plot ratios to the default
 
                 nsys = 0
-                csysvar_ratio = TCanvas(
-                    "csysvar_ratio_%s_%s" % (suffix2, suffix), "systematic variations" + suffix2 + suffix
-                )
+                csysvar_ratio = TCanvas(f"csysvar_ratio_{suffix2}_{suffix}", "systematic variations" + suffix2 + suffix)
                 setup_canvas(csysvar_ratio)
                 csysvar_ratio.SetRightMargin(0.25)
                 leg_sysvar_ratio = TLegend(0.77, 0.2, 0.95, 0.85, self.systematic_catlabels[sys_cat])  # Rg
@@ -571,9 +592,16 @@ class AnalyzerJetSystematics:
 
                 n_bins = input_histograms_default[iptjet].GetNbinsX()
                 # Make the histograms for the distribution of var/default values per bin of observable.
-                list_his_cat_vars = [TH1F(f"his_cat_vars_{var}_{suffix}_{suffix2}_{ibin + 1}",
-                                     f"{self.systematic_catlabels[sys_cat]} distribution, bin {ibin + 1};"
-                                       "var/def;counts", 6, 0., 2.) for ibin in range(n_bins)]
+                list_his_cat_vars = [
+                    TH1F(
+                        f"his_cat_vars_{var}_{suffix}_{suffix2}_{ibin + 1}",
+                        f"{self.systematic_catlabels[sys_cat]} distribution, bin {ibin + 1};var/def;counts",
+                        6,
+                        0.0,
+                        2.0,
+                    )
+                    for ibin in range(n_bins)
+                ]
 
                 for sys_var in range(self.systematic_variations[sys_cat]):
                     default_his = input_histograms_default[iptjet].Clone("default_his")
@@ -618,23 +646,26 @@ class AnalyzerJetSystematics:
 
                 # print([[h.GetBinContent(i + 1) for i in range(h.GetNbinsX())] for h in list_his_cat_vars])
                 axis_x = var_his.GetXaxis()
-                can_dist, _ = make_plot(f"sys_var_{var}_{suffix}_{suffix2}_ratio_dist",
-                                        list_obj=list_his_cat_vars, labels_obj=[f"{axis_x.GetBinLowEdge(ibin + 1)}-"
-                                                                                f"{axis_x.GetBinUpEdge(ibin + 1)}"
-                                                                                for ibin in range(n_bins)],
-                                        opt_leg_g=self.opt_leg_g, opt_plot_g=self.opt_plot_g, opt_plot_h="p l",
-                                        offsets_xy=self.offsets_axes,
-                                        leg_pos=[0.7, 0.7, 0.8, 0.85],
-                                        margins_y=[0.05, 0.05], margins_c=self.margins_can,
-                                        title=f"{latex_obs} {latex_text} {self.systematic_catlabels[sys_cat]};"
-                                        "var/default;counts")
+                can_dist, _ = make_plot(
+                    f"sys_var_{var}_{suffix}_{suffix2}_ratio_dist",
+                    list_obj=list_his_cat_vars,
+                    labels_obj=[
+                        f"{axis_x.GetBinLowEdge(ibin + 1)}-{axis_x.GetBinUpEdge(ibin + 1)}" for ibin in range(n_bins)
+                    ],
+                    opt_leg_g=self.opt_leg_g,
+                    opt_plot_g=self.opt_plot_g,
+                    opt_plot_h="p l",
+                    offsets_xy=self.offsets_axes,
+                    leg_pos=[0.7, 0.7, 0.8, 0.85],
+                    margins_y=[0.05, 0.05],
+                    margins_c=self.margins_can,
+                    title=f"{latex_obs} {latex_text} {self.systematic_catlabels[sys_cat]};var/default;counts",
+                )
                 self.save_canvas(can_dist, f"sys_var_{var}_{suffix}_{suffix2}_ratio_dist")
 
                 # Plot efficiency variations
 
-                csysvar_eff = TCanvas(
-                    "csysvar_eff_%s_%s" % (suffix2, suffix), "systematic variations" + suffix2 + suffix
-                )
+                csysvar_eff = TCanvas(f"csysvar_eff_{suffix2}_{suffix}", "systematic variations" + suffix2 + suffix)
                 setup_canvas(csysvar_eff)
                 csysvar_eff.SetRightMargin(0.25)
                 leg_sysvar_eff = TLegend(
@@ -692,7 +723,7 @@ class AnalyzerJetSystematics:
                 # Plot ratios of efficiency variations to the default efficiency
 
                 csysvar_eff_ratio = TCanvas(
-                    "csysvar_eff_ratio_%s_%s" % (suffix2, suffix), "systematic variations" + suffix2 + suffix
+                    f"csysvar_eff_ratio_{suffix2}_{suffix}", "systematic variations" + suffix2 + suffix
                 )
                 setup_canvas(csysvar_eff_ratio)
                 csysvar_eff_ratio.SetRightMargin(0.25)
@@ -764,17 +795,17 @@ class AnalyzerJetSystematics:
                 # list of absolute downward uncertainties for all categories in a given (pt_jet, shape) bin
                 sys_down_z = []
                 # combined absolute upward uncertainty in a given (pt_jet, shape) bin
-                error_full_up = 0.
+                error_full_up = 0.0
                 # combined absolute downward uncertainty in a given (pt_jet, shape) bin
-                error_full_down = 0.
+                error_full_down = 0.0
                 for sys_cat in range(self.n_sys_cat):
                     # absolute upward uncertainty for a given category in a given (pt_jet, shape) bin
-                    error_var_up = 0.
+                    error_var_up = 0.0
                     # absolute downward uncertainty for a given category in a given (pt_jet, shape) bin
-                    error_var_down = 0.
-                    count_sys_up = 0.
-                    count_sys_down = 0.
-                    error = 0.
+                    error_var_down = 0.0
+                    count_sys_up = 0.0
+                    count_sys_down = 0.0
+                    error = 0.0
                     for sys_var in range(self.systematic_variations[sys_cat]):
                         out_sys = False
                         # FIXME exception for the untagged bin pylint: disable=fixme
@@ -782,13 +813,13 @@ class AnalyzerJetSystematics:
                         # bin_first = 2 if "untagged" in self.systematic_varlabels[sys_cat][sys_var] else 1
                         # FIXME exception for the untagged bin pylint: disable=fixme
                         if input_histograms_sys[iptjet][sys_cat][sys_var].Integral() == 0:
-                            error = 0.
+                            error = 0.0
                             out_sys = True
                         else:
                             error = input_histograms_sys[iptjet][sys_cat][sys_var].GetBinContent(
                                 ibinshape + bin_first
                             ) - input_histograms_default[iptjet].GetBinContent(ibinshape + 1)
-                        if error >= 0.:
+                        if error >= 0.0:
                             if self.systematic_rms[sys_cat] is True:
                                 error_var_up += error * error
                                 if not out_sys:
@@ -894,7 +925,7 @@ class AnalyzerJetSystematics:
                 else:
                     rel_unc_up.append(0.0)
                     rel_unc_down.append(0.0)
-            print(f"total rel. syst. unc. (%): min. {(100. * unc_rel_min):.2g}, max. {(100. * unc_rel_max):.2g}")
+            print(f"total rel. syst. unc. (%): min. {(100.0 * unc_rel_min):.2g}, max. {(100.0 * unc_rel_max):.2g}")
             shapebins_centres_array = array("d", shapebins_centres)
             shapebins_contents_array = array("d", shapebins_contents)
             shapebins_widths_up_array = array("d", shapebins_widths_up)
@@ -1155,8 +1186,8 @@ class AnalyzerJetSystematics:
                         tgsys_cat[iptjet][sys_cat].GetErrorYlow(ibinshape),
                     )
                 print(
-                    f"rel. syst. unc. {self.systematic_catlabels[sys_cat]} (%): min. {(100. * unc_rel_min):.2g}, "
-                    f"max. {(100. * unc_rel_max):.2g}"
+                    f"rel. syst. unc. {self.systematic_catlabels[sys_cat]} (%): min. {(100.0 * unc_rel_min):.2g}, "
+                    f"max. {(100.0 * unc_rel_max):.2g}"
                 )
             h_default_stat_err[iptjet].Draw("same")
             h_default_stat_err[iptjet].Draw("axissame")
@@ -1261,7 +1292,7 @@ class AnalyzerJetSystematics:
                         tgsys_gr[iptjet][sys_gr].GetErrorYhigh(ibinshape),
                         tgsys_gr[iptjet][sys_gr].GetErrorYlow(ibinshape),
                     )
-                print(f"rel. syst. unc. {gr} (%): min. {(100. * unc_rel_min):.2g}, max. {(100. * unc_rel_max):.2g}")
+                print(f"rel. syst. unc. {gr} (%): min. {(100.0 * unc_rel_min):.2g}, max. {(100.0 * unc_rel_max):.2g}")
             h_default_stat_err[iptjet].Draw("same")
             h_default_stat_err[iptjet].Draw("axissame")
             # Draw LaTeX

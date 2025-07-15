@@ -16,7 +16,7 @@
 file: hf_analysis_utils.py
 brief: script with miscellanea utils methods for the HF analyses
 author: Fabrizio Grosa <fabrizio.grosa@cern.ch>, CERN
-Macro committed and manteined in O2Physics:
+Macro committed and mantained in O2Physics:
 https://github.com/AliceO2Group/O2Physics/tree/master/PWGHF/D2H/Macros
 """
 
@@ -63,22 +63,13 @@ def compute_crosssection(
         crosssection = -9999
         crosssec_unc = -1
     elif method_frac == "dd_N":
-        crosssection = (
-            frac
-            * sigma_mb
-            / (2 * delta_pt * delta_y * n_events * b_ratio)
-        )
+        crosssection = frac * sigma_mb / (2 * delta_pt * delta_y * n_events * b_ratio)
         # TODO: How to calculate the uncertainty?
         # frac_unc / frac * crosssection?
-        crosssec_unc = 0.
+        crosssec_unc = 0.0
     else:
-        crosssection = (
-            rawy
-            * frac
-            * sigma_mb
-            / (2 * delta_pt * delta_y * eff_times_acc * n_events * b_ratio)
-        )
-        if method_frac in ("Nb","ext"):
+        crosssection = rawy * frac * sigma_mb / (2 * delta_pt * delta_y * eff_times_acc * n_events * b_ratio)
+        if method_frac in ("Nb", "ext"):
             crosssec_unc = rawy_unc / (rawy * frac) * crosssection
         else:
             crosssec_unc = rawy_unc / rawy * crosssection
@@ -138,40 +129,14 @@ def compute_fraction_fc(
         frac_fd = [frac_fd_cent, frac_fd_cent, frac_fd_cent]
         return frac_prompt, frac_fd
 
-    for i_sigma, (sigma_p, sigma_f) in enumerate(zip(cross_sec_prompt, cross_sec_fd)):
-        for i_raa, (raa_p, raa_f) in enumerate(zip(raa_prompt, raa_fd)):
+    for i_sigma, (sigma_p, sigma_f) in enumerate(zip(cross_sec_prompt, cross_sec_fd, strict=False)):
+        for i_raa, (raa_p, raa_f) in enumerate(zip(raa_prompt, raa_fd, strict=False)):
             if i_sigma == 0 and i_raa == 0:
-                frac_prompt_cent = 1.0 / (
-                    1 + acc_eff_fd / acc_eff_prompt * sigma_f / sigma_p * raa_f / raa_p
-                )
-                frac_fd_cent = 1.0 / (
-                    1 + acc_eff_prompt / acc_eff_fd * sigma_p / sigma_f * raa_p / raa_f
-                )
+                frac_prompt_cent = 1.0 / (1 + acc_eff_fd / acc_eff_prompt * sigma_f / sigma_p * raa_f / raa_p)
+                frac_fd_cent = 1.0 / (1 + acc_eff_prompt / acc_eff_fd * sigma_p / sigma_f * raa_p / raa_f)
             else:
-                frac_prompt.append(
-                    1.0
-                    / (
-                        1
-                        + acc_eff_fd
-                        / acc_eff_prompt
-                        * sigma_f
-                        / sigma_p
-                        * raa_f
-                        / raa_p
-                    )
-                )
-                frac_fd.append(
-                    1.0
-                    / (
-                        1
-                        + acc_eff_prompt
-                        / acc_eff_fd
-                        * sigma_p
-                        / sigma_f
-                        * raa_p
-                        / raa_f
-                    )
-                )
+                frac_prompt.append(1.0 / (1 + acc_eff_fd / acc_eff_prompt * sigma_f / sigma_p * raa_f / raa_p))
+                frac_fd.append(1.0 / (1 + acc_eff_prompt / acc_eff_fd * sigma_p / sigma_f * raa_p / raa_f))
 
     if frac_prompt and frac_fd:
         frac_prompt.sort()
@@ -235,16 +200,7 @@ def compute_fraction_nb(
             if i_sigma == 0 and i_raa_ratio == 0:
                 if raa_rat == 1.0 and taa == 1.0:  # pp
                     frac_cent = (
-                        1
-                        - sigma
-                        * delta_pt
-                        * delta_y
-                        * acc_eff_other
-                        * b_ratio
-                        * n_events
-                        * 2
-                        / rawy
-                        / sigma_mb
+                        1 - sigma * delta_pt * delta_y * acc_eff_other * b_ratio * n_events * 2 / rawy / sigma_mb
                     )
                     print(f"Nb pp fraction {i_sigma} raa ratio {i_raa_ratio} sigma {sigma} "
                           f"delta_pt {delta_pt} delta_y {delta_y} " \
@@ -268,66 +224,23 @@ def compute_fraction_nb(
                         frac_cent = 1 - raw_fd / rawy
                         raa_other_old = raa_other
                         raa_other = (
-                            frac_cent
-                            * rawy
-                            * sigma_mb
-                            / 2
-                            / acc_eff_same
-                            / delta_pt
-                            / delta_y
-                            / b_ratio
-                            / n_events
+                            frac_cent * rawy * sigma_mb / 2 / acc_eff_same / delta_pt / delta_y / b_ratio / n_events
                         )
                         delta_raa = abs((raa_other - raa_other_old) / raa_other)
-            else:
-                if raa_rat == 1.0 and taa == 1.0:  # pp
-                    frac.append(
-                        1
-                        - sigma
-                        * delta_pt
-                        * delta_y
-                        * acc_eff_other
-                        * b_ratio
-                        * n_events
-                        * 2
-                        / rawy
-                        / sigma_mb
+            elif raa_rat == 1.0 and taa == 1.0:  # pp
+                frac.append(1 - sigma * delta_pt * delta_y * acc_eff_other * b_ratio * n_events * 2 / rawy / sigma_mb)
+            else:  # p-Pb or Pb-Pb: iterative evaluation of Raa needed
+                delta_raa = 1.0
+                frac_tmp = 1.0
+                while delta_raa > 1.0e-3:
+                    raw_fd = (
+                        taa * raa_rat * raa_other * sigma * delta_pt * delta_y * acc_eff_other * b_ratio * n_events * 2
                     )
-                    print(f"Nb pp fraction {i_sigma} raa ratio {i_raa_ratio} sigma {sigma} "
-                          f"delta_pt {delta_pt} delta_y {delta_y} " \
-                          f"acceff other {acc_eff_other} b_ratio {b_ratio} n_events {n_events} " \
-                          f"rawyields {rawy} sigmamb {sigma_mb} final frac {frac_cent}")
-                else:  # p-Pb or Pb-Pb: iterative evaluation of Raa needed
-                    delta_raa = 1.0
-                    frac_tmp = 1.0
-                    while delta_raa > 1.0e-3:
-                        raw_fd = (
-                            taa
-                            * raa_rat
-                            * raa_other
-                            * sigma
-                            * delta_pt
-                            * delta_y
-                            * acc_eff_other
-                            * b_ratio
-                            * n_events
-                            * 2
-                        )
-                        frac_tmp = 1 - raw_fd / rawy
-                        raa_other_old = raa_other
-                        raa_other = (
-                            frac_tmp
-                            * rawy
-                            * sigma_mb
-                            / 2
-                            / acc_eff_same
-                            / delta_pt
-                            / delta_y
-                            / b_ratio
-                            / n_events
-                        )
-                        delta_raa = abs((raa_other - raa_other_old) / raa_other)
-                    frac.append(frac_tmp)
+                    frac_tmp = 1 - raw_fd / rawy
+                    raa_other_old = raa_other
+                    raa_other = frac_tmp * rawy * sigma_mb / 2 / acc_eff_same / delta_pt / delta_y / b_ratio / n_events
+                    delta_raa = abs((raa_other - raa_other_old) / raa_other)
+                frac.append(frac_tmp)
 
     if frac:
         frac.sort()
@@ -338,19 +251,9 @@ def compute_fraction_nb(
     return frac
 
 
-# pylint: disable=too-many-branches,too-many-arguments,too-many-locals,invalid-name
-def compute_fraction_dd(
-    acc_eff_same,
-    acc_eff_other,
-    corryields_same,
-    corryields_other,
-    cov_same,
-    cov_other,
-    cov_comb
-):
+def compute_fraction_dd(acc_eff_same, acc_eff_other, corryields_same, corryields_other, cov_same, cov_other, cov_comb):
     """
     Method to get fraction of prompt / FD fraction with data-driven method
-
     Parameters
     ----------
     - acc_eff_same: efficiency times acceptance of prompt (non-prompt) D
@@ -360,7 +263,6 @@ def compute_fraction_dd(
     - cov_same: covariance of prompt (non-prompt) D computed with cut variation
     - cov_other: covariance of non-prompt (prompt) D computed with cut variation
     - cov_comb: covariance of prompt and non-prompt D computed with cut variation
-
     Returns
     ----------
     - frac: list of fraction of prompt (non-prompt) D (central, min, max)
@@ -370,17 +272,15 @@ def compute_fraction_dd(
     yield_times_acceff_same = corryields_same * acc_eff_same
     yield_times_acceff_other = corryields_other * acc_eff_other
     frac_v = yield_times_acceff_same / (yield_times_acceff_same + yield_times_acceff_other)
-    print(f"same yield times acceff: {yield_times_acceff_same} " \
-          f"other {yield_times_acceff_other} final frac: {frac_v}")
 
     denom = (yield_times_acceff_same + yield_times_acceff_other) ** 2
-    der_same_same = (acc_eff_same * (yield_times_acceff_same + yield_times_acceff_other) - \
-                   acc_eff_same**2 * corryields_same) / denom
+    der_same_same = (
+        acc_eff_same * (yield_times_acceff_same + yield_times_acceff_other) - acc_eff_same**2 * corryields_same
+    ) / denom
     der_same_other = -acc_eff_same * acc_eff_other * corryields_same / denom
-    unc = np.sqrt(der_same_same**2 * cov_same + der_same_other**2 * cov_other + \
-                  2 * der_same_same * der_same_other * cov_comb)
-    print(f"denom {denom} der_same_same {der_same_same} der_same_other {der_same_other} " \
-          f"cov same {cov_same} cov other {cov_other} cov comb {cov_comb} final unc {unc}")
+    unc = np.sqrt(
+        der_same_same**2 * cov_same + der_same_other**2 * cov_other + 2 * der_same_same * der_same_other * cov_comb
+    )
 
     return [frac_v, frac_v - unc, frac_v + unc]
 
@@ -404,8 +304,6 @@ def get_hist_binlimits(histo):
         n_limits = histo.GetNbinsX() + 1
         low_edge = histo.GetBinLowEdge(1)
         bin_width = histo.GetBinWidth(1)
-        bin_limits = np.array(
-            [low_edge + i_bin * bin_width for i_bin in range(n_limits)], "d"
-        )
+        bin_limits = np.array([low_edge + i_bin * bin_width for i_bin in range(n_limits)], "d")
 
     return bin_limits

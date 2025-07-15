@@ -64,9 +64,6 @@ def modify_paths(dic: dict, old: str, new: str, do_proc: bool):
     for key_a, val_a in dic["analysis"].items():
         if not isinstance(val_a, dict):
             continue
-        # Skip non-jet analyses.
-        if "jet" not in key_a:
-            continue
         dic_ana = dic["analysis"][key_a]
         dirs = ["data", "mc"]
         dirs_proc = ["data_proc", "mc_proc"]
@@ -80,7 +77,7 @@ def modify_paths(dic: dict, old: str, new: str, do_proc: bool):
                     continue
                 new_val_d = replace_strings(val_d, old, new, strict)
                 if new_val_d is None and val_d is not None:
-                    msg_err('"%s" not found in %s/%s/%s' % (old, key_a, data, key_d))
+                    msg_err(f'"{old}" not found in {key_a}/{data}/{key_d}')
                     return False
                 dic_ana[data][key_d] = new_val_d
     return True
@@ -153,7 +150,7 @@ def format_value(old, new):
     if isinstance(old, list):
         # Return a list of the same structure, filled with new.
         return [format_value(old_i, new) for old_i in old]
-    msg_warn("Change of type: %s -> %s\n\t%s -> %s" % (type(old), type(new), old, new))
+    msg_warn(f"Change of type: {type(old)} -> {type(new)}\n\t{old} -> {new}")
     return new
 
 
@@ -191,7 +188,7 @@ def good_list_length(obj, length: int, name=None):
     #    print(name)
     if isinstance(obj, dict):
         for key in obj:
-            newname = "%s/%s" % (name, key) if name else None
+            newname = f"{name}/{key}" if name else None
             result_this = good_list_length(obj[key], length, newname)
             result = result and result_this
     elif isinstance(obj, list):
@@ -238,7 +235,7 @@ def healthy_structure(dic_diff: dict):  # pylint: disable=too-many-return-statem
         good = True
         for key in ["activate", "label", "variations", "processor"]:
             if key not in dic_cat_single:
-                msg_err('Key "%s" not found in category %s.' % (key, cat))
+                msg_err(f'Key "{key}" not found in category {cat}.')
                 good = False
         if not good:
             return False
@@ -259,18 +256,18 @@ def healthy_structure(dic_diff: dict):  # pylint: disable=too-many-return-statem
         for var in dic_vars:
             dic_var_single = dic_vars[var]
             if not isinstance(dic_var_single, dict):
-                msg_err("%s in %s is not a dictionary." % (var, cat))
+                msg_err(f"{var} in {cat} is not a dictionary.")
                 return False
             good = True
             for key in ["activate", "label", "diffs"]:
                 if key not in dic_var_single:
-                    msg_err('Key "%s" not found in variation group %s/%s.' % (key, cat, var))
+                    msg_err(f'Key "{key}" not found in variation group {cat}/{var}.')
                     good = False
             if not good:
                 return False
             # Activate
             if not isinstance(dic_var_single["activate"], list):
-                msg_err('"activate" in %s/%s is not a list.' % (cat, var))
+                msg_err(f'"activate" in {cat}/{var} is not a list.')
                 return False
             for i, act in enumerate(dic_var_single["activate"]):
                 if not isinstance(act, bool):
@@ -279,7 +276,7 @@ def healthy_structure(dic_diff: dict):  # pylint: disable=too-many-return-statem
             length = len(dic_var_single["activate"])
             # Label
             if not isinstance(dic_var_single["label"], list):
-                msg_err('"label" in %s/%s is not a list.' % (cat, var))
+                msg_err(f'"label" in {cat}/{var} is not a list.')
                 return False
             len_lab = len(dic_var_single["label"])
             if len_lab not in (length, 1) or len_lab == 0:
@@ -294,7 +291,7 @@ def healthy_structure(dic_diff: dict):  # pylint: disable=too-many-return-statem
                     return False
             # Diffs
             if not isinstance(dic_var_single["diffs"], dict):
-                msg_err('"diffs" in %s/%s is not a dictionary.' % (cat, var))
+                msg_err(f'"diffs" in {cat}/{var} is not a dictionary.')
                 return False
             if not good_list_length(dic_var_single["diffs"], length, "diffs"):
                 msg_err('"diffs" in %s/%s does not contain lists of correct length (%d).' % (cat, var, length))
@@ -302,7 +299,8 @@ def healthy_structure(dic_diff: dict):  # pylint: disable=too-many-return-statem
     return True
 
 
-def main(yaml_in: str, yaml_diff: str, analysis: str, config: str, clean: bool, proc: int, script_name: str):  # pylint: disable=too-many-locals, too-many-statements, too-many-branches
+# pylint: disable=too-many-locals, too-many-statements, too-many-branches, too-many-positional-arguments
+def main(yaml_in: str, yaml_diff: str, analysis: str, config: str, clean: bool, proc: int, script_name: str):
     """Main function"""
 
     suffix_config_default = "analysis.yml"
@@ -315,9 +313,9 @@ def main(yaml_in: str, yaml_diff: str, analysis: str, config: str, clean: bool, 
             msg_err(f'Provided default config file does not end with "{suffix_config_default}".')
             sys.exit(1)
 
-    with open(yaml_in, "r", encoding="utf-8") as file_in:
+    with open(yaml_in, encoding="utf-8") as file_in:
         dic_in = yaml.safe_load(file_in)
-    with open(yaml_diff, "r", encoding="utf-8") as file_diff:
+    with open(yaml_diff, encoding="utf-8") as file_diff:
         dic_diff = yaml.safe_load(file_diff)
 
     if not healthy_structure(dic_diff):
@@ -351,9 +349,9 @@ def main(yaml_in: str, yaml_diff: str, analysis: str, config: str, clean: bool, 
         if proc is not None and bool(proc) is not do_processor:
             run = False
         if not run or not dic_cat_single["activate"]:
-            print("\nSkipping category %s (%s)" % (cat, label_cat))
+            print(f"\nSkipping category {cat} ({label_cat})")
             continue
-        print("\nProcessing category %s (\x1b[1;34m%s\x1b[0m)" % (cat, label_cat))
+        print(f"\nProcessing category {cat} (\x1b[1;34m{label_cat}\x1b[0m)")
         dic_vars = dic_cat_single["variations"]
         # Loop over variation groups.
         for var in dic_vars:
@@ -361,7 +359,7 @@ def main(yaml_in: str, yaml_diff: str, analysis: str, config: str, clean: bool, 
             label_var = dic_var_single["label"]
             n_var = len(dic_var_single["activate"])
             if not n_var:
-                print("\nSkipping empty variation group %s/%s (%s: %s)" % (cat, var, label_cat, label_var[0]))
+                print(f"\nSkipping empty variation group {cat}/{var} ({label_cat}: {label_var[0]})")
                 continue
             print(
                 "\nProcessing variation group %s/%s (%s: %s)"
@@ -369,7 +367,7 @@ def main(yaml_in: str, yaml_diff: str, analysis: str, config: str, clean: bool, 
             )
             # Loop over list items.
             for index in range(n_var):
-                varstring = "%s/%s" % (cat, format_varname(var, index, n_var))
+                varstring = f"{cat}/{format_varname(var, index, n_var)}"
 
                 if not dic_var_single["activate"][index]:
                     print(
@@ -404,7 +402,7 @@ def main(yaml_in: str, yaml_diff: str, analysis: str, config: str, clean: bool, 
 
                 # Save the new database.
                 i_dot = yaml_in.rfind(".")  # Find the position of the suffix.
-                yaml_out = yaml_in[:i_dot] + "_%s_%s" % (cat, format_varname(var, index, n_var)) + yaml_in[i_dot:]
+                yaml_out = yaml_in[:i_dot] + f"_{cat}_{format_varname(var, index, n_var)}" + yaml_in[i_dot:]
                 print("Saving the new database to %s" % yaml_out)
                 with open(yaml_out, "w", encoding="utf-8") as file_out:
                     yaml.safe_dump(dic_db, file_out, default_flow_style=False, sort_keys=False)
@@ -423,7 +421,7 @@ def main(yaml_in: str, yaml_diff: str, analysis: str, config: str, clean: bool, 
                     )
                     now = datetime.datetime.now()
                     timestamp = now.strftime("%Y%m%d_%H%M%S")
-                    logfile = "stdouterr_%s_%s_%s_%s.log" % (
+                    logfile = "stdouterr_{}_{}_{}_{}.log".format(
                         timestamp,
                         analysis,
                         cat,
@@ -439,9 +437,7 @@ def main(yaml_in: str, yaml_diff: str, analysis: str, config: str, clean: bool, 
                     else:
                         with open(logfile, "w", encoding="utf-8") as ana_out:
                             subprocess.Popen(  # pylint: disable=consider-using-with
-                                shlex.split(
-                                    "mlhep " "-a %s -r %s -d %s -b --delete-force" % (analysis, config_final, yaml_out)
-                                ),
+                                shlex.split(f"mlhep -a {analysis} -r {config_final} -d {yaml_out} -b --delete-force"),
                                 stdout=ana_out,
                                 stderr=ana_out,
                                 universal_newlines=True,

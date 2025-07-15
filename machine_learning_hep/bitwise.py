@@ -15,24 +15,27 @@
 """
 Methods to: perform bitwise operations on dataframes
 """
-from functools import reduce
+
 import operator
+from functools import reduce
+
 import numpy as np
 
 from .logger import get_logger
 
-def tag_bit_df(dfin, namebitmap, activatedbit, absval = False):
+
+def tag_bit_df(dfin, namebitmap, activatedbit, absval=False):
     try:
-        ar = dfin[namebitmap].to_numpy(dtype='int')
+        ar = dfin[namebitmap].to_numpy(dtype="int")
         if absval:
             ar = abs(ar)
         mask_on = reduce(operator.or_, ((1 << bit) for bit in activatedbit[0]), 0)
         mask_off = reduce(operator.or_, ((1 << bit) for bit in activatedbit[1]), 0)
-        return np.logical_and(np.bitwise_and(ar, mask_on) == mask_on,
-                              np.bitwise_and(ar, mask_off) == 0)
+        return np.logical_and(np.bitwise_and(ar, mask_on) == mask_on, np.bitwise_and(ar, mask_off) == 0)
     except Exception:
-        get_logger().exception('%s, %s', dfin, namebitmap)
+        get_logger().exception("%s, %s", dfin, namebitmap)
         raise
+
 
 def filter_bit_df(dfin, namebitmap, activatedbit):
     return dfin[tag_bit_df(dfin, namebitmap, activatedbit)]

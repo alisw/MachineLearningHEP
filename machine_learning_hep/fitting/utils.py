@@ -20,19 +20,19 @@ Interfacing with
     2. user configuration database
 Providing and storing fitters
 """
-from os.path import join
-from math import ceil
+
 import inspect
+from math import ceil
+from os.path import join
 
 # pylint: disable=import-error, no-name-in-module, unused-import
 from ROOT import TFile
 
-from machine_learning_hep.io import parse_yaml, dump_yaml_from_dict, checkdir
+from machine_learning_hep.io import checkdir, dump_yaml_from_dict, parse_yaml
 from machine_learning_hep.logger import get_logger
 
 
 def construct_rebinning(histo, rebin):
-
     try:
         iter(rebin)
         min_rebin = rebin[0]
@@ -52,7 +52,6 @@ def construct_rebinning(histo, rebin):
 
 
 def save_fit(fit, save_dir, annotations=None):
-
     if not fit.has_attempt:
         get_logger().warning("Fit has not been done and will hence not be saved")
         return
@@ -76,8 +75,7 @@ def save_fit(fit, save_dir, annotations=None):
     dump_yaml_from_dict(fit.fit_pars, yaml_path)
 
     class_name = fit.__class__.__name__
-    meta_info = {"fit_class": class_name,
-                 "success": fit.success}
+    meta_info = {"fit_class": class_name, "success": fit.success}
     if annotations:
         meta_info["annotations"] = annotations
 
@@ -91,12 +89,15 @@ def load_fit(save_dir):
 
     yaml_path = join(save_dir, "init_pars.yaml")
 
-    #pylint: disable=import-outside-toplevel
+    # pylint: disable=import-outside-toplevel
     import machine_learning_hep.fitting.fitters as search_module
-    #pylint: enable=import-outside-toplevel
-    fit_classes = {f[0]: getattr(search_module, f[0]) \
-            for f in inspect.getmembers(search_module, inspect.isclass) \
-            if f[1].__module__ == search_module.__name__}
+
+    # pylint: enable=import-outside-toplevel
+    fit_classes = {
+        f[0]: getattr(search_module, f[0])
+        for f in inspect.getmembers(search_module, inspect.isclass)
+        if f[1].__module__ == search_module.__name__
+    }
     fit = None
     if meta_info["fit_class"] in fit_classes:
         fit = fit_classes[meta_info["fit_class"]](parse_yaml(yaml_path))

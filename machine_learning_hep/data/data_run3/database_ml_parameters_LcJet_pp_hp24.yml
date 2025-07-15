@@ -48,13 +48,13 @@ LcJet_pp:
   #region dfs
   dfs:
     read:
-      # evtorig:
-      #     level: all
-      #     index: fIndexHf3PCollBases
-      #     trees:
-      #         O2hf3pcollbase: [fNumContrib]
-      #     extra:
-      #         fIsEventReject: 0
+      evtorig:
+        level: all
+        index: fIndexHf3PCollBases
+        trees:
+          O2hf3pcollbase: [fNumContrib]
+        extra:
+          fIsEventReject: 0
       collcnt:
         trees:
           O2collcount: [fReadCounts, fReadCountsWithTVX, fReadCountsWithTVXAndZVertexAndSel8, fReadCountsWithTVXAndZVertexAndSelMC]
@@ -94,8 +94,8 @@ LcJet_pp:
         trees:
           O2hf3pbase: [fIndexHf3PCollBases, fPt, fY, fEta, fPhi, fM]
           O2hf3pmc: [fFlagMcMatchRec, fOriginMcRec]
-          O2hf3ppar: [fCpa, fCpaXY, fChi2PCA, fDecayLength, fDecayLengthXY, fDecayLengthNormalised, fDecayLengthXYNormalised, fImpactParameter0, fImpactParameter1, fImpactParameter2, fImpactParameterNormalised0, fImpactParameterNormalised1, fImpactParameterNormalised2, fPtProng0, fPtProng1, fPtProng2]
-          O2hf3ppare: [fErrorDecayLength, fErrorDecayLengthXY, fErrorImpactParameter0, fErrorImpactParameter1]
+          # O2hf3ppar: [fCpa, fCpaXY, fChi2PCA, fDecayLength, fDecayLengthXY, fDecayLengthNormalised, fDecayLengthXYNormalised, fImpactParameter0, fImpactParameter1, fImpactParameter2, fImpactParameterNormalised0, fImpactParameterNormalised1, fImpactParameterNormalised2, fPtProng0, fPtProng1, fPtProng2]
+          # O2hf3ppare: [fErrorDecayLength, fErrorDecayLengthXY, fErrorImpactParameter0, fErrorImpactParameter1]
           O2hf3psel: [fCandidateSelFlag]
           O2hf3pml: [fMlScores]
           O2lccmcdjeto: [fIndexLCCMCDJETCOS, fIndexHF3PBASES_0, fJetPt, fJetPhi, fJetEta, fJetNConstituents, fJetR]
@@ -114,22 +114,29 @@ LcJet_pp:
 
       colldata:
         level: data
-        index: fIndexDIELCJETCOS
+        index: fIndexLCCJETCOS
         trees:
-          O2dielcjetco: [fPosZ, fCentrality, fEventSel]
+          O2lccjetco: [fPosZ, fCentrality, fEventSel]
       jetdata:
         level: data
-        index: fIndexDIELCJETOS
+        index: fIndexLCCJETOS
         trees:
-          O2dielcjeto: [fIndexDIELCJETCOS, fIndexRTDIELECTRONS_0, fJetPt, fJetPhi, fJetEta, fJetNConstituents, fJetR]
-          O2dielcjetsso: [fIndexDIELCJETOS, fEnergyMother, fPtLeading, fPtSubLeading, fTheta, fNSub2DR, fNSub1, fNSub2]
-          O2rtdielectron: [fPt, fEta, fPhi, fMass]
-        filter: "abs(fJetEta) < (.9 - (fJetR / 100.))" # TODO: check jet eta cut
+          O2hf3pbase: [fIndexHf3PCollBases, fPt, fY, fEta, fPhi, fM]
+          # O2hf3ppar: [fCpa, fCpaXY, fChi2PCA, fDecayLength, fDecayLengthXY, fDecayLengthNormalised, fDecayLengthXYNormalised, fImpactParameter0, fImpactParameter1, fImpactParameter2, fImpactParameterNormalised0, fImpactParameterNormalised1, fImpactParameterNormalised2, fPtProng0, fPtProng1, fPtProng2]
+          # O2hf3ppare: [fErrorDecayLength, fErrorDecayLengthXY, fErrorImpactParameter0, fErrorImpactParameter1]
+          O2hf3psel: [fCandidateSelFlag]
+          O2hf3pml: [fMlScores]
+          O2lccjeto: [fIndexLCCJETCOS, fIndexHF3PBASES_0, fJetPt, fJetPhi, fJetEta, fJetNConstituents, fJetR]
+          O2lccjetsso: [fIndexLCCJETOS, fEnergyMother, fPtLeading, fPtSubLeading, fTheta, fNSub2DR, fNSub1, fNSub2]
+        extract_component:
+          - {var: fMlScores, newvar: mlPromptScore, component: 1}
+        filter: "fPt >= 1. and abs(fY) <= 0.8 and abs(fJetEta) < (.9 - (fJetR / 100.))" # TODO: check jet eta cut
 
     merge:
-      # - {base: jetgen, ref: collgen}
+      #- {base: jetgen, ref: collgen}
       - {base: jetdet, ref: colldet}
       - {base: jetdata, ref: colldata}
+    # - {base: jetdata, ref: evtorig}
     # workaround for yamlfmt issue #110
 
     write:
@@ -142,14 +149,14 @@ LcJet_pp:
       jetdata:
         level: data
         file: AnalysisResultsReco.parquet
-      # evtorig:
-      #     level: all
-      #     file: AnalysisResultsEvtOrig.parquet
-      # evt:
-      #     level: all
-      #     source: evtorig
-      #     file: AnalysisResultsEvt.parquet
-      #     filter: "fIsEventReject == 0"
+      evtorig:
+        level: all
+        file: AnalysisResultsEvtOrig.parquet
+      evt:
+        level: all
+        source: evtorig
+        file: AnalysisResultsEvt.parquet
+        filter: "fIsEventReject == 0"
       collcnt:
         level: all
         file: AnalysisResultsCollCnt.parquet
@@ -159,8 +166,13 @@ LcJet_pp:
 
   variables:
     var_all: [fIndexCollisions, fFlagMcMatchRec, fCandidateSelFlag, fOriginMcRec, fIsCandidateSwapped, fNProngsContributorsPV, fY, fEta, fPt, fCpa, fCpaXY, fM, fChi2PCA, fDecayLength, fDecayLengthXY, fPtProng0, fPtProng1, fPtProng2, fImpactParameter0, fImpactParameter1, fImpactParameter2, fNSigTpcPi0, fNSigTpcPr0, fNSigTpcKa1, fNSigTpcPi2, fNSigTpcPr2, fNSigTofPi0, fNSigTofPr0, fNSigTofKa1, fNSigTofPi2, fNSigTofPr2, fNSigTpcTofPi0, fNSigTpcTofPr0, fNSigTpcTofKa1, fNSigTpcTofPi2, fNSigTpcTofPr2]
-    var_training: [[fImpactParameter0, fImpactParameter1, fImpactParameter2, fCpa, fChi2PCA, fDecayLength, fDecayLengthXY, fNSigTpcTofPi0, fNSigTpcTofPr0, fNSigTpcTofKa1, fNSigTpcTofPi2, fNSigTpcTofPr2], [fImpactParameter0, fImpactParameter1, fImpactParameter2, fCpa, fChi2PCA, fDecayLength, fDecayLengthXY, fNSigTpcTofPi0, fNSigTpcTofPr0, fNSigTpcTofKa1, fNSigTpcTofPi2, fNSigTpcTofPr2], [fImpactParameter0, fImpactParameter1, fImpactParameter2, fCpa, fChi2PCA, fDecayLength, fDecayLengthXY, fNSigTpcTofPi0, fNSigTpcTofPr0, fNSigTpcTofKa1, fNSigTpcTofPi2, fNSigTpcTofPr2], [fImpactParameter0, fImpactParameter1, fImpactParameter2, fCpa, fChi2PCA, fDecayLength, fDecayLengthXY, fNSigTpcTofPi0, fNSigTpcTofPr0, fNSigTpcTofKa1, fNSigTpcTofPi2, fNSigTpcTofPr2], [fImpactParameter0, fImpactParameter1, fImpactParameter2, fCpa, fChi2PCA, fDecayLength, fDecayLengthXY, fNSigTpcTofPi0, fNSigTpcTofPr0, fNSigTpcTofKa1, fNSigTpcTofPi2, fNSigTpcTofPr2], [fImpactParameter0, fImpactParameter1, fImpactParameter2, fCpa, fChi2PCA, fDecayLength, fDecayLengthXY, fNSigTpcTofPi0, fNSigTpcTofPr0, fNSigTpcTofKa1, fNSigTpcTofPi2, fNSigTpcTofPr2]]
-    # sel_skim_binmin bins
+    var_training: # sel_skim_binmin bins
+      - [fImpactParameter0, fImpactParameter1, fImpactParameter2, fCpa, fChi2PCA, fDecayLength, fDecayLengthXY, fNSigTpcTofPi0, fNSigTpcTofPr0, fNSigTpcTofKa1, fNSigTpcTofPi2, fNSigTpcTofPr2]
+      - [fImpactParameter0, fImpactParameter1, fImpactParameter2, fCpa, fChi2PCA, fDecayLength, fDecayLengthXY, fNSigTpcTofPi0, fNSigTpcTofPr0, fNSigTpcTofKa1, fNSigTpcTofPi2, fNSigTpcTofPr2]
+      - [fImpactParameter0, fImpactParameter1, fImpactParameter2, fCpa, fChi2PCA, fDecayLength, fDecayLengthXY, fNSigTpcTofPi0, fNSigTpcTofPr0, fNSigTpcTofKa1, fNSigTpcTofPi2, fNSigTpcTofPr2]
+      - [fImpactParameter0, fImpactParameter1, fImpactParameter2, fCpa, fChi2PCA, fDecayLength, fDecayLengthXY, fNSigTpcTofPi0, fNSigTpcTofPr0, fNSigTpcTofKa1, fNSigTpcTofPi2, fNSigTpcTofPr2]
+      - [fImpactParameter0, fImpactParameter1, fImpactParameter2, fCpa, fChi2PCA, fDecayLength, fDecayLengthXY, fNSigTpcTofPi0, fNSigTpcTofPr0, fNSigTpcTofKa1, fNSigTpcTofPi2, fNSigTpcTofPr2]
+      - [fImpactParameter0, fImpactParameter1, fImpactParameter2, fCpa, fChi2PCA, fDecayLength, fDecayLengthXY, fNSigTpcTofPi0, fNSigTpcTofPr0, fNSigTpcTofKa1, fNSigTpcTofPi2, fNSigTpcTofPr2]
     var_boundaries: [fCosThetaStar, fPtProng]
     var_correlation:
       - [fCosThetaStar] # TODO: update
@@ -224,7 +236,7 @@ LcJet_pp:
       seedmerge: [12] #list of periods
       period: [LHC22o] #list of periods
       select_period: [1]
-      prefix_dir: /data2/MLhep/real/train_300133/
+      prefix_dir: /data2/MLhep/real/train_257594/
       unmerged_tree_dir: [alice] #list of periods
       pkl: ["${USER}/lcjet/pkl"] #list of periods
       pkl_skimmed: ["${USER}/lcjet/pklsk"] #list of periods
@@ -277,8 +289,8 @@ LcJet_pp:
     mltype: BinaryClassification
     ncorescrossval: 10
     prefix_dir_ml: "/data2/${USER}/MLhep/"
-    mlplot: mlplot
-    mlout: mlout
+    mlplot: mlplot # to be removed
+    mlout: mlout # to be removed
 
     opt:
       isFONLLfromROOT: true
@@ -307,11 +319,39 @@ LcJet_pp:
       pkl_skimmed_dec: [LHC22pp_mc/MLapplication/prod_LHC24d3b/skpkldecmc] #list of periods
       pkl_skimmed_decmerged: [LHC22pp_mc/MLapplication/prod_LHC24d3b/skpkldecmcmerged] #list of periods
     modelname: xgboost
-    modelsperptbin: [xgboost_classifierLcpKpi_dfselection_fPt_1.0_2.0.sav, xgboost_classifierLcpKpi_dfselection_fPt_2.0_4.0.sav, xgboost_classifierLcpKpi_dfselection_fPt_4.0_6.0.sav, xgboost_classifierLcpKpi_dfselection_fPt_6.0_8.0.sav, xgboost_classifierLcpKpi_dfselection_fPt_8.0_12.0.sav, xgboost_classifierLcpKpi_dfselection_fPt_12.0_24.0.sav, xgboost_classifierLcpKpi_dfselection_fPt_12.0_24.0.sav] # sel_skim_binmin bins
+    modelsperptbin: # sel_skim_binmin bins
+      - xgboost_classifierLcpKpi_dfselection_fPt_1.0_2.0.sav
+      - xgboost_classifierLcpKpi_dfselection_fPt_2.0_4.0.sav
+      - xgboost_classifierLcpKpi_dfselection_fPt_4.0_6.0.sav
+      - xgboost_classifierLcpKpi_dfselection_fPt_6.0_8.0.sav
+      - xgboost_classifierLcpKpi_dfselection_fPt_8.0_12.0.sav
+      - xgboost_classifierLcpKpi_dfselection_fPt_12.0_24.0.sav
+      - xgboost_classifierLcpKpi_dfselection_fPt_12.0_24.0.sav
     probcutpresel:
-      data: [0.70, 0.70, 0.60, 0.60, 0.40, 0.40, 0.] # sel_skim_binmin bins
-      mc: [0.70, 0.70, 0.60, 0.60, 0.40, 0.40, 0.] # sel_skim_binmin bins
-    probcutoptimal: [0.96, 0.97, 0.90, 0.85, 0.80, 0.60, 0.] # sel_skim_binmin bins
+      data:
+        - 0.7
+        - 0.7
+        - 0.6
+        - 0.6
+        - 0.4
+        - 0.4
+        - 0.0
+      mc:
+        - 0.7
+        - 0.7
+        - 0.6
+        - 0.6
+        - 0.4
+        - 0.4
+        - 0.0
+    probcutoptimal:
+      - 0.96
+      - 0.97
+      - 0.9
+      - 0.85
+      - 0.8
+      - 0.6
+      - 0.0
 
   #region analysis
   analysis:
@@ -336,21 +376,21 @@ LcJet_pp:
       branching_ratio: 6.24e-2 # used
 
       observables:
-        zg:
-          bins_gen_fix: [6, -.1, .5]
-          bins_det_fix: [6, -.1, .5]
-          label: "#it{z}_{g}"
-          label_y: "(1/#it{N}_{jet ch}) d#it{N}/d#it{z}_{g}"
-        nsd:
-          bins_gen_fix: [10, -.5, 9.5]
-          bins_det_fix: [10, -.5, 9.5]
-          label: "#it{n}_{SD}"
-          label_y: "(1/#it{N}_{jet ch}) d#it{N}/d#it{n}_{SD}"
-        rg:
-          bins_gen_fix: [11, -.1, 1.]
-          bins_det_fix: [11, -.1, 1.]
-          label: "#it{R}_{g}"
-          label_y: "(1/#it{N}_{jet ch}) d#it{N}/d#it{R}_{g}"
+        #zg:
+        #  bins_gen_fix: [6, -.1, .5]
+        #  bins_det_fix: [6, -.1, .5]
+        #  label: "#it{z}_{g}"
+        #  label_y: "(1/#it{N}_{jet ch}) d#it{N}/d#it{z}_{g}"
+        #nsd:
+        #  bins_gen_fix: [10, -.5, 9.5]
+        #  bins_det_fix: [10, -.5, 9.5]
+        #  label: "#it{n}_{SD}"
+        #  label_y: "(1/#it{N}_{jet ch}) d#it{N}/d#it{n}_{SD}"
+        #rg:
+        #  bins_gen_fix: [11, -.1, 1.]
+        #  bins_det_fix: [11, -.1, 1.]
+        #  label: "#it{R}_{g}"
+        #  label_y: "(1/#it{N}_{jet ch}) d#it{N}/d#it{R}_{g}"
         zpar:
           # bins_gen_fix: [10, 0., 1.]
           # bins_det_fix: [10, 0., 1.]
@@ -358,33 +398,60 @@ LcJet_pp:
           bins_det_var: [0.4, 0.6, 0.7, 0.8, 0.9, 1.]
           label: "#it{z}_{#parallel}"
           label_y: "(1/#it{N}_{jet ch}) d#it{N}/d#it{z}_{#parallel}"
-        dr:
-          bins_gen_fix: [10, 0., 1.]
-          bins_det_fix: [10, 0., 1.]
-          label: "#Delta#it{r}"
-        lntheta:
-          bins_gen_fix: [10, 0., 5.]
-          bins_det_fix: [10, 0., 5.]
-          label: "#minusln(#it{#theta})"
-          arraycols: [3]
-        lnkt:
-          bins_gen_fix: [10, -8., 2.]
-          bins_det_fix: [10, -8., 2.]
-          label: "ln(#it{k}_{T}/(GeV/#it{c}))"
-          arraycols: [3]
-        lntheta-lnkt:
-          arraycols: [3, 4]
+          #dr:
+          #  bins_gen_fix: [10, 0., 1.]
+          #  bins_det_fix: [10, 0., 1.]
+          #  label: "#Delta#it{r}"
+          #lntheta:
+          #  bins_gen_fix: [10, 0., 5.]
+          #  bins_det_fix: [10, 0., 5.]
+          #  label: "#minusln(#it{#theta})"
+          #  arraycols: [3]
+          #lnkt:
+          #  bins_gen_fix: [10, -8., 2.]
+          #  bins_det_fix: [10, -8., 2.]
+          #  label: "ln(#it{k}_{T}/(GeV/#it{c}))"
+          #  arraycols: [3]
+          #lntheta-lnkt:
+          #  arraycols: [3, 4]
+
+      #n_rebin: [2, 2, 2, 2, 2, 2, 4, 5, 5, 5]
+      n_rebin: 3
+      mass_fit_lim: [1.9, 2.62] # histogram range of the invariant mass distribution [GeV/c^2]
+      bin_width: 0.001 # bin width of the invariant mass histogram
+      pdf_names:
+        pdf_sig: "sig"
+        pdf_bkg: "bkg"
+      param_names:
+        mass: "m"
+        gauss_mean: "mean"
+        gauss_sigma: "sigma_g1"
+        double_gauss_sigma: "wide"
+        fraction_refl: "frac_refl"
 
       mass_roofit:
         - level: mc
           # per_ptjet: true
+          # ptrange: [1., 5.]
+          # range: [2.10, 2.45]
           components:
             sig:
-              fn: "Gaussian::peak(m[1., 5.], mean[2.27,2.29], sigma_g1[.01,.005,.035])"
+              fn: Gaussian::peak(m[1., 5.], mean[2.27,2.29], sigma_g1[.01,.005,.035])
             wide:
               fn: 'Gaussian::wide(m, mean, expr("n*sigma_g1", n[1.,5.], sigma_g1))'
             model:
               fn: "SUM::sig(f_peak[0.,1.]*peak, wide)"
+        # - level: mc
+        #   # per_ptjet: true
+        #   ptrange: [5., 30.]
+        #   range: [2.10, 2.45]
+        #   components:
+        #     sig:
+        #       fn: "Gaussian::peak(m[1., 5.], mean[2.282,2.29], sigma_g1[.01,.008,.030])"
+        #     wide:
+        #       fn: 'Gaussian::wide(m, mean, expr("n*sigma_g1", n[1.,5.], sigma_g1))'
+        #     model:
+        #       fn: "SUM::sig(f_peak[0.,1.]*peak, wide)"
         - ptrange: [1., 5.]
           range: [2.16, 2.40]
           fix_params: ["n", "f_peak"]
@@ -432,13 +499,15 @@ LcJet_pp:
         # par_fix: {1: 2.286}
         par_constrain: {1: [2.28, 2.29], 2: [.005, .03]}
         range: [2.08, 2.48]
-      mass_fit_lim: [1.9, 2.62] # histogram range of the invariant mass distribution [GeV/c^2]
-      bin_width: 0.001 # bin width of the invariant mass histogram
-      n_rebin: 3 # number of mass bins to merge
+
       efficiency:
         index_match: fIndexArrayLCCMCPJETOS_hf
         extra_cols: ["mlPromptScore"]
         correction_method: run3
+
+        #reweight: [[0.86,0.89], [0.89,0.91], [0.90,0.93], [0.92,0.93], [0.93,0.93], [0.94,0.93], [0.95,0.93], [0.95,0.94], [0.95,0.94], [0.95,0.94]] #70-100
+        #reweight: [[1.03,1.05], [1.02,1.04], [1.02,1.04], [1.02,1.04], [1.01,1.03], [1.01,1.03], [1.01,1.03], [1.01,1.03], [1.00,1.03], [1.01,1.02]] #20-70
+        #reweight: [[1.15,1.16], [1.11,1.13], [1.10,1.10], [1.08,1.10], [1.07,1.10], [1.06,1.09], [1.06,1.08], [1.05,1.08], [1.05,1.08], [1.05,1.08]] #0-20
 
       unfolding_iterations: 8 # used, maximum iteration
       unfolding_iterations_sel: 5 # used, selected iteration # systematics
@@ -497,24 +566,24 @@ LcJet_pp:
         <<: *mc_out_default
 
       # simple fitter START
-      sgnfunc: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0] # kGaus=0, k2Gaus=1, k2GausSigmaRatioPar=2 (sel_an_binmin bins)
-      bkgfunc: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0] # kExpo=0, kLin=1, kPol2=2, kNoBk=3, kPow=4, kPowEx=5 (sel_an_binmin bins)
+      sgnfunc: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0] # kGaus=0, k2Gaus=1, k2GausSigmaRatioPar=2 (sel_an_binmin bins)
+      bkgfunc: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0] # kExpo=0, kLin=1, kPol2=2, kNoBk=3, kPow=4, kPowEx=5 (sel_an_binmin bins)
       masspeak: 2.286
-      massmin: [1.66, 1.66, 1.66, 1.66, 1.66, 1.66, 1.66, 1.66, 1.66, 1.66, 1.66] # sel_an_binmin bins, fit region of the invariant mass distribution [GeV/c^2]
-      massmax: [2.06, 2.06, 2.06, 2.06, 2.06, 2.06, 2.06, 2.06, 2.06, 2.06, 2.06] # sel_an_binmin bins, fit region of the invariant mass distribution [GeV/c^2]
-      rebin: [6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6] # sel_an_binmin bins
-      fix_mean: [false, false, false, false, false, false, false, false, false, false, false] # sel_an_binmin bins
+      massmin: [1.66, 1.66, 1.66, 1.66, 1.66, 1.66, 1.66, 1.66, 1.66, 1.66, 1.66, 1.66] # sel_an_binmin bins, fit region of the invariant mass distribution [GeV/c^2]
+      massmax: [2.06, 2.06, 2.06, 2.06, 2.06, 2.06, 2.06, 2.06, 2.06, 2.06, 2.06, 2.06] # sel_an_binmin bins, fit region of the invariant mass distribution [GeV/c^2]
+      rebin: [6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6] # sel_an_binmin bins
+      fix_mean: [false, false, false, false, false, false, false, false, false, false, false, false] # sel_an_binmin bins
       masspeaksec: 2.286
 
       # If SetArraySigma true: sigma_initial is taken from sigmaarray; false: sigma_initial is taken from MC
       # If SetFixGaussianSigma true: sigma fixed to sigma_initial
-      # SetFixGaussianSigma: [false, false, false, false, false, false, false, false, false, false, false] # sel_an_binmin bins
-      SetFixGaussianSigma: [true, true, true, true, true, true, true, true, true, true] # sel_an_binmin bins
-      SetArraySigma: [false, false, false, false, false, false, false, false, false, false, false] # sel_an_binmin bins
-      sigmaarray: [0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01] # initial sigma (sel_an_binmin bins)
+      # SetFixGaussianSigma: [false, false, false, false, false, false, false, false, false, false, false, false] # sel_an_binmin bins
+      SetFixGaussianSigma: [true, true, true, true, true, true, true, true, true, true, true] # sel_an_binmin bins
+      SetArraySigma: [false, false, false, false, false, false, false, false, false, false, false, false] # sel_an_binmin bins
+      sigmaarray: [0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01] # initial sigma (sel_an_binmin bins)
 
-      fix_sigmasec: [true, true, true, true, true, true, true, true, true] # sel_an_binmin bins
-      sigmaarraysec: [0.007497, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01] # sel_an_binmin bins
+      fix_sigmasec: [true, true, true, true, true, true, true, true, true, true] # sel_an_binmin bins
+      sigmaarraysec: [0.007497, 0.007497, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01] # sel_an_binmin bins
       use_reflections: true
       # simple fitter END
 
@@ -547,7 +616,17 @@ LcJet_pp:
 
       # Additional cuts applied before mass histogram is filled
       use_cuts: True
-      cuts: ["mlPromptScore > 0.97", "mlPromptScore > 0.9", "mlPromptScore > 0.9", "mlPromptScore > 0.85", "mlPromptScore > 0.85", "mlPromptScore > 0.8", "mlPromptScore > 0.8", "mlPromptScore > 0.6", "mlPromptScore > 0.6"] # (sel_an_binmin bins) systematics FIXME: Update for new model.
+      cuts: # (sel_an_binmin bins)
+        - mlPromptScore > 0.97
+        - mlPromptScore > 0.9
+        - mlPromptScore > 0.9
+        - mlPromptScore > 0.85
+        - mlPromptScore > 0.85
+        - mlPromptScore > 0.8
+        - mlPromptScore > 0.8
+        - mlPromptScore > 0.6
+        - mlPromptScore > 0.6
+        #mult_cuts: ["fCentFT0M >= 20 and fCentFT0M <= 70", "fCentFT0M >= 20 and fCentFT0M <= 70", "fCentFT0M >= 20 and fCentFT0M <= 70", "fCentFT0M >= 20 and fCentFT0M <= 70", "fCentFT0M >= 20 and fCentFT0M <= 70", "fCentFT0M >= 20 and fCentFT0M <= 70", "fCentFT0M >= 20 and fCentFT0M <= 70", "fCentFT0M >= 20 and fCentFT0M <= 70", "fCentFT0M >= 20 and fCentFT0M <= 70", "fCentFT0M >= 20 and fCentFT0M <= 70"] # (sel_an_binmin bins)
 
   systematics: # used in machine_learning_hep/analysis/systematics.py
     probvariation:

@@ -14,6 +14,7 @@
 Script containing all helper functions
 e.g. processing files, creating objects, calculating physical quantities.
 """
+
 import bz2
 import gzip
 import lzma
@@ -208,6 +209,7 @@ def seldf_singlevar(dataframe, var, minval, maxval):
     Make projection on variable using [X,Y), e.g. pT or multiplicity
     """
     return dataframe.loc[(dataframe[var] >= minval) & (dataframe[var] < maxval)] if var is not None else dataframe
+
 
 def seldf_singlevar_inclusive(dataframe, var, minval, maxval):
     """
@@ -976,13 +978,13 @@ def make_plot(  # pylint: disable=too-many-arguments, too-many-branches, too-man
     if len(list_h) > 0:
         y_min_h, y_max_h = get_y_window_his(list_h, "y" in with_errors, [x_min_plot, x_max_plot])
         if log_y and y_min_h <= 0:
-            y_min_h = min((h.GetMinimum(0) for h in list_h))
+            y_min_h = min(h.GetMinimum(0) for h in list_h)
     # get y range of graphs within [x_min_plot, x_max_plot]
     y_min_g, y_max_g = float("inf"), float("-inf")
     if len(list_g) > 0:
         y_min_g, y_max_g = get_y_window_gr(list_g, "y" in with_errors, [x_min_plot, x_max_plot])
         if log_y and y_min_g <= 0:
-            y_min_g = min((min0_gr(g) for g in list_g))
+            y_min_g = min(min0_gr(g) for g in list_g)
     # get total y range
     y_min = min(y_min_h, y_min_g)
     y_max = max(y_max_h, y_max_g)

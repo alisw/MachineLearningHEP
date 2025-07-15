@@ -23,8 +23,8 @@ https://github.com/AliceO2Group/O2Physics/tree/master/PWGHF/D2H/Macros
 """
 
 import sys
-import numpy as np  # pylint: disable=import-error
 
+import numpy as np  # pylint: disable=import-error
 from ROOT import (  # pylint: disable=import-error,no-name-in-module
     TH1,
     TH1F,
@@ -38,32 +38,35 @@ from ROOT import (  # pylint: disable=import-error,no-name-in-module
     kFullCircle,
 )
 
-from machine_learning_hep.hf_analysis_utils import ( # pylint: disable=import-error
+from machine_learning_hep.hf_analysis_utils import (  # pylint: disable=import-error
     compute_crosssection,
+    compute_fraction_dd,
     compute_fraction_fc,
     compute_fraction_nb,
     compute_fraction_dd,
     get_hist_binlimits,
 )
 
-def hf_pt_spectrum(channel, # pylint: disable=too-many-locals, too-many-arguments, too-many-statements, too-many-branches
-                   b_ratio,
-                   input_fonll_or_fdd_pred,
-                   frac_method,
-                   prompt_frac,
-                   eff_filename,
-                   effprompt_histoname,
-                   effnonprompt_histoname,
-                   yield_filename,
-                   yield_histoname,
-                   norm,
-                   sigmamb,
-                   output_prompt,
-                   output_file,
-                   crosssec_prompt=True):
 
+def hf_pt_spectrum(
+    channel,  # pylint: disable=too-many-locals, too-many-arguments, too-many-statements, too-many-branches
+    b_ratio,
+    input_fonll_or_fdd_pred,
+    frac_method,
+    prompt_frac,
+    eff_filename,
+    effprompt_histoname,
+    effnonprompt_histoname,
+    yield_filename,
+    yield_histoname,
+    norm,
+    sigmamb,
+    crosssec_prompt,
+    output_prompt,
+    output_file,
+):
     # final plots style settings
-    style_hist = TStyle('style_hist','Histo graphics style')
+    style_hist = TStyle("style_hist", "Histo graphics style")
     style_hist.SetOptStat("n")
     style_hist.SetMarkerColor(kAzure + 4)
     style_hist.SetMarkerStyle(kFullCircle)
@@ -90,10 +93,7 @@ def hf_pt_spectrum(channel, # pylint: disable=too-many-locals, too-many-argument
         sys.exit(2)
 
     if frac_method not in ["Nb", "fc", "ext", "dd", "dd_N"]:
-        print(
-            f"\033[91mERROR: method to subtract nonprompt"
-            f" {frac_method} not supported. Exit\033[0m"
-        )
+        print(f"\033[91mERROR: method to subtract nonprompt {frac_method} not supported. Exit\033[0m")
         sys.exit(5)
 
     fonll_hist_name = {
@@ -107,33 +107,28 @@ def hf_pt_spectrum(channel, # pylint: disable=too-many-locals, too-many-argument
 
     histos = {}
 
+    infile_pred = TFile.Open(input_fonll_or_fdd_pred)
     with TFile.Open(input_fonll_or_fdd_pred) as infile_pred:
         if frac_method in ("dd", "dd_N"):
-            histos["corryields_fdd"] = [infile_pred.Get("hCorrYieldsPrompt"),
-                                        infile_pred.Get("hCorrYieldsNonPrompt")]
-            histos["covariances"] = [infile_pred.Get("hCovPromptPrompt"),
-                                     infile_pred.Get("hCovNonPromptNonPrompt"),
-                                     infile_pred.Get("hCovPromptNonPrompt")]
+            histos["corryields_fdd"] = [infile_pred.Get("hCorrYieldsPrompt"), infile_pred.Get("hCorrYieldsNonPrompt")]
+            histos["covariances"] = [
+                infile_pred.Get("hCovPromptPrompt"),
+                infile_pred.Get("hCovNonPromptNonPrompt"),
+                infile_pred.Get("hCovPromptNonPrompt"),
+            ]
         else:
             histos["FONLL"] = {"prompt": {}, "nonprompt": {}}
             for pred in ("central", "min", "max"):
-                histos["FONLL"]["nonprompt"][pred] = infile_pred.Get(
-                    f"{fonll_hist_name[channel]}fromBpred_{pred}_corr"
-                )
+                histos["FONLL"]["nonprompt"][pred] = infile_pred.Get(f"{fonll_hist_name[channel]}fromBpred_{pred}_corr")
                 histos["FONLL"]["nonprompt"][pred].SetDirectory(0)
                 if frac_method == "fc":
-                    histos["FONLL"]["prompt"][pred] = infile_pred.Get(
-                        f"{fonll_hist_name[channel]}pred_{pred}"
-                    )
+                    histos["FONLL"]["prompt"][pred] = infile_pred.Get(f"{fonll_hist_name[channel]}pred_{pred}")
                     histos["FONLL"]["prompt"][pred].SetDirectory(0)
 
     infile_rawy = TFile.Open(yield_filename)
     histos["rawyields"] = infile_rawy.Get(yield_histoname)
     if not histos["rawyields"]:
-        print(
-            f"\033[91mERROR: raw-yield histo {yield_histoname}"
-            f" not found in {yield_filename}. Exit\033[0m"
-        )
+        print(f"\033[91mERROR: raw-yield histo {yield_histoname} not found in {yield_filename}. Exit\033[0m")
         sys.exit(6)
     histos["rawyields"].SetDirectory(0)
 
@@ -142,17 +137,13 @@ def hf_pt_spectrum(channel, # pylint: disable=too-many-locals, too-many-argument
     infile_eff = TFile.Open(eff_filename)
     histos["acceffp"] = infile_eff.Get(effprompt_histoname)
     if not histos["acceffp"]:
-        print(
-            f"\033[91mERROR: prompt (acc x eff) histo {effprompt_histoname}"
-            f" not found in {eff_filename}. Exit\033[0m"
-        )
+        print(f"\033[91mERROR: prompt (acc x eff) histo {effprompt_histoname} not found in {eff_filename}. Exit\033[0m")
         sys.exit(8)
     histos["acceffp"].SetDirectory(0)
     histos["acceffnp"] = infile_eff.Get(effnonprompt_histoname)
     if not histos["acceffnp"]:
         print(
-            f"\033[91mERROR: nonprompt (acc x eff) histo {effprompt_histoname}"
-            f"not found in {eff_filename}. Exit\033[0m"
+            f"\033[91mERROR: nonprompt (acc x eff) histo {effprompt_histoname}not found in {eff_filename}. Exit\033[0m"
         )
         sys.exit(9)
     histos["acceffnp"].SetDirectory(0)
@@ -162,10 +153,7 @@ def hf_pt_spectrum(channel, # pylint: disable=too-many-locals, too-many-argument
     ptlims = {}
     for histo in ["rawyields", "acceffp", "acceffnp"]:
         ptlims[histo] = get_hist_binlimits(histos[histo])
-        if (
-            histo != "rawyields"
-            and not np.equal(ptlims[histo], ptlims["rawyields"]).all()
-        ):
+        if histo != "rawyields" and not np.equal(ptlims[histo], ptlims["rawyields"]).all():
             print("\033[91mERROR: histo binning not consistent. Exit\033[0m")
             sys.exit(10)
 
@@ -173,7 +161,7 @@ def hf_pt_spectrum(channel, # pylint: disable=too-many-locals, too-many-argument
     axistit_cross = "d#sigma/d#it{p}_{T} (pb GeV^{-1} #it{c})"
     axistit_cross_times_br = "d#sigma/d#it{p}_{T} #times BR (pb GeV^{-1} #it{c})"
     axistit_pt = "#it{p}_{T} (GeV/#it{c})"
-    axistit_fprompt = "#if{f}_{prompt}"
+    axistit_fprompt = "#it{f}_{prompt}"
     gfraction = TGraphAsymmErrors()
     gfraction.SetNameTitle("gfraction", f";{axistit_pt};{axistit_fprompt}")
 
@@ -189,17 +177,10 @@ def hf_pt_spectrum(channel, # pylint: disable=too-many-locals, too-many-argument
         len(ptlims["rawyields"]) - 1,
         ptlims["rawyields"],
     )
-    hnorm = TH1F(
-        "hnorm",
-        "hnorm",
-        1,
-        0,
-        1
-    )
+    hnorm = TH1F("hnorm", "hnorm", 1, 0, 1)
 
-    for i_pt, (ptmin, ptmax) in enumerate(
-        zip(ptlims["rawyields"][:-1], ptlims["rawyields"][1:])
-    ):
+    crosssec_nonprompt_fonll = []
+    for i_pt, (ptmin, ptmax) in enumerate(zip(ptlims["rawyields"][:-1], ptlims["rawyields"][1:], strict=False)):
         pt_cent = (ptmax + ptmin) / 2
         pt_delta = ptmax - ptmin
         rawy = histos["rawyields"].GetBinContent(i_pt + 1)
@@ -207,22 +188,15 @@ def hf_pt_spectrum(channel, # pylint: disable=too-many-locals, too-many-argument
         eff_times_acc_prompt = histos["acceffp"].GetBinContent(i_pt + 1)
         eff_times_acc_nonprompt = histos["acceffnp"].GetBinContent(i_pt + 1)
         if frac_method not in ("dd", "dd_N"):
-            ptmin_fonll = (
-                histos["FONLL"]["nonprompt"]["central"].GetXaxis().FindBin(ptmin * 1.0001)
-            )
-            ptmax_fonll = (
-                histos["FONLL"]["nonprompt"]["central"].GetXaxis().FindBin(ptmax * 0.9999)
-            )
+            ptmin_fonll = histos["FONLL"]["nonprompt"]["central"].GetXaxis().FindBin(ptmin * 1.0001)
+            ptmax_fonll = histos["FONLL"]["nonprompt"]["central"].GetXaxis().FindBin(ptmax * 0.9999)
             crosssec_nonprompt_fonll = [
-                histos["FONLL"]["nonprompt"][pred].Integral(
-                    ptmin_fonll, ptmax_fonll, "width"
-                )
-                / (ptmax - ptmin)
+                histos["FONLL"]["nonprompt"][pred].Integral(ptmin_fonll, ptmax_fonll, "width") / (ptmax - ptmin)
                 for pred in histos["FONLL"]["nonprompt"]
             ]
 
         # compute prompt fraction
-        frac = [0,0,0]
+        frac = [0, 0, 0]
         if frac_method == "Nb":
             frac = compute_fraction_nb(  # BR already included in FONLL prediction
                 rawy,
@@ -237,10 +211,7 @@ def hf_pt_spectrum(channel, # pylint: disable=too-many-locals, too-many-argument
             )
         elif frac_method == "fc":
             crosssec_prompt_fonll = [
-                histos["FONLL"]["prompt"][pred].Integral(
-                    ptmin_fonll, ptmax_fonll, "width"
-                )
-                / (ptmax - ptmin)
+                histos["FONLL"]["prompt"][pred].Integral(ptmin_fonll, ptmax_fonll, "width") / (ptmax - ptmin)
                 for pred in histos["FONLL"]["prompt"]
             ]
             frac, _ = compute_fraction_fc(
@@ -255,28 +226,26 @@ def hf_pt_spectrum(channel, # pylint: disable=too-many-locals, too-many-argument
             eff_times_acc_own = eff_times_acc_prompt if crosssec_prompt else eff_times_acc_nonprompt
             eff_times_acc_other = eff_times_acc_nonprompt if crosssec_prompt else eff_times_acc_prompt
             pnp_ind = 0 if crosssec_prompt else 1
-            print(f'bin {i_pt + 1} corr yields prompt {histos["corryields_fdd"][0].GetBinContent(i_pt + 1)} ' \
-                  f'non-prompt {histos["corryields_fdd"][1].GetBinContent(i_pt + 1)} ' \
-                  f'eff prompt {eff_times_acc_prompt} non-prompt {eff_times_acc_nonprompt}')
             frac = compute_fraction_dd(
-                    eff_times_acc_own,
-                    eff_times_acc_other,
-                    histos["corryields_fdd"][pnp_ind].GetBinContent(i_pt + 1),
-                    histos["corryields_fdd"][1 - pnp_ind].GetBinContent(i_pt + 1),
-                    histos["covariances"][pnp_ind].GetBinContent(i_pt + 1),
-                    histos["covariances"][1 - pnp_ind].GetBinContent(i_pt + 1),
-                    histos["covariances"][2].GetBinContent(i_pt + 1))
+                eff_times_acc_own,
+                eff_times_acc_other,
+                histos["corryields_fdd"][pnp_ind].GetBinContent(i_pt + 1),
+                histos["corryields_fdd"][1 - pnp_ind].GetBinContent(i_pt + 1),
+                histos["covariances"][pnp_ind].GetBinContent(i_pt + 1),
+                histos["covariances"][1 - pnp_ind].GetBinContent(i_pt + 1),
+                histos["covariances"][2].GetBinContent(i_pt + 1),
+            )
         elif frac_method == "dd_N":
             pnp_ind = 0 if crosssec_prompt else 1
             frac = [histos["corryields_fdd"][pnp_ind].GetBinContent(i_pt + 1)] * 3
 
-
         # compute cross section times BR
+        eff_times_acc = eff_times_acc_prompt if crosssec_prompt else eff_times_acc_nonprompt
         crosssec, crosssec_unc = compute_crosssection(
             rawy,
             rawy_unc,
             frac[0],
-            eff_times_acc_prompt,
+            eff_times_acc,
             ptmax - ptmin,
             1.0,
             sigmamb,
@@ -293,13 +262,10 @@ def hf_pt_spectrum(channel, # pylint: disable=too-many-locals, too-many-argument
         if frac_method != "ext":
             output_prompt.append(frac[0])
             gfraction.SetPoint(i_pt, pt_cent, frac[0])
-            print(f"Errors in gfraction: {frac[0] - frac[1]}, {frac[2] - frac[0]}")
-            gfraction.SetPointError(
-                i_pt, pt_delta / 2, pt_delta / 2, frac[0] - frac[1], frac[2] - frac[0]
-            )
+            gfraction.SetPointError(i_pt, pt_delta / 2, pt_delta / 2, frac[0] - frac[1], frac[2] - frac[0])
 
     c = TCanvas("c", "c", 600, 800)
-    c.Divide (1, 2)
+    c.Divide(1, 2)
     c.cd(1)
     gPad.SetLogy(True)
     hptspectrum.Draw()
@@ -320,7 +286,7 @@ def hf_pt_spectrum(channel, # pylint: disable=too-many-locals, too-many-argument
     for _, value in histos.items():
         if isinstance(value, TH1):
             value.Write()
-        #else:
+        # else:
         #    for flav in histos[hist]:
         #        for pred in histos[hist][flav]:
         #            histos[hist][flav][pred].Write()

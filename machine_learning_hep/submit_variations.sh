@@ -2,7 +2,7 @@
 
 [ "$4" ] || { echo "Usage: $0 <default database> <variation database> <analysis>"; exit 0; }
 
-ErrExit() { echo "Error"; exit 1; }
+ErrExit() { echo "Error running variations"; exit 1; }
 
 # This directory
 DIR_THIS="$(dirname "$(realpath "$0")")"
@@ -33,7 +33,7 @@ done
 if ((RUN)); then
   echo -e "\nRunning variations"
   for PROC in 0 1; do
-    ${CMD_VAR} -a "${ANALYSIS}" -r "${CONFIG_FILE}" -s "$SCRIPT" -p $PROC && parallel --will-cite --progress -j ${NJOBS[$PROC]} < "$SCRIPT"
+    ${CMD_VAR} -a "${ANALYSIS}" -r "${CONFIG_FILE}" -s "$SCRIPT" -p $PROC && parallel --will-cite --progress -j "${NJOBS[$PROC]}" < "$SCRIPT"
   done || ErrExit
 else
   echo -e "\nCleaning"

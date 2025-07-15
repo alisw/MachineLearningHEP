@@ -18,20 +18,23 @@ Methods to: read and write a ROOT TNtuple
 
 import array
 import ast
+
 import numpy as np
-from ROOT import TNtuple, TFile # pylint: disable=import-error,no-name-in-module
+from ROOT import TFile, TNtuple  # pylint: disable=import-error,no-name-in-module
+
 from machine_learning_hep.logger import get_logger
+
 
 def read_ntuple(ntuple, variables):
     """
-      Return a numpy array with the values from TNtuple.
-        ntuple : input TNtuple
-        variables : list of ntuple variables to read
+    Return a numpy array with the values from TNtuple.
+      ntuple : input TNtuple
+      variables : list of ntuple variables to read
     """
     logger = get_logger()
     code_list = []
     for v in variables:
-        code_list += [compile("i.%s" % v, '<string>', 'eval')]
+        code_list += [compile("i.%s" % v, "<string>", "eval")]
     nentries = ntuple.GetEntries()
     nvars = len(variables)
     myarray = np.zeros((nentries, nvars))
@@ -45,18 +48,18 @@ def read_ntuple(ntuple, variables):
 
 def read_ntuple_ml(ntuple, variablesfeatures, variablesothers, variabley):
     """
-      Return a numpy array with the values from TNtuple.
-        ntuple : input TNtuple
-        variables : list of ntuple variables to read
+    Return a numpy array with the values from TNtuple.
+      ntuple : input TNtuple
+      variables : list of ntuple variables to read
     """
     logger = get_logger()
     code_listfeatures = []
     code_listothers = []
     for v in variablesfeatures:
-        code_listfeatures += [compile("i.%s" % v, '<string>', 'eval')]
+        code_listfeatures += [compile("i.%s" % v, "<string>", "eval")]
     for v in variablesothers:
-        code_listothers += [compile("i.%s" % v, '<string>', 'eval')]
-    codevariabley = compile("i.%s" % variabley, '<string>', 'eval')
+        code_listothers += [compile("i.%s" % v, "<string>", "eval")]
+    codevariabley = compile("i.%s" % variabley, "<string>", "eval")
     nentries = ntuple.GetEntries()
     nvars = len(variablesfeatures)
     nvarsothers = len(variablesothers)
@@ -76,17 +79,17 @@ def read_ntuple_ml(ntuple, variablesfeatures, variablesothers, variabley):
 
 def fill_ntuple(tupname, data, names):
     """
-      Create and fill ROOT NTuple with the data sample.
-        tupname : name of the NTuple
-        data : data sample
-        names : names of the NTuple variables
+    Create and fill ROOT NTuple with the data sample.
+      tupname : name of the NTuple
+      data : data sample
+      names : names of the NTuple variables
     """
     variables = ""
     for n in names:
         variables += "%s:" % n
     variables = variables[:-1]
-    values = len(names)*[0.]
-    avalues = array.array('f', values)
+    values = len(names) * [0.0]
+    avalues = array.array("f", values)
     nt = TNtuple(tupname, "", variables)
     for d in data:
         for i in range(len(names)):
