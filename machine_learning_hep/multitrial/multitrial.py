@@ -51,8 +51,8 @@ def get_yields(cfg):
             trial_name = dirname.replace(cfg["dir_pattern"], "")
             for ind, (pt_bin_min, pt_bin_max) in enumerate(zip(cfg["pt_bins_min"],
                                                                cfg["pt_bins_max"])):
-                if eval(cfg["selection"])(hist_sel.GetBinContent(ind + 1)) \ # pylint: disable=eval-used
-                        and hist.GetBinContent(ind + 1) > 1.0 :
+                if eval(cfg["selection"])(hist_sel.GetBinContent(ind + 1)) \
+                        and hist.GetBinContent(ind + 1) > 1.0 : # pylint: disable=eval-used
                     yields[f"{pt_bin_min}_{pt_bin_max}"].append(hist.GetBinContent(ind + 1))
                     yields_err[f"{pt_bin_min}_{pt_bin_max}"].append(hist.GetBinError(ind + 1))
                     trials[f"{pt_bin_min}_{pt_bin_max}"].append(trial_name)
