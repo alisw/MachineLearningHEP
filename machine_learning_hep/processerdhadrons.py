@@ -138,8 +138,8 @@ class ProcesserDhadrons(Processer):  # pylint: disable=too-many-instance-attribu
             if self.s_evtsel is not None:
                 df = df.query(self.s_evtsel)
 
-            if self.doml is True:
-                df = df.query(self.l_selml[bin_id])
+            if self.doml:
+                df = df.query(self.l_selml[ipt])
             df = seldf_singlevar(df, self.v_var_binning, self.lpt_finbinmin[ipt], self.lpt_finbinmax[ipt])
 
             if self.do_custom_analysis_cuts:

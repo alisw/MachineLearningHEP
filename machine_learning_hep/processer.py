@@ -42,6 +42,7 @@ from .utilities import (
     mergerootfiles,
     openfile,
     read_df,
+    reweight,
     seldf_singlevar,
     write_df,
 )
@@ -149,6 +150,7 @@ class Processer:  # pylint: disable=too-many-instance-attributes
         self.n_fileeff = datap["files_names"]["efffilename"]
         self.n_fileresp = datap["files_names"]["respfilename"]
         self.n_mcreweights = datap["files_names"]["namefile_mcweights"]
+        self.n_weights = datap["files_names"]["histoweights"]
 
         # selections
         self.s_reco_skim = datap["sel_reco_skim"]
@@ -172,6 +174,8 @@ class Processer:  # pylint: disable=too-many-instance-attributes
         self.v_ismcbkg = datap["bitmap_sel"]["var_ismcbkg"]  # used in hadrons
         self.v_ismcrefl = datap["bitmap_sel"]["var_ismcrefl"]  # used in hadrons
         self.v_var_binning = datap["var_binning"]
+        self.do_ptshape = datap.get("do_ptshape", False)
+        self.v_var_binning_ptshape = datap.get("var_binning_ptshape", None)
         self.v_invmass = datap["variables"].get("var_inv_mass", "inv_mass")
         # self.v_rapy = datap["variables"].get("var_y", "y_cand")
 
@@ -298,7 +302,7 @@ class Processer:  # pylint: disable=too-many-instance-attributes
         )
 
         self.lpt_recodec = None
-        if self.doml is True:
+        if self.doml:
             if self.mltype == "MultiClassification":
                 self.lpt_recodec = [
                     self.n_reco.replace(
