@@ -2,7 +2,7 @@
 """
 file: run-mlhep-fitter-multitrial.py
 brief: Prepare MLHEP database files for different fit configurations for multitrial systematics.
-usage: python3 run-mlhep-fitter-multitrial.py
+usage: python run-mlhep-fitter-multitrial.py database_lc data/data_run3 trial_configs_dir mlhep_results_dir_pattern
 author: Maja Karwowska <mkarwowska@cern.ch>, Warsaw University of Technology
 """
 
@@ -35,6 +35,8 @@ BASE_TRIALS = (
     ["poly3"],
     ["narrow", "narrow2", "wide", "wide2"]
 )
+
+DIR_PATH = "/data8/majak/MLHEP"
 
 def generate_trials(trial_classes):
     combinations = [""]
@@ -134,7 +136,7 @@ def main(db, db_dir, out_db_dir, resdir_pattern):
         data_cfg = [fit_params for fit_params in fit_cfg if not "level" in fit_params]
 
         resdir = f"{resdir_pattern}{comb}"
-        respath = f"/data8/majak/MLHEP/{resdir}/"
+        respath = f"{DIR_PATH}/{resdir}/"
         ana_cfg["data"]["prefix_dir_res"] = respath
         ana_cfg["mc"]["prefix_dir_res"] = respath
 

@@ -68,7 +68,7 @@ def get_yields(cfg):
 def prepare_figure(cfg, y_label, ticks):
     fig = plt.figure(figsize=(20, 15))
     ax = plt.subplot(1, 1, 1)
-    ax.set_xlabel(cfg["x_axis"], fontsize=20)
+    ax.set_xlabel("Trial #", fontsize=20)
     ax.set_ylabel(y_label, fontsize=20)
     ax.tick_params(which="both", width=2.5, direction="in")
     ax.tick_params(which="major", labelsize=20, length=15)
@@ -98,7 +98,7 @@ def plot_trial_line(ax, central_trial_ind):
 
 def plot_yields_trials(yields, yields_err, trials, cfg, pt_string, plot_pt_string,
                        central_trial_ind, central_yield):
-    fig, ax = prepare_figure(cfg, cfg["y_axis"], 100)
+    fig, ax = prepare_figure(cfg, "Raw yield", 100)
     x_axis = range(len(trials))
     ax.errorbar(x_axis, yields, yerr=yields_err,
                 fmt="o", c="b", elinewidth=2.5, linewidth=4.0)
