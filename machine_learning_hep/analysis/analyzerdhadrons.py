@@ -495,7 +495,6 @@ class AnalyzerDhadrons(Analyzer):  # pylint: disable=invalid-name
             self.logger.fatal("Yield file %s could not be found", yield_filename)
 
         fileouteff = f"{self.d_resultsallpmc}/{self.efficiency_filename}{self.case}{self.typean}.root"
-        fileouteff = "/data8/majak/crosssec/merged_eff_fdd_approvals_fd_0.00_0.00_0.00_0.00_0.00_0.00_0.00_0.00_0.00.root"
         if not os.path.exists(fileouteff):
             self.logger.fatal("Efficiency file %s could not be found", fileouteff)
 
@@ -503,7 +502,7 @@ class AnalyzerDhadrons(Analyzer):  # pylint: disable=invalid-name
 
         namehistoeffprompt = "eff"
         namehistoefffeed = "eff_fd"
-        nameyield = "hRawYields"
+        nameyield = "hyields0"
 
         histonorm = TH1F("histonorm", "histonorm", 1, 0, 1)
 

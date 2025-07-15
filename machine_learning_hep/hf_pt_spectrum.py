@@ -43,7 +43,6 @@ from machine_learning_hep.hf_analysis_utils import (  # pylint: disable=import-e
     compute_fraction_dd,
     compute_fraction_fc,
     compute_fraction_nb,
-    compute_fraction_dd,
     get_hist_binlimits,
 )
 
