@@ -1,0 +1,25 @@
+{
+  "inputdir": "/data8/majak/systematics/220724/run2-run3d0",
+  "histoname": "hCorrFracNonPrompt",
+  "default": "Run 2 #Lambda_{c}^{#plus} #rightarrow pK_{S}^{0}",
+  "hists": {
+    "Run 2 #Lambda_{c}^{#plus} #rightarrow pK_{S}^{0}": {
+      "file": [
+        "CutVarLc2pK0s_pp13TeV.root"
+      ],
+      "systematics": [
+        [0.04, 0.09, 0.09, 0.04, 0.03, 0.016, 0.05],
+        [0.04, 0.09, 0.05, 0.04, 0.01, 0.016, 0.05],
+        [0.06, 0.09, 0.08, 0.04, 0.01, 0.016, 0.05],
+        [0.06, 0.09, 0.08, 0.04, 0.01, 0.016, 0.05]
+      ]
+    }
+  },
+  "bin_min": [1,2,3,4,5,6,8,12],
+  "bin_max": [2,3,4,5,6,8,12,24],
+  "y_axis": "Non-prompt #Lambda_{c} fraction",
+  "output": {
+    "outdir": "/data8/majak/systematics/220724/run2-run3d0",
+    "file": "NP_Frac_pp13TeV_run2_only"
+  }
+}

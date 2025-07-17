@@ -1,0 +1,56 @@
+{
+  "inputdir": "/data8/majak/systematics/230824/run3-run2",
+  "histoname": "hCorrFracNonPrompt",
+  "default": "#Lambda_{c}^{#plus}#rightarrowpK^{#minus}#pi^{#plus}, pp, #sqrt{#it{s}} = 13.6 TeV",
+  "hists": {
+    "#Lambda_{c}^{#plus}#rightarrowpK^{#minus}#pi^{#plus}, pK_{S}^{0}, pp, #sqrt{#it{s}} = 13 TeV": {
+      "file": [
+        "CutVarLcMerged_pp13TeV_0-25.root"
+      ],
+      "systematics": [
+        [0.0],
+        [0.08],
+        [0.08],
+        [0.08],
+        [0.08],
+        [0.13],
+        [0.0]
+      ]
+    },
+    "#Lambda_{c}^{#plus}#rightarrowpK^{#minus}#pi^{#plus}, pp, #sqrt{#it{s}} = 13.6 TeV": {
+      "file": [
+        "CutVarLc_pp13TeV_LHC24d3_default_0-25.root",
+        "CutVarLc_pp13TeV_LHC24d3_default_0-25.root",
+        "CutVarLc_pp13TeV_LHC24d3_default_0-25.root",
+        "CutVarLc_pp13TeV_LHC24d3_default_0-25.root",
+        "CutVarLc_pp13TeV_LHC24d3_default_0-25.root",
+        "CutVarLc_pp13TeV_LHC24d3_default_0-25.root",
+        "CutVarLc_pp13TeV_LHC24d3_default_0-25.root",
+        "CutVarLc_pp13TeV_LHC24d3_default_0-25.root",
+        "CutVarLc_pp13TeV_LHC24d3_default_1-24_0-25.root",
+        "CutVarLc_pp13TeV_LHC24d3_default_1-24_0-25.root"
+      ],
+      "systematics": [
+        [0.0],
+        [0.17],
+        [0.16],
+        [0.16],
+        [0.16],
+        [0.16],
+        [0.16],
+        [0.18],
+        [0.20],
+        [0.24],
+        [0.0]
+      ]
+    }
+  },
+  "bin_min": [1,2,3,4,5,6,8,12,16],
+  "bin_max": [2,3,4,5,6,8,12,16,24],
+  "y_axis": "#it{f}_{non-prompt}",
+  "alice_text": "#Lambda_{c}^{#plus} and charge conj., |#it{y}| < 0.5",
+  "output": {
+    "outdir": "/data8/majak/systematics/230824/run3-run2",
+    "file": "NP_Frac_pp13TeV_run3_run2_1-24"
+  }
+}

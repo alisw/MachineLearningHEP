@@ -1,0 +1,168 @@
+{
+  "inputdir": "/data8/majak/mult-ratios",
+  "histoname": "hptspectrum",
+  "default": "MB",
+  "model_default": "Monash MB",
+  "hists": {
+    "MB": {
+      "file": [
+        "spectrum_MB_scaled.root"
+      ],
+      "systematics": [
+        [0.07],
+        [0.06],
+        [0.06],
+        [0.05],
+        [0.05],
+        [0.05],
+        [0.05],
+        [0.06],
+        [0.12],
+        [0.20]
+      ]
+    },
+    "4.34": {
+      "file": [
+        "spectrum_2_scaled.root"
+      ],
+      "systematics": [
+        [0.10],
+        [0.05],
+        [0.05],
+        [0.05],
+        [0.06],
+        [0.07],
+        [0.10],
+        [0.10],
+        [0.16],
+        [0.20]
+      ]
+    },
+    "5.58": {
+      "file": [
+        "spectrum_3_scaled.root"
+      ],
+      "systematics": [
+        [0.09],
+        [0.05],
+        [0.05],
+        [0.05],
+        [0.05],
+        [0.06],
+        [0.07],
+        [0.07],
+        [0.11],
+        [0.20]
+      ]
+    },
+    "7.93": {
+      "file": [
+        "spectrum_4_scaled.root"
+      ],
+      "systematics": [
+        [0.10],
+        [0.05],
+        [0.05],
+        [0.05],
+        [0.05],
+        [0.05],
+        [0.06],
+        [0.10],
+        [0.10],
+        [0.20]
+      ]
+    },
+    "11.42": {
+      "file": [
+        "spectrum_5_scaled.root"
+      ],
+      "systematics": [
+        [0.10],
+        [0.06],
+        [0.06],
+        [0.06],
+        [0.06],
+        [0.06],
+        [0.06],
+        [0.09],
+        [0.10],
+        [0.12]
+      ]
+    },
+    "15.94": {
+      "file": [
+        "spectrum_6_scaled.root"
+      ],
+      "systematics": [
+        [0.15],
+        [0.10],
+        [0.06],
+        [0.06],
+        [0.06],
+        [0.06],
+        [0.06],
+        [0.09],
+        [0.10],
+        [0.12]
+      ]
+    },
+    "20.07": {
+      "file": [
+        "spectrum_7_scaled.root"
+      ],
+      "systematics": [
+        [0.22],
+        [0.12],
+        [0.11],
+        [0.06],
+        [0.06],
+        [0.10],
+        [0.10],
+        [0.10],
+        [0.14],
+        [0.20]
+      ]
+    }
+  },
+  "models": {
+    "Monash MB": {
+      "file": "new_MBratio_Monash.root",
+      "histoname": "hpythia_prompt"
+    },
+    "Monash 7085": {
+      "file": "new_MBratio_Monash.root",
+      "histoname": "hpythia_prompt_7085"
+    },
+    "Monash 5070": {
+      "file": "new_MBratio_Monash.root",
+      "histoname": "hpythia_prompt_5070"
+    },
+    "Monash 3050": {
+      "file": "new_MBratio_Monash.root",
+      "histoname": "hpythia_prompt_3050"
+    },
+    "Monash 1030": {
+      "file": "new_MBratio_Monash.root",
+      "histoname": "hpythia_prompt_1030"
+    },
+    "Monash 110": {
+      "file": "new_MBratio_Monash.root",
+      "histoname": "hpythia_prompt_110"
+    },
+    "Monash 0-1": {
+      "file": "new_MBratio_Monash.root",
+      "histoname": "hpythia_prompt_01"
+    }
+  },
+  "y_axis": "d^{2}#it{N}/(d#it{y}d#it{p}_{T})#left|_{mult.} / d^{2}#it{N}/(d#it{y}d#it{p}_{T})#right|_{INEL > 0}",
+  "alice_text": "Prompt#kern[-0.3]{ #Lambda_{c}^{#plus}}",
+  "legend": [0.50, 0.65, 0.90, 0.93],
+  "legend_models": [0.50, 0.65, 0.90, 0.93],
+  "legend_ratio": [0.60, 0.63, 0.90, 0.88],
+  "legend_ratio_models": [0.18, 0.18, 0.40, 0.23],
+  "log_scale": true,
+  "output": {
+    "outdir": "/data8/majak/mult-ratios",
+    "file": "mult_ratios_review"
+  }
+}

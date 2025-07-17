@@ -40,7 +40,6 @@ machine_learning_hep/LckINT7HighMultwithJets
 dataframes_*
 plots_*
 output_*
-*.json
 *.h5
 *.png
 *.log

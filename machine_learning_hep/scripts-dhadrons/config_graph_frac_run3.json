@@ -1,0 +1,29 @@
+{
+  "inputdir": "/data8/majak/crosssec/202502/",
+  "histoname": "gfraction",
+  "default": "#Lambda_{c}^{#plus} #rightarrow pK^{#minus}#pi^{#plus}, pp, #sqrt{#it{s}} = 13.6 TeV",
+  "hists": {
+    "#Lambda_{c}^{#plus} #rightarrow pK^{#minus}#pi^{#plus}, pp, #sqrt{#it{s}} = 13.6 TeV": {
+      "file": [
+        "finalcrossLcpKpiRun3analysis_dd.root"
+      ]
+    },
+    "#Lambda_{c}^{#plus} #rightarrow pK^{#minus}#pi^{#plus}, pp, #sqrt{#it{s}} = 13.6 TeV, wide span": {
+      "file": [
+        "finalcrossLcpKpiRun3analysis_dd_wide.root"
+      ]
+    },
+    "#Lambda_{c}^{#plus} #rightarrow pK^{#minus}#pi^{#plus}, pp, #sqrt{#it{s}} = 13.6 TeV, Nb method": {
+      "file": [
+        "finalcrossLcpKpiRun3analysis_roofit.root"
+      ]
+    }
+  },
+  "y_axis": "#Lambda_{c} prompt fraction",
+  "legend": [0.25, 0.18, 0.70, 0.38],
+  "legend_ratio": [0.40, 0.10, 0.90, 0.35],
+  "output": {
+    "outdir": "/data8/majak/crosssec/202502/",
+    "file": "graph_frac_Lc_run3_Nb"
+  }
+}

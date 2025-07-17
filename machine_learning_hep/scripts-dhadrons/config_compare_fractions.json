@@ -1,0 +1,85 @@
+{
+  "inputdir": "/data8/majak/systematics/230824/fitting",
+  "histoname": "hCorrFracNonPrompt",
+  "default": "Default",
+  "hists": {
+    "Poly3 bkg": {
+      "file": [
+        "CutVarLc_pp13TeV_LHC24d3_poly3_1-2_12.root",
+        "CutVarLc_pp13TeV_LHC24d3_poly3_12.root",
+        "CutVarLc_pp13TeV_LHC24d3_poly3_12.root",
+        "CutVarLc_pp13TeV_LHC24d3_poly3_4-5_12.root",
+        "CutVarLc_pp13TeV_LHC24d3_poly3_5-6_12.root",
+        "CutVarLc_pp13TeV_LHC24d3_poly3_6-8_12.root",
+        "CutVarLc_pp13TeV_LHC24d3_poly3_8-12_12.root"
+      ]
+    },
+    "Double gauss signal": {
+      "file": [
+        "CutVarLc_pp13TeV_LHC24d3_double_gauss_1-2_12.root",
+        "CutVarLc_pp13TeV_LHC24d3_double_gauss_2-3_12.root",
+        "CutVarLc_pp13TeV_LHC24d3_double_gauss_12.root",
+        "CutVarLc_pp13TeV_LHC24d3_double_gauss_4-5_12.root",
+        "CutVarLc_pp13TeV_LHC24d3_double_gauss_5-6_12.root",
+        "CutVarLc_pp13TeV_LHC24d3_double_gauss_6-8_12.root",
+        "CutVarLc_pp13TeV_LHC24d3_double_gauss_8-12_12.root"
+      ]
+    },
+    "Rebin +1": {
+      "file": [
+        "CutVarLc_pp13TeV_LHC24d3_rebin+1_1-2_12.root",
+        "CutVarLc_pp13TeV_LHC24d3_rebin+1_12.root",
+        "CutVarLc_pp13TeV_LHC24d3_rebin+1_12.root",
+        "CutVarLc_pp13TeV_LHC24d3_rebin+1_4-5_12.root",
+        "CutVarLc_pp13TeV_LHC24d3_rebin+1_5-6_12.root",
+        "CutVarLc_pp13TeV_LHC24d3_rebin+1_6-8_12.root",
+        "CutVarLc_pp13TeV_LHC24d3_rebin+1_8-12_12.root"
+      ]
+    },
+    "Range wider by 0.04": {
+      "file": [
+        "CutVarLc_pp13TeV_LHC24d3_wide4_1-2_12.root",
+        "CutVarLc_pp13TeV_LHC24d3_wide4_12.root",
+        "CutVarLc_pp13TeV_LHC24d3_wide4_12.root",
+        "CutVarLc_pp13TeV_LHC24d3_wide4_12.root",
+        "CutVarLc_pp13TeV_LHC24d3_wide4_5-6_12.root",
+        "CutVarLc_pp13TeV_LHC24d3_wide4_6-8_12.root",
+        "CutVarLc_pp13TeV_LHC24d3_wide4_8-12_12.root"
+      ]
+    },
+    "Rebin -1": {
+      "file": [
+        "CutVarLc_pp13TeV_LHC24d3_rebin+1_1-2_12.root",
+        "CutVarLc_pp13TeV_LHC24d3_rebin+1_12.root",
+        "CutVarLc_pp13TeV_LHC24d3_rebin+1_12.root",
+        "CutVarLc_pp13TeV_LHC24d3_rebin+1_4-5_12.root",
+        "CutVarLc_pp13TeV_LHC24d3_rebin+1_5-6_12.root",
+        "CutVarLc_pp13TeV_LHC24d3_rebin+1_6-8_12.root",
+        "CutVarLc_pp13TeV_LHC24d3_rebin+1_8-12_12.root"
+      ]
+    },
+    "Range wider by 0.02": {
+      "file": [
+        "CutVarLc_pp13TeV_LHC24d3_wide2_1-2_12.root",
+        "CutVarLc_pp13TeV_LHC24d3_wide2_12.root",
+        "CutVarLc_pp13TeV_LHC24d3_wide2_12.root",
+        "CutVarLc_pp13TeV_LHC24d3_wide2_4-5_12.root",
+        "CutVarLc_pp13TeV_LHC24d3_wide2_5-6_12.root",
+        "CutVarLc_pp13TeV_LHC24d3_wide2_6-8_12.root",
+        "CutVarLc_pp13TeV_LHC24d3_wide2_8-12_12.root"
+      ]
+    },
+    "Default": {
+      "file": [
+        "CutVarLc_pp13TeV_LHC24d3_default_12.root"
+      ]
+    }
+  },
+  "bin_min": [1,2,3,4,5,6,8,12],
+  "bin_max": [2,3,4,5,6,8,12,24],
+  "y_axis": "Non-prompt #Lambda_{c}^{#plus} fraction",
+  "output": {
+    "outdir": "/data8/majak/systematics/230824/fitting",
+    "file": "NP_Frac_pp13TeV_fitting"
+  }
+}
