@@ -1,3 +1,10 @@
+"""
+file:  plot_prompt_fraction_vs_fd_cuts.py
+brief: Plot prompt fraction from cross section calculations for different non-prompt cuts 
+usage: python3 plot_prompt_fraction_vs_fd_cuts.py config_fraction_vs_fd_cuts.json
+author: Maja Karwowska <mkarwowska@cern.ch>, Warsaw University of Technology
+"""
+
 import argparse
 import glob
 import json

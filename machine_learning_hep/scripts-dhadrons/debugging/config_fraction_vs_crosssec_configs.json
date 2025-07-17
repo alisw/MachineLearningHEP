@@ -1,7 +1,10 @@
 {
   "inputdir": "/data8/majak/crosssec/202502/",
+  "_inputdir": "directory with input files",
   "histoname": "gfraction",
+  "_histoname": "the prompt fraction histogram name",
   "default": "#Lambda_{c}^{#plus} #rightarrow pK^{#minus}#pi^{#plus}, pp, #sqrt{#it{s}} = 13.6 TeV",
+  "_default": "label of the baseline case",
   "hists": {
     "#Lambda_{c}^{#plus} #rightarrow pK^{#minus}#pi^{#plus}, pp, #sqrt{#it{s}} = 13.6 TeV": {
       "file": [
@@ -19,11 +22,15 @@
       ]
     }
   },
+  "_hists": "dictionary of input files and the corresponding labels of histograms to plot",
   "y_axis": "#Lambda_{c} prompt fraction",
   "legend": [0.25, 0.18, 0.70, 0.38],
+  "_legend": "position of the legend on the main plot",
   "legend_ratio": [0.40, 0.10, 0.90, 0.35],
+  "_legend": "position of the legend on the ratio plot",
   "output": {
     "outdir": "/data8/majak/crosssec/202502/",
     "file": "graph_frac_Lc_run3_Nb"
-  }
+  },
+  "_output": "output directory and file name pattern"
 }

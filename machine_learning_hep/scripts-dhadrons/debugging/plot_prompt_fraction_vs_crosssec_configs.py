@@ -1,3 +1,10 @@
+"""
+file:  plot_prompt_fraction_vs_crosssec_configs.py
+brief: Plot prompt fraction for diffent cross section calculations (e.g., different methods or inputs).
+usage: python3 plot_prompt_fraction_vs_crosssec_configs.py config_fraction_vs_crosssec_configs.json
+author: Maja Karwowska <mkarwowska@cern.ch>, Warsaw University of Technology
+"""
+
 import argparse
 import json
 import os
