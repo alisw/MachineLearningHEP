@@ -1,1 +1,0 @@
-/home/maja/CERN-useful-scripts/run-fdd-precise.sh
