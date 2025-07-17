@@ -1,8 +1,8 @@
 # pylint: disable=missing-function-docstring
 """
 file:  modify_input.py
-brief: Perform adjustments on input histogram.
-usage: python3 modify_input.py file.root my_histo file_out.root
+brief: Perform adjustments on the input Run 3 cross section histogram.
+usage: python3 modify_crosssec_run3.py file.root my_histo out_histo file_out.root
 author: Maja Karwowska <mkarwowska@cern.ch>, Warsaw University of Technology
 """
 

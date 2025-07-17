@@ -1,5 +1,9 @@
 # pylint: disable=missing-function-docstring
 """
+file:  remove_high_pt.py
+brief: Remove bins with pT > max_pt in all histograms matching my_histos_pattern in the input file.root.
+usage: python3 remove_high_pt.py file.root my_histos_pattern file_out.root max_pt
+author: Maja Karwowska <mkarwowska@cern.ch>, Warsaw University of Technology
 """
 
 import argparse

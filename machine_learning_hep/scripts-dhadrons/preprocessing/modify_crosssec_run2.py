@@ -1,8 +1,8 @@
 # pylint: disable=missing-function-docstring
 """
 file:  modify_input.py
-brief: Perform adjustments on input histogram.
-usage: python3 modify_input.py file.root my_histo file_out.root
+brief: Perform adjustments on the input Run 2 cross section histogram.
+usage: python3 modify_crosssec_run2.py file.root my_histo out_histo file_out.root
 author: Maja Karwowska <mkarwowska@cern.ch>, Warsaw University of Technology
 """
 
@@ -38,7 +38,8 @@ def main():
         #hist.Scale(0.000000001)
         hist.Scale(1./BR)
         hist2 = TH1F(args.outhistname, "", len(OUTPUT_BINS) - 1, array('d', OUTPUT_BINS))
-        merge_bins = [20] # dummy number so as not to merge [7, 9]
+        merge_bins = [20] # dummy large number so as not to merge
+        # merge bins = [7, 9] # indices of bins to merge
         ind = 0
         for binn in range(1, hist.GetNbinsX() + 1):
             print(f"Old hist bin {binn} low edge {hist.GetBinLowEdge(binn)} "\
