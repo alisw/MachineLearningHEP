@@ -49,6 +49,7 @@ def main():
             hist2.SetBinContent(binn + 1, hist.GetBinContent(binn + 1 - empty_bins))
             hist2.SetBinError(binn + 1, hist.GetBinError(binn + 1 - empty_bins))
             print(f"Setting bin {binn + 1} low edge {hist2.GetBinLowEdge(binn + 1)} up edge {hist2.GetXaxis().GetBinUpEdge(binn + 1)} content to content from bin {binn + 1 - empty_bins}: {hist2.GetBinContent(binn + 1)}")
+        # Formula for merging 2 bins. For example, to compare with less granular Run 2 results.
         #last_bin = hist2.GetNbinsX()
         #width_combined = hist.GetBinWidth(hist.GetNbinsX() -1) + hist.GetBinWidth(hist.GetNbinsX())
         #hist2.SetBinContent(last_bin,

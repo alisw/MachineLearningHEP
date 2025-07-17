@@ -3,6 +3,14 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 
+"""
+
+file: check_parquet.py
+brief: Examples of different checks on any parquet file produced by the MLHEP preprocessing steps.
+usage: python check_parquet.py AnalysisResultsReco_fPt1_2.parquet
+author: Maja Karwowska <mkarwowska@cern.ch>, Warsaw University of Technology
+"""
+
 def plot_parquet(df):
     print(df["fY"])
     print(df["fY"][~np.isinf(df["fY"])])
