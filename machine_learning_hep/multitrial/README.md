@@ -34,3 +34,5 @@ Before running, you need to create the directory structure for each MLHEP output
 
 Files: `multitrial.py`, `config_multitrial.json`<br>
 Usage: `python3 multitrial.py config_multitrial.json`
+
+Adjust the sample `config_multitrial.json` to your needs.
