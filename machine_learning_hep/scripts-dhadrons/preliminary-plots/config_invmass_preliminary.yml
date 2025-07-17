@@ -1,0 +1,14 @@
+_pp13.6TeVFD:
+    Particle: 'LAMBDAC_TO_PKPI'
+    _Particle: 'D0, DPLUS, LAMBDAC_TO_PKPI, LAMBDAC_TO_PK0S'
+    PtMin: [1., 4., 8.]
+    PtMax: [2., 5., 10.]
+    MassMin: [2.21, 2.19, 2.1]
+    _MassMin: 'min masses to display'
+    MassMax: [2.356, 2.38, 2.456]
+    _MassMin: 'max masses to display'
+    Rebin: [2, 2, 4]
+    Mult: [null, "01", "7085"]
+    _Mult: 'multiplicity label contained in the output file name'
+    MultLatex: ["Minimum Bias", "<d#it{N}_{ch}/d#it{#eta}> = 20.07", "<d#it{N}_{ch}/d#it{#eta}> = 4.34"]
+    _MultLatex: 'TLatex text describing multiplicity on the plot'

@@ -240,7 +240,7 @@ def main(particle, i_pt, cfg, batch):
     width_bin = hmass_promptEnhanced.GetBinWidth(i_pt+1)
     bin_max = hmass_promptEnhanced.GetMaximumBin()
     bin_min = hmass_promptEnhanced.GetMinimumBin()
-    
+
     ymax_promptEnhanced = 1.2*(hmass_promptEnhanced.GetMaximum() + hmass_promptEnhanced.GetBinError(bin_max))
     ymin_promptEnhanced = 0.8*(hmass_promptEnhanced.GetMinimum() - hmass_promptEnhanced.GetBinError(bin_min))
     #ymin_FDEnhanced, ymax_FDEnhanced = 0., 1.2*(hmass_FDEnhanced.GetMaximum() + hmass_FDEnhanced.GetBinError(bin_max))
@@ -281,11 +281,6 @@ def main(particle, i_pt, cfg, batch):
     lat_label.SetTextFont(43)
     lat_label.SetTextColor(kBlack)
 
-    # lat_label = TLatex()
-    # lat_label.SetNDC()
-    # lat_label.SetTextFont(43)
-    # lat_label.SetTextColor(kBlack)
-
     # str_mu = f"#it{{#mu}} = ({mean:.0f} #pm {err_mean:.0f}) MeV/#it{{c}}^{{2}}"
     # str_sigma = f"#it{{#sigma}} = {sigma:.0f} MeV/#it{{c}}^{{2}}"
     str_sig_promptEnhanced = f'#it{{S}} = {signal_promptEnhanced:.0f} #pm {err_signal_promptEnhanced:.0f}'
@@ -324,15 +319,13 @@ def main(particle, i_pt, cfg, batch):
     #frame_FDEnhanced = pad2.DrawFrame(mass_mins[i_pt], ymin_FDEnhanced, mass_maxs[i_pt], ymax_FDEnhanced, title)
     #frame_FDEnhanced.GetYaxis().SetDecimals()
 
-
-
     #c.cd()
     #pad1.cd()
     set_object_style(hmass_promptEnhanced, linewidth=3, linecolor=kBlack, markersize=0.5)
     set_object_style(fit_tot_promptEnhanced, linewidth=3, linecolor=kBlue)
     set_object_style(fit_bkg_promptEnhanced, linewidth=3, linecolor=kRed, linestyle=2)
     #set_object_style(fit_refl_promptEnhanced, linewidth=3, linecolor=kGreen+2, linestyle=9)
-    
+
     hmass_promptEnhanced.Draw("sameE")
     fit_bkg_promptEnhanced.Draw("same")
     fit_tot_promptEnhanced.Draw("same")
@@ -381,7 +374,7 @@ def main(particle, i_pt, cfg, batch):
     #fnonprompt_FDEnhanced = "#it{f}_{ non-prompt}^{ raw} = 0.690 #pm 0.008 (stat.)" # (4, 5) GeV
     #fnonprompt_FDEnhanced = "#it{f}_{ non-prompt}^{ raw} = 0.70 #pm 0.02 (stat.)" # (0, 1) GeV
     #lat_label.DrawLatex(0.19, 0.18, fnonprompt_FDEnhanced)
-    
+
     # lat_label.DrawLatex(0.19, 0.64, str_mu)
     # lat_label.DrawLatex(0.19, 0.58, str_sigma)
     #lat_label.DrawLatex(0.19, 0.24, str_sig_FDEnhanced)
@@ -410,4 +403,3 @@ if __name__ == "__main__":
 
     for i_pt in range(len(configuration["pp13.6TeVFD"]["PtMin"])):
         main(particle=LAMBDAC_TO_PKPI, i_pt=i_pt, cfg=configuration, batch=args.batch)
-    # main(particle=DPLUS, i_pt=3, cfg=configuration, batch=args.batch)
