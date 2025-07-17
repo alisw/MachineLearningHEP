@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# Gather MLHEP efficiencies and mass fits for all chosen non-prompt cuts into a single directory.
+# The cut variation script requires files from a single directory.
+
 MLHEP_DIR="/data8/majak/MLHEP"
 OUTPUT_DIR="${MLHEP_DIR}/input-fd-012025"
 
@@ -12,6 +15,6 @@ for dir in "${RESDIR_PATTERN}${PERM_PATTERN}"0.[0-9][0-9][0-9]* ; do
 
   cp "${dir}/LHC24pp_mc/Results/resultsmctot/efficienciesLcpKpiRun3analysis.root" \
      "${OUTPUT_DIR}/efficienciesLcpKpiRun3analysis_${suffix}.root"
-  #cp "${dir}/LHC23pp_pass4/Results/resultsdatatot/yields_LcpKpi_Run3analysis.root" \
-  #   "${OUTPUT_DIR}/yieldsLcpKpiRun3analysis-${suffix}-fixed-sigma.root"
+  cp "${dir}/LHC23pp_pass4/Results/resultsdatatot/yields_LcpKpi_Run3analysis.root" \
+     "${OUTPUT_DIR}/yieldsLcpKpiRun3analysis-${suffix}"
 done

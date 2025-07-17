@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# Shortcut to run MLHEP
+# Usage: ./run-mlhep.sh database_Lc.yml submission/analysis.yml logfile.log
+
 if [ "$#" -ne 3 ]; then
   echo "Wrong number of parameters"
   exit 1
