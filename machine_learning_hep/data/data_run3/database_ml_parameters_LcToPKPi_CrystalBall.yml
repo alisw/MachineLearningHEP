@@ -82,11 +82,11 @@ LcpKpi:
         #extra:
         #fY: log((sqrt(2.28646**2 + (fPt * cosh(fEta))**2) + fPt * sinh(fEta)) / sqrt(2.28646**2 + fPt**2)) #TODO : change mass or make sure Lc mass is updated
         tags:
-          isstd: {var: fFlagMcMatchRec, req: [[1], []], level: mc}
-          ismcsignal: {var: fFlagMcMatchRec, req: [[1], []], abs: true, level: mc}
-          ismcbkg: {var: fFlagMcMatchRec, req: [[], [1]], abs: true, level: mc}
-          ismcprompt: {var: fOriginMcRec, req: [[0], []], level: mc}
-          ismcfd: {var: fOriginMcRec, req: [[1], []], level: mc}
+          isstd: {var: fFlagMcMatchRec, req: 17, level: mc}
+          ismcsignal: {var: fFlagMcMatchRec, req: 17, abs: true, level: mc}
+          ismcbkg: {var: ismcsignal, req: 0, level: mc}
+          ismcprompt: {var: fOriginMcRec, req: 1, level: mc}
+          ismcfd: {var: fOriginMcRec, req: 2, level: mc}
         swap: {cand: fCandidateSelFlag, var_swap: fIsCandidateSwapped, vars: [ismcsignal, ismcprompt, ismcfd], level: mc}
 
       gen:
@@ -94,11 +94,11 @@ LcpKpi:
         trees:
           O2hflcpbase: [fIndexHFLCMCCOLLBASES, fPt, fY, fEta, fPhi, fFlagMcMatchGen, fOriginMcGen]
         tags:
-          isstd: {var: fFlagMcMatchGen, req: [[1], []], level: mc}
-          ismcsignal: {var: fFlagMcMatchGen, req: [[1], []], abs: true, level: mc}
-          ismcbkg: {var: fFlagMcMatchGen, req: [[], [1]], abs: true, level: mc}
-          ismcprompt: {var: fOriginMcGen, req: [[0], []], level: mc}
-          ismcfd: {var: fOriginMcGen, req: [[1], []], level: mc}
+          isstd: {var: fFlagMcMatchGen, req: 17, level: mc}
+          ismcsignal: {var: fFlagMcMatchGen, req: 17, abs: true, level: mc}
+          ismcbkg: {var: ismcsignal, req: 0, level: mc}
+          ismcprompt: {var: fOriginMcGen, req: 1, level: mc}
+          ismcfd: {var: fOriginMcGen, req: 2, level: mc}
           #extra:
           #fY: log((sqrt(2.28646**2 + (fPt * cosh(fEta))**2) + fPt * sinh(fEta)) / sqrt(2.28646**2 + fPt**2)) #TODO : change mass or make sure Lc mass is updated
 

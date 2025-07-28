@@ -32,7 +32,6 @@ import pandas as pd
 import uproot
 from pandas.api.types import is_numeric_dtype
 
-from .bitwise import tag_bit_df
 from .io_ml_utils import dump_yaml_from_dict
 from .logger import get_logger
 from .utilities import (
@@ -217,8 +216,8 @@ class Processer:  # pylint: disable=too-many-instance-attributes
         # Potentially mask certain values (e.g. nsigma TOF of -999)
         self.p_mask_values = datap["ml"].get("mask_values", None)
 
-        self.bins_skimming = np.array(list(zip(self.lpt_anbinmin, self.lpt_anbinmax)), "d")
-        self.bins_analysis = np.array(list(zip(self.lpt_finbinmin, self.lpt_finbinmax)), "d")
+        self.bins_skimming = np.array(list(zip(self.lpt_anbinmin, self.lpt_anbinmax, strict=False)), "d")
+        self.bins_analysis = np.array(list(zip(self.lpt_finbinmin, self.lpt_finbinmax, strict=False)), "d")
         bin_matching = [
             [ptrange[0] <= bin[0] and ptrange[1] >= bin[1] for ptrange in self.bins_skimming].index(True)
             for bin in self.bins_analysis
@@ -251,7 +250,7 @@ class Processer:  # pylint: disable=too-many-instance-attributes
             for ipt in range(self.p_nptfinbins):
                 mlsel_multi = [
                     f"y_test_prob{self.p_modelname}{label.replace('-', '_')} {comp} {probcut}"
-                    for label, comp, probcut in zip(self.class_labels, comps, self.lpt_probcutfin[ipt])
+                    for label, comp, probcut in zip(self.class_labels, comps, self.lpt_probcutfin[ipt], strict=False)
                 ]
                 self.l_selml.append(" and ".join(mlsel_multi))
 
@@ -375,7 +374,7 @@ class Processer:  # pylint: disable=too-many-instance-attributes
                     cols = [cols]
                 # if all(type(var) is str for var in vars): vars = [vars]
                 df = None
-                for tree, col in zip([rdir[name] for name in trees], cols):
+                for tree, col in zip([rdir[name] for name in trees], cols, strict=False):
                     try:
                         data = tree.arrays(expressions=col, library="np")
                         dfnew = pd.DataFrame(columns=col, data=data)
@@ -396,7 +395,7 @@ class Processer:  # pylint: disable=too-many-instance-attributes
 
         def dfappend(name: str, dfa):
             """Append DF row-wise"""
-            dfs[name] = pd.concat([dfs.get(name, None), dfa])
+            dfs[name] = pd.concat([dfs.get(name), dfa])
 
         def dfmerge(dfl, dfr, **kwargs):
             """Merge dfl and dfr"""
@@ -437,7 +436,7 @@ class Processer:  # pylint: disable=too-many-instance-attributes
                     if dfuse(df_spec):
                         trees = []
                         cols = []
-                        for tree, spec in zip(df_spec["trees"].keys(), df_spec["trees"].values()):
+                        for tree, spec in zip(df_spec["trees"].keys(), df_spec["trees"].values(), strict=False):
                             if isinstance(spec, list):
                                 trees.append(tree)
                                 cols.append(spec)
@@ -467,9 +466,15 @@ class Processer:  # pylint: disable=too-many-instance-attributes
                     self.logger.debug(" %s -> tags", df_name)
                     for tag, value in df_spec["tags"].items():
                         if dfuse(value):
-                            dfs[df_name][tag] = np.array(
-                                tag_bit_df(dfs[df_name], value["var"], value["req"], value.get("abs", False)), dtype=int
-                            )
+                            var = dfs[df_name][value["var"]]
+
+                            if value.get("abs", False):
+                                var = var.abs()
+
+                            dfs[df_name][tag] = (var == value["req"]).astype(int)
+
+                            # dfs[df_name][tag] = np.array(
+                            #    tag_bit_df(dfs[df_name], value["var"], value["req"], value.get("abs", False)), dtype=int)
 
                 if "swap" in df_spec:
                     self.logger.debug(" %s -> swap", df_name)
