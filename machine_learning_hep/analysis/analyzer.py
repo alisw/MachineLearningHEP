@@ -16,7 +16,7 @@ import os
 from os import makedirs
 from os.path import exists, join
 
-from machine_learning_hep.io import dump_yaml_from_dict
+from machine_learning_hep.io_ml_utils import dump_yaml_from_dict
 
 # HF specific imports
 from machine_learning_hep.workflow.workflow_base import WorkflowBase

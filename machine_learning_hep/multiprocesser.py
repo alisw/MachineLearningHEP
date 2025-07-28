@@ -19,7 +19,7 @@ main script for doing data processing, machine learning and analysis
 import os
 import tempfile
 
-from machine_learning_hep.io import dump_yaml_from_dict, parse_yaml
+from machine_learning_hep.io_ml_utils import dump_yaml_from_dict, parse_yaml
 from machine_learning_hep.logger import get_logger
 from machine_learning_hep.utilities import merge_method, mergerootfiles
 

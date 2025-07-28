@@ -49,7 +49,7 @@ from ROOT import (
     kWhite,
 )
 
-from machine_learning_hep.io import dump_yaml_from_dict, parse_yaml
+from machine_learning_hep.io_ml_utils import dump_yaml_from_dict, parse_yaml
 from machine_learning_hep.logger import get_logger
 
 

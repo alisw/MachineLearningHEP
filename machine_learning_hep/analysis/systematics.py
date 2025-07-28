@@ -32,7 +32,7 @@ from time import sleep
 from ROOT import TCanvas, TFile, TGraphErrors, TLegend, kAzure, kBlack, kBlue, kGreen, kOrange, kRed, kViolet, kYellow
 
 from machine_learning_hep.fitting.helpers import MLFitter
-from machine_learning_hep.io import dump_yaml_from_dict, parse_yaml
+from machine_learning_hep.io_ml_utils import dump_yaml_from_dict, parse_yaml
 from machine_learning_hep.logger import get_logger
 from machine_learning_hep.multiprocesser import MultiProcesser
 from machine_learning_hep.utilities_plot import load_root_style

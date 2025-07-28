@@ -27,7 +27,7 @@ from sklearn.model_selection import cross_validate
 from yaml.representer import RepresenterError
 
 # from shap.plots.colors import red_blue as shap_cmap_red_blue
-from machine_learning_hep.io import dict_yamlable, dump_yaml_from_dict, parse_yaml
+from machine_learning_hep.io_ml_utils import dict_yamlable, dump_yaml_from_dict, parse_yaml
 
 # Change to that backend to not have problems with saving fgures
 # when X11 connection got lost
