@@ -1,0 +1,20 @@
+{
+  "file_pattern": "/data8/majak/MLHEP/results-24022025-newtrain-multitrial-prompt*/LHC23pp_pass4/Results/resultsdatatot/yields_LcpKpi_Run3analysis.root",
+  "_file_pattern": "regex pattern for all multitrial fit files; note the asterisk to match all trial suffixes",
+  "dir_pattern": "results-24022025-newtrain-multitrial-prompt",
+  "_dir_pattern": "the base directory prefix from the file pattern above",
+  "histoname": "hyields0",
+  "_histoname": "histogram with mass fit",
+  "sel_histoname": "hchi0",
+  "_sel_histoname": "histogram for filtering the results",
+  "selection": "lambda x : x < 5.0",
+  "_selection": "filter to apply with sel_histoname, e.g., chi < 5",
+  "pt_bins_min": [1, 2, 3, 4, 5, 6, 7, 8, 10, 12, 16],
+  "pt_bins_max": [2, 3, 4, 5, 6, 7, 8, 10, 12, 16, 24],
+  "central_trial": "",
+  "_central_trial": "suffix of the directory with the central trial",
+  "outdir": "/data8/majak/multitrial",
+  "_outdir": "output directory",
+  "outfile": "result-prompt-chi5",
+  "_outfile": "output file pattern"
+}
