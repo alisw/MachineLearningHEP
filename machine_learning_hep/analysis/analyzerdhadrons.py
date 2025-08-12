@@ -418,7 +418,7 @@ class AnalyzerDhadrons(Analyzer):  # pylint: disable=invalid-name
         print(self.n_fileff)
         lfileeff = TFile.Open(self.n_fileff)
         lfileeff.ls()
-        fileouteff = TFile.Open(f"{self.d_resultsallpmc}/efficiencies{self.case}{self.typean}.root", "recreate")
+        fileouteff = TFile.Open(f"{self.d_resultsallpmc}/{self.efficiency_filename}{self.case}{self.typean}.root", "recreate")
         cEff = TCanvas("cEff", "The Fit Canvas")
         cEff.SetCanvasSize(1900, 1500)
         cEff.SetWindowSize(500, 500)
@@ -494,7 +494,7 @@ class AnalyzerDhadrons(Analyzer):  # pylint: disable=invalid-name
         if not os.path.exists(yield_filename):
             self.logger.fatal("Yield file %s could not be found", yield_filename)
 
-        fileouteff = f"{self.d_resultsallpmc}/efficiencies{self.case}{self.typean}.root"
+        fileouteff = f"{self.d_resultsallpmc}/{self.efficiency_filename}{self.case}{self.typean}.root"
         if not os.path.exists(fileouteff):
             self.logger.fatal("Efficiency file %s could not be found", fileouteff)
 
@@ -506,13 +506,12 @@ class AnalyzerDhadrons(Analyzer):  # pylint: disable=invalid-name
 
         histonorm = TH1F("histonorm", "histonorm", 1, 0, 1)
 
-        filemass = TFile.Open(self.n_filemass)
-        hevents = filemass.Get("all_events")
-        hselevents = filemass.Get("sel_events")
-
         if self.p_nevents is not None:
             selnorm = self.p_nevents
         else:
+            filemass = TFile.Open(self.n_filemass)
+            hevents = filemass.Get("all_events")
+            hselevents = filemass.Get("sel_events")
             norm, selnorm = self.calculate_norm(self.logger, hevents, hselevents)
             histonorm.SetBinContent(1, selnorm)
             self.logger.warning("Number of events %d", norm)
@@ -555,7 +554,9 @@ class AnalyzerDhadrons(Analyzer):  # pylint: disable=invalid-name
         f_fileoutcross = TFile.Open(fileoutcross)
         if f_fileoutcross:
             hcross = f_fileoutcross.Get("hptspectrum")
+            hcrossbr = f_fileoutcross.Get("hptspectrum_wo_br")
             fileoutcrosstot.cd()
             hcross.Write()
+            hcrossbr.Write()
         histonorm.Write()
         fileoutcrosstot.Close()

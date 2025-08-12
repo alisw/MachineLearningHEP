@@ -106,24 +106,22 @@ def hf_pt_spectrum(
 
     histos = {}
 
-    infile_pred = TFile.Open(input_fonll_or_fdd_pred)
-    if frac_method in ("dd", "dd_N"):
-        histos["corryields_fdd"] = [infile_pred.Get("hCorrYieldsPrompt"), infile_pred.Get("hCorrYieldsNonPrompt")]
-        histos["covariances"] = [
-            infile_pred.Get("hCovPromptPrompt"),
-            infile_pred.Get("hCovNonPromptNonPrompt"),
-            infile_pred.Get("hCovPromptNonPrompt"),
-        ]
-    else:
-        histos["FONLL"] = {"prompt": {}, "nonprompt": {}}
-        for pred in ("central", "min", "max"):
-            histos["FONLL"]["nonprompt"][pred] = infile_pred.Get(f"{fonll_hist_name[channel]}fromBpred_{pred}_corr")
-            histos["FONLL"]["nonprompt"][pred].SetDirectory(0)
-            if frac_method == "fc":
-                histos["FONLL"]["prompt"][pred] = infile_pred.Get(f"{fonll_hist_name[channel]}pred_{pred}")
-                histos["FONLL"]["prompt"][pred].SetDirectory(0)
-
-    infile_pred.Close()
+    with TFile.Open(input_fonll_or_fdd_pred) as infile_pred:
+        if frac_method in ("dd", "dd_N"):
+            histos["corryields_fdd"] = [infile_pred.Get("hCorrYieldsPrompt"), infile_pred.Get("hCorrYieldsNonPrompt")]
+            histos["covariances"] = [
+                infile_pred.Get("hCovPromptPrompt"),
+                infile_pred.Get("hCovNonPromptNonPrompt"),
+                infile_pred.Get("hCovPromptNonPrompt"),
+            ]
+        else:
+            histos["FONLL"] = {"prompt": {}, "nonprompt": {}}
+            for pred in ("central", "min", "max"):
+                histos["FONLL"]["nonprompt"][pred] = infile_pred.Get(f"{fonll_hist_name[channel]}fromBpred_{pred}_corr")
+                histos["FONLL"]["nonprompt"][pred].SetDirectory(0)
+                if frac_method == "fc":
+                    histos["FONLL"]["prompt"][pred] = infile_pred.Get(f"{fonll_hist_name[channel]}pred_{pred}")
+                    histos["FONLL"]["prompt"][pred].SetDirectory(0)
 
     infile_rawy = TFile.Open(yield_filename)
     histos["rawyields"] = infile_rawy.Get(yield_histoname)
@@ -235,10 +233,6 @@ def hf_pt_spectrum(
                 histos["covariances"][1 - pnp_ind].GetBinContent(i_pt + 1),
                 histos["covariances"][2].GetBinContent(i_pt + 1),
             )
-            print("FRACTION HEREEEEEEEE: ")
-            print(histos["corryields_fdd"][pnp_ind].GetBinContent(i_pt + 1))
-            print(histos["corryields_fdd"][1 - pnp_ind].GetBinContent(i_pt + 1))
-            print("FRACTION HEREEEEEEEE: ")
         elif frac_method == "dd_N":
             pnp_ind = 0 if crosssec_prompt else 1
             frac = [histos["corryields_fdd"][pnp_ind].GetBinContent(i_pt + 1)] * 3

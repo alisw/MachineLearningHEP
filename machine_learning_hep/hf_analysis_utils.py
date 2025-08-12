@@ -268,8 +268,6 @@ def compute_fraction_dd(acc_eff_same, acc_eff_other, corryields_same, corryields
     yield_times_acceff_same = corryields_same * acc_eff_same
     yield_times_acceff_other = corryields_other * acc_eff_other
     frac_v = yield_times_acceff_same / (yield_times_acceff_same + yield_times_acceff_other)
-    # print(f"same yield times acceff: {yield_times_acceff_same} " \
-    #      f"other {yield_times_acceff_other} final frac: {frac_v}")
 
     denom = (yield_times_acceff_same + yield_times_acceff_other) ** 2
     der_same_same = (
@@ -279,8 +277,6 @@ def compute_fraction_dd(acc_eff_same, acc_eff_other, corryields_same, corryields
     unc = np.sqrt(
         der_same_same**2 * cov_same + der_same_other**2 * cov_other + 2 * der_same_same * der_same_other * cov_comb
     )
-    # print(f"denom {denom} der_same_same {der_same_same} der_same_other {der_same_other} " \
-    #      f"cov same {cov_same} cov other {cov_other} cov comb {cov_comb} final unc {unc}")
 
     return [frac_v, frac_v - unc, frac_v + unc]
 
