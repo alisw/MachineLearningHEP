@@ -71,6 +71,7 @@ D0Jet_pp:
         filter: "abs(fPosZ) < 10."
 
       coll_powheg_fd:
+        level: fd
         trees:
           O2d0cmcpjetmcco: [fEventWeight]
       collcnt_mc:

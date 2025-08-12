@@ -1108,9 +1108,6 @@ class AnalyzerJets(Analyzer):
                         bins_obs[var],
                     )
                     fill_hist_fast(h3_fd_gen_orig[var], df[["pt_jet", "pt_cand", f"{colname}"]])
-                    self._save_hist(
-                        project_hist(h3_fd_gen_orig[var], [0, 2], {}), f"fd/h_ptjet-{var}_feeddown_gen_noeffscaling.png"
-                    )
 
             case "sim":
                 h3_fd_gen_orig = {}
@@ -1120,15 +1117,11 @@ class AnalyzerJets(Analyzer):
                         label = f"-{var}" if var else ""
                         if fh := rfile.Get(f"h_mass-ptjet-pthf{label}"):
                             h3_fd_gen_orig[var] = project_hist(fh, list(range(1, get_dim(fh))), {})
-                            ensure_sumw2(h3_fd_gen_orig[var])
-                            self._save_hist(
-                                project_hist(h3_fd_gen_orig[var], [0, 2], {}),
-                                f"fd/h_ptjet-{var}_feeddown_genonly_noeffscaling.png",
-                            )
                     h_norm = rfile.Get("histonorm")
-                    powheg_xsection_scale_factor = h_norm.GetBinContent(5)
+                    powheg_xsection_avg = h_norm.GetBinContent(6) / h_norm.GetBinContent(5)
+                    powheg_xsection_scale_factor = powheg_xsection_avg / h_norm.GetBinContent(5)
                     self.logger.info("powheg_xsection_scale_factor = %f", powheg_xsection_scale_factor)
-                    self.logger.info("POWHEG luminosity (mb^{-1}): %g", 1.0 / powheg_xsection_scale_factor)
+                    self.logger.info("POWHEG luminosity (mb^{-1}): %g", 1. / powheg_xsection_scale_factor)
 
             case fd_input:
                 self.logger.critical("Invalid feeddown input %s", fd_input)
