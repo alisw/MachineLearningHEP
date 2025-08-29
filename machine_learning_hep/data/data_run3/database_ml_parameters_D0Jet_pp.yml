@@ -84,10 +84,10 @@ D0Jet_pp:
           fY: log((sqrt(1.864**2 + (fPt * cosh(fEta))**2) + fPt * sinh(fEta)) / sqrt(1.864**2 + fPt**2)) #TODO : change mass or make sure Lc mass is updated
           fM: 1.864
         tags:
-          ismcsignal: {var: fFlagMcMatchGen, req: [[0], []], abs: true}
-          ismcbkg: {var: fFlagMcMatchGen, req: [[], [0]], abs: true}
-          ismcprompt: {var: fOriginMcGen, req: [[0], [1]]}
-          ismcfd: {var: fOriginMcGen, req: [[1], [0]]}
+          ismcsignal: {var: fFlagMcMatchGen, req: 1, abs: true, level: mc}
+          ismcbkg: {var: ismcsignal, req: 0, level: mc}
+          ismcprompt: {var: fOriginMcGen, req: 1, level: mc}
+          ismcfd: {var: fOriginMcGen, req: 2, level: mc}
         filter: "fPt >= 1. and abs(fY) <= 0.8 and abs(fJetEta) < (.9 - (fJetR / 100.))" # TODO: check jet eta cut
 
       collfd: # TODO: check if we can use the HF collision table instead
