@@ -51,34 +51,85 @@ D0Jet_pp:
   #region dfs
   dfs:
     read:
-      evtorig:
+      evtorig_mc:
+        level: mc
         index: fIndexHfD0McCollBases
         trees:
           O2hfd0collbase: [fNumContrib, fPosZ]
         filter: "abs(fPosZ) < 10."
+      evtorig_data:
+        index: fIndexHfD0CollBases
+        trees:
+          O2hfd0collbase: [fNumContrib, fPosZ]
+        filter: "abs(fPosZ) < 10."
+      evtorig_fd:
+        level: fd
+        index: fIndexHFD0MCCOLLBASES
+        trees:
+          O2hfd0mccollbase: [fPosZ]
+        filter: "abs(fPosZ) < 10."
+
+      coll_powheg_fd:
+        level: fd
+        trees:
+          O2d0cmcpjetmcco: [fEventWeight]
+      collcnt_mc:
+        level: mc
+        trees:
+          O2collcount: [fReadCounts, fReadCountsWithTVX, fReadCountsWithTVXAndZVertexAndSel8, fReadCountsWithTVXAndZVertexAndSelMC]
+      bccnt_mc:
+        level: mc
+        trees:
+          O2bccount: [fReadCountsWithTVX, fReadCountsWithTVXAndNoTFB, fReadCountsWithTVXAndNoTFBAndNoITSROFB]
       collcnt:
+        level: data
         trees:
           O2collcount: [fReadCounts, fReadCountsWithTVX, fReadCountsWithTVXAndZVertexAndSel8, fReadCountsWithTVXAndZVertexAndSelMC]
       bccnt:
+        level: data
         trees:
           O2bccount: [fReadCountsWithTVX, fReadCountsWithTVXAndNoTFB, fReadCountsWithTVXAndNoTFBAndNoITSROFB]
 
       collgen: # TODO: check if we can use the HF collision table instead
-        level: gen
+        level: mc
         index: fIndexD0CMCPJETCOS
         trees:
           O2d0cmcpjetco: [fPosZ, fCentrality, fEventSel]
         filter: "abs(fPosZ) < 10."
       jetgen:
-        level: gen
+        level: mc
         index: fIndexD0CMCPJETOS
         trees:
           O2hfd0pbase: [fIndexHfD0McCollBases, fPt, fEta, fPhi, fFlagMcMatchGen, fOriginMcGen]
           O2d0cmcpjeto: [fIndexD0CMCPJETCOS, fJetPt, fJetPhi, fJetEta, fJetNConstituents, fJetR]
           O2d0cmcpjetmo: [fIndexArrayD0CMCDJETOS_hf, fIndexArrayD0CMCDJETOS_geo, fIndexArrayD0CMCDJETOS_pt]
-          O2d0cmcpjetsso: [fEnergyMother, fPtLeading, fPtSubLeading, fTheta, fNSub2DR, fNSub1, fNSub2, fAngularity, fPairPt, fPairEnergy, fPairTheta]
+          O2d0cmcpjetsso: [fEnergyMother, fPtLeading, fPtSubLeading, fTheta, fNSub2DR, fNSub1, fNSub2, fAngularity]
         extra:
           fY: log((sqrt(1.864**2 + (fPt * cosh(fEta))**2) + fPt * sinh(fEta)) / sqrt(1.864**2 + fPt**2)) #TODO : change mass or make sure Lc mass is updated
+          fM: 1.864
+        tags:
+          ismcsignal: {var: fFlagMcMatchGen, req: 1, abs: true, level: mc}
+          ismcbkg: {var: ismcsignal, req: 0, level: mc}
+          ismcprompt: {var: fOriginMcGen, req: 1, level: mc}
+          ismcfd: {var: fOriginMcGen, req: 2, level: mc}
+        filter: "fPt >= 1. and abs(fY) <= 0.8 and abs(fJetEta) < (.9 - (fJetR / 100.))" # TODO: check jet eta cut
+
+      collfd: # TODO: check if we can use the HF collision table instead
+        level: fd
+        index: fIndexD0CMCPJETCOS
+        trees:
+          O2d0cmcpjetco: [fPosZ, fCentrality, fEventSel]
+        filter: "abs(fPosZ) < 10."
+      jetfd:
+        level: fd
+        index: fIndexD0CMCPJETOS
+        trees:
+          O2hfd0pbase: [fIndexHFD0MCCOLLBASES, fPt, fEta, fPhi, fFlagMcMatchGen, fOriginMcGen]
+          O2d0cmcpjeto: [fIndexD0CMCPJETCOS, fJetPt, fJetPhi, fJetEta, fJetNConstituents, fJetR]
+          O2d0cmcpjetsso: [fEnergyMother, fPtLeading, fPtSubLeading, fTheta, fNSub2DR, fNSub1, fNSub2, fAngularity]
+        extra:
+          fY: log((sqrt(1.864**2 + (fPt * cosh(fEta))**2) + fPt * sinh(fEta)) / sqrt(1.864**2 + fPt**2)) #TODO : change mass or make sure Lc mass is updated
+          fM: 1.864
         tags:
           ismcsignal: {var: fFlagMcMatchGen, req: 1, abs: true, level: mc}
           ismcbkg: {var: ismcsignal, req: 0, level: mc}
@@ -87,13 +138,13 @@ D0Jet_pp:
         filter: "fPt >= 1. and abs(fY) <= 0.8 and abs(fJetEta) < (.9 - (fJetR / 100.))" # TODO: check jet eta cut
 
       colldet:
-        level: det
+        level: mc
         index: fIndexD0CMCDJETCOS
         trees:
           O2d0cmcdjetco: [fPosZ, fCentrality, fEventSel]
         filter: "abs(fPosZ) < 10."
       jetdet:
-        level: det
+        level: mc
         index: fIndexD0CMCDJETOS
         trees: # add EEC columns
           O2hfd0base: [fIndexHfD0CollBases, fPt, fEta, fPhi, fM]
@@ -104,7 +155,7 @@ D0Jet_pp:
           O2hfd0ml: [fMlScores]
           O2d0cmcdjeto: [fIndexD0CMCDJETCOS, fJetPt, fJetPhi, fJetEta, fJetNConstituents, fJetR]
           O2d0cmcdjetmo: [fIndexArrayD0CMCPJETOS_hf, fIndexArrayD0CMCPJETOS_geo, fIndexArrayD0CMCPJETOS_pt]
-          O2d0cmcdjetsso: [fEnergyMother, fPtLeading, fPtSubLeading, fTheta, fNSub2DR, fNSub1, fNSub2, fAngularity, fPairPt, fPairEnergy, fPairTheta]
+          O2d0cmcdjetsso: [fEnergyMother, fPtLeading, fPtSubLeading, fTheta, fNSub2DR, fNSub1, fNSub2, fAngularity]
         extra:
           fY: log((sqrt(1.864**2 + (fPt * cosh(fEta))**2) + fPt * sinh(fEta)) / sqrt(1.864**2 + fPt**2)) #TODO : change mass or make sure Lc mass is updated
           isd0: fFlagMcMatchRec == 1
@@ -138,7 +189,7 @@ D0Jet_pp:
           O2hfd0ml: [fMlScores]
           O2hfd0sel: [fCandidateSelFlag]
           O2d0cjeto: [fIndexD0CJETCOS, fJetPt, fJetPhi, fJetEta, fJetNConstituents, fJetR]
-          O2d0cjetsso: [fEnergyMother, fPtLeading, fPtSubLeading, fTheta, fNSub2DR, fNSub1, fNSub2, fAngularity, fPairPt, fPairEnergy, fPairTheta]
+          O2d0cjetsso: [fEnergyMother, fPtLeading, fPtSubLeading, fTheta, fNSub2DR, fNSub1, fNSub2, fAngularity]
         extra:
           fY: log((sqrt(1.864**2 + (fPt * cosh(fEta))**2) + fPt * sinh(fEta)) / sqrt(1.864**2 + fPt**2)) #TODO : change mass or make sure Lc mass is updated
         extract_component:
@@ -146,33 +197,66 @@ D0Jet_pp:
         filter: "fPt >= 1. and abs(fY) <= 0.8 and abs(fJetEta) < (.9 - (fJetR / 100.))" # TODO: check jet eta cut
 
     merge:
-      - {base: jetgen, ref: evtorig}
+      - {base: jetgen, ref: evtorig_mc}
+      - {base: jetfd, ref: collfd}
       - {base: jetdet, ref: colldet}
       - {base: jetdata, ref: colldata}
     # workaround for yamlfmt issue #110
 
     write:
       jetgen:
-        level: gen
+        level: mc
+        file: AnalysisResultsGen.parquet
+      jetfd:
+        level: fd
         file: AnalysisResultsGen.parquet
       jetdet:
-        level: det
+        level: mc
         file: AnalysisResultsReco.parquet
       jetdata:
         level: data
         file: AnalysisResultsReco.parquet
-      evtorig:
-        level: all
+
+      evtorig_mc:
+        level: mc
+        source: collgen
         file: AnalysisResultsEvtOrig.parquet
-      evt:
-        level: all
+      evt_mc:
+        level: mc
         source: evtorig
         file: AnalysisResultsEvt.parquet
+
+      evtorig_data:
+        level: data
+        source: colldata
+        file: AnalysisResultsEvtOrig.parquet
+      evt_data:
+        level: data
+        source: colldata
+        file: AnalysisResultsEvt.parquet
+
+      coll_powheg_fd:
+        level: fd
+        file: AnalysisResultsPowheg.parquet
+      evtorig_fd:
+        level: fd
+        source: collfd
+        file: AnalysisResultsEvtOrig.parquet
+      evt_fd:
+        level: fd
+        source: collfd
+        file: AnalysisResultsEvt.parquet
+      collcnt_mc:
+        level: mc
+        file: AnalysisResultsCollCnt.parquet
+      bccnt_mc:
+        level: mc
+        file: AnalysisResultsBcCnt.parquet
       collcnt:
-        level: all
+        level: data
         file: AnalysisResultsCollCnt.parquet
       bccnt:
-        level: all
+        level: data
         file: AnalysisResultsBcCnt.parquet
 
   variables:
@@ -231,6 +315,7 @@ D0Jet_pp:
     namefile_reco_applieddata: AnalysisResultsRecoAppliedData.parquet
     namefile_reco_appliedmc: AnalysisResultsRecoAppliedMC.parquet
     namefile_mcweights: mcweights.root
+    namefile_wgt: AnalysisResultsPowheg.parquet
     treeoutput: "D0tree"
     histofilename: "masshisto.root"
     efffilename: "effhisto.root"
@@ -242,20 +327,14 @@ D0Jet_pp:
   multi:
     data:
       nprocessesparallel: 80
-      maxfiles: [-1] #list of periods
+      maxfiles: [1] #list of periods
       chunksizeunp: [100] #list of periods
       chunksizeskim: [100] #list of periods
       fracmerge: [.1] #list of periods
       seedmerge: [12] #list of periods
       period: [LHC22o] #list of periods
       select_period: [1]
-      prefix_dir: /data2/MLhep/real/train_318624/ # full stats new
-      # prefix_dir: /data2/MLhep/real/train_257023/ # full stats
-      # prefix_dir: /data2/MLhep/real/train_240309/ # Andrea's model
-      # prefix_dir: /data2/MLhep/real/train_245508/ # pass7
-      # prefix_dir: /data2/MLhep/real/train_245509/ # no TOF
-      # prefix_dir: /data2/MLhep/real/train_245510/ # no PID
-      # prefix_dir: /data2/MLhep/real/train_245511/ # full PID
+      prefix_dir: /data2/MLhep/real/train_318624/
       unmerged_tree_dir: [/alice/] #list of periods
       pkl: ["${USER}/d0jet/pkl"] #list of periods
       pkl_skimmed: ["${USER}/d0jet/pklsk"] #list of periods
@@ -265,6 +344,23 @@ D0Jet_pp:
       mcreweights: [../Analyses] #list of periods
     mc:
       nprocessesparallel: 80
+      maxfiles: [1] #list of periods
+      chunksizeunp: [100] #list of periods
+      chunksizeskim: [1000] #list of periods
+      fracmerge: [1.] #list of periods
+      seedmerge: [12] #list of periods
+      period: [LHC24d3b] #list of periods
+      select_period: [1]
+      prefix_dir: /data2/MLhep/sim/train_318983/
+      unmerged_tree_dir: [alice/]
+      pkl: ["${USER}/d0jet/pkl"] #list of periods
+      pkl_skimmed: ["${USER}/d0jet/pklsk"] #list of periods
+      pkl_skimmed_merge_for_ml: ["${USER}/d0jet/pklskml"] #list of periods
+      pkl_skimmed_merge_for_ml_all: "${USER}/d0jet/pp_mc_prod_mltot"
+      pkl_evtcounter_all: "${USER}/d0jet/pp_mc_prod_evttot"
+      mcreweights: [../Analyses] #list of periods
+    fd:
+      nprocessesparallel: 80
       maxfiles: [-1] #list of periods
       chunksizeunp: [100] #list of periods
       chunksizeskim: [1000] #list of periods
@@ -272,14 +368,8 @@ D0Jet_pp:
       seedmerge: [12] #list of periods
       period: [LHC24d3b] #list of periods
       select_period: [1]
-      prefix_dir: /data2/MLhep/sim/train_318983/ # full stats new
-      # prefix_dir: /data2/MLhep/sim/train_257228/ # full stats
-      # prefix_dir: /data2/MLhep/sim/train_259454/ # 97 % tracking eff
-      # prefix_dir: /data2/MLhep/sim/train_239774/ # Andrea's model
-      # prefix_dir: /data2/MLhep/sim/train_244893/ # no TOF
-      # prefix_dir: /data2/MLhep/sim/train_244894/ # no PID
-      # prefix_dir: /data2/MLhep/sim/train_244895/ # full PID
-      unmerged_tree_dir: [alice/]
+      prefix_dir: /home/jklein/powheg/parallel/
+      unmerged_tree_dir: [default/]
       pkl: ["${USER}/d0jet/pkl"] #list of periods
       pkl_skimmed: ["${USER}/d0jet/pklsk"] #list of periods
       pkl_skimmed_merge_for_ml: ["${USER}/d0jet/pklskml"] #list of periods
@@ -371,7 +461,7 @@ D0Jet_pp:
       sel_an_binmax: [2, 3, 4, 5, 6, 7, 8, 10, 12, 16, 24, 48] # hadron pt bins (sel_an_binmin bins) # FIXME: move the last edge in sel_an_binmin
       bins_ptjet: [5, 7, 10, 15, 20, 30, 40, 60, 70] # systematics, TODO: split rec and gen binning
       bins_ptjet_eff: [2, 5, 7, 10, 15, 20, 30, 40, 60, 70, 90] # systematics, TODO: split rec and gen binning
-      cand_collidx: fIndexHfD0CollBases
+      # cand_collidx: fIndexHfD0CollBases
       counter_read_data: fReadCountsWithTVXAndZVertexAndSel8
       counter_read_mc: fReadCountsWithTVXAndZVertexAndSelMC
       counter_tvx: fReadCountsWithTVX
@@ -406,40 +496,40 @@ D0Jet_pp:
           bins_gen_fix: [10, 0., 1.]
           bins_det_fix: [10, 0., 1.]
           label: "#Delta#it{r}"
-        lntheta:
-          bins_gen_fix: [8, 1., 5.]
-          bins_det_fix: [8, 1., 5.]
-          label: "#minusln(#it{#theta})"
-          arraycols: [3]
-        lnkt:
-          bins_gen_fix: [8, -4., 4.]
-          bins_det_fix: [8, -4., 4.]
-          label: "ln(#it{k}_{T}/(GeV/#it{c}))"
-          arraycols: [3]
-        lntheta-lnkt:
-          arraycols: [3, 4]
-        # new variables
-        fEnergyMother:
-          bins_gen_fix: [1, 0., 100.]
-          bins_det_fix: [1, 0., 100.]
-          arraycols: [3]
-        # lntheta-lnkt-fEnergyMother:
-        #     arraycols: [3, 4, 5]
-        fJetNConstituents:
-          bins_gen_fix: [5, 0., 20.]
-          bins_det_fix: [5, 0., 20.]
-        zpar-fJetNConstituents: {}
-        nsub21:
-          # TODO: check for 1-track jets
-          bins_gen_fix: [11, -1., 1.]
-          bins_det_fix: [11, -1., 1.]
-        eecweight:
-          # TODO: adjust binning
-          bins_gen_fix: [10, 0., 1.]
-          bins_det_fix: [10, 0., 1.]
-          arraycols: [3]
-        fPairTheta-eecweight:
-          arraycols: [3, 4]
+        # lntheta:
+        #   bins_gen_fix: [8, 1., 5.]
+        #   bins_det_fix: [8, 1., 5.]
+        #   label: "#minusln(#it{#theta})"
+        #   arraycols: [3]
+        # lnkt:
+        #   bins_gen_fix: [8, -4., 4.]
+        #   bins_det_fix: [8, -4., 4.]
+        #   label: "ln(#it{k}_{T}/(GeV/#it{c}))"
+        #   arraycols: [3]
+        # lntheta-lnkt:
+        #   arraycols: [3, 4]
+        # # new variables
+        # fEnergyMother:
+        #   bins_gen_fix: [1, 0., 100.]
+        #   bins_det_fix: [1, 0., 100.]
+        #   arraycols: [3]
+        # # lntheta-lnkt-fEnergyMother:
+        # #     arraycols: [3, 4, 5]
+        # fJetNConstituents:
+        #   bins_gen_fix: [5, 0., 20.]
+        #   bins_det_fix: [5, 0., 20.]
+        # zpar-fJetNConstituents: {}
+        # nsub21:
+        #   # TODO: check for 1-track jets
+        #   bins_gen_fix: [11, -1., 1.]
+        #   bins_det_fix: [11, -1., 1.]
+        # eecweight:
+        #   # TODO: adjust binning
+        #   bins_gen_fix: [10, 0., 1.]
+        #   bins_det_fix: [10, 0., 1.]
+        #   arraycols: [3]
+        # fPairTheta-eecweight:
+        #   arraycols: [3, 4]
 
       data_selections:
         mcsig:
@@ -722,6 +812,7 @@ D0Jet_pp:
         use_matched: true
 
       frac_mcana: .2 # fraction of MC sample for the closure
+      fd_input: "sim"
       fd_root: "/data2/vkucera/powheg/trees_powheg_fd_central.root" # systematics
       fd_parquet: "/data2/jklein/powheg/trees_powheg_fd_central.parquet" # systematics
 
@@ -769,10 +860,16 @@ D0Jet_pp:
         runselection: [null] #FIXME # used but useless
         results: ["/home/${USER}/mlhep/d0jet/jet_obs/default/default/mc/results"] #list of periods
         resultsallp: "/home/${USER}/mlhep/d0jet/jet_obs/default/default/mc/results_all"
+      fd: &fd_out_default
+        runselection: [null] #FIXME # used but useless
+        results: ["/home/${USER}/mlhep/d0jet/jet_obs/default/default/fd/results"] #list of periods
+        resultsallp: "/home/${USER}/mlhep/d0jet/jet_obs/default/default/fd/results_all"
       data_proc: # alternative processor output used as the analyzer input
         <<: *data_out_default
       mc_proc: # alternative processor output used as the analyzer input
         <<: *mc_out_default
+      fd_proc: # alternative processor output used as the analyzer input
+        <<: *fd_out_default
 
       # simple fitter START # used in cplusutilities/mass_fitter.C
       # sgnfunc: [0,0,0,0,0,0,0,0,0,0,0,0] # kGaus=0, k2Gaus=1, k2GausSigmaRatioPar=2 (sel_an_binmin bins)
