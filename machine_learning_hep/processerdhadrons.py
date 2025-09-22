@@ -200,7 +200,7 @@ class ProcesserDhadrons(Processer):  # pylint: disable=too-many-instance-attribu
 
     # pylint: disable=line-too-long
     def process_efficiency_single(self, index):
-        # TODO: UPDATE TO DHADRON_MULT VERSION
+        # TODO: Unify this and the dhadrons_mult version
         out_file = TFile.Open(self.l_histoeff[index], "recreate")
         n_bins = len(self.lpt_finbinmin)
         analysis_bin_lims_temp = self.lpt_finbinmin.copy()
