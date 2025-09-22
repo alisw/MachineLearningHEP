@@ -153,7 +153,7 @@ class ProcesserDhadrons(Processer):  # pylint: disable=too-many-instance-attribu
 
             df_ptmerged = pd.concat([df_ptmerged, df], ignore_index=True)
 
-            if self.mltype == "MultiClassification": # pylint: ignore=duplicate-code
+            if self.mltype == "MultiClassification": # pylint: disable=duplicate-code
                 suffix = "%s%d_%d_%.2f%.2f%.2f" % (
                     self.v_var_binning,
                     self.lpt_finbinmin[ipt],

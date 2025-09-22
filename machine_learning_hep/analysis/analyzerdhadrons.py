@@ -291,7 +291,7 @@ class AnalyzerDhadrons(Analyzer):  # pylint: disable=invalid-name
                     lpt_probcutfin[ipt] = self.lpt_probcutfin_tmp[self.bin_matching[ipt]]
                     self.logger.debug("fitting %s - %i", level, ipt)
                     roows = self.roows.get(ipt)
-                    if self.mltype == "MultiClassification": # pylint: ignore=duplicate-code
+                    if self.mltype == "MultiClassification": # pylint: disable=duplicate-code
                         suffix = "%s%d_%d_%.2f%.2f%.2f" % (
                             self.v_var_binning,
                             self.lpt_finbinmin[ipt],
@@ -453,7 +453,7 @@ class AnalyzerDhadrons(Analyzer):  # pylint: disable=invalid-name
 
         do_eff("h_gen_pr", "h_sel_pr", "eff", "Eff", "prompt")
         do_eff("h_gen_fd", "h_sel_fd", "eff_fd", "EffFD", "feed-down")
-        if self.do_ptshape:
+        if self.do_ptshape: # pylint: disable=no-member
             do_eff("h_gen_fd_ptshape", "h_sel_fd_ptshape", "eff_fd_ptshape", "EffFDPtShape", "feed-down")
 
     @staticmethod
