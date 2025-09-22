@@ -339,119 +339,18 @@ LcpKpi:
     opt:
       isFONLLfromROOT: true
       filename_fonll: 'data/fonll/DmesonLcPredictions_13TeV_y05_FFptDepLHCb_BRpythia8_PDG2020.root' # file with FONLL predictions
-      fonll_particle: ['hLcpkpipred_max', 'hLcpkpifromBpred_max_corr'] # prompt and optionally non-prompt FONLL file
+      fonll_particle: 'hLcpkpipred'
       fonll_pred: 'max' # edge of the FONLL prediction
       FF: 0.204 # fragmentation fraction
-      sigma_MB: 57.8e-3  # Minimum Bias cross section (pp) 50.87e-3 [b], 1 for Pb-Pb
+      sigma_MB: 57.8e-3 # Minimum Bias cross section (pp) 50.87e-3 [b], 1 for Pb-Pb
       Taa: 1 # 23260 [b^-1] in 0-10% Pb-Pb, 3917 [b^-1] in 30-50% Pb-Pb, 1 for pp
       BR: 6.23e-2 # branching ratio of the decay Lc -> p K- pi+
       f_prompt: 0.9 # estimated fraction of prompt candidates
       bkg_data_fraction: 0.05 # fraction of real data used in the estimation
-      num_steps: 100 # number of steps used in efficiency and signif. estimation
-      signif_thresholds:
-        - prompt:
-            y_min: 0.0
-            y_max: 0.45
-            x_min: 0.0
-            x_max: 0.2
-          non-prompt:
-            y_min: 0.6
-            y_max: 1.0
-            x_min: 0.0
-            x_max: 0.1
-        - prompt:
-            y_min: 0.0
-            y_max: 0.45
-            x_min: 0.0
-            x_max: 0.2
-          non-prompt:
-            y_min: 0.6
-            y_max: 1.0
-            x_min: 0.0
-            x_max: 0.1
-        - prompt:
-            y_min: 0.0
-            y_max: 0.45
-            x_min: 0.0
-            x_max: 0.2
-          non-prompt:
-            y_min: 0.6
-            y_max: 1.0
-            x_min: 0.0
-            x_max: 0.1
-        - prompt:
-            y_min: 0.0
-            y_max: 0.45
-            x_min: 0.0
-            x_max: 0.2
-          non-prompt:
-            y_min: 0.6
-            y_max: 1.0
-            x_min: 0.0
-            x_max: 0.1
-        - prompt:
-            y_min: 0.0
-            y_max: 0.45
-            x_min: 0.0
-            x_max: 0.2
-          non-prompt:
-            y_min: 0.6
-            y_max: 1.0
-            x_min: 0.0
-            x_max: 0.1
-        - prompt:
-            y_min: 0.0
-            y_max: 0.45
-            x_min: 0.0
-            x_max: 0.2
-          non-prompt:
-            y_min: 0.6
-            y_max: 1.0
-            x_min: 0.0
-            x_max: 0.1
-        - prompt:
-            y_min: 0.0
-            y_max: 0.45
-            x_min: 0.0
-            x_max: 0.2
-          non-prompt:
-            y_min: 0.6
-            y_max: 1.0
-            x_min: 0.0
-            x_max: 0.1
-        - prompt:
-            y_min: 0.0
-            y_max: 0.45
-            x_min: 0.0
-            x_max: 0.2
-          non-prompt:
-            y_min: 0.6
-            y_max: 1.0
-            x_min: 0.0
-            x_max: 0.1
-        - prompt:
-            y_min: 0.0
-            y_max: 0.45
-            x_min: 0.0
-            x_max: 0.2
-          non-prompt:
-            y_min: 0.6
-            y_max: 1.0
-            x_min: 0.0
-            x_max: 0.1
-        - prompt:
-            y_min: 0.0
-            y_max: 0.45
-            x_min: 0.0
-            x_max: 0.2
-          non-prompt:
-            y_min: 0.6
-            y_max: 1.0
-            x_min: 0.0
-            x_max: 0.1
+      num_steps: 111 # number of steps used in efficiency and signif. estimation
       bkg_function: pol2 # fit function for bkg (among TH1 predefined fit functions, e.g. expo, pol1, pol2, ...)
       save_fit: True # save bkg fits with the various cuts on ML output
-      raahp: [1,1,1,1,1,1,1,1,1,1] # sel_skim_binmin bins
+      raahp: [1, 1, 1, 1, 1, 1, 1, 1, 1, 1] # sel_skim_binmin bins
       presel_gen_eff: "abs(fY) < 0.8"
       #presel_gen_eff: "abs(fY) < 0.8 and abs(fPosZ) < 10"
 
