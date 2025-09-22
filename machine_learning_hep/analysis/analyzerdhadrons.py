@@ -291,7 +291,7 @@ class AnalyzerDhadrons(Analyzer):  # pylint: disable=invalid-name
                     lpt_probcutfin[ipt] = self.lpt_probcutfin_tmp[self.bin_matching[ipt]]
                     self.logger.debug("fitting %s - %i", level, ipt)
                     roows = self.roows.get(ipt)
-                    if self.mltype == "MultiClassification": # pylint: disable=duplicate-code
+                    if self.mltype == "MultiClassification":
                         suffix = "%s%d_%d_%.2f%.2f%.2f" % (
                             self.v_var_binning,
                             self.lpt_finbinmin[ipt],
