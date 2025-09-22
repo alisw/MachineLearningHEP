@@ -50,8 +50,13 @@ from .utilities_files import appendmainfoldertolist, create_folder_struc, create
 
 pd.options.mode.chained_assignment = None
 
+# pylint: disable=missing-function-docstring
+
 
 class Processer:  # pylint: disable=too-many-instance-attributes
+    """
+    The main class for data processing, machine learning, and analysis.
+    """
     # Class Attribute
     species = "processer"
     logger = get_logger()
@@ -499,7 +504,8 @@ class Processer:  # pylint: disable=too-many-instance-attributes
                             dfs[df_name][tag] = (var == value["req"]).astype(int)
 
                             # dfs[df_name][tag] = np.array(
-                            #    tag_bit_df(dfs[df_name], value["var"], value["req"], value.get("abs", False)), dtype=int)
+                            #    tag_bit_df(dfs[df_name], value["var"], value["req"], value.get("abs", False)),
+                            #               dtype=int)
 
                 if "swap" in df_spec:
                     self.logger.debug(" %s -> swap", df_name)

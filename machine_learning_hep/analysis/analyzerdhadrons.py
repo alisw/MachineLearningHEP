@@ -55,10 +55,13 @@ from machine_learning_hep.logger import get_logger
 from machine_learning_hep.utils.hist import get_dim, project_hist
 
 # pylint: disable=too-few-public-methods, too-many-instance-attributes, too-many-statements, fixme
-# pylint: disable=consider-using-enumerate fixme
+# pylint: disable=consider-using-enumerate, missing-function-docstring
 
 
 class AnalyzerDhadrons(Analyzer):  # pylint: disable=invalid-name
+    """
+    An analyzer for D and L hadrons.
+    """
     species = "analyzer"
 
     def __init__(self, datap, case, typean, period):
@@ -288,7 +291,7 @@ class AnalyzerDhadrons(Analyzer):  # pylint: disable=invalid-name
                     lpt_probcutfin[ipt] = self.lpt_probcutfin_tmp[self.bin_matching[ipt]]
                     self.logger.debug("fitting %s - %i", level, ipt)
                     roows = self.roows.get(ipt)
-                    if self.mltype == "MultiClassification":
+                    if self.mltype == "MultiClassification": # pylint: ignore=duplicate-code
                         suffix = "%s%d_%d_%.2f%.2f%.2f" % (
                             self.v_var_binning,
                             self.lpt_finbinmin[ipt],
@@ -418,7 +421,8 @@ class AnalyzerDhadrons(Analyzer):  # pylint: disable=invalid-name
         print(self.n_fileff)
         lfileeff = TFile.Open(self.n_fileff)
         lfileeff.ls()
-        fileouteff = TFile.Open(f"{self.d_resultsallpmc}/{self.efficiency_filename}{self.case}{self.typean}.root", "recreate")
+        fileouteff = TFile.Open(f"{self.d_resultsallpmc}/{self.efficiency_filename}{self.case}{self.typean}.root",
+                                "recreate")
 
         def do_eff(gen_hist, sel_hist, histname, outname, eff_case):
             cEff = TCanvas(f"c{outname}", "The Fit Canvas")

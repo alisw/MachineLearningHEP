@@ -74,7 +74,7 @@ from ROOT import (
 from machine_learning_hep.logger import get_logger
 from machine_learning_hep.selectionutils import select_runs
 
-# pylint: disable=too-many-lines
+# pylint: disable=too-many-lines, missing-function-docstring
 
 logger = get_logger()
 

@@ -31,6 +31,9 @@ from machine_learning_hep.utils.hist import bin_array, create_hist, fill_hist
 
 
 class ProcesserDhadrons(Processer):  # pylint: disable=too-many-instance-attributes
+    """
+    The class for specializations of data processing, machine learning and analysis for D and L hadrons.
+    """
     # Class Attribute
     species = "processer"
 
@@ -104,6 +107,9 @@ class ProcesserDhadrons(Processer):  # pylint: disable=too-many-instance-attribu
 
     # pylint: disable=too-many-branches
     def process_histomass_single(self, index):
+        """
+        Generate invariant mass histograms for MC or real data.
+        """
         myfile = TFile.Open(self.l_histomass[index], "recreate")
         dfevtorig = read_df(self.l_evtorig[index])
         neventsorig = len(dfevtorig)
@@ -147,7 +153,7 @@ class ProcesserDhadrons(Processer):  # pylint: disable=too-many-instance-attribu
 
             df_ptmerged = pd.concat([df_ptmerged, df], ignore_index=True)
 
-            if self.mltype == "MultiClassification":
+            if self.mltype == "MultiClassification": # pylint: ignore=duplicate-code
                 suffix = "%s%d_%d_%.2f%.2f%.2f" % (
                     self.v_var_binning,
                     self.lpt_finbinmin[ipt],
@@ -200,6 +206,9 @@ class ProcesserDhadrons(Processer):  # pylint: disable=too-many-instance-attribu
 
     # pylint: disable=line-too-long
     def process_efficiency_single(self, index):
+        """
+        Generate efficiency histograms for MC or real data.
+        """
         # TODO: Unify this and the dhadrons_mult version
         out_file = TFile.Open(self.l_histoeff[index], "recreate")
         n_bins = len(self.lpt_finbinmin)
