@@ -326,10 +326,10 @@ LcpKpi:
 
   multi:
     data:
-      nprocessesparallel: 10
+      nprocessesparallel: 60
       maxfiles : [-1] #list of periods
-      chunksizeunp : [40] #list of periods
-      chunksizeskim: [40] #list of periods
+      chunksizeunp : [100] #list of periods
+      chunksizeskim: [100] #list of periods
       fracmerge : [0.05] #list of periods
       seedmerge: [12] #list of periods
       period: [LHC23_pass4_thin] #list of periods
@@ -343,10 +343,10 @@ LcpKpi:
       pkl_evtcounter_all: LHC23pp_pass4/evttotdata
       mcreweights: [../Analyses]
     mc:
-      nprocessesparallel: 10
+      nprocessesparallel: 80
       maxfiles : [-1] #list of periods
-      chunksizeunp : [30] #list of periods
-      chunksizeskim: [30] #list of periods
+      chunksizeunp : [100] #list of periods
+      chunksizeskim: [100] #list of periods
       fracmerge : [1.0] #list of periods
       seedmerge: [12] #list of periods
       period: [LHC24h1] #list of periods
