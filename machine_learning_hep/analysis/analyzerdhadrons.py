@@ -419,7 +419,7 @@ class AnalyzerDhadrons(Analyzer):  # pylint: disable=invalid-name
         lfileeff = TFile.Open(self.n_fileff)
         lfileeff.ls()
         fileouteff = TFile.Open(f"{self.d_resultsallpmc}/{self.efficiency_filename}{self.case}{self.typean}.root", "recreate")
-        
+
         def do_eff(gen_hist, sel_hist, histname, outname, eff_case):
             cEff = TCanvas(f"c{outname}", "The Fit Canvas")
             cEff.SetCanvasSize(1900, 1500)
@@ -446,7 +446,7 @@ class AnalyzerDhadrons(Analyzer):  # pylint: disable=invalid-name
             gPad.SetLogy()
             legeff.Draw()
             cEff.SaveAs(f"{self.d_resultsallpmc}/{outname}{self.case}{self.typean}.eps")
-        
+
         do_eff("h_gen_pr", "h_sel_pr", "eff", "Eff", "prompt")
         do_eff("h_gen_fd", "h_sel_fd", "eff_fd", "EffFD", "feed-down")
         if self.do_ptshape:
