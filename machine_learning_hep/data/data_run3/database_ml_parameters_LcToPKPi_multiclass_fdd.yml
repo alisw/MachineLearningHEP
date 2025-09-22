@@ -334,8 +334,8 @@ LcpKpi:
       seedmerge: [12] #list of periods
       period: [LHC23_pass4_thin] #list of periods
       select_period: [1]
-      prefix_dir: /data8/majak/MLHEP-data/24022025/
-      unmerged_tree_dir: [LHC23_pass4_thin_hy_applied_342351/alice/cern.ch/user/a/alihyperloop/jobs/0133] #list of periods
+      prefix_dir: /data2/MLhep/
+      unmerged_tree_dir: [real/train_342351/alice/cern.ch/user/a/alihyperloop/jobs/0133] #list of periods
       pkl: [LHC23pp_pass4/prod_LHC23_pass4_thin/pkldata] #list of periods
       pkl_skimmed: [LHC23pp_pass4/prod_LHC23_pass4_thin/pklskdata] #list of periods
       pkl_skimmed_merge_for_ml: [LHC23pp_pass4/prod_LHC23_pass4_thin/pklskmldata] #list of periods
@@ -351,8 +351,8 @@ LcpKpi:
       seedmerge: [12] #list of periods
       period: [LHC24h1] #list of periods
       select_period: [1]
-      prefix_dir: /data8/majak/MLHEP-data/24022025/
-      unmerged_tree_dir: [LHC24h1_341075/alice/cern.ch/user/a/alihyperloop/jobs/0132] #list of periods
+      prefix_dir: /data2/MLhep/
+      unmerged_tree_dir: [sim/train_341075/alice/cern.ch/user/a/alihyperloop/jobs/0132] #list of periods
       pkl: [LHC24pp_mc/prod_LHC24h1/pklmc] #list of periods
       pkl_skimmed: [LHC24pp_mc/prod_LHC24h1/pklskmc] #list of periods
       pkl_skimmed_merge_for_ml: [LHC24pp_mc/prod_LHC24h1/pklskmlmc] #list of periods
@@ -384,7 +384,7 @@ LcpKpi:
     binmax: [2,3,4,5,6,7,8,10,12,24] # must be equal to sel_skim_binmax (sel_skim_binmin bins)
     mltype: MultiClassification
     ncorescrossval: 10
-    prefix_dir_ml: /data8/majak/MLHEP/results-data-20012025/
+    prefix_dir_ml: /data2/MLhep/
     mlplot: mlplot # to be removed
     mlout: mlout # to be removed
 
@@ -509,16 +509,15 @@ LcpKpi:
 
   mlapplication:
     data:
-      prefix_dir_app: /data8/majak/MLHEP/results-data-24022025/
+      prefix_dir_app: /data2/MLhep/
       pkl_skimmed_dec: [LHC23pp_pass4/MLapplication/prod_LHC23_pass4_thin/skpkldecdata] #list of periods
       pkl_skimmed_decmerged: [LHC23pp_pass4/MLapplication/prod_LHC23_pass4_thin/skpkldecdatamerged] #list of periods
     mc:
-      prefix_dir_app: /data8/majak/MLHEP/results-mc-24022025-ptshape/
+      prefix_dir_app: /data2/MLhep/
       pkl_skimmed_dec: [LHC24pp_mc/MLapplication/prod_LHC24h1/skpkldecmc] #list of periods
       pkl_skimmed_decmerged: [LHC24pp_mc/MLapplication/prod_LHC24h1/skpkldecmcmerged] #list of periods
     modelname: xgboost
-    modelsperptbin: [xgboost_classifierLcpKpi_dfselection_fPt_0.0_1.0.sav,
-                     xgboost_classifierLcpKpi_dfselection_fPt_1.0_2.0.sav,
+    modelsperptbin: [xgboost_classifierLcpKpi_dfselection_fPt_1.0_2.0.sav,
                      xgboost_classifierLcpKpi_dfselection_fPt_2.0_3.0.sav,
                      xgboost_classifierLcpKpi_dfselection_fPt_3.0_4.0.sav,
                      xgboost_classifierLcpKpi_dfselection_fPt_4.0_5.0.sav,
@@ -531,19 +530,18 @@ LcpKpi:
     probcutpresel:
       data: [[0.02, 0.0, 0.0], [0.03, 0.0, 0.0], [0.05, 0.0, 0.0], [0.15, 0.0, 0.0], [0.15, 0.0, 0.0], [0.2, 0.0, 0.0], [0.5, 0.0, 0.0], [0.5, 0.0, 0.0], [0.8, 0.0, 0.0], [0.8, 0.0, 0.0]] #list of nbins
       mc: [[0.02, 0.0, 0.0], [0.03, 0.0, 0.0], [0.05, 0.0, 0.0], [0.15, 0.0, 0.0], [0.15, 0.0, 0.0], [0.2, 0.0, 0.0], [0.5, 0.0, 0.0], [0.5, 0.0, 0.0], [0.8, 0.0, 0.0], [0.8, 0.0, 0.0]] #list of nbins
-    probcutoptimal: [[0.02, 0.40, 0.00], [0.03, 0.25, 0.00], [0.04, 0.25, 0.00], [0.07, 0.25, 0.00], [0.10, 0.25, 0.00], [0.11, 0.25, 0.00], [0.15, 0.25, 0.00], [0.18, 0.25, 0.00], [0.25, 0.25, 0.00], [0.35, 0.25, 0.00], [0.35, 0.25, 0.00]] #list of nbins
-    #probcutoptimal: [[0.02, 0.00, 0.55], [0.03, 0.00, 0.55], [0.04, 0.00, 0.50], [0.07, 0.00, 0.35], [0.10, 0.00, 0.35], [0.11, 0.00, 0.35], [0.15, 0.00, 0.35], [0.18, 0.00, 0.35], [0.25, 0.00, 0.35], [0.35, 0.00, 0.35], [0.35, 0.00, 0.35]] #list of nbins
-    #probcutoptimal: [[0.01, 0.00, %fd%], [0.02, 0.00, %fd%], [0.03, 0.00, %fd%], [0.04, 0.00, %fd%], [0.07, 0.00, %fd%], [0.10, 0.00, %fd%], [0.11, 0.00, %fd%], [0.15, 0.00, %fd%], [0.18, 0.00, %fd%], [0.25, 0.00, %fd%], [0.35, 0.00, %fd%], [0.35, 0.00, %fd%]] #list of nbins
+    probcutoptimal: [[0.02, 0.40, 0.00], [0.03, 0.25, 0.00], [0.04, 0.25, 0.00], [0.07, 0.25, 0.00], [0.10, 0.25, 0.00], [0.11, 0.25, 0.00], [0.15, 0.25, 0.00], [0.18, 0.25, 0.00], [0.25, 0.25, 0.00], [0.35, 0.25, 0.00]] # cuts for 2025 approved prompt cross section
+    #probcutoptimal: [[0.02, 0.00, 0.55], [0.03, 0.00, 0.55], [0.04, 0.00, 0.50], [0.07, 0.00, 0.35], [0.10, 0.00, 0.35], [0.11, 0.00, 0.35], [0.15, 0.00, 0.35], [0.18, 0.00, 0.35], [0.25, 0.00, 0.35], [0.35, 0.00, 0.35], [0.35, 0.00, 0.35]] # sample cuts for non-prompt cross-section
+    #probcutoptimal: [[0.01, 0.00, %fd%], [0.02, 0.00, %fd%], [0.03, 0.00, %fd%], [0.04, 0.00, %fd%], [0.07, 0.00, %fd%], [0.10, 0.00, %fd%], [0.11, 0.00, %fd%], [0.15, 0.00, %fd%], [0.18, 0.00, %fd%], [0.25, 0.00, %fd%], [0.35, 0.00, %fd%], [0.35, 0.00, %fd%]] # cuts with placeholders for scanning non-prompt cuts
   analysis:
     anahptspectrum: "LctopKpi" #D0Kpi, DplusKpipi, DstarD0pi, DsKKpi, LctopKpi, LcK0Sp
     fd_method: "dd" # fc, Nb, dd, dd_N
     crosssec_prompt: True # True for prompt, False for non-prompt
     cctype: "pp"
     sigmamb: 59.4e+9 # 50.87e+9 pp5TeV, 57.8e+9 pp13TeV, 59.4e+9 pp Run3, pb
-    inputfonllpred: /data8/majak/crosssec/202502/fractions/CutVarLc_pp13TeV_LHC23_pass4_wide.root
-    #inputfonllpred: /data8/majak/crosssec/202502/fractions/CutVarLc_pp13TeV_LHC23_pass4_default.root
-    #inputfonllpred: data/fonll/fonll_pythia_beautyFFLHCb_charmhadrons_13dot6tev_y0dot5_highStatistics.root
-    #inputfonllpred: data/fonll/DmesonLcPredictions_13TeV_y05_FFptDepLHCb_BRpythia8_PDG2020.root
+    inputfonllpred: /data8/majak/crosssec/202502/fractions/CutVarLc_pp13TeV_LHC23_pass4_default.root # Cut variation output file for data-driven cross section estimation
+    #inputfonllpred: data/fonll/fonll_pythia_beautyFFLHCb_charmhadrons_13dot6tev_y0dot5_highStatistics.root # Run 3 file for cross section estimation with Nb -- strange results
+    #inputfonllpred: data/fonll/DmesonLcPredictions_13TeV_y05_FFptDepLHCb_BRpythia8_PDG2020.root # Run 2 file for cross section estimation with Nb
     dir_general_plots: analysis_plots
 
     Run3analysis:
@@ -581,12 +579,12 @@ LcpKpi:
 
       data:
         runselection: [null] #FIXME
-        prefix_dir_res: /data8/majak/MLHEP/%resdir%/
+        prefix_dir_res: /data2/MLhep/%resdir%/
         results: [LHC23pp_pass4/Results/prod_LHC23_pass4_thin/resultsdata] #list of periods
         resultsallp: LHC23pp_pass4/Results/resultsdatatot
       mc:
         runselection: [null] #FIXME
-        prefix_dir_res: /data8/majak/MLHEP/%resdir%/
+        prefix_dir_res: /data2/MLhep/%resdir%/
         results: [LHC24pp_mc/Results/prod_LHC24h1/resultsmc] #list of periods
         resultsallp: LHC24pp_mc/Results/resultsmctot
 
