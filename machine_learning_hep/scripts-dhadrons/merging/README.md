@@ -1,4 +1,4 @@
-# Merging histograms and files
+# Merge results from different MLHEP and cut variation runs
 
 ## Merge multiple histograms from multiple input files
 

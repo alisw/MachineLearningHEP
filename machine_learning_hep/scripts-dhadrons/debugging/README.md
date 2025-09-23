@@ -1,4 +1,4 @@
-# Debugging some issues
+# Verify different stages of MLHEP processing
 
 ## Check MLHEP output data files
 

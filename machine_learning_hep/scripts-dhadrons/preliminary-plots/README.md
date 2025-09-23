@@ -1,4 +1,4 @@
-# Scripts for preliminary plots
+# Scripts for ALICE preliminary plots
 
 ## Invariant mass fits
 

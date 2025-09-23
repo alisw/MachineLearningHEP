@@ -1,4 +1,4 @@
-# Run MLHEP
+# Automate MLHEP running
 
 ## A simple shortcut with default running options
 

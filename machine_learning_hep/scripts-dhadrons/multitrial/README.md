@@ -1,4 +1,4 @@
-# Multitrial systematics with MLHEP
+# Multitrial (raw yield) systematics with MLHEP
 
 ## Generate configurations (MLHEP yml databases) for each trial
 
