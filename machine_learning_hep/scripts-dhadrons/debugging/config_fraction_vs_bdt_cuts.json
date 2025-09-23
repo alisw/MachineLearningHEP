@@ -1,7 +1,7 @@
 {
   "file_pattern": "/data8/majak/MLHEP/results-24022025-newtrain_fd_0.[0-9][0-9]0/LHC23pp_pass4/Results/resultsdatatot/finalcrossLcpKpiRun3analysis.root",
   "_file_pattern": "glob pattern to all files with different BDT cuts",
-  "dir_pattern": "results-24022025-newtrain_fd_0.[0-9][0-9]0", 
+  "dir_pattern": "results-24022025-newtrain_fd_0.[0-9][0-9]0",
   "_dir_pattern": "the base directory prefix from the file pattern above",
   "histoname": "gfraction",
   "_histoname": "the prompt fraction histogram name",

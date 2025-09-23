@@ -64,7 +64,7 @@ def main():
                         (hist.GetBinContent(bin1) * hist.GetBinWidth(bin1) +\
                          hist.GetBinContent(bin2) * hist.GetBinWidth(bin2)) /\
                         weight_sum)
-                print(f"bin {bin1} error {hist.GetBinError(bin1)} bin2 {hist.GetBinError(bin2)}\n" 
+                print(f"bin {bin1} error {hist.GetBinError(bin1)} bin2 {hist.GetBinError(bin2)}\n"\
                         f"scaled: {hist.GetBinWidth(bin1) * hist.GetBinError(bin1)}, "\
                         f"{hist.GetBinWidth(bin2) * hist.GetBinError(bin2)}\n"\
                         f"divided: {(hist.GetBinWidth(bin1) * hist.GetBinError(bin1)) / weight_sum}, "\
