@@ -32,5 +32,5 @@
     "outdir": "/data8/majak/crosssec/202502/",
     "file": "graph_frac_Lc_run3_Nb"
   },
-  "_output": "output directory and file name pattern"
+  "_output": "output directory and file name pattern; pdf/png/root suffixes are appended"
 }

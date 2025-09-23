@@ -19,7 +19,6 @@ def plot_parquet(df):
 
     fig = plt.figure(figsize=(20, 15))
     ax = plt.subplot(1, 1, 1)
-    #ax.set_xlim([0, (df["fY"].mean()*2)])
     plt.hist(ds_fin.values, bins=50)
     ax.set_xlabel("fY", fontsize=30)
     ax.set_ylabel("Entries", fontsize=30)
@@ -33,38 +32,27 @@ def main():
 
     df = pd.read_parquet(args.infile)
     print(f"df columns: {df.columns}")
-    #print(f"full df:\n{df}")
     print(df.size)
 
-    # 1-2:           36715937
-    # sum from data: 1615501228
-    # 2-3: 45167231
-    # 3-4: 71973551
-    # 4-5: 34874429
-    # 5-6:
-    # 6-7:
-    # 7-8:
-    # 8-10:
-    # 10-12:
-    # 12-24:
+    print(f"df mean\n{df.mean()}")
 
-    #print(f"df mean\n{df.mean()}")
+    print(f"df[0]\n{df.iloc[0]}")
 
-    #print(f"df[0]\n{df.iloc[0]}")
+    plot_parquet(df)
 
-    #df_sel = df[df["y_test_probxgboostbkg"] > 1.0]
-    #print(f"sel df bkg:\n{df_sel}")
-    #df_sel = df[df["y_test_probxgboostnon_prompt"] < 0.00]
-    #print(f"sel df non-prompt:\n{df_sel}")
-    #df_sel = df[df["y_test_probxgboostprompt"] < 0.00]
-    #print(f"sel df prompt:\n{df_sel}")
+    df_sel = df[df["y_test_probxgboostbkg"] > 1.0]
+    print(f"sel df bkg:\n{df_sel}")
+    df_sel = df[df["y_test_probxgboostnon_prompt"] < 0.00]
+    print(f"sel df non-prompt:\n{df_sel}")
+    df_sel = df[df["y_test_probxgboostprompt"] < 0.00]
+    print(f"sel df prompt:\n{df_sel}")
 
-    print(f'ML columns:\n{df["fMlBkgScore"]}\n{df["fMlPromptScore"]}\n{df["fMlNonPromptScore"]}')
-    df_sel = df[df["fMlBkgScore"] > 1.0]
-    print(f'df sel ML bkg:\n{df_sel["fMlBkgScore"]}')
-    df_sel = df[df["fMlNonPromptScore"] < 0.0]
-    print(f'df sel ML non-prompt:\n{df_sel["fMlNonPromptScore"]}')
-    #print(f'df sel ML columns:\n{df_sel["fMlBkgScore"]}\n{df_sel["fMlNonPromptScore"]}')
+    # Valid only for data with saved results of ML application on Hyperloop
+    #print(f'ML columns:\n{df["fMlBkgScore"]}\n{df["fMlPromptScore"]}\n{df["fMlNonPromptScore"]}')
+    #df_sel = df[df["fMlBkgScore"] > 1.0]
+    #print(f'df sel ML bkg:\n{df_sel["fMlBkgScore"]}')
+    #df_sel = df[df["fMlNonPromptScore"] < 0.0]
+    #print(f'df sel ML non-prompt:\n{df_sel["fMlNonPromptScore"]}')
 
 
 if __name__ == '__main__':
