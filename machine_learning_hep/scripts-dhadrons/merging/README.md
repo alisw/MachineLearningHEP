@@ -29,4 +29,18 @@ The merging creates a single output file with histogram for the 1st pT bin from 
 
 `merge-mlhep.sh` is an example that uses `merge_histomass.py` to obtain a single invariant mass file for the O2Physics D2H mass fitter. The script makes also use of `merge_histos.py` to get a single efficiencies file to be used in the cut variation macro.
 
+## Gather MLHEP efficiencies and mass fits for cut variation
 
+File: `gather-inputs-cutvar.sh`
+Usage: `./gather-inputs-cutvar.sh`
+
+To get MLHEP results for different non-prompt cuts, different output directories must be set. Otherwise, the results get overwritten. However, the cut variation script requires the input efficiency and mass fit files to be in a single directory.
+
+This script takes all `efficienciesLcpKpiRun3analysis.root` and `yields_LcpKpi_Run3analysis.root` MLHEP output files from the directories that match `RESDIR_PATTERN`, and puts them in the `OUTPUT_DIR`. To differentiate the files, the suffix made of the corresponding directory name with `RESDIR_PATTERN` removed is appended to a file name.<br>
+`PERM_PATTERN` is also used to match directories, but it is not removed from the suffix.
+
+For example, given `RESDIR_PATTERN`: `/data/MLHEP/results-today_`, `PERM_PATTERN`: `non-prompt_`, and directories like: `/data/MLHEP/results-today_non-prompt_0.1`, `/data/MLHEP/results-today_-prompt_0.2`, the resulting efficiency file names are: `efficienciesLcpKpiRun3analysis_non-prompt_0.1.root`, `efficienciesLcpKpiRun3analysis_non-prompt_0.2.root`.
+
+Adjust `MLHEP_DIR`, `OUTPUT_DIR`, `RESDIR_PATTERN` and `PERM_PATTERN` in the script.
+
+You might also need to adjust the regular expression in line 12 and file paths in the for loop. 
