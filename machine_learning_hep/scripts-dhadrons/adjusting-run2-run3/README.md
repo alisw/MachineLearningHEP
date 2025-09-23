@@ -2,7 +2,7 @@
 
 ## Add pT bins to extend the x-axis range on the plots
 
-File: `add_pt_bins.py`
+File: `add_pt_bins.py`<br>
 Usage: `python add_pt_bins.py in_file.root histname out_file.root` 
 
 ROOT does not allow nicely to plot a histogram on a plot with x-axis wider than histogram minimum and maximum bins.
@@ -13,7 +13,7 @@ You can uncomment lines 53-64 to get a formula for merging 2 bins. You need to a
 
 ## Restrict the maximum of x-axis
 
-File: `remove_high_pt.py`
+File: `remove_high_pt.py`<br>
 Usage: `python remove_high_pt.py in_file.root histname out_file.root maxval`
 
 This is a contrary script to the previous one.
@@ -22,7 +22,7 @@ Here, `out_file.root` will contain histograms, where the last x-axis bin contain
 
 ## Rescale and merge cross section results
 
-Files: `modify_crosssec_run2.py`, `modify_crosssec_run3.py`
+Files: `modify_crosssec_run2.py`, `modify_crosssec_run3.py`<br>
 Usage: `python modify_crosssec_run2.py in_file.root histname out_histname out_file.root`
 
 The Run 2 script scales `histname` from `in_file.root` by 1./BR and merges bins, whose indices are provided in the script. The output is saved under name `out_histname` in `out_file.root`.

@@ -1,6 +1,6 @@
 # Obtain various comparison plots, esp. for systematics and final analysis results
 
-File: `compare_fractions.py`
+File: `compare_fractions.py`<br>
 Usage: `python compare_fractions.py config.json`
 
 All JSON files in this directory provide various configuration examples for different use cases.

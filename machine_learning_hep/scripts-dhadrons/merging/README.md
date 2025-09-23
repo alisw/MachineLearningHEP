@@ -2,7 +2,7 @@
 
 ## Merge multiple histograms from multiple input files
 
-Files: `merge_histos.py`, `merge-cutvar.sh`, `merge-yields.sh`
+Files: `merge_histos.py`, `merge-cutvar.sh`, `merge-yields.sh`<br>
 Usage: `python merge_histos.py -o out_file.root -n histName1 -n histName2 -i in_file1.root -i in_file2.root`
 
 You can provide as many histogram names as you want. All histograms should be 1-dimensional and have the same x-axis. If no histogram name is provided, the script will merge all 1-dimensional histograms from the input files.
@@ -15,7 +15,7 @@ The bash files `merge-cutvar.sh` and `merge-yields.sh` provide examples of using
 
 ## Merge the outputs of the MLHEP histomass step
 
-Files: `merge_histomass.py`, `merge-mlhep.sh`
+Files: `merge_histomass.py`, `merge-mlhep.sh`<br>
 Usage: `python merge_histomass.py -o out_file.root -n histName1 -n histName2 -i in_file1.root -i -in_file2.root`
 
 This script is different from the previous one as it is adjusted to the layout of MLHEP `masshisto.root` files, which contain 1 invariant mass histogram per pT bin.
@@ -31,7 +31,7 @@ The merging creates a single output file with histogram for the 1st pT bin from 
 
 ## Gather MLHEP efficiencies and mass fits for cut variation
 
-File: `gather-inputs-cutvar.sh`
+File: `gather-inputs-cutvar.sh`<br>
 Usage: `./gather-inputs-cutvar.sh`
 
 To get MLHEP results for different non-prompt cuts, different output directories must be set. Otherwise, the results get overwritten. However, the cut variation script requires the input efficiency and mass fit files to be in a single directory.
