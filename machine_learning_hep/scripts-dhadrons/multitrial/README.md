@@ -9,7 +9,7 @@ Arguments:
 - `database_file`: filename of the template database without the .yml extension, e.g., `database_ml_parameters_LcToPKPi`
 - `in_db_dir`: path to the directory containing the database, e.g., `data/data_run3`
 - `out_db_dir`: path to the directory for output multitrial databases, e.g., `multitrial_db`
-- `mlhep_results_dir_pattern`: prefix of output directory name for fit results; for each trial, the trial name is appended to the directory name, and the resulting directory name is written under `Run3analysis/{data,mc}/prefix_dir_res` in the database file 
+- `mlhep_results_dir_pattern`: prefix of output directory name for fit results; for each trial, the trial name is appended to the directory name, and the resulting directory name is written under `Run3analysis/{data,mc}/prefix_dir_res` in the database file
 
 Adjust `DIR_PATH` in the script. It is the path to the base directory where you store directories with MLHEP results.
 

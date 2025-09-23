@@ -24,4 +24,3 @@ Usage: `python plot_prompt_fraction_vs_bdt_cuts.py config_fraction_vs_bdt_cuts.j
 
 Adjust the JSON config. Here, you provide a glob pattern to all files of interest.
 By adjusting `histoname`, you can plot also the non-prompt fraction.
- 

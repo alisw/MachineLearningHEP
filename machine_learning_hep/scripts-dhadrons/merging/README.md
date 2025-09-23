@@ -43,4 +43,4 @@ For example, given `RESDIR_PATTERN`: `/data/MLHEP/results-today_`, `PERM_PATTERN
 
 Adjust `MLHEP_DIR`, `OUTPUT_DIR`, `RESDIR_PATTERN` and `PERM_PATTERN` in the script.
 
-You might also need to adjust the regular expression in line 12 and file paths in the for loop. 
+You might also need to adjust the regular expression in line 12 and file paths in the for loop.

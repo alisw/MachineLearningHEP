@@ -13,4 +13,4 @@ The histogram labels in legend are taken from the dictionary labels in the JSON,
 
 It is also possible to specify the `y_axis` title and an additional description under the "ALICE Preliminary" header (`alice_text` variable in the config). The header itself and its position can be adjusted in the `get_alice_text` function in the Python script.
 
-Colors and markers can be adjusted at the beginning of the script. 
+Colors and markers can be adjusted at the beginning of the script.

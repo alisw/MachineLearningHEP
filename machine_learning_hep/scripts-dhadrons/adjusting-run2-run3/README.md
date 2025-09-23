@@ -3,7 +3,7 @@
 ## Add pT bins to extend the x-axis range on the plots
 
 File: `add_pt_bins.py`<br>
-Usage: `python add_pt_bins.py in_file.root histname out_file.root` 
+Usage: `python add_pt_bins.py in_file.root histname out_file.root`
 
 ROOT does not allow nicely to plot a histogram on a plot with x-axis wider than histogram minimum and maximum bins.
 
@@ -31,4 +31,4 @@ The Run 3 script only rescales the input histogram and saves the result in `out_
 
 The lines commented out provide more examples of rescaling.
 
-For Lc prompt cross section obtained during March 2025 approvals, only the uncommented lines in both files were used.  
+For Lc prompt cross section obtained during March 2025 approvals, only the uncommented lines in both files were used.

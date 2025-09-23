@@ -8,7 +8,7 @@ Usage: `python plot_invmass_fit_dzero_dplus_lambdac.py config_invmass_preliminar
 Example config in `config_invmass_preliminary.yml`. It was used to draw the plots:
 - https://alice-figure.web.cern.ch/node/34090
 - https://alice-figure.web.cern.ch/node/34089
-- https://alice-figure.web.cern.ch/node/34088 
+- https://alice-figure.web.cern.ch/node/34088
 
 The script is passed in different versions around the D2H people. Here, it contains my few improvements, e.g., configurable multiplicity label.<br>
 I also commented out lines related to non-prompt particles as we had results only for the prompt case.
@@ -32,4 +32,4 @@ Adjust the script:
 - set `bdtScoreCuts` to the proper `bdtScoreCuts_...` variable
 - adjust `bdtScoreCuts_toPlot` and the corresponding indices in `bdtScoreCuts_toPlot_ind`; they are the cuts to label on the x-axis
 - adjust the input file name and histogram names in `DrawCutVarFit()`
-- adjust x-axis title, if needed 
+- adjust x-axis title, if needed
