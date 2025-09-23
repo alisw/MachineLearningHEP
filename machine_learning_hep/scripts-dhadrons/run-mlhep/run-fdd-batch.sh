@@ -1,7 +1,7 @@
 #!/bin/bash
 
-# Run MLHEP in batch for various non-prompt cuts
-# You need a MLHEP database with %resdir%, %bkg...%, and %fd...% placeholders.
+# Run MLHEP in batch for various BDT cuts.
+# You need an MLHEP database with %resdir%, %bkg...%, and %fd% placeholders.
 
 source "${HOME}/Run3Analysisvalidation/exec/utilities.sh"
 WORKDIR="${HOME}/MachineLearningHEP/machine_learning_hep/"
@@ -51,17 +51,6 @@ for fd in $(seq 0.000 0.005 0.000) ; do
   sed -i "s/%bkg1624%/${bkg}/g" "${CUR_DB}" || ErrExit "Could not edit database"
 
   # Set non-prompt BDT cuts
-  sed -i "s/%fd%/${fd}/g" "${CUR_DB}" || ErrExit "Could not edit database"
-  sed -i "s/%fd%/${fd}/g" "${CUR_DB}" || ErrExit "Could not edit database"
-  sed -i "s/%fd%/${fd}/g" "${CUR_DB}" || ErrExit "Could not edit database"
-  sed -i "s/%fd%/${fd}/g" "${CUR_DB}" || ErrExit "Could not edit database"
-  sed -i "s/%fd%/${fd}/g" "${CUR_DB}" || ErrExit "Could not edit database"
-  sed -i "s/%fd%/${fd}/g" "${CUR_DB}" || ErrExit "Could not edit database"
-  sed -i "s/%fd%/${fd}/g" "${CUR_DB}" || ErrExit "Could not edit database"
-  sed -i "s/%fd%/${fd}/g" "${CUR_DB}" || ErrExit "Could not edit database"
-  sed -i "s/%fd%/${fd}/g" "${CUR_DB}" || ErrExit "Could not edit database"
-  sed -i "s/%fd%/${fd}/g" "${CUR_DB}" || ErrExit "Could not edit database"
-  sed -i "s/%fd%/${fd}/g" "${CUR_DB}" || ErrExit "Could not edit database"
   sed -i "s/%fd%/${fd}/g" "${CUR_DB}" || ErrExit "Could not edit database"
 
   # `yes` is a program that says `y` to all interactive console prompts.
