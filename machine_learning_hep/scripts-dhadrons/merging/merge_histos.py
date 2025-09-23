@@ -1,6 +1,6 @@
 """
-Merge histograms from different ROOT files. One file per pt bin.
-A single histogram contains all pt bins.
+Merge histograms from different ROOT files. One file per x-axis bin.
+A single histogram contains all x-axis bins.
 """
 
 import argparse
@@ -15,7 +15,7 @@ def main():
 
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("-n", "--histname", action="append", type=str,
-                        help="name of histograms to merge")
+                        help="Name of histograms to merge")
     parser.add_argument("-o", "--outfile", action="append", type=str, help="Output file")
     parser.add_argument("-i", "--infile", action="append", type=str, help="Input file")
     args = parser.parse_args()

@@ -1,6 +1,6 @@
 """
-Merge MLHEP histomass root files for the PWGHF mass fitter. One file per pt bin.
-One histogram per pt bin.
+Merge MLHEP histomass root files for the PWGHF mass fitter.
+One file per pt bin. Each file contains one histogram per pt bin.
 """
 
 import argparse
@@ -16,7 +16,7 @@ def main():
 
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("-n", "--histname", action="append", type=str,
-                        help="name of histograms to merge")
+                        help="Name pattern of histograms to merge")
     parser.add_argument("-o", "--outfile", action="append", type=str, help="Output file")
     parser.add_argument("-i", "--infile", action="append", type=str, help="Input file")
     args = parser.parse_args()
