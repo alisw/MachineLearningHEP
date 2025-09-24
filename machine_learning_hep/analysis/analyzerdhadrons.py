@@ -149,6 +149,8 @@ class AnalyzerDhadrons(Analyzer):  # pylint: disable=invalid-name
 
         self.root_objects = []
 
+        self.do_ptshape = datap.get("do_ptshape", False)
+
         # Fitting
         self.p_performval = datap["analysis"].get("event_cand_validation", None)
 
@@ -453,7 +455,7 @@ class AnalyzerDhadrons(Analyzer):  # pylint: disable=invalid-name
 
         do_eff("h_gen_pr", "h_sel_pr", "eff", "Eff", "prompt")
         do_eff("h_gen_fd", "h_sel_fd", "eff_fd", "EffFD", "feed-down")
-        if self.do_ptshape: # pylint: disable=no-member
+        if self.do_ptshape:
             do_eff("h_gen_fd_ptshape", "h_sel_fd_ptshape", "eff_fd_ptshape", "EffFDPtShape", "feed-down")
 
     @staticmethod
