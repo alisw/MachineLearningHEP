@@ -486,11 +486,13 @@ class AnalyzerDhadrons(Analyzer):  # pylint: disable=invalid-name
         if not os.path.exists(fileouteff):
             self.logger.fatal("Efficiency file %s could not be found", fileouteff)
 
-        fileoutcross = f"{self.d_resultsallpdata}/finalcross{self.case}{self.typean}.root"
+        ptshape = "_ptshape" if self.do_ptshape else ""
+        fileoutcross = f"{self.d_resultsallpdata}/finalcross{self.case}{self.typean}{ptshape}.root"
 
         namehistoeffprompt = "eff"
-        namehistoefffeed = "eff_fd"
+        namehistoefffeed = f"eff_fd{ptshape}"
         nameyield = "hyields0"
+        self.logger.info("Using efficiency histos %s, %s", namehistoeffprompt, namehistoefffeed)
 
         histonorm = TH1F("histonorm", "histonorm", 1, 0, 1)
 
@@ -537,7 +539,8 @@ class AnalyzerDhadrons(Analyzer):  # pylint: disable=invalid-name
             fileoutcross,
         )
 
-        fileoutcrosstot = TFile.Open(f"{self.d_resultsallpdata}/finalcross{self.case}{self.typean}tot.root", "recreate")
+        fileoutcrosstot = TFile.Open(f"{self.d_resultsallpdata}/finalcross{self.case}{self.typean}tot{ptshape}.root",
+                                     "recreate")
 
         f_fileoutcross = TFile.Open(fileoutcross)
         if f_fileoutcross:
