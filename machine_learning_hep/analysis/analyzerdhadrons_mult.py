@@ -200,7 +200,11 @@ class AnalyzerDhadrons_mult(Analyzer):  # pylint: disable=invalid-name
     def _roofit_mass(self, level, hist, ipt, pdfnames, param_names, fitcfg, roows=None, filename=None):
         if fitcfg is None:
             return None, None
-        res, ws, frame, residual_frame = self.fitter.fit_mass_new(hist, pdfnames, fitcfg, level, roows, True)
+        try:
+            res, ws, frame, residual_frame = self.fitter.fit_mass_new(hist, pdfnames, param_names, fitcfg, level, roows=roows, plot=True)
+        except ValueError:
+            self.logger.error(f"Could not do fitting on {level} for pt {self.bins_candpt[ipt]} - {self.bins_candpt[ipt+1]}")
+            return None, None
         frame.SetTitle(f"inv. mass for p_{{T}} {self.bins_candpt[ipt]} - {self.bins_candpt[ipt + 1]} GeV/c")
         c = TCanvas()
 
@@ -208,7 +212,7 @@ class AnalyzerDhadrons_mult(Analyzer):  # pylint: disable=invalid-name
         add_text_info_fit(textInfoRight, frame, ws, param_names)
 
         textInfoLeft = create_text_info(0.12, 0.68, 0.6, 0.89)
-        if level == "data":
+        if res and level == "data":
             mean_sgn = ws.var(self.p_param_names["gauss_mean"])
             sigma_sgn = ws.var(self.p_param_names["gauss_sigma"])
             (sig, sig_err, bkg, bkg_err, signif, signif_err, s_over_b, s_over_b_err) = calc_signif(
@@ -221,7 +225,7 @@ class AnalyzerDhadrons_mult(Analyzer):  # pylint: disable=invalid-name
         textInfoRight.Draw()
         textInfoLeft.Draw()
 
-        if res.status() == 0:
+        if res and res.status() == 0:
             self._save_canvas(c, filename)
         else:
             self.logger.warning("Invalid fit result for %s", hist.GetName())
@@ -238,7 +242,9 @@ class AnalyzerDhadrons_mult(Analyzer):  # pylint: disable=invalid-name
             filename = filename.replace(".png", "_residual.png")
             self._save_canvas(cres, filename)
 
-        return res, ws
+        chi = frame.chiSquare()
+
+        return res, ws, chi
 
     def _fit_mass(self, hist, filename=None):
         if hist.GetEntries() == 0:
@@ -315,8 +321,8 @@ class AnalyzerDhadrons_mult(Analyzer):  # pylint: disable=invalid-name
                     soverbhistos = TH1F(
                         "hSoverB%d" % (ibin2), "", len(self.lpt_finbinmin), array("d", self.bins_candpt)
                     )
+                    chihistos = TH1F("hchi%d" % (ibin2), "", len(self.lpt_finbinmin), array("d", self.bins_candpt))
 
-                    lpt_probcutfin = [None] * self.nbins
                     for ipt in range(len(self.lpt_finbinmin)):
                         lpt_probcutfin[ipt] = self.lpt_probcutfin_tmp[self.bin_matching[ipt]]
                         self.logger.debug("fitting %s - %i - %i", level, ipt, ibin2)
@@ -391,7 +397,7 @@ class AnalyzerDhadrons_mult(Analyzer):  # pylint: disable=invalid-name
                             # Create the directory if it doesn't exist
                             directory_path.mkdir(parents=True, exist_ok=True)
 
-                            roo_res, roo_ws = self._roofit_mass(
+                            roo_res, roo_ws, chi = self._roofit_mass(
                                 level,
                                 h_invmass,
                                 ipt,
@@ -407,7 +413,7 @@ class AnalyzerDhadrons_mult(Analyzer):  # pylint: disable=invalid-name
                             #     roo_ws.Print()
                             self.roo_ws[level][ipt] = roo_ws
                             self.roows[ipt] = roo_ws
-                            if roo_res.status() == 0:
+                            if roo_res and roo_res.status() == 0:
                                 if level in ("data", "mc_sig"):
                                     self.fit_mean[level][ipt] = roo_ws.var(self.p_param_names["gauss_mean"]).getValV()
                                     self.fit_sigma[level][ipt] = roo_ws.var(self.p_param_names["gauss_sigma"]).getValV()
@@ -425,9 +431,13 @@ class AnalyzerDhadrons_mult(Analyzer):  # pylint: disable=invalid-name
                             if level == "data":
                                 mean_sgn = roo_ws.var(self.p_param_names["gauss_mean"])
                                 sigma_sgn = roo_ws.var(self.p_param_names["gauss_sigma"])
-                                (sig, sig_err, _, _, signif, signif_err, s_over_b, s_over_b_err) = calc_signif(
-                                    roo_ws, roo_res, self.p_pdfnames, self.p_param_names, mean_sgn, sigma_sgn
-                                )
+                                if roo_res:
+                                    (sig, sig_err, _, _,
+                                        signif, signif_err, s_over_b, s_over_b_err
+                                    ) = calc_signif(roo_ws, roo_res, self.p_pdfnames, \
+                                                    self.p_param_names, mean_sgn, sigma_sgn)
+                                else:
+                                    sig = sig_err = signif = signif_err = s_over_b = s_over_b_err = 0.0
 
                                 yieldshistos.SetBinContent(ipt + 1, sig)
                                 yieldshistos.SetBinError(ipt + 1, sig_err)
@@ -439,12 +449,15 @@ class AnalyzerDhadrons_mult(Analyzer):  # pylint: disable=invalid-name
                                 signifhistos.SetBinError(ipt + 1, signif_err)
                                 soverbhistos.SetBinContent(ipt + 1, s_over_b)
                                 soverbhistos.SetBinError(ipt + 1, s_over_b_err)
+                                chihistos.SetBinContent(ipt + 1, chi)
+                                chihistos.SetBinError(ipt + 1, 0)
                     fileout.cd()
                     yieldshistos.Write()
                     meanhistos.Write()
                     sigmahistos.Write()
                     signifhistos.Write()
                     soverbhistos.Write()
+                    chihistos.Write()
                 fileout.Close()
 
     def get_efficiency(self, ibin1, ibin2):
