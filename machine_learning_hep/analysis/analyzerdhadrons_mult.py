@@ -199,12 +199,12 @@ class AnalyzerDhadrons_mult(Analyzer):  # pylint: disable=invalid-name
     # region fitting
     def _roofit_mass(self, level, hist, ipt, pdfnames, param_names, fitcfg, roows=None, filename=None):
         if fitcfg is None:
-            return None, None
+            return None, None, None
         try:
-            res, ws, frame, residual_frame = self.fitter.fit_mass_new(hist, pdfnames, param_names, fitcfg, level, roows=roows, plot=True)
+            res, ws, frame, residual_frame = self.fitter.fit_mass_new(hist, pdfnames, fitcfg, level, roows=roows, plot=True)
         except ValueError:
             self.logger.error(f"Could not do fitting on {level} for pt {self.bins_candpt[ipt]} - {self.bins_candpt[ipt+1]}")
-            return None, None
+            return None, None, None
         frame.SetTitle(f"inv. mass for p_{{T}} {self.bins_candpt[ipt]} - {self.bins_candpt[ipt + 1]} GeV/c")
         c = TCanvas()
 
@@ -307,8 +307,7 @@ class AnalyzerDhadrons_mult(Analyzer):  # pylint: disable=invalid-name
             fileout_name = self.make_file_path(
                 self.d_resultsallpdata, self.yields_filename, "root", None, [self.case, self.typean]
             )
-            fileout = TFile(fileout_name, "RECREATE")
-            with TFile(rfilename) as rfile:
+            with TFile(rfilename) as rfile, TFile(fileout_name, "RECREATE") as fileout:
                 for ibin2 in range(len(self.lvar2_binmin)):
                     yieldshistos = TH1F(
                         "hyields%d" % (ibin2), "", len(self.lpt_finbinmin), array("d", self.bins_candpt)
@@ -323,6 +322,7 @@ class AnalyzerDhadrons_mult(Analyzer):  # pylint: disable=invalid-name
                     )
                     chihistos = TH1F("hchi%d" % (ibin2), "", len(self.lpt_finbinmin), array("d", self.bins_candpt))
 
+                    lpt_probcutfin = [None] * self.nbins
                     for ipt in range(len(self.lpt_finbinmin)):
                         lpt_probcutfin[ipt] = self.lpt_probcutfin_tmp[self.bin_matching[ipt]]
                         self.logger.debug("fitting %s - %i - %i", level, ipt, ibin2)
@@ -348,6 +348,7 @@ class AnalyzerDhadrons_mult(Analyzer):  # pylint: disable=invalid-name
                                 self.lvar2_binmin[ibin2],
                                 self.lvar2_binmax[ibin2],
                             )
+                        rfile.cd()
                         h_invmass = rfile.Get("hmass" + suffix)
                         # Rebin
                         h_invmass.Rebin(self.p_rebin[ipt])
@@ -436,6 +437,19 @@ class AnalyzerDhadrons_mult(Analyzer):  # pylint: disable=invalid-name
                                         signif, signif_err, s_over_b, s_over_b_err
                                     ) = calc_signif(roo_ws, roo_res, self.p_pdfnames, \
                                                     self.p_param_names, mean_sgn, sigma_sgn)
+                                    fileout.cd()
+                                    one = RooConstVar("one", "constant 1.0", 1.0)
+                                    bkg_pdf = roo_ws.pdf(self.p_pdfnames["pdf_bkg"])
+                                    sig_pdf = roo_ws.pdf(self.p_pdfnames["pdf_sig"])
+                                    for pdf, outlabel in zip((bkg_pdf, sig_pdf, model), ("bkg", "sgn", "total")):
+                                        if not pdf:
+                                            continue
+                                        obs = pdf.getObservables(dh)
+                                        params = pdf.getParameters(dh)
+                                        fit_func = pdf.asTF(obs, params, RooArgSet(one))
+                                        fit_func.Write(f"{outlabel}TF_{ptrange[0]:.0f}_{ptrange[1]:.0f}")
+
+                                    h_invmass.Write(f"hmass_{ipt}")
                                 else:
                                     sig = sig_err = signif = signif_err = s_over_b = s_over_b_err = 0.0
 
@@ -458,7 +472,6 @@ class AnalyzerDhadrons_mult(Analyzer):  # pylint: disable=invalid-name
                     signifhistos.Write()
                     soverbhistos.Write()
                     chihistos.Write()
-                fileout.Close()
 
     def get_efficiency(self, ibin1, ibin2):
         fileouteff = TFile.Open(f"{self.d_resultsallpmc}/efficiencies{self.case}{self.typean}.root", "read")
