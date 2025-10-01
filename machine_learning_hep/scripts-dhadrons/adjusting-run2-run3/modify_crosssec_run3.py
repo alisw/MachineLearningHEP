@@ -9,8 +9,8 @@ author: Maja Karwowska <mkarwowska@cern.ch>, Warsaw University of Technology
 import argparse
 
 from ROOT import (  # pylint: disable=import-error,no-name-in-module
-    gROOT,
     TFile,
+    gROOT,
 )
 
 # 2024 values for LHC22o

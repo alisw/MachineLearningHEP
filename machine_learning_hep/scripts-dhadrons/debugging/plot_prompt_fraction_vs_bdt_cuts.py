@@ -9,8 +9,8 @@ import argparse
 import glob
 import json
 import re
-import matplotlib.pyplot as plt
 
+import matplotlib.pyplot as plt
 from ROOT import (  # pylint: disable=import-error,no-name-in-module
     TFile,
     gROOT,
@@ -22,7 +22,7 @@ def get_fractions(cfg):
     fractions = {}
     fractions_err = {}
     fd_cuts = []
-    for pt_bin_min, pt_bin_max in zip(cfg["pt_bins_min"], cfg["pt_bins_max"]):
+    for pt_bin_min, pt_bin_max in zip(cfg["pt_bins_min"], cfg["pt_bins_max"], strict=False):
         fractions[f"{pt_bin_min}_{pt_bin_max}"] = []
         fractions_err[f"{pt_bin_min}_{pt_bin_max}"] = []
     for filename in filenames:
@@ -31,7 +31,7 @@ def get_fractions(cfg):
             dirname = re.search(cfg["dir_pattern"], filename).group(0)
             fd_cut = re.split("_", dirname)[-1]
             fd_cuts.append(fd_cut)
-            for ind, (pt_bin_min, pt_bin_max) in enumerate(zip(cfg["pt_bins_min"], cfg["pt_bins_max"])):
+            for ind, (pt_bin_min, pt_bin_max) in enumerate(zip(cfg["pt_bins_min"], cfg["pt_bins_max"], strict=False)):
                 fractions[f"{pt_bin_min}_{pt_bin_max}"].append(hist.GetPointY(ind + 1))
                 fractions_err[f"{pt_bin_min}_{pt_bin_max}"].append(hist.GetErrorY(ind + 1))
     print(f"final fractions:\n{fractions}\nfd_cuts:\n{fd_cuts}\nfractions error:\n{fractions_err}")
@@ -50,7 +50,7 @@ def main():
 
         fractions, fractions_err, fd_cuts = get_fractions(cfg)
 
-        for pt_bin_min, pt_bin_max in zip(cfg["pt_bins_min"], cfg["pt_bins_max"]):
+        for pt_bin_min, pt_bin_max in zip(cfg["pt_bins_min"], cfg["pt_bins_max"], strict=False):
             plt.figure(figsize=(20, 15))
             ax = plt.subplot(1, 1, 1)
             ax.set_xlabel(cfg["x_axis"])

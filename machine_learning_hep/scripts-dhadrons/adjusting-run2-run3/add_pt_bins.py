@@ -7,14 +7,9 @@ author: Maja Karwowska <mkarwowska@cern.ch>, Warsaw University of Technology
 """
 
 import argparse
-import math
 from array import array
 
-from ROOT import (  # pylint: disable=import-error,no-name-in-module
-    gROOT,
-    TFile,
-    TH1F
-)
+from ROOT import TH1F, TFile, gROOT  # pylint: disable=import-error,no-name-in-module
 
 
 def main():

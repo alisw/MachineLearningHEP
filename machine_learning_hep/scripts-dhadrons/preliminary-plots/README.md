@@ -6,9 +6,9 @@ File: `plot_invmass_fit_dzero_dplus_lambdac.py`<br>
 Usage: `python plot_invmass_fit_dzero_dplus_lambdac.py config_invmass_preliminary.yml`
 
 Example config in `config_invmass_preliminary.yml`. It was used to draw the plots:
-- https://alice-figure.web.cern.ch/node/34090
-- https://alice-figure.web.cern.ch/node/34089
-- https://alice-figure.web.cern.ch/node/34088
+- <https://alice-figure.web.cern.ch/node/34090>
+- <https://alice-figure.web.cern.ch/node/34089>
+- <https://alice-figure.web.cern.ch/node/34088>
 
 The script is passed in different versions around the D2H people. Here, it contains my few improvements, e.g., configurable multiplicity label.<br>
 I also commented out lines related to non-prompt particles as we had results only for the prompt case.
@@ -24,7 +24,7 @@ You still need to adjust the script in several places:
 File: `DrawCutVarFit.C`<br>
 Usage: `root -x DrawCutVarFit.C` in the ROOT / O2 shell
 
-Used to draw the plot https://alice-figure.web.cern.ch/node/31345.
+Used to draw the plot <https://alice-figure.web.cern.ch/node/31345>.
 
 Adjust the script:
 - set the `bdtScoreCuts_...` variables to your final BDT cuts

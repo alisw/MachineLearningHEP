@@ -13,15 +13,15 @@ import os
 from array import array
 
 from ROOT import (  # pylint: disable=import-error,no-name-in-module
+    TH1F,
     MakeNullPointer,
     TCanvas,
     TFile,
     TGraphAsymmErrors,
-    TH1F,
     TLegend,
+    TLine,
     TObject,
     TPaveText,
-    TLine,
     gROOT,
     gStyle,
     kAzure,
@@ -35,7 +35,7 @@ from ROOT import (  # pylint: disable=import-error,no-name-in-module
     kOrange,
     kRed,
     kTeal,
-    kYellow
+    kYellow,
 )
 
 COLORS=[kBlack, kRed-3, kAzure-7, kGreen+2, kOrange-3, kBlue, kMagenta+2,
@@ -215,7 +215,7 @@ def plot_models(cfg, canv):
         leg_models = get_legend(*cfg["legend_models"], len(cfg["models"]))
         leg_models.SetMargin(0.9)
         for ind, (label, color, style) in \
-                enumerate(zip(cfg["models"], MODELS_COLORS, MODELS_STYLES)):
+                enumerate(zip(cfg["models"], MODELS_COLORS, MODELS_STYLES, strict=False)):
             hist = get_hist_model(label, color, style, cfg)
             print(f"hist model for {label}: {hist.GetName()}")
             miny, maxy = get_hist_limits(hist, None, miny, maxy)
@@ -266,7 +266,7 @@ def plot_compare(cfg):
     hists = {}
     central_graph = None
     graphs_syst = []
-    for ind, (label, color) in enumerate(zip(cfg["hists"], COLORS)):
+    for ind, (label, color) in enumerate(zip(cfg["hists"], COLORS, strict=False)):
         hist = get_hist_for_label(label, color, cfg)
         print(label)
         miny, maxy = get_hist_limits(hist, None, miny, maxy)
@@ -384,7 +384,7 @@ def plot_ratio_histos(canvr, legr, hists, graphs, central_hist,
     histsr = []
     graphsr = []
 
-    for ind, (label, color, style) in enumerate(zip(hists, COLORS, styles)):
+    for ind, (label, color, style) in enumerate(zip(hists, COLORS, styles, strict=False)):
         print(f"central hist bins: {central_hist.GetNbinsX()} "\
               f"{label} bins: {hists[label].GetNbinsX()}")
         if label != central_label and hists[label].GetNbinsX() == central_hist.GetNbinsX():

@@ -33,11 +33,11 @@ for i in "${!FD_12[@]}" ; do
   fd1624=${FD_1624[i]}
   echo "${i} fd ${fd12} ${fd23} ${fd34} ${fd45} ${fd56} ${fd67} ${fd78} ${fd810} ${fd1012} ${fd1216} ${fd1624}"
 
-  RESPATH="${OUTPUT_DIR}/projections_fd_precise_${fd12}_${fd23}_${fd34}_${fd45}_${fd56}_${fd67}_${fd78}_${fd810}_${fd1012}_${fd1216}_${fd1624}.root"
+  RESPATH="${OUTPUT_DIR}/projections_${PERM_PATTERN}${fd12}_${fd23}_${fd34}_${fd45}_${fd56}_${fd67}_${fd78}_${fd810}_${fd1012}_${fd1216}_${fd1624}.root"
 
   python merge_histomass.py \
     -n hmassfPt \
-    -o ${RESPATH} \
+    -o "${RESPATH}" \
     -i "${RESDIR_PATTERN}${fd12}/LHC23pp_pass4/Results/resultsdatatot/masshisto.root" \
     -i "${RESDIR_PATTERN}${fd23}/LHC23pp_pass4/Results/resultsdatatot/masshisto.root" \
     -i "${RESDIR_PATTERN}${fd34}/LHC23pp_pass4/Results/resultsdatatot/masshisto.root" \
@@ -50,12 +50,12 @@ for i in "${!FD_12[@]}" ; do
     -i "${RESDIR_PATTERN}${fd1216}/LHC23pp_pass4/Results/resultsdatatot/masshisto.root" \
     -i "${RESDIR_PATTERN}${fd1624}/LHC23pp_pass4/Results/resultsdatatot/masshisto.root"
 
-  RESPATH="${OUTPUT_DIR_EFF}/eff_fd_precise_${fd12}_${fd23}_${fd34}_${fd45}_${fd56}_${fd67}_${fd78}_${fd810}_${fd1012}_${fd1216}_${fd1624}.root"
+  RESPATH="${OUTPUT_DIR_EFF}/eff_${PERM_PATTERN}${fd12}_${fd23}_${fd34}_${fd45}_${fd56}_${fd67}_${fd78}_${fd810}_${fd1012}_${fd1216}_${fd1624}.root"
 
   python merge_histos.py \
     -n eff \
     -n eff_fd \
-    -o ${RESPATH} \
+    -o "${RESPATH}" \
     -i "${RESDIR_PATTERN}${fd12}/LHC24pp_mc/Results/resultsmctot/efficienciesLcpKpiRun3analysis.root" \
     -i "${RESDIR_PATTERN}${fd23}/LHC24pp_mc/Results/resultsmctot/efficienciesLcpKpiRun3analysis.root" \
     -i "${RESDIR_PATTERN}${fd34}/LHC24pp_mc/Results/resultsmctot/efficienciesLcpKpiRun3analysis.root" \

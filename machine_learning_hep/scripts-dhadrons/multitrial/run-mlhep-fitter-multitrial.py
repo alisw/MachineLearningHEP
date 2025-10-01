@@ -9,6 +9,7 @@ author: Maja Karwowska <mkarwowska@cern.ch>, Warsaw University of Technology
 import argparse
 import re
 import shutil
+
 import yaml
 
 SIGMA02="0.007, 0.007, 0.013"
@@ -85,7 +86,7 @@ def process_trial(trial, ana_cfg, data_cfg, mc_cfg):
         ana_cfg["n_rebin"] = [rebin + 1 for rebin in ana_cfg["n_rebin"]]
     elif "free-sigma" in trial:
         print("Processing free-sigma")
-        for pt_cfg, free_sigma in zip(mc_cfg, FREE_SIGMAS):
+        for pt_cfg, free_sigma in zip(mc_cfg, FREE_SIGMAS, strict=False):
             sig_fn = pt_cfg["components"]["sig"]["fn"]
             pt_cfg["components"]["sig"]["fn"] = re.sub(r"sigma_g1\[(.*?)\]",
                                                        f"sigma_g1[{free_sigma}]", sig_fn)
@@ -133,7 +134,7 @@ def main(db, db_dir, out_db_dir, resdir_pattern):
         fit_cfg = ana_cfg["mass_roofit"]
         mc_cfg = [fit_params for fit_params in fit_cfg \
                     if "level" in fit_params and fit_params["level"] == "mc"]
-        data_cfg = [fit_params for fit_params in fit_cfg if not "level" in fit_params]
+        data_cfg = [fit_params for fit_params in fit_cfg if "level" not in fit_params]
 
         resdir = f"{resdir_pattern}{comb}"
         respath = f"{DIR_PATH}/{resdir}/"

@@ -5,7 +5,8 @@ A single histogram contains all x-axis bins.
 
 import argparse
 
-from ROOT import TFile, gROOT # pylint: disable=import-error
+from ROOT import TFile, gROOT  # pylint: disable=import-error
+
 
 def main():
     """

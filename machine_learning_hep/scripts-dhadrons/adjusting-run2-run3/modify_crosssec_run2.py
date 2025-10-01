@@ -7,14 +7,10 @@ author: Maja Karwowska <mkarwowska@cern.ch>, Warsaw University of Technology
 """
 
 import argparse
-from array import array
 import math
+from array import array
 
-from ROOT import (  # pylint: disable=import-error,no-name-in-module
-    gROOT,
-    TFile,
-    TH1F
-)
+from ROOT import TH1F, TFile, gROOT  # pylint: disable=import-error,no-name-in-module
 
 OUTPUT_BINS = [0, 1, 2, 3, 4, 5, 6, 7, 8, 10, 12, 24]
 BR = 0.0623

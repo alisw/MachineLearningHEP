@@ -3,7 +3,11 @@
 # Run MLHEP in batch for various BDT cuts.
 # You need an MLHEP database with %resdir%, %bkg...%, and %fd% placeholders.
 
-source "${HOME}/Run3Analysisvalidation/exec/utilities.sh"
+# Throw error and exit.
+function ErrExit {
+  MsgErr "Error: $*"; exit 1;
+}
+
 WORKDIR="${HOME}/MachineLearningHEP/machine_learning_hep/"
 
 # Base database.
@@ -28,13 +32,13 @@ for fd in $(seq 0.000 0.005 0.000) ; do
   # Variable suffix to append to the output directory name.
   suffix="fd_${fd}"
 
-  RESPATH="${RESDIR}/${RESDIR_PATTERN}${suffix}"
+  RESPATH="${RESDIR_PATTERN}${suffix}"
 
   CUR_DB="${DATABASE}_edit_fd${fd}.yml"
   cp "${DATABASE_PATH}" "${CUR_DB}" || ErrExit "Could not copy database"
 
   # Adjust the output directory
-  sed -i "s/%resdir%/${RESDIR}/g" "${CUR_DB}" || ErrExit "Could not edit database"
+  sed -i "s/%resdir%/${RESPATH}/g" "${CUR_DB}" || ErrExit "Could not edit database"
 
   # Set bkg BDT cuts
   sed -i "s/%bkg01%/${bkg}/g" "${CUR_DB}" || ErrExit "Could not edit database"

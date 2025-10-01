@@ -12,7 +12,7 @@ DB=$1
 CONFIG=$2
 LOGFILE=$3
 
-mlhep --log-file ${LOGFILE} \
+mlhep --log-file "${LOGFILE}" \
   -a Run3analysis \
-  --run-config ${CONFIG} \
-  --database-analysis ${DB}
+  --run-config "${CONFIG}" \
+  --database-analysis "${DB}"

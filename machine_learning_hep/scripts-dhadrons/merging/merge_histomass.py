@@ -5,7 +5,8 @@ One file per pt bin. Each file contains one histogram per pt bin.
 
 import argparse
 
-from ROOT import TFile, gROOT # pylint: disable=import-error
+from ROOT import TFile, gROOT  # pylint: disable=import-error
+
 
 def main():
     """

@@ -9,28 +9,22 @@ import argparse
 import json
 import os
 
+from compare_fractions import get_legend, prepare_canvas, save_canvas, set_hist_style
 from ROOT import (  # pylint: disable=import-error,no-name-in-module
-    TCanvas,
     TFile,
-    TLegend,
-    TLine,
     gROOT,
     gStyle,
     kAzure,
     kBlack,
     kBlue,
     kCyan,
-    kDashed,
-    kGray,
     kGreen,
     kMagenta,
     kOrange,
     kRed,
     kTeal,
-    kYellow
+    kYellow,
 )
-
-from compare_fractions import get_legend, prepare_canvas, save_canvas, set_hist_style
 
 COLORS=[kBlack, kRed-3, kAzure-7, kMagenta+1, kGreen+2, kOrange-3, kBlue, kTeal+3, kGreen, kAzure+8,
         kYellow+3, kOrange-5, kMagenta+2, kBlue-6, kCyan+1, kGreen-6]
@@ -70,7 +64,7 @@ def main():
         maxy = 0.
         miny = 1.
         hists = []
-        for ind, (label, color) in enumerate(zip(cfg["hists"], COLORS)):
+        for ind, (label, color) in enumerate(zip(cfg["hists"], COLORS, strict=False)):
             with TFile.Open(os.path.join(cfg["inputdir"], cfg["hists"][label]["file"][0])) as fin:
                 hist = fin.Get(cfg["histoname"])
                 print(f'hist {cfg["histoname"]}: {hist}')

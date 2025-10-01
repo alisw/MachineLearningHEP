@@ -21,10 +21,18 @@ author: Alexandre Bigot <alexandre.bigot@cern.ch>, Strasbourg University
 import argparse
 
 import yaml
-import ROOT
-from ROOT import (TF1, TCanvas, TDatabasePDG, TFile, TLatex, TLegend, TMath,
-                  gROOT, kAzure, kBlack, kBlue, kGreen, kFullCircle, kRed, TPad)
-
+from ROOT import (
+    TCanvas,
+    TFile,
+    TLatex,
+    TLegend,
+    TPad,
+    kAzure,
+    kBlack,
+    kBlue,
+    kGreen,
+    kRed,
+)
 from style_formatter import set_global_style, set_object_style
 
 # enumerator
@@ -397,7 +405,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     print("Loading analysis configuration: ...", end="\r")
-    with open(args.config, "r", encoding="utf-8") as yml_cfg:
+    with open(args.config, encoding="utf-8") as yml_cfg:
         configuration = yaml.load(yml_cfg, yaml.FullLoader)
     print("Loading analysis configuration: Done!")
 
