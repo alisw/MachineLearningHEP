@@ -10,7 +10,7 @@ import glob
 import json
 import re
 
-import matplotlib.pyplot as plt # pylint: disable=import-error
+import matplotlib.pyplot as plt  # pylint: disable=import-error
 from ROOT import (  # pylint: disable=import-error,no-name-in-module
     TFile,
     gROOT,

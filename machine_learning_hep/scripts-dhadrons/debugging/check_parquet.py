@@ -7,7 +7,7 @@ author: Maja Karwowska <mkarwowska@cern.ch>, Warsaw University of Technology
 
 import argparse
 
-import matplotlib.pyplot as plt
+import matplotlib.pyplot as plt  # pylint: disable=import-error
 import numpy as np
 import pandas as pd
 

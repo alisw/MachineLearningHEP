@@ -173,7 +173,7 @@ def draw_info(lat_label, particle):
     lat_label.DrawLatex(0.19, 0.16, fnonprompt)
 
 
-def save_canvas(canvas, particle, pt_mins, pt_maxs, ipt, mult):
+def save_canvas(canvas, particle, pt_mins, pt_maxs, ind_pt, mult):
     """
     Helper method to save canvas according to particle
 
@@ -194,9 +194,9 @@ def save_canvas(canvas, particle, pt_mins, pt_maxs, ipt, mult):
     elif particle == LAMBDAC_TO_PK0S:
         name = "LambdacToPKzeroShort"
 
-    mult = f"{mult[ipt]}_" if mult[ipt] else ""
+    mult = f"{mult[ind_pt]}_" if mult[ind_pt] else ""
     for ext in ["pdf", "png", "eps"]:
-        canvas.SaveAs(f"{out_dir}InvMassFit{name}_{mult}Pt_{pt_mins[ipt]:.0f}_{pt_maxs[ipt]:.0f}.{ext}")
+        canvas.SaveAs(f"{out_dir}InvMassFit{name}_{mult}Pt_{pt_mins[ind_pt]:.0f}_{pt_maxs[ind_pt]:.0f}.{ext}")
 
 
 # pylint: disable=too-many-locals,too-many-statements
@@ -224,8 +224,8 @@ def main(particle, i_pt, cfg, batch):
 
     print(f"Plotting for {pt_mins[i_pt]}-{pt_maxs[i_pt]}")
 
-    # name_infile_promptEnhanced, name_infile_FDEnhanced = \
-    #         get_name_infile(particle, f"{pt_mins[i_pt]:.0f}{pt_maxs[i_pt]:.0f}")
+    name_infile_promptEnhanced, name_infile_FDEnhanced = \
+            get_name_infile(particle, f"{pt_mins[i_pt]:.0f}{pt_maxs[i_pt]:.0f}")
 
     file_promptEnhanced = TFile.Open(name_infile_promptEnhanced)
     # file_FDEnhanced = TFile.Open(name_infile_FDEnhanced)
@@ -256,8 +256,8 @@ def main(particle, i_pt, cfg, batch):
     ymin_promptEnhanced = 0.8*(hmass_promptEnhanced.GetMinimum() - hmass_promptEnhanced.GetBinError(bin_min))
     # ymin_FDEnhanced, ymax_FDEnhanced = 0., 1.2*(hmass_FDEnhanced.GetMaximum() + hmass_FDEnhanced.GetBinError(bin_max))
 
-    title = f"{pt_mins[i_pt]:.0f} < #it{{p}}_{{T}} < {pt_maxs[i_pt]:.0f} GeV/#it{{c}};{title_xaxis};" \ # pylint: disable=unnecessary-semicolon
-        f"Counts per {width_bin*GEV2MEV:.0f} MeV/#it{{c}}^{{2}}"
+    title = f"{pt_mins[i_pt]:.0f} < #it{{p}}_{{T}} < {pt_maxs[i_pt]:.0f} GeV/#it{{c}};{title_xaxis};" \
+        f"Counts per {width_bin*GEV2MEV:.0f} MeV/#it{{c}}^{{2}}" # pylint: disable=unnecessary-semicolon
 
     # fit_tot_promptEnhanced = file_promptEnhanced.Get(f"totalTF_{pt_mins[i_pt]:.0f}_{pt_maxs[i_pt]:.0f}")
     fit_tot_promptEnhanced = file_promptEnhanced.Get(f"total_func_lc_pt{pt_mins[i_pt]:.0f}_{pt_maxs[i_pt]:.0f}")
