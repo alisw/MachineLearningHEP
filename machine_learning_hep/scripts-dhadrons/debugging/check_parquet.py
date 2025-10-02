@@ -5,7 +5,6 @@ import numpy as np
 import pandas as pd
 
 """
-
 file: check_parquet.py
 brief: Examples of different checks on any parquet file produced by the MLHEP preprocessing steps.
 usage: python check_parquet.py AnalysisResultsReco_fPt1_2.parquet

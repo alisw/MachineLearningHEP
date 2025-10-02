@@ -26,7 +26,6 @@ def main():
     args = parser.parse_args()
 
     with TFile(args.filename) as fin, TFile(args.outname, "recreate") as fout:
-        objnames = fin.GetListOfKeys()
         histnames = [key.GetName() for key in fin.GetListOfKeys() if args.histname in key.GetName()]
         for histname in histnames:
             hist = fin.Get(histname)

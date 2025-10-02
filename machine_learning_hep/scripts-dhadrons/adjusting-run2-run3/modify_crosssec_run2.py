@@ -52,14 +52,13 @@ def main():
                 bin1 = merge_bins[ind]
                 bin2 = merge_bins[ind] + 1
                 weight_sum = hist.GetBinWidth(bin1) + hist.GetBinWidth(bin2)
-                average = hist.GetBinContent(bin1) * hist.GetBinWidth(bin1) +\
-                          hist.GetBinContent(bin2) * hist.GetBinWidth(bin2)
                 hist2.SetBinContent(binn,
                         (hist.GetBinContent(bin1) * hist.GetBinWidth(bin1) +\
                          hist.GetBinContent(bin2) * hist.GetBinWidth(bin2)) /\
                         weight_sum)
-                hist2.SetBinError(binn, math.sqrt(((hist.GetBinWidth(bin1) * hist.GetBinError(bin1)) / weight_sum) ** 2. +\
-                                                  ((hist.GetBinWidth(bin2) * hist.GetBinError(bin2)) / weight_sum) ** 2.))
+                hist2.SetBinError(binn,
+                                  math.sqrt(((hist.GetBinWidth(bin1) * hist.GetBinError(bin1)) / weight_sum) ** 2. +\
+                                            ((hist.GetBinWidth(bin2) * hist.GetBinError(bin2)) / weight_sum) ** 2.))
                 ind += 1
             print(f"New bin {binn} low edge {hist2.GetBinLowEdge(binn)} "\
                   f"up edge {hist2.GetXaxis().GetBinUpEdge(binn)} "\

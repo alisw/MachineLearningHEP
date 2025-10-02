@@ -54,8 +54,8 @@ def main():
         #                      hist.GetBinContent(hist.GetNbinsX()) * hist.GetBinWidth(hist.GetNbinsX())) /\
         #                     width_combined))
         # hist2.SetBinError(last_bin,
-        #                   math.sqrt((hist.GetBinError(hist.GetNbinsX() - 1) * hist.GetBinWidth(hist.GetNbinsX() - 1) /\
-        #                             width_combined) **2  +\
+        #                   math.sqrt((hist.GetBinError(hist.GetNbinsX() - 1) * hist.GetBinWidth(hist.GetNbinsX() - 1) \
+        #                             / width_combined) **2  +\
         #                             (hist.GetBinError(hist.GetNbinsX()) * hist.GetBinWidth(hist.GetNbinsX()) /\
         #                             width_combined) ** 2))
         # print(f"Setting bin {last_bin} low edge {hist2.GetBinLowEdge(last_bin)} " \
