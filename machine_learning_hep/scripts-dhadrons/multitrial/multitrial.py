@@ -109,8 +109,8 @@ def plot_yields_trials(yields, yields_err, trials, cfg, pt_string, plot_pt_strin
                     facecolor="orange", edgecolor="none", alpha=0.3)
     plot_trial_line(ax, central_trial_ind)
     plot_text_box(ax, plot_pt_string)
-    fig.savefig(f'{cfg["outdir"]}/{cfg["outfile"]}_yields_trials_{pt_string}.png',
-                bbox_inches='tight')
+    fig.savefig(f"{cfg["outdir"]}/{cfg["outfile"]}_yields_trials_{pt_string}.png",
+                bbox_inches="tight")
     plt.close()
 
 
@@ -120,8 +120,8 @@ def plot_chis(chis, cfg, pt_string, plot_pt_string):
     ax.scatter(x_axis, chis, c="b", marker="o")
     set_ax_limits(ax, pt_string, chis)
     plot_text_box(ax, plot_pt_string)
-    fig.savefig(f'{cfg["outdir"]}/{cfg["outfile"]}_chis_{pt_string}.png',
-                bbox_inches='tight')
+    fig.savefig(f"{cfg["outdir"]}/{cfg["outfile"]}_chis_{pt_string}.png",
+                bbox_inches="tight")
     plt.close()
 
 
@@ -145,7 +145,7 @@ def plot_yields_distr(yields, cfg, pt_string, plot_pt_string, central_trial_ind,
                       f"std dev: {std_dev:.2f}\n"\
                       f"RMSE:    {rmse:.2f}\n"\
                       f"#trials: {len(yields)}")
-    plt.savefig(f'{cfg["outdir"]}/{cfg["outfile"]}_distr_{pt_string}.png', bbox_inches='tight')
+    plt.savefig(f"{cfg["outdir"]}/{cfg["outfile"]}_distr_{pt_string}.png", bbox_inches="tight")
     plt.close()
 
 
@@ -177,7 +177,7 @@ def main():
             except: # pylint: disable=bare-except
                 pass
 
-            with open(f'{cfg["outdir"]}/{cfg["outfile"]}_trials_{pt_string}.txt',
+            with open(f"{cfg["outdir"]}/{cfg["outfile"]}_trials_{pt_string}.txt",
                       "w", encoding="utf-8") as ftext:
                 for trial in trials[pt_string]:
                     ftext.write(f"{trial}\n")

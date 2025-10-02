@@ -79,7 +79,7 @@ def main():
 
             hists.append(hist)
 
-        margin = 0.1
+        # margin = 0.1
         print(f"Hist maxy: {maxy} miny: {miny}")
         for hist in hists:
             #hist.GetYaxis().SetRangeUser(miny - margin * miny, maxy + margin * maxy)

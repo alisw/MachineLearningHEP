@@ -27,9 +27,7 @@ def main():
 
     with TFile(args.filename) as fin, TFile(args.outname, "recreate") as fout:
         objnames = fin.GetListOfKeys()
-        print(f"objnames : {objnames}")
         histnames = [key.GetName() for key in fin.GetListOfKeys() if args.histname in key.GetName()]
-        print(f"histnames: {histnames}")
         for histname in histnames:
             hist = fin.Get(histname)
             hist.SetDirectory(0)
@@ -37,12 +35,13 @@ def main():
             bins = []
             for binn in range(1, last_bin + 1):
                 bins.append(hist.GetBinLowEdge(binn))
-            print(f"Hist bins {bins}")
             hist2 = TH1F(histname, "", len(bins) - 1, array('d', bins))
             for binn in range(1, last_bin + 1):
-                hist2.SetBinContent(binn + 1, hist.GetBinContent(binn + 1))
-                hist2.SetBinError(binn + 1, hist.GetBinError(binn + 1))
-                #print(f"Setting bin {binn + 1} low edge {hist2.GetBinLowEdge(binn + 1)} up edge {hist2.GetXaxis().GetBinUpEdge(binn + 1)} content to content from bin {binn + 1}: {hist2.GetBinContent(binn + 1)}")
+                hist2.SetBinContent(binn, hist.GetBinContent(binn))
+                hist2.SetBinError(binn, hist.GetBinError(binn))
+                print(f"Setting bin {binn} low edge {hist2.GetBinLowEdge(binn)} " \
+                      f"up edge {hist2.GetXaxis().GetBinUpEdge(binn)} content to content " \
+                      f"from bin {binn}: {hist2.GetBinContent(binn)}")
             hist2.SetMarkerSize(hist.GetMarkerSize())
             hist2.SetMarkerColor(hist.GetMarkerColor())
             hist2.SetMarkerStyle(hist.GetMarkerStyle())

@@ -43,7 +43,7 @@ COLORS=[kBlack, kRed-3, kAzure-7, kGreen+2, kOrange-3, kBlue, kMagenta+2,
         kYellow+3, kOrange-5, kMagenta+2, kBlue-6, kCyan+1, kGreen-6]
 MODELS_COLORS=[kGray+1, kOrange-3, kCyan-2, kRed-9, kAzure-9, kBlue-6, kGreen-6, kOrange-5]
 MODELS_STYLES=[3001, 3004, 3245, 3250, 3244, 3254, 3209, 3245, 3250, 3244, 3254, 3209]
-
+LEGEND_PER_COLUMN=4
 
 def get_alice_text(cfg):
     if "alice_text" not in cfg:
@@ -68,7 +68,7 @@ def get_alice_text(cfg):
 
 def get_legend(x_1, y_1, x_2, y_2, num_hists, header=None):
     leg = TLegend(x_1, y_1, x_2, y_2)
-    if num_hists > 4:
+    if num_hists > LEGEND_PER_COLUMN:
         leg.SetNColumns(2)
     if header:
         leg.SetHeader(header)
@@ -126,11 +126,11 @@ def merge_fractions(inputdir, histname, filenames):
         reshist.SetDirectory(0)
 
     for ind, file in enumerate(filenames[1:]):
-        ind += 1
+        binn = ind + 1
         with TFile.Open(os.path.join(inputdir, file)) as fin:
             hist = fin.Get(histname)
-            reshist.SetBinContent(ind + 1, hist.GetBinContent(ind + 1))
-            reshist.SetBinError(ind + 1, hist.GetBinError(ind + 1))
+            reshist.SetBinContent(binn + 1, hist.GetBinContent(binn + 1))
+            reshist.SetBinError(binn + 1, hist.GetBinError(binn + 1))
 
     return reshist
 

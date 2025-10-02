@@ -29,7 +29,6 @@ def main():
 
     with TFile(args.outfile[0], "RECREATE") as fout:
         for name in args.histname:
-            hist_list = []
             for ind, filename in enumerate(args.infile):
                 fin = TFile(filename)
                 list_hists = [key.GetName() for key in fin.GetListOfKeys() \

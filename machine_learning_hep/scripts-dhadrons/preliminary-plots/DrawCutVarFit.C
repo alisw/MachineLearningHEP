@@ -72,13 +72,13 @@ void DrawCutVarFit(bool isPreliminary = kTRUE)
     new TFile("/data8/majak/systematics/230824/CutVarLc_pp13TeV_LHC24d3_default.root",
               "read");
   hRawYieldsVsCutPt =
-    std::reinterpret_cast<TH1F*>CutVarFile->Get(Form("hRawYieldVsCut_pt%d_%d", binMin, binMax));
+    std::reinterpret_cast<TH1F*> CutVarFile->Get(Form("hRawYieldVsCut_pt%d_%d", binMin, binMax));
   hRawYieldPromptVsCut =
-    std::reinterpret_cast<TH1F*>CutVarFile->Get(Form("hRawYieldPromptVsCut_pt%d_%d", binMin, binMax));
+    std::reinterpret_cast<TH1F*> CutVarFile->Get(Form("hRawYieldPromptVsCut_pt%d_%d", binMin, binMax));
   hRawYieldFDVsCut =
-    std::reinterpret_cast<TH1F*>CutVarFile->Get(Form("hRawYieldNonPromptVsCut_pt%d_%d", binMin, binMax));
+    std::reinterpret_cast<TH1F*> CutVarFile->Get(Form("hRawYieldNonPromptVsCut_pt%d_%d", binMin, binMax));
   hRawYieldsVsCutReSum =
-    std::reinterpret_cast<TH1F*>CutVarFile->Get(Form("hRawYieldSumVsCut_pt%d_%d", binMin, binMax));
+    std::reinterpret_cast<TH1F*> CutVarFile->Get(Form("hRawYieldSumVsCut_pt%d_%d", binMin, binMax));
 
   SetStyleHisto(hRawYieldsVsCutPt);
   SetStyleHisto(hRawYieldPromptVsCut);

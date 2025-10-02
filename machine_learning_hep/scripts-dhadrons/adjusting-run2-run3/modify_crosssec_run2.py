@@ -52,23 +52,12 @@ def main():
                 bin1 = merge_bins[ind]
                 bin2 = merge_bins[ind] + 1
                 weight_sum = hist.GetBinWidth(bin1) + hist.GetBinWidth(bin2)
-                average = hist.GetBinContent(bin1) * hist.GetBinWidth(bin1) + hist.GetBinContent(bin2) * hist.GetBinWidth(bin2)
-                print(f"bin {bin1} width {hist.GetBinWidth(bin1)} bin2 {bin2} width {hist.GetBinWidth(bin2)}")
-                print(f"weight sum: {weight_sum} average: {hist.GetBinContent(bin1) * hist.GetBinWidth(bin1)} + "
-                      f"{hist.GetBinContent(bin2) + hist.GetBinWidth(bin2)} average: {average}")
+                average = hist.GetBinContent(bin1) * hist.GetBinWidth(bin1) +\
+                          hist.GetBinContent(bin2) * hist.GetBinWidth(bin2)
                 hist2.SetBinContent(binn,
                         (hist.GetBinContent(bin1) * hist.GetBinWidth(bin1) +\
                          hist.GetBinContent(bin2) * hist.GetBinWidth(bin2)) /\
                         weight_sum)
-                print(f"bin {bin1} error {hist.GetBinError(bin1)} bin2 {hist.GetBinError(bin2)}\n"\
-                        f"scaled: {hist.GetBinWidth(bin1) * hist.GetBinError(bin1)}, "\
-                        f"{hist.GetBinWidth(bin2) * hist.GetBinError(bin2)}\n"\
-                        f"divided: {(hist.GetBinWidth(bin1) * hist.GetBinError(bin1)) / weight_sum}, "\
-                        f"{(hist.GetBinWidth(bin2) * hist.GetBinError(bin2)) / weight_sum}\n"\
-                        f"power: {((hist.GetBinWidth(bin1) * hist.GetBinError(bin1)) / weight_sum)**2.}, "\
-                        f"{((hist.GetBinWidth(bin2) * hist.GetBinError(bin2)) / weight_sum)**2.}\n"\
-                        f"sum: {((hist.GetBinWidth(bin1) * hist.GetBinError(bin1)) / weight_sum)**2. + ((hist.GetBinWidth(bin2) * hist.GetBinError(bin2)) / weight_sum)**2.}\n"\
-                        f"sqrt: {math.sqrt(((hist.GetBinWidth(bin1) * hist.GetBinError(bin1)) / weight_sum)**2. + ((hist.GetBinWidth(bin2) * hist.GetBinError(bin2)) / weight_sum)**2.)}\n")
                 hist2.SetBinError(binn, math.sqrt(((hist.GetBinWidth(bin1) * hist.GetBinError(bin1)) / weight_sum) ** 2. +\
                                                   ((hist.GetBinWidth(bin2) * hist.GetBinError(bin2)) / weight_sum) ** 2.))
                 ind += 1
