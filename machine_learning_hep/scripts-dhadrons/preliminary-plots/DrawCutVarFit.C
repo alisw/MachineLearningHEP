@@ -8,6 +8,7 @@
 #include "TPad.h"
 #include "TStyle.h"
 #include <iostream>
+#include <vector>
 
 using namespace std;
 
@@ -71,13 +72,13 @@ void DrawCutVarFit(bool isPreliminary = kTRUE)
     new TFile("/data8/majak/systematics/230824/CutVarLc_pp13TeV_LHC24d3_default.root",
               "read");
   hRawYieldsVsCutPt =
-    (TH1F*)CutVarFile->Get(Form("hRawYieldVsCut_pt%d_%d", binMin, binMax));
+    std::reinterpret_cast<TH1F*>CutVarFile->Get(Form("hRawYieldVsCut_pt%d_%d", binMin, binMax));
   hRawYieldPromptVsCut =
-    (TH1F*)CutVarFile->Get(Form("hRawYieldPromptVsCut_pt%d_%d", binMin, binMax));
+    std::reinterpret_cast<TH1F*>CutVarFile->Get(Form("hRawYieldPromptVsCut_pt%d_%d", binMin, binMax));
   hRawYieldFDVsCut =
-    (TH1F*)CutVarFile->Get(Form("hRawYieldNonPromptVsCut_pt%d_%d", binMin, binMax));
+    std::reinterpret_cast<TH1F*>CutVarFile->Get(Form("hRawYieldNonPromptVsCut_pt%d_%d", binMin, binMax));
   hRawYieldsVsCutReSum =
-    (TH1F*)CutVarFile->Get(Form("hRawYieldSumVsCut_pt%d_%d", binMin, binMax));
+    std::reinterpret_cast<TH1F*>CutVarFile->Get(Form("hRawYieldSumVsCut_pt%d_%d", binMin, binMax));
 
   SetStyleHisto(hRawYieldsVsCutPt);
   SetStyleHisto(hRawYieldPromptVsCut);
@@ -293,8 +294,8 @@ void NormaliseHist1d(TH1* h)
     for (Int_t i = 1; i <= h->GetNbinsX(); i++) {
       h->SetBinContent(i,
                        h->GetBinContent(i) / (h->GetXaxis()->GetBinWidth(i)));
-      //		hnew->SetBinError(i,hnew->GetBinContent(i)/(hnew->GetBinWidth(i)
-      //* TMath::Sqrt(hnew->GetBinContent(i)))); // may need to look at again
+      // hnew->SetBinError(i,hnew->GetBinContent(i)/(hnew->GetBinWidth(i)
+      // * TMath::Sqrt(hnew->GetBinContent(i)))); // may need to look at again
       h->SetBinError(i, h->GetBinError(i) / (h->GetXaxis()->GetBinWidth(i)));
     }
   } else {

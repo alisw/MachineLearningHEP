@@ -9,7 +9,9 @@ You can provide as many histogram names as you want. All histograms should be 1-
 
 Provide one input file per x-axis bin. File names can be repeated.
 
-Merge histograms `histName1` and `histName2` from the input files and save them in the output file. For each histogram name provided, e.g., `histName1`, "merging" means creation of a single output histogram with bin 1 content set to the content of bin 1 in `histName1` in `in_file1.root`, bin 2 content set to the content of bin 2 in `histName1` in `in_file2.root`, and so on. Particularly, the x-axis can represent pT, and the script can be used to merge results obtained for different pT bins.
+Merge histograms `histName1` and `histName2` from the input files and save them in the output file.
+For each histogram name provided, e.g., `histName1`, "merging" means creation of a single output histogram with bin 1 content set to the content of bin 1 in `histName1` in `in_file1.root`, bin 2 content set to the content of bin 2 in `histName1` in `in_file2.root`, and so on.
+Particularly, the x-axis can represent pT, and the script can be used to merge results obtained for different pT bins.
 
 The bash files `merge-cutvar.sh` and `merge-yields.sh` provide examples of using this Python script for merging cut variation results and O2Physics D2H fitter results, respectively.
 

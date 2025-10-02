@@ -304,8 +304,8 @@ def main(particle, i_pt, cfg, batch):
     legend.SetTextSize(SIZE_TEXT_LEGEND)
     legend.AddEntry(fit_tot_promptEnhanced, 'Total fit function', 'l')
     legend.AddEntry(fit_bkg_promptEnhanced, '#splitline{Combinatorial}{background}', 'l')
-    if particle == D0:
-        legend.AddEntry(fit_refl_promptEnhanced, 'K#minus#pi reflected', 'l')
+    # if particle == D0:
+    #    legend.AddEntry(fit_refl_promptEnhanced, 'K#minus#pi reflected', 'l')
 
     c = TCanvas("c", "", WIDTH, HEIGHT)
     # Create the first pad

@@ -6,7 +6,7 @@ File: `run-mlhep.sh`<br>
 Usage: `./run-mlhep.sh my_database.yml my_run_config.yml logfile.log`
 
 It calls:
-```
+```bash
 mlhep --log-file logfile.log \
   -a Run3analysis \
   --run-config my_run_config.yml \

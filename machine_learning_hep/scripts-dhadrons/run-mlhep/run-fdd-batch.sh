@@ -15,9 +15,6 @@ DATABASE="database_ml_parameters_LcToPKPi_multiclass_fdd"
 DATABASE_EXT="${DATABASE}.yml"
 DATABASE_PATH="${WORKDIR}/data/data_run3/${DATABASE_EXT}"
 
-# Output base directory to store all output subdirectories.
-RESDIR="/data8/majak/MLHEP"
-
 # Prefix of the output directories names.
 #RESDIR_PATTERN="results-24022025-prompt"
 RESDIR_PATTERN="results-24022025-newtrain-ptshape-prompt"
@@ -32,13 +29,13 @@ for fd in $(seq 0.000 0.005 0.000) ; do
   # Variable suffix to append to the output directory name.
   suffix="fd_${fd}"
 
-  RESPATH="${RESDIR_PATTERN}${suffix}"
+  RESDIR="${RESDIR_PATTERN}${suffix}"
 
   CUR_DB="${DATABASE}_edit_fd${fd}.yml"
   cp "${DATABASE_PATH}" "${CUR_DB}" || ErrExit "Could not copy database"
 
   # Adjust the output directory
-  sed -i "s/%resdir%/${RESPATH}/g" "${CUR_DB}" || ErrExit "Could not edit database"
+  sed -i "s/%resdir%/${RESDIR}/g" "${CUR_DB}" || ErrExit "Could not edit database"
 
   # Set bkg BDT cuts
   sed -i "s/%bkg01%/${bkg}/g" "${CUR_DB}" || ErrExit "Could not edit database"
