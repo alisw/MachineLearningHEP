@@ -10,7 +10,7 @@ import glob
 import json
 import re
 
-import matplotlib.pyplot as plt
+import matplotlib.pyplot as plt # pylint: disable=import-error
 from ROOT import (  # pylint: disable=import-error,no-name-in-module
     TFile,
     gROOT,
@@ -18,6 +18,9 @@ from ROOT import (  # pylint: disable=import-error,no-name-in-module
 
 
 def get_fractions(cfg):
+    """
+    Read the prompt fractions from files for different non-prompt cuts.
+    """
     filenames = sorted(glob.glob(cfg["file_pattern"]))
     fractions = {}
     fractions_err = {}
@@ -39,6 +42,9 @@ def get_fractions(cfg):
 
 
 def main():
+    """
+    The main function.
+    """
     gROOT.SetBatch(True)
 
     parser = argparse.ArgumentParser(description="Arguments to pass")

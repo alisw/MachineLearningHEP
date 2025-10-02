@@ -1,9 +1,3 @@
-import argparse
-
-import matplotlib.pyplot as plt
-import numpy as np
-import pandas as pd
-
 """
 file: check_parquet.py
 brief: Examples of different checks on any parquet file produced by the MLHEP preprocessing steps.
@@ -11,7 +5,17 @@ usage: python check_parquet.py AnalysisResultsReco_fPt1_2.parquet
 author: Maja Karwowska <mkarwowska@cern.ch>, Warsaw University of Technology
 """
 
+import argparse
+
+import matplotlib.pyplot as plt
+import numpy as np
+import pandas as pd
+
+
 def plot_parquet(df):
+    """
+    An example of plotting a histogram from parquet.
+    """
     print(df["fY"])
     print(df["fY"][~np.isinf(df["fY"])])
 
@@ -26,6 +30,9 @@ def plot_parquet(df):
     plt.close(fig)
 
 def main():
+    """
+    The main function.
+    """
     parser = argparse.ArgumentParser()
     parser.add_argument("infile", help="file to process")
     args = parser.parse_args()

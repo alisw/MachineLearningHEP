@@ -31,6 +31,9 @@ COLORS=[kBlack, kRed-3, kAzure-7, kMagenta+1, kGreen+2, kOrange-3, kBlue, kTeal+
 
 
 def get_hist_limits(hist, miny = 0.0, maxy = 0.0):
+    """
+    Find the minimum and maximum y-value of the histogram.
+    """
     for binn in range(hist.GetN()):
         print(f"bin {binn} [{hist.GetPointX(binn)}, "\
               f"val {hist.GetPointY(binn)} "\
@@ -43,6 +46,9 @@ def get_hist_limits(hist, miny = 0.0, maxy = 0.0):
 
 
 def main():
+    """
+    The main function.
+    """
     gROOT.SetBatch(True)
 
     gStyle.SetOptStat(0)

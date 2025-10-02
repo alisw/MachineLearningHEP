@@ -10,9 +10,9 @@ import glob
 import json
 import re
 
-import matplotlib.pyplot as plt
+import matplotlib.pyplot as plt # pylint: disable=import-error
 import numpy as np
-from matplotlib.ticker import AutoMinorLocator, MultipleLocator
+from matplotlib.ticker import AutoMinorLocator, MultipleLocator # pylint: disable=import-error
 from ROOT import (  # pylint: disable=import-error,no-name-in-module
     TFile,
     gROOT,
