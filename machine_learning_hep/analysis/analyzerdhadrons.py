@@ -171,12 +171,13 @@ class AnalyzerDhadrons(Analyzer):  # pylint: disable=invalid-name
     # region fitting
     def _roofit_mass(self, level, hist, ipt, pdfnames, param_names, fitcfg, roows=None, filename=None):
         if fitcfg is None:
-            return None, None, None
+            return None, None, None, None, None
         try:
-            res, ws, frame, residual_frame = self.fitter.fit_mass_new(hist, pdfnames, fitcfg, level, roows=roows, plot=True)
+            res, ws, frame, residual_frame, data_hist, model = self.fitter.fit_mass_new(hist, pdfnames, fitcfg, level,
+                                                                                        roows=roows, plot=True)
         except ValueError:
             self.logger.error(f"Could not do fitting on {level} for pt {self.bins_candpt[ipt]} - {self.bins_candpt[ipt+1]}")
-            return None, None, None
+            return None, None, None, None, None
         frame.SetTitle(f"inv. mass for p_{{T}} {self.bins_candpt[ipt]} - {self.bins_candpt[ipt + 1]} GeV/c")
         c = TCanvas()
 
@@ -216,7 +217,7 @@ class AnalyzerDhadrons(Analyzer):  # pylint: disable=invalid-name
 
         chi = frame.chiSquare()
 
-        return res, ws, chi
+        return res, ws, chi, data_hist, model
 
     def _fit_mass(self, hist, filename=None):
         if hist.GetEntries() == 0:
@@ -348,7 +349,7 @@ class AnalyzerDhadrons(Analyzer):  # pylint: disable=invalid-name
                                 roows.var(fixpar).setConstant(True)
                         if h_invmass.GetEntries() == 0:
                             continue
-                        roo_res, roo_ws, chi = self._roofit_mass(
+                        roo_res, roo_ws, chi, dh, model = self._roofit_mass(
                             level,
                             h_invmass,
                             ipt,

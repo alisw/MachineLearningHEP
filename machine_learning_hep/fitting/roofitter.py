@@ -139,7 +139,7 @@ class RooFitter:
                 residual_frame.SetAxisRange(range_m[0], range_m[1], "X")
             residual_frame.SetYTitle("Residuals")
 
-        return (res, ws, frame, residual_frame)
+        return (res, ws, frame, residual_frame, dh, model)
 
     def fit_mass(self, hist, fit_spec, plot=False):
         """Old fit method"""
