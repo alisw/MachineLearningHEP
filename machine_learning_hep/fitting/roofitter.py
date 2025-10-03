@@ -32,8 +32,10 @@ class RooFitter:
         ROOT.RooMsgService.instance().setGlobalKillBelow(ROOT.RooFit.WARNING)
         ROOT.RooMsgService.instance().setGlobalKillBelow(ROOT.RooFit.ERROR)
 
+    # pylint: disable=too-many-branches
     def fit_mass_new(
-        self, hist, pdfnames: dict, fit_spec: dict, level: str, roows: ROOT.RooWorkspace = None, plot: bool = False
+        self, hist, pdfnames: dict, param_names: dict, fit_spec: dict, level: str,
+        fixed_sigma: bool = False, fixed_sigma_val: float = 0., roows: ROOT.RooWorkspace = None, plot: bool = False
     ):
         """New fit method"""
         if hist.GetEntries() == 0:
@@ -53,6 +55,11 @@ class RooFitter:
             raise ValueError("model not set")
 
         m = ws.var(var_m)
+        if level == "mc":
+            sigma_sgn = ws.var(param_names["gauss_sigma"])
+            if fixed_sigma:
+                sigma_sgn.setVal(fixed_sigma_val)
+                sigma_sgn.setConstant(True)
 
         if level == "data" and USE_EXTMODEL:
             signal_pdf = ws.pdf(pdfnames["pdf_sig"])
@@ -70,7 +77,7 @@ class RooFitter:
             m.setRange("fit", *range_m)
             # print(f'using fit range: {range_m}, var range: {m.getRange("fit")}')
             res = model.fitTo(dh, Range=(range_m[0], range_m[1]), Save=True, PrintLevel=-1, Strategy=1, MaxCalls=5000)
-            if level == 'data' and USE_EXTMODEL:
+            if level == "data" and USE_EXTMODEL:
                 for v in ws.allVars():
                     v.setConstant(True)
                 res = extmodel.fitTo(
@@ -78,7 +85,7 @@ class RooFitter:
                 )
         else:
             res = model.fitTo(dh, Save=True, PrintLevel=-1, Strategy=1, MaxCalls=5000)
-            if level == 'data' and USE_EXTMODEL:
+            if level == "data" and USE_EXTMODEL:
                 for v in ws.allVars():
                     v.setConstant(True)
                 res = extmodel.fitTo(dh, Save=True, PrintLevel=-1, Strategy=1, MaxCalls=5000)
@@ -138,7 +145,7 @@ class RooFitter:
                 residual_frame.SetAxisRange(range_m[0], range_m[1], "X")
             residual_frame.SetYTitle("Residuals")
 
-        return (res, ws, frame, residual_frame)
+        return (res, ws, frame, residual_frame, dh, model)
 
     def fit_mass(self, hist, fit_spec, plot=False):
         """Old fit method"""
@@ -200,7 +207,10 @@ def calc_signif(roows, res, pdfnames, param_names, mean_sgn, sigma_sgn):
     n_signal_signal = signal_integral.getVal() * n_signal
     n_bkg_signal = bkg_integral.getVal() * n_bkg
 
-    significance = n_signal_signal / sqrt(n_signal_signal + n_bkg_signal)
+    if n_signal_signal + n_bkg_signal == 0.:
+        significance = 0.0
+    else:
+        significance = n_signal_signal / sqrt(n_signal_signal + n_bkg_signal)
 
     # Calculate the error on the signal and bkg integrals using the covariance matrix
     sigma_signal_integral = signal_integral.getPropagatedError(res)
@@ -211,17 +221,29 @@ def calc_signif(roows, res, pdfnames, param_names, mean_sgn, sigma_sgn):
     )
     sigma_n_bkg_signal = sqrt((bkg_integral.getVal() * sigma_n_bkg) ** 2 + (n_bkg * sigma_bkg_integral) ** 2)
 
-    dS_dS = 1 / sqrt(n_signal_signal + n_bkg_signal) - (
-        n_signal_signal / (2 * (n_signal_signal + n_bkg_signal) ** (3 / 2))
-    )
-    dS_dB = -n_signal_signal / (2 * (n_signal_signal + n_bkg_signal) ** (3 / 2))
-    significance_err = sqrt((dS_dS * sigma_n_signal_signal) ** 2 + (dS_dB * sigma_n_bkg_signal) ** 2)
+    if n_signal_signal + n_bkg_signal == 0.:
+        dS_dS = 0.0
+        dS_dB = 0.0
+    else:
+        dS_dS = (1 / sqrt(n_signal_signal + n_bkg_signal) -
+                 (n_signal_signal / (2 * (n_signal_signal + n_bkg_signal)**(3/2))))
+        dS_dB = -n_signal_signal / (2 * (n_signal_signal + n_bkg_signal)**(3/2))
+    significance_err = sqrt(
+            (dS_dS * sigma_n_signal_signal) ** 2 +
+            (dS_dB * sigma_n_bkg_signal) ** 2)
 
-    # Signal to bkg ratio
-    s_over_b = n_signal_signal / n_bkg_signal
-    s_over_b_err = s_over_b * sqrt(
-        (sigma_n_signal_signal / n_signal_signal) ** 2 + (sigma_n_bkg_signal / n_bkg_signal) ** 2
-    )
+    #Signal to bkg ratio
+    if n_bkg_signal == 0.:
+        s_over_b = 0.0
+        s_over_b_err = 0.0 # as S/B is ill-defined
+    elif n_signal_signal == 0.:
+        s_over_b = 0.0
+        s_over_b_err = s_over_b * sqrt((sigma_n_bkg_signal / n_bkg_signal) ** 2)
+    else:
+        s_over_b = n_signal_signal / n_bkg_signal
+        s_over_b_err = (
+                s_over_b * sqrt((sigma_n_signal_signal / n_signal_signal) ** 2 +
+                                (sigma_n_bkg_signal / n_bkg_signal) ** 2))
 
     return (
         n_signal_signal,

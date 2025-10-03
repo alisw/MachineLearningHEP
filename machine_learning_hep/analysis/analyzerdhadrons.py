@@ -29,6 +29,8 @@ from ROOT import (
     TF1,
     TH1,
     TH1F,
+    RooArgSet,
+    RooConstVar,
     TCanvas,
     TFile,
     TLegend,
@@ -100,6 +102,8 @@ class AnalyzerDhadrons(Analyzer):  # pylint: disable=invalid-name
         self.n_fileff = os.path.join(self.d_resultsallpmc, self.n_fileff)
         self.p_bin_width = datap["analysis"][self.typean]["bin_width"]
         self.p_rebin = datap["analysis"][self.typean]["n_rebin"]
+        self.p_fixed_sigma = datap["analysis"][self.typean]["fixed_sigma"]
+        self.p_fixed_sigma_val = datap["analysis"][self.typean]["fixed_sigma_val"]
         self.p_pdfnames = datap["analysis"][self.typean]["pdf_names"]
         self.p_param_names = datap["analysis"][self.typean]["param_names"]
 
@@ -169,10 +173,19 @@ class AnalyzerDhadrons(Analyzer):  # pylint: disable=invalid-name
         self.rfigfile.WriteObject(hist, rfilename)
 
     # region fitting
-    def _roofit_mass(self, level, hist, ipt, pdfnames, param_names, fitcfg, roows=None, filename=None):
+    def _roofit_mass(self, level, hist, ipt, pdfnames, param_names, fitcfg, fixed_sigma, fixed_sigma_val, # pylint: disable=too-many-arguments
+                     roows=None, filename=None):
         if fitcfg is None:
-            return None, None
-        res, ws, frame, residual_frame = self.fitter.fit_mass_new(hist, pdfnames, fitcfg, level, roows, True)
+            return None, None, None, None, None
+        try:
+            res, ws, frame, residual_frame, data_hist, model = self.fitter.fit_mass_new(hist, pdfnames, param_names,
+                                                                                        fitcfg, level,
+                                                                                        fixed_sigma, fixed_sigma_val,
+                                                                                        roows=roows, plot=True)
+        except ValueError:
+            self.logger.error("Could not do fitting on %d for pt %.1f - %.1f",
+                              level, self.bins_candpt[ipt], self.bins_candpt[ipt+1])
+            return None, None, None, None, None
         frame.SetTitle(f"inv. mass for p_{{T}} {self.bins_candpt[ipt]} - {self.bins_candpt[ipt + 1]} GeV/c")
         c = TCanvas()
 
@@ -180,7 +193,7 @@ class AnalyzerDhadrons(Analyzer):  # pylint: disable=invalid-name
         add_text_info_fit(textInfoRight, frame, ws, param_names)
 
         textInfoLeft = create_text_info(0.12, 0.68, 0.6, 0.89)
-        if level == "data":
+        if res and level == "data":
             mean_sgn = ws.var(self.p_param_names["gauss_mean"])
             sigma_sgn = ws.var(self.p_param_names["gauss_sigma"])
             (sig, sig_err, bkg, bkg_err, signif, signif_err, s_over_b, s_over_b_err) = calc_signif(
@@ -193,7 +206,7 @@ class AnalyzerDhadrons(Analyzer):  # pylint: disable=invalid-name
         textInfoRight.Draw()
         textInfoLeft.Draw()
 
-        if res.status() == 0:
+        if res and res.status() == 0:
             self._save_canvas(c, filename)
         else:
             self.logger.warning("Invalid fit result for %s", hist.GetName())
@@ -201,7 +214,7 @@ class AnalyzerDhadrons(Analyzer):  # pylint: disable=invalid-name
             filename = filename.replace(".png", "_invalid.png")
             self._save_canvas(c, filename)
 
-        if level == "data":
+        if level == "data" and residual_frame:
             residual_frame.SetTitle(
                 f"inv. mass for p_{{T}} {self.bins_candpt[ipt]} - {self.bins_candpt[ipt + 1]} GeV/c"
             )
@@ -210,7 +223,9 @@ class AnalyzerDhadrons(Analyzer):  # pylint: disable=invalid-name
             filename = filename.replace(".png", "_residual.png")
             self._save_canvas(cres, filename)
 
-        return res, ws
+        chi = frame.chiSquare()
+
+        return res, ws, chi, data_hist, model
 
     def _fit_mass(self, hist, filename=None):
         if hist.GetEntries() == 0:
@@ -274,16 +289,16 @@ class AnalyzerDhadrons(Analyzer):  # pylint: disable=invalid-name
             fileout_name = self.make_file_path(
                 self.d_resultsallpdata, self.yields_filename, "root", None, [self.case, self.typean]
             )
-            fileout = TFile(fileout_name, "RECREATE")
 
             yieldshistos = TH1F("hyields0", "", len(self.lpt_finbinmin), array("d", self.bins_candpt))
             meanhistos = TH1F("hmean0", "", len(self.lpt_finbinmin), array("d", self.bins_candpt))
             sigmahistos = TH1F("hsigmas0", "", len(self.lpt_finbinmin), array("d", self.bins_candpt))
             signifhistos = TH1F("hsignifs0", "", len(self.lpt_finbinmin), array("d", self.bins_candpt))
             soverbhistos = TH1F("hSoverB0", "", len(self.lpt_finbinmin), array("d", self.bins_candpt))
+            chihistos = TH1F("hchi0", "", len(self.lpt_finbinmin), array("d", self.bins_candpt))
 
             lpt_probcutfin = [None] * self.nbins
-            with TFile(rfilename) as rfile:
+            with TFile(rfilename) as rfile, TFile(fileout_name, "RECREATE") as fileout:
                 for ipt in range(len(self.lpt_finbinmin)):
                     lpt_probcutfin[ipt] = self.lpt_probcutfin_tmp[self.bin_matching[ipt]]
                     self.logger.debug("fitting %s - %i", level, ipt)
@@ -304,6 +319,7 @@ class AnalyzerDhadrons(Analyzer):  # pylint: disable=invalid-name
                             self.lpt_finbinmax[ipt],
                             lpt_probcutfin[ipt],
                         )
+                    rfile.cd()
                     h_invmass = rfile.Get("hmass" + suffix)
                     # Rebin
                     h_invmass.Rebin(self.p_rebin[ipt])
@@ -341,19 +357,21 @@ class AnalyzerDhadrons(Analyzer):  # pylint: disable=invalid-name
                                 roows.var(fixpar).setConstant(True)
                         if h_invmass.GetEntries() == 0:
                             continue
-                        roo_res, roo_ws = self._roofit_mass(
+                        roo_res, roo_ws, chi, dh, model = self._roofit_mass(
                             level,
                             h_invmass,
                             ipt,
                             self.p_pdfnames,
                             self.p_param_names,
                             fitcfg,
+                            self.p_fixed_sigma[ipt],
+                            self.p_fixed_sigma_val[ipt],
                             roows,
                             f"roofit/h_mass_fitted_pthf-{ptrange[0]}-{ptrange[1]}_{level}.png",
                         )
                         self.roo_ws[level][ipt] = roo_ws
                         self.roows[ipt] = roo_ws
-                        if roo_res.status() == 0:
+                        if roo_res and roo_res.status() == 0:
                             if level in ("data", "mc_sig"):
                                 self.fit_mean[level][ipt] = roo_ws.var(self.p_param_names["gauss_mean"]).getValV()
                                 self.fit_sigma[level][ipt] = roo_ws.var(self.p_param_names["gauss_sigma"]).getValV()
@@ -371,9 +389,27 @@ class AnalyzerDhadrons(Analyzer):  # pylint: disable=invalid-name
                         if level == "data":
                             mean_sgn = roo_ws.var(self.p_param_names["gauss_mean"])
                             sigma_sgn = roo_ws.var(self.p_param_names["gauss_sigma"])
-                            (sig, sig_err, _, _, signif, signif_err, s_over_b, s_over_b_err) = calc_signif(
-                                roo_ws, roo_res, self.p_pdfnames, self.p_param_names, mean_sgn, sigma_sgn
-                            )
+                            if roo_res:
+                                (sig, sig_err, _, _,
+                                    signif, signif_err, s_over_b, s_over_b_err
+                                ) = calc_signif(roo_ws, roo_res, self.p_pdfnames, self.p_param_names,
+                                                mean_sgn, sigma_sgn)
+                                fileout.cd()
+                                one = RooConstVar("one", "constant 1.0", 1.0)
+                                bkg_pdf = roo_ws.pdf(self.p_pdfnames["pdf_bkg"])
+                                sig_pdf = roo_ws.pdf(self.p_pdfnames["pdf_sig"])
+                                for pdf, outlabel in zip((bkg_pdf, sig_pdf, model), ("bkg", "sgn", "total"),
+                                                          strict=False):
+                                    if not pdf:
+                                        continue
+                                    obs = pdf.getObservables(dh)
+                                    params = pdf.getParameters(dh)
+                                    fit_func = pdf.asTF(obs, params, RooArgSet(one))
+                                    fit_func.Write(f"{outlabel}TF_{ptrange[0]:.0f}_{ptrange[1]:.0f}")
+
+                                h_invmass.Write(f"hmass_{ipt}")
+                            else:
+                                sig = sig_err = signif = signif_err = s_over_b = s_over_b_err = 0.0
 
                             yieldshistos.SetBinContent(ipt + 1, sig)
                             yieldshistos.SetBinError(ipt + 1, sig_err)
@@ -385,13 +421,15 @@ class AnalyzerDhadrons(Analyzer):  # pylint: disable=invalid-name
                             signifhistos.SetBinError(ipt + 1, signif_err)
                             soverbhistos.SetBinContent(ipt + 1, s_over_b)
                             soverbhistos.SetBinError(ipt + 1, s_over_b_err)
+                            chihistos.SetBinContent(ipt + 1, chi)
+                            chihistos.SetBinError(ipt + 1, 0)
                 fileout.cd()
                 yieldshistos.Write()
                 meanhistos.Write()
                 sigmahistos.Write()
                 signifhistos.Write()
                 soverbhistos.Write()
-            fileout.Close()
+                chihistos.Write()
 
     def yield_syst(self):
         # Enable ROOT batch mode and reset in the end
@@ -418,7 +456,8 @@ class AnalyzerDhadrons(Analyzer):  # pylint: disable=invalid-name
         print(self.n_fileff)
         lfileeff = TFile.Open(self.n_fileff)
         lfileeff.ls()
-        fileouteff = TFile.Open(f"{self.d_resultsallpmc}/{self.efficiency_filename}{self.case}{self.typean}.root", "recreate")
+        fileouteff = TFile.Open(f"{self.d_resultsallpmc}/{self.efficiency_filename}{self.case}{self.typean}.root",
+                                "recreate")
         cEff = TCanvas("cEff", "The Fit Canvas")
         cEff.SetCanvasSize(1900, 1500)
         cEff.SetWindowSize(500, 500)
@@ -469,6 +508,7 @@ class AnalyzerDhadrons(Analyzer):  # pylint: disable=invalid-name
         gPad.SetLogy()
         legeffFD.Draw()
         cEffFD.SaveAs(f"{self.d_resultsallpmc}/EffFD{self.case}{self.typean}.eps")
+
 
     @staticmethod
     def calculate_norm(logger, hevents, hselevents):  # TO BE FIXED WITH EV SEL
