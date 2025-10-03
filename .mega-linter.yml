@@ -4,6 +4,7 @@
 
 APPLY_FIXES: all # all, none, or list of linter keys
 DEFAULT_BRANCH: run3 # Usually master or main
+VALIDATE_ALL_CODEBASE: false
 # ENABLE: # If you use ENABLE variable, all other languages/formats/tooling-formats will be disabled by default
 # ENABLE_LINTERS: # If you use ENABLE_LINTERS variable, all other linters will be disabled by default
 DISABLE:
