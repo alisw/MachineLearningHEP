@@ -128,10 +128,7 @@ def write_df(dfo, path):
 
 def read_df(path, **kwargs):
     try:
-        if path.endswith(".parquet"):
-            df = pd.read_parquet(path, **kwargs)
-        else:
-            df = pickle.load(openfile(path, "rb"))
+        df = pd.read_parquet(path, **kwargs) if path.endswith(".parquet") else pickle.load(openfile(path, "rb"))
     except Exception as e:  # pylint: disable=broad-except
         logger.critical("failed to open file <%s>: %s", path, str(e))
         sys.exit()
@@ -160,7 +157,7 @@ def mask_df(df_to_mask, mask_config):
         mask_by_value_dict[mc["column"]] = {mc["find_by_value"]: conv_none(mc["mask_with"])}
 
     # Mask all we can do by value
-    df_to_mask.replace(mask_by_value_dict, inplace=True)
+    df_to_mask = df_to_mask.replace(mask_by_value_dict)
 
     # Now mask all which are searched by query
     for mc in mask_by_query_list:
@@ -308,12 +305,12 @@ def make_latex_table(column_names, row_names, rows, caption=None, save_path="./t
         columns = "|".join(["c"] * (len(column_names) + 1))
         f.write("\\begin{tabular}{" + columns + "}\n")
         f.write("\\hline\n")
-        columns = "&".join([""] + column_names)
+        columns = "&".join(["", *column_names])
         columns = columns.replace("_", "\\_")
         f.write(columns + "\\\\\n")
         f.write("\\hline\\hline\n")
-        for rn, row in zip(row_names, rows):
-            row_string = "&".join([rn] + row)
+        for rn, row in zip(row_names, rows, strict=False):
+            row_string = "&".join([rn, *row])
             row_string = row_string.replace("_", "\\_")
             f.write(row_string + "\\\\\n")
         f.write("\\end{tabular}\n")
@@ -411,10 +408,7 @@ def equal_axis_list(axis1, list2, precision=10):
     bins = get_bins(axis1)
     if len(bins) != len(list2):
         return False
-    for i, j in zip(bins, list2):
-        if round(i, precision) != round(j, precision):
-            return False
-    return True
+    return all(round(i, precision) == round(j, precision) for i, j in zip(bins, list2, strict=False))
 
 
 def equal_binning(his1, his2):
@@ -432,9 +426,7 @@ def equal_binning_lists(his, list_x=None, list_y=None, list_z=None):
         return False
     if list_y is not None and not equal_axis_list(his.GetYaxis(), list_y):
         return False
-    if list_z is not None and not equal_axis_list(his.GetZaxis(), list_z):
-        return False
-    return True
+    return not (list_z is not None and not equal_axis_list(his.GetZaxis(), list_z))
 
 
 def folding(h_input, response_matrix, h_output):
@@ -943,13 +935,13 @@ def make_plot(  # pylint: disable=too-many-arguments, too-many-branches, too-man
     # set canvas margins
     if isinstance(margins_c, list) and len(margins_c) > 0:
         for setter, value in zip(
-            [can.SetBottomMargin, can.SetLeftMargin, can.SetTopMargin, can.SetRightMargin], margins_c
+            [can.SetBottomMargin, can.SetLeftMargin, can.SetTopMargin, can.SetRightMargin], margins_c, strict=False
         ):
             setter(value)
     # set logarithmic scale for selected axes
     log_y = False
     if isinstance(logscale, str) and len(logscale) > 0:
-        for setter, axis in zip([can.SetLogx, can.SetLogy, can.SetLogz], ["x", "y", "z"]):
+        for setter, axis in zip([can.SetLogx, can.SetLogy, can.SetLogz], ["x", "y", "z"], strict=False):
             if axis in logscale:
                 setter()
                 if axis == "y":

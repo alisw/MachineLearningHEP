@@ -417,7 +417,7 @@ class Processer:  # pylint: disable=too-many-instance-attributes
                 if idx_name:
                     # df.rename_axis(idx_name, inplace=True)
                     df[idx_name] = df.index
-                    df.set_index(["df", idx_name], inplace=True)
+                    df = df.set_index(["df", idx_name])
                 return df
             except Exception as e:
                 self.logger.exception("Failed to read data from trees: %s", str(e))

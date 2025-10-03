@@ -92,8 +92,8 @@ class ProcesserDhadrons(Processer):  # pylint: disable=too-many-instance-attribu
         self.p_mass_fit_lim = datap["analysis"][self.typean]["mass_fit_lim"]
         self.p_bin_width = datap["analysis"][self.typean]["bin_width"]
         limits_mass = datap["analysis"][self.typean]["mass_fit_lim"]
-        nbins_mass = int(round((limits_mass[1] - limits_mass[0]) / self.p_bin_width))
-        self.p_num_bins = int(round((self.p_mass_fit_lim[1] - self.p_mass_fit_lim[0]) / self.p_bin_width))
+        nbins_mass = round((limits_mass[1] - limits_mass[0]) / self.p_bin_width)
+        self.p_num_bins = round((self.p_mass_fit_lim[1] - self.p_mass_fit_lim[0]) / self.p_bin_width)
         self.s_presel_gen_eff = datap["analysis"][self.typean]["presel_gen_eff"]
 
         self.lpt_finbinmin = datap["analysis"][self.typean]["sel_an_binmin"]
@@ -113,10 +113,7 @@ class ProcesserDhadrons(Processer):  # pylint: disable=too-many-instance-attribu
         myfile = TFile.Open(self.l_histomass[index], "recreate")
         dfevtorig = read_df(self.l_evtorig[index])
         neventsorig = len(dfevtorig)
-        if self.s_evtsel is not None:
-            dfevtevtsel = dfevtorig.query(self.s_evtsel)
-        else:
-            dfevtevtsel = dfevtorig
+        dfevtevtsel = dfevtorig.query(self.s_evtsel) if self.s_evtsel is not None else dfevtorig
         neventsafterevtsel = len(dfevtevtsel)
 
         # validation plot for event selection
@@ -246,14 +243,11 @@ class ProcesserDhadrons(Processer):  # pylint: disable=too-many-instance-attribu
             df_gen_sel = df_mc_gen.loc[(df_mc_gen[sel_column] == 1) & (df_mc_gen.ismcsignal == 1)]
             df_reco_presel = df_mc_reco.loc[(df_mc_reco[sel_column] == 1) & (df_mc_reco.ismcsignal == 1)]
             df_reco_sel = None
-            if self.doml is True:
-                df_reco_sel = df_reco_presel.query(self.l_selml[bin_id])
-            else:
-                df_reco_sel = df_reco_presel.copy()
+            df_reco_sel = df_reco_presel.query(self.l_selml[bin_id]) if self.doml is True else df_reco_presel.copy()
             if self.do_custom_analysis_cuts:
                 df_reco_sel = self.apply_cuts_ptbin(df_reco_sel, ipt)
 
-            for df, hist in zip((df_gen_sel, df_reco_presel, df_reco_sel), hists):
+            for df, hist in zip((df_gen_sel, df_reco_presel, df_reco_sel), hists, strict=False):
                 val = len(df)
                 err = math.sqrt(val)
                 hist.SetBinContent(bincounter + 1, val)
