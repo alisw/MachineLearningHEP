@@ -29,6 +29,8 @@ from ROOT import (
     TF1,
     TH1,
     TH1F,
+    RooArgSet,
+    RooConstVar,
     TCanvas,
     TFile,
     TLegend,
@@ -209,7 +211,8 @@ class AnalyzerDhadrons_mult(Analyzer):  # pylint: disable=invalid-name
                                                                                         fixed_sigma, fixed_sigma_val,
                                                                                         roows=roows, plot=True)
         except ValueError:
-            self.logger.error(f"Could not do fitting on {level} for pt {self.bins_candpt[ipt]} - {self.bins_candpt[ipt+1]}")
+            self.logger.error("Could not do fitting on %d for pt %.1f - %.1f",
+                              level, self.bins_candpt[ipt], self.bins_candpt[ipt+1])
             return None, None, None, None, None
         frame.SetTitle(f"inv. mass for p_{{T}} {self.bins_candpt[ipt]} - {self.bins_candpt[ipt + 1]} GeV/c")
         c = TCanvas()
@@ -449,7 +452,8 @@ class AnalyzerDhadrons_mult(Analyzer):  # pylint: disable=invalid-name
                                     one = RooConstVar("one", "constant 1.0", 1.0)
                                     bkg_pdf = roo_ws.pdf(self.p_pdfnames["pdf_bkg"])
                                     sig_pdf = roo_ws.pdf(self.p_pdfnames["pdf_sig"])
-                                    for pdf, outlabel in zip((bkg_pdf, sig_pdf, model), ("bkg", "sgn", "total")):
+                                    for pdf, outlabel in zip((bkg_pdf, sig_pdf, model), ("bkg", "sgn", "total"),
+                                                              strict=False):
                                         if not pdf:
                                             continue
                                         obs = pdf.getObservables(dh)

@@ -29,6 +29,8 @@ from ROOT import (
     TF1,
     TH1,
     TH1F,
+    RooArgSet,
+    RooConstVar,
     TCanvas,
     TFile,
     TLegend,
@@ -181,7 +183,8 @@ class AnalyzerDhadrons(Analyzer):  # pylint: disable=invalid-name
                                                                                         fixed_sigma, fixed_sigma_val,
                                                                                         roows=roows, plot=True)
         except ValueError:
-            self.logger.error(f"Could not do fitting on {level} for pt {self.bins_candpt[ipt]} - {self.bins_candpt[ipt+1]}")
+            self.logger.error("Could not do fitting on %d for pt %.1f - %.1f",
+                              level, self.bins_candpt[ipt], self.bins_candpt[ipt+1])
             return None, None, None, None, None
         frame.SetTitle(f"inv. mass for p_{{T}} {self.bins_candpt[ipt]} - {self.bins_candpt[ipt + 1]} GeV/c")
         c = TCanvas()
@@ -389,12 +392,14 @@ class AnalyzerDhadrons(Analyzer):  # pylint: disable=invalid-name
                             if roo_res:
                                 (sig, sig_err, _, _,
                                     signif, signif_err, s_over_b, s_over_b_err
-                                ) = calc_signif(roo_ws, roo_res, self.p_pdfnames, self.p_param_names, mean_sgn, sigma_sgn)
+                                ) = calc_signif(roo_ws, roo_res, self.p_pdfnames, self.p_param_names,
+                                                mean_sgn, sigma_sgn)
                                 fileout.cd()
                                 one = RooConstVar("one", "constant 1.0", 1.0)
                                 bkg_pdf = roo_ws.pdf(self.p_pdfnames["pdf_bkg"])
                                 sig_pdf = roo_ws.pdf(self.p_pdfnames["pdf_sig"])
-                                for pdf, outlabel in zip((bkg_pdf, sig_pdf, model), ("bkg", "sgn", "total")):
+                                for pdf, outlabel in zip((bkg_pdf, sig_pdf, model), ("bkg", "sgn", "total"),
+                                                          strict=False):
                                     if not pdf:
                                         continue
                                     obs = pdf.getObservables(dh)
@@ -451,7 +456,8 @@ class AnalyzerDhadrons(Analyzer):  # pylint: disable=invalid-name
         print(self.n_fileff)
         lfileeff = TFile.Open(self.n_fileff)
         lfileeff.ls()
-        fileouteff = TFile.Open(f"{self.d_resultsallpmc}/{self.efficiency_filename}{self.case}{self.typean}.root", "recreate")
+        fileouteff = TFile.Open(f"{self.d_resultsallpmc}/{self.efficiency_filename}{self.case}{self.typean}.root",
+                                "recreate")
         cEff = TCanvas("cEff", "The Fit Canvas")
         cEff.SetCanvasSize(1900, 1500)
         cEff.SetWindowSize(500, 500)
