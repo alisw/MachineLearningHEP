@@ -34,7 +34,8 @@ class RooFitter:
 
     # pylint: disable=too-many-branches
     def fit_mass_new(
-        self, hist, pdfnames: dict, fit_spec: dict, level: str, roows: ROOT.RooWorkspace = None, plot: bool = False
+        self, hist, pdfnames: dict, param_names: dict, fit_spec: dict, level: str,
+        fixed_sigma: bool = False, fixed_sigma_val: float = 0., roows: ROOT.RooWorkspace = None, plot: bool = False
     ):
         """New fit method"""
         if hist.GetEntries() == 0:
@@ -54,6 +55,11 @@ class RooFitter:
             raise ValueError("model not set")
 
         m = ws.var(var_m)
+        if level == "mc":
+            sigma_sgn = ws.var(param_names["gauss_sigma"])
+            if fixed_sigma:
+                sigma_sgn.setVal(fixed_sigma_val)
+                sigma_sgn.setConstant(True)
 
         if level == "data" and USE_EXTMODEL:
             signal_pdf = ws.pdf(pdfnames["pdf_sig"])

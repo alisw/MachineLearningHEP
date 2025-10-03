@@ -105,6 +105,8 @@ class AnalyzerDhadrons_mult(Analyzer):  # pylint: disable=invalid-name
         self.p_bin_width = datap["analysis"][self.typean]["bin_width"]
 
         self.p_rebin = datap["analysis"][self.typean]["n_rebin"]
+        self.p_fixed_sigma = datap["analysis"][self.typean]["fixed_sigma"]
+        self.p_fixed_sigma_val = datap["analysis"][self.typean]["fixed_sigma_val"]
         self.p_pdfnames = datap["analysis"][self.typean]["pdf_names"]
         self.p_param_names = datap["analysis"][self.typean]["param_names"]
 
@@ -197,11 +199,14 @@ class AnalyzerDhadrons_mult(Analyzer):  # pylint: disable=invalid-name
         self.rfigfile.WriteObject(hist, rfilename)
 
     # region fitting
-    def _roofit_mass(self, level, hist, ipt, pdfnames, param_names, fitcfg, roows=None, filename=None):
+    def _roofit_mass(self, level, hist, ipt, pdfnames, param_names, fitcfg, fixed_sigma, fixed_sigma_val, # pylint: disable=too-many-arguments
+                     roows=None, filename=None):
         if fitcfg is None:
             return None, None, None, None, None
         try:
-            res, ws, frame, residual_frame, data_hist, model = self.fitter.fit_mass_new(hist, pdfnames, fitcfg, level,
+            res, ws, frame, residual_frame, data_hist, model = self.fitter.fit_mass_new(hist, pdfnames, param_names,
+                                                                                        fitcfg, level,
+                                                                                        fixed_sigma, fixed_sigma_val,
                                                                                         roows=roows, plot=True)
         except ValueError:
             self.logger.error(f"Could not do fitting on {level} for pt {self.bins_candpt[ipt]} - {self.bins_candpt[ipt+1]}")
@@ -406,6 +411,8 @@ class AnalyzerDhadrons_mult(Analyzer):  # pylint: disable=invalid-name
                                 self.p_pdfnames,
                                 self.p_param_names,
                                 fitcfg,
+                                self.p_fixed_sigma[ipt],
+                                self.p_fixed_sigma_val[ipt],
                                 roows,
                                 f"roofit/mult_{multrange[0]}-{multrange[1]}/"
                                 f"h_mass_fitted_pthf-{ptrange[0]}-{ptrange[1]}"
