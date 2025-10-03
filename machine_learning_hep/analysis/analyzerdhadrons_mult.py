@@ -537,7 +537,7 @@ class AnalyzerDhadrons_mult(Analyzer):  # pylint: disable=invalid-name
 
                 legsl.AddEntry(h_sel_pr_sl, legeffstring, "LEP")
                 h_sel_pr_sl.GetXaxis().SetTitle("#it{p}_{T} (GeV/#it{c})")
-                h_sel_pr_sl.GetYaxis().SetTitle("Signal loss (prompt) %s" % (self.p_latexnhadron))
+                h_sel_pr_sl.GetYaxis().SetTitle(f"Signal loss (prompt) {self.p_latexnhadron}")
                 h_sel_pr_sl.SetMinimum(0.7)
                 h_sel_pr_sl.SetMaximum(1.0)
 
@@ -558,7 +558,7 @@ class AnalyzerDhadrons_mult(Analyzer):  # pylint: disable=invalid-name
             h_sel_pr.Write()
             legeff.AddEntry(h_sel_pr, legeffstring, "LEP")
             h_sel_pr.GetXaxis().SetTitle("#it{p}_{T} (GeV/#it{c})")
-            h_sel_pr.GetYaxis().SetTitle("Acc x efficiency (prompt) %s" % (self.p_latexnhadron))
+            h_sel_pr.GetYaxis().SetTitle(f"Acc x efficiency (prompt) {self.p_latexnhadron}")
             h_sel_pr.SetMinimum(0.0004)
             h_sel_pr.SetMaximum(0.4)
 
@@ -613,7 +613,7 @@ class AnalyzerDhadrons_mult(Analyzer):  # pylint: disable=invalid-name
 
                 legslFD.AddEntry(h_sel_fd_sl, legeffstring, "LEP")
                 h_sel_fd_sl.GetXaxis().SetTitle("#it{p}_{T} (GeV/#it{c})")
-                h_sel_fd_sl.GetYaxis().SetTitle("Signal loss (feeddown) %s" % (self.p_latexnhadron))
+                h_sel_fd_sl.GetYaxis().SetTitle(f"Signal loss (feeddown) {self.p_latexnhadron}")
                 h_sel_fd_sl.SetMinimum(0.7)
                 h_sel_fd_sl.SetMaximum(1.0)
 
@@ -634,7 +634,7 @@ class AnalyzerDhadrons_mult(Analyzer):  # pylint: disable=invalid-name
             h_sel_fd.Write()
             legeffFD.AddEntry(h_sel_fd, legeffFDstring, "LEP")
             h_sel_fd.GetXaxis().SetTitle("#it{p}_{T} (GeV/#it{c})")
-            h_sel_fd.GetYaxis().SetTitle("Acc x efficiency feed-down %s" % (self.p_latexnhadron))
+            h_sel_fd.GetYaxis().SetTitle(f"Acc x efficiency feed-down {self.p_latexnhadron}")
             h_sel_fd.SetMinimum(0.0004)
             h_sel_fd.SetMaximum(0.4)
 
@@ -688,7 +688,7 @@ class AnalyzerDhadrons_mult(Analyzer):  # pylint: disable=invalid-name
             norm = 2 * self.p_br * self.p_nevents / (self.p_sigmamb * 1e12)
             hcross.Scale(1.0 / norm)
             fileoutcross.cd()
-            hcross.GetXaxis().SetTitle("#it{p}_{T} %s (GeV/#it{c})" % self.p_latexnhadron)
+            hcross.GetXaxis().SetTitle(f"#it{{p}}_{{T}} {self.p_latexnhadron} (GeV/#it{{c}})")
             hcross.GetYaxis().SetTitle(f"d#sigma/d#it{{p}}_{{T}} ({self.p_latexnhadron}) {self.typean}")
             hcross.SetName("hcross%d" % imult)
             hcross.GetYaxis().SetRangeUser(1e1, 1e10)
@@ -725,7 +725,7 @@ class AnalyzerDhadrons_mult(Analyzer):  # pylint: disable=invalid-name
             print("pt", ipt)
             for imult in range(self.p_nbin2):
                 hcrossvsvar2[ipt].SetLineColor(ipt + 1)
-                hcrossvsvar2[ipt].GetXaxis().SetTitle("%s" % self.p_latexbin2var)
+                hcrossvsvar2[ipt].GetXaxis().SetTitle(f"{self.p_latexbin2var}")
                 hcrossvsvar2[ipt].GetYaxis().SetTitle(self.p_latexnhadron)
                 hcrossvsvar2[ipt].SetBinContent(imult + 1, listvalues[imult][ipt])
                 hcrossvsvar2[ipt].SetBinError(imult + 1, listvalueserr[imult][ipt])
@@ -898,7 +898,7 @@ class AnalyzerDhadrons_mult(Analyzer):  # pylint: disable=invalid-name
             hcross.Scale(1.0 / (self.p_sigmamb * 1e12))
             hcross.SetLineColor(imult + 1)
             hcross.SetMarkerColor(imult + 1)
-            hcross.GetXaxis().SetTitle("#it{p}_{T} %s (GeV/#it{c})" % self.p_latexnhadron)
+            hcross.GetXaxis().SetTitle(f"#it{{p}}_{{T}} {self.p_latexnhadron} (GeV/#it{{c}})")
             hcross.GetYaxis().SetTitleOffset(1.3)
             hcross.GetYaxis().SetTitle(f"Corrected yield/events ({self.p_latexnhadron}) {self.typean}")
             hcross.GetYaxis().SetRangeUser(1e-10, 1)
