@@ -42,6 +42,7 @@ from .utilities import (
     mergerootfiles,
     openfile,
     read_df,
+    reweight,
     seldf_singlevar,
     write_df,
 )
@@ -49,8 +50,13 @@ from .utilities_files import appendmainfoldertolist, create_folder_struc, create
 
 pd.options.mode.chained_assignment = None
 
+# pylint: disable=missing-function-docstring
+
 
 class Processer:  # pylint: disable=too-many-instance-attributes
+    """
+    The main class for data processing, machine learning, and analysis.
+    """
     # Class Attribute
     species = "processer"
     logger = get_logger()
@@ -149,6 +155,7 @@ class Processer:  # pylint: disable=too-many-instance-attributes
         self.n_fileeff = datap["files_names"]["efffilename"]
         self.n_fileresp = datap["files_names"]["respfilename"]
         self.n_mcreweights = datap["files_names"]["namefile_mcweights"]
+        self.n_weights = datap["files_names"]["histoweights"]
 
         # selections
         self.s_reco_skim = datap["sel_reco_skim"]
@@ -172,6 +179,8 @@ class Processer:  # pylint: disable=too-many-instance-attributes
         self.v_ismcbkg = datap["bitmap_sel"]["var_ismcbkg"]  # used in hadrons
         self.v_ismcrefl = datap["bitmap_sel"]["var_ismcrefl"]  # used in hadrons
         self.v_var_binning = datap["var_binning"]
+        self.do_ptshape = datap.get("do_ptshape", False)
+        self.v_var_binning_ptshape = datap.get("var_binning_ptshape", None)
         self.v_invmass = datap["variables"].get("var_inv_mass", "inv_mass")
         # self.v_rapy = datap["variables"].get("var_y", "y_cand")
 
@@ -202,6 +211,11 @@ class Processer:  # pylint: disable=too-many-instance-attributes
                 self.l_gen_sl = createlist(self.d_pkl, self.l_path, self.n_gen_sl)
         self.f_totevt = os.path.join(self.d_pkl, self.n_evt)
         self.f_totevtorig = os.path.join(self.d_pkl, self.n_evtorig)
+        self.f_weights = os.path.join(self.d_mcreweights, self.n_mcreweights)
+
+        if self.do_ptshape:
+            with uproot.open(self.f_weights) as fin:
+                self.v_hist_weights = fin[self.n_weights].to_numpy()
 
         self.p_modelname = datap["mlapplication"]["modelname"]
         # Analysis pT bins
@@ -293,7 +307,7 @@ class Processer:  # pylint: disable=too-many-instance-attributes
         )
 
         self.lpt_recodec = None
-        if self.doml is True:
+        if self.doml:
             if self.mltype == "MultiClassification":
                 self.lpt_recodec = [
                     self.n_reco.replace(
@@ -347,6 +361,22 @@ class Processer:  # pylint: disable=too-many-instance-attributes
         # self.triggerbit = datap["analysis"][self.typean]["triggerbit"]
         self.runlistrigger = runlisttrigger
 
+        if self.do_ptshape and self.mcordata == "mc":
+            lpt_recosk_ptshape = [None] * self.p_nptbins
+            lpt_gensk_ptshape = [None] * self.p_nptbins
+            lpt_recodec_ptshape = [None] * self.p_nptbins
+
+            for ipt in range(self.p_nptbins):
+                lpt_recosk_ptshape[ipt] = self.v_var_binning_ptshape + self.lpt_recosk[ipt]
+                lpt_gensk_ptshape[ipt] = self.v_var_binning_ptshape + self.lpt_gensk[ipt]
+                lpt_recodec_ptshape[ipt] = self.v_var_binning_ptshape + self.lpt_recodec[ipt]
+            self.mptfiles_recosk_ptshape = [createlist(d_pklsk, self.l_path, \
+                                            lpt_recosk_ptshape[ipt]) for ipt in range(self.p_nptbins)]
+            self.mptfiles_gensk_ptshape = [createlist(d_pklsk, self.l_path, \
+                                           lpt_gensk_ptshape[ipt]) for ipt in range(self.p_nptbins)]
+            self.mptfiles_recoskmldec_ptshape = [createlist(self.d_pkl_dec, self.l_path, \
+                                                 lpt_recodec_ptshape[ipt]) for ipt in range(self.p_nptbins)]
+
         # if os.path.exists(self.d_root) is False:
         #     self.logger.warning("ROOT tree folder is not there. Is it intentional?")
 
@@ -387,7 +417,7 @@ class Processer:  # pylint: disable=too-many-instance-attributes
                 if idx_name:
                     # df.rename_axis(idx_name, inplace=True)
                     df[idx_name] = df.index
-                    df.set_index(["df", idx_name], inplace=True)
+                    df = df.set_index(["df", idx_name])
                 return df
             except Exception as e:
                 self.logger.exception("Failed to read data from trees: %s", str(e))
@@ -474,7 +504,8 @@ class Processer:  # pylint: disable=too-many-instance-attributes
                             dfs[df_name][tag] = (var == value["req"]).astype(int)
 
                             # dfs[df_name][tag] = np.array(
-                            #    tag_bit_df(dfs[df_name], value["var"], value["req"], value.get("abs", False)), dtype=int)
+                            #    tag_bit_df(dfs[df_name], value["var"], value["req"], value.get("abs", False)),
+                            #               dtype=int)
 
                 if "swap" in df_spec:
                     self.logger.debug(" %s -> swap", df_name)
@@ -531,21 +562,25 @@ class Processer:  # pylint: disable=too-many-instance-attributes
                     path = os.path.join(self.d_pkl, self.l_path[file_index], df_spec["file"])
                     write_df(dfo, path)
 
+    def do_skim(self, dfreco, dfgen, var_binning, filenames_reco, filenames_gen, file_index):
+        for ipt in range(self.p_nptbins):
+            dfrecosk = seldf_singlevar(dfreco, var_binning,
+                                       self.lpt_anbinmin[ipt], self.lpt_anbinmax[ipt])
+            dfrecosk = dfquery(dfrecosk, self.s_reco_skim[ipt])
+            write_df(dfrecosk, filenames_reco[ipt][file_index])
+
+            if dfgen is not None:
+                dfgensk = seldf_singlevar(dfgen, var_binning,
+                                          self.lpt_anbinmin[ipt], self.lpt_anbinmax[ipt])
+                dfgensk = dfquery(dfgensk, self.s_gen_skim[ipt])
+                write_df(dfgensk, filenames_gen[ipt][file_index])
+
     def skim(self, file_index):
         dfreco = read_df(self.l_reco[file_index])
         dfgen = read_df(self.l_gen[file_index]) if self.mcordata == "mc" else None
         dfgen_sl = read_df(self.l_gen_sl[file_index]) if self.n_gen_sl and self.mcordata == "mc" else None
 
         for ipt in range(self.p_nptbins):
-            dfrecosk = seldf_singlevar(dfreco, self.v_var_binning, self.lpt_anbinmin[ipt], self.lpt_anbinmax[ipt])
-            dfrecosk = dfquery(dfrecosk, self.s_reco_skim[ipt])
-            write_df(dfrecosk, self.mptfiles_recosk[ipt][file_index])
-
-            if dfgen is not None:
-                dfgensk = seldf_singlevar(dfgen, self.v_var_binning, self.lpt_anbinmin[ipt], self.lpt_anbinmax[ipt])
-                dfgensk = dfquery(dfgensk, self.s_gen_skim[ipt])
-                write_df(dfgensk, self.mptfiles_gensk[ipt][file_index])
-
             if dfgen_sl is not None:
                 dfgensk_sl = seldf_singlevar(
                     dfgen_sl, self.v_var_binning, self.lpt_anbinmin[ipt], self.lpt_anbinmax[ipt]
@@ -553,12 +588,20 @@ class Processer:  # pylint: disable=too-many-instance-attributes
                 dfgensk_sl = dfquery(dfgensk_sl, self.s_gen_skim[ipt])
                 write_df(dfgensk_sl, self.mptfiles_gensk_sl[ipt][file_index])
 
+        self.do_skim(dfreco, dfgen, self.v_var_binning, self.mptfiles_recosk, self.mptfiles_gensk, file_index)
+
+        if self.do_ptshape and self.mcordata == 'mc':
+            reweight(self.v_hist_weights, dfreco, self.v_var_binning, self.v_var_binning_ptshape)
+            reweight(self.v_hist_weights, dfgen, self.v_var_binning, self.v_var_binning_ptshape)
+
+            self.do_skim(dfreco, dfgen, self.v_var_binning_ptshape, self.mptfiles_recosk_ptshape,\
+                    self.mptfiles_gensk_ptshape, file_index)
+
+
+    # pylint: disable=too-many-branches
     def applymodel(self, file_index):
-        for ipt in range(self.p_nptbins):
-            if os.path.exists(self.mptfiles_recoskmldec[ipt][file_index]):
-                if os.stat(self.mptfiles_recoskmldec[ipt][file_index]).st_size != 0:
-                    continue
-            dfrecosk = read_df(self.mptfiles_recosk[ipt][file_index])
+        def do_apply_model(in_filename, out_filename, ipt):
+            dfrecosk = read_df(in_filename)
             if self.p_mask_values:
                 mask_df(dfrecosk, self.p_mask_values)
             if self.doml is True:
@@ -584,7 +627,21 @@ class Processer:  # pylint: disable=too-many-instance-attributes
                     dfrecoskml = dfrecoskml.loc[dfrecoskml[probvar] > self.lpt_probcutpre[ipt]]
             else:
                 dfrecoskml = dfrecosk.query("isstd == 1")
-            write_df(dfrecoskml, self.mptfiles_recoskmldec[ipt][file_index])
+            write_df(dfrecoskml, out_filename)
+
+        for ipt in range(self.p_nptbins):
+            if os.path.exists(self.mptfiles_recoskmldec[ipt][file_index]):
+                if os.stat(self.mptfiles_recoskmldec[ipt][file_index]).st_size != 0:
+                    continue
+
+            do_apply_model(self.mptfiles_recosk[ipt][file_index],
+                           self.mptfiles_recoskmldec[ipt][file_index],
+                           ipt)
+
+            if self.do_ptshape and self.mcordata == 'mc':
+                do_apply_model(self.mptfiles_recosk_ptshape[ipt][file_index],
+                               self.mptfiles_recoskmldec_ptshape[ipt][file_index],
+                               ipt)
 
     @staticmethod
     def callback(ex):
@@ -717,8 +774,8 @@ class Processer:  # pylint: disable=too-many-instance-attributes
 
     def process_histomass(self):
         self.logger.debug("Doing masshisto %s %s", self.mcordata, self.period)
-        self.logger.debug("Using run selection for mass histo %s %s %s", self.runlistrigger, "for period", self.period)
-        if self.doml is True:
+        self.logger.debug("Using run selection for mass histo %s for period %s", self.runlistrigger, self.period)
+        if self.doml:
             self.logger.debug("Doing ml analysis")
         elif self.do_custom_analysis_cuts:
             self.logger.debug("Using custom cuts")
@@ -736,8 +793,8 @@ class Processer:  # pylint: disable=too-many-instance-attributes
 
     def process_efficiency(self):
         print("Doing efficiencies", self.mcordata, self.period)
-        print("Using run selection for eff histo", self.runlistrigger, "for period", self.period)
-        if self.doml is True:
+        print("Using run selection for eff histo %s for period %s", self.runlistrigger, self.period)
+        if self.doml:
             print("Doing ml analysis")
         elif self.do_custom_analysis_cuts:
             print("Using custom cuts")

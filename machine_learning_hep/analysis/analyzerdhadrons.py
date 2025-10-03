@@ -55,10 +55,13 @@ from machine_learning_hep.logger import get_logger
 from machine_learning_hep.utils.hist import get_dim, project_hist
 
 # pylint: disable=too-few-public-methods, too-many-instance-attributes, too-many-statements, fixme
-# pylint: disable=consider-using-enumerate fixme
+# pylint: disable=consider-using-enumerate, missing-function-docstring
 
 
 class AnalyzerDhadrons(Analyzer):  # pylint: disable=invalid-name
+    """
+    An analyzer for D and L hadrons.
+    """
     species = "analyzer"
 
     def __init__(self, datap, case, typean, period):
@@ -145,6 +148,8 @@ class AnalyzerDhadrons(Analyzer):  # pylint: disable=invalid-name
         self.p_triggereffunc = datap["analysis"][self.typean].get("triggereffunc", [0])
 
         self.root_objects = []
+
+        self.do_ptshape = datap.get("do_ptshape", False)
 
         # Fitting
         self.p_performval = datap["analysis"].get("event_cand_validation", None)
@@ -418,60 +423,43 @@ class AnalyzerDhadrons(Analyzer):  # pylint: disable=invalid-name
         print(self.n_fileff)
         lfileeff = TFile.Open(self.n_fileff)
         lfileeff.ls()
-        fileouteff = TFile.Open(f"{self.d_resultsallpmc}/{self.efficiency_filename}{self.case}{self.typean}.root", "recreate")
-        cEff = TCanvas("cEff", "The Fit Canvas")
-        cEff.SetCanvasSize(1900, 1500)
-        cEff.SetWindowSize(500, 500)
+        fileouteff = TFile.Open(f"{self.d_resultsallpmc}/{self.efficiency_filename}{self.case}{self.typean}.root",
+                                "recreate")
 
-        legeff = TLegend(0.5, 0.65, 0.7, 0.85)
-        legeff.SetBorderSize(0)
-        legeff.SetFillColor(0)
-        legeff.SetFillStyle(0)
-        legeff.SetTextFont(42)
-        legeff.SetTextSize(0.035)
+        def do_eff(gen_hist, sel_hist, histname, outname, eff_case):
+            cEff = TCanvas(f"c{outname}", "The Fit Canvas")
+            cEff.SetCanvasSize(1900, 1500)
+            cEff.SetWindowSize(500, 500)
 
-        h_gen_pr = lfileeff.Get("h_gen_pr")
-        h_sel_pr = lfileeff.Get("h_sel_pr")
-        h_sel_pr.Divide(h_sel_pr, h_gen_pr, 1.0, 1.0, "B")
-        h_sel_pr.Draw("same")
-        fileouteff.cd()
-        h_sel_pr.SetName("eff")
-        h_sel_pr.Write()
-        h_sel_pr.GetXaxis().SetTitle("#it{p}_{T} (GeV/#it{c})")
-        h_sel_pr.GetYaxis().SetTitle(f"Acc x efficiency (prompt) {self.p_latexnhadron} {self.typean} (1/GeV)")
-        h_sel_pr.SetMinimum(0.001)
-        h_sel_pr.SetMaximum(1.0)
-        gPad.SetLogy()
-        cEff.SaveAs(f"{self.d_resultsallpmc}/Eff{self.case}{self.typean}.eps")
+            legeff = TLegend(0.5, 0.65, 0.7, 0.85)
+            legeff.SetBorderSize(0)
+            legeff.SetFillColor(0)
+            legeff.SetFillStyle(0)
+            legeff.SetTextFont(42)
+            legeff.SetTextSize(0.035)
 
-        cEffFD = TCanvas("cEffFD", "The Fit Canvas")
-        cEffFD.SetCanvasSize(1900, 1500)
-        cEffFD.SetWindowSize(500, 500)
+            h_gen = lfileeff.Get(gen_hist)
+            h_sel = lfileeff.Get(sel_hist)
+            h_sel.Divide(h_sel, h_gen, 1.0, 1.0, "B")
+            h_sel.Draw("same")
+            fileouteff.cd()
+            h_sel.SetName(histname)
+            h_sel.Write()
+            h_sel.GetXaxis().SetTitle("#it{p}_{T} (GeV/#it{c})")
+            h_sel.GetYaxis().SetTitle(f"Acc x efficiency ({eff_case}) {self.p_latexnhadron} {self.typean} (1/GeV)")
+            h_sel.SetMinimum(0.001)
+            h_sel.SetMaximum(1.0)
+            gPad.SetLogy()
+            legeff.Draw()
+            cEff.SaveAs(f"{self.d_resultsallpmc}/{outname}{self.case}{self.typean}.eps")
 
-        legeffFD = TLegend(0.5, 0.65, 0.7, 0.85)
-        legeffFD.SetBorderSize(0)
-        legeffFD.SetFillColor(0)
-        legeffFD.SetFillStyle(0)
-        legeffFD.SetTextFont(42)
-        legeffFD.SetTextSize(0.035)
-
-        h_gen_fd = lfileeff.Get("h_gen_fd")
-        h_sel_fd = lfileeff.Get("h_sel_fd")
-        h_sel_fd.Divide(h_sel_fd, h_gen_fd, 1.0, 1.0, "B")
-        h_sel_fd.Draw("same")
-        fileouteff.cd()
-        h_sel_fd.SetName("eff_fd")
-        h_sel_fd.Write()
-        h_sel_fd.GetXaxis().SetTitle("#it{p}_{T} (GeV/#it{c})")
-        h_sel_fd.GetYaxis().SetTitle(f"Acc x efficiency feed-down {self.p_latexnhadron} {self.typean} (1/GeV)")
-        h_sel_fd.SetMinimum(0.001)
-        h_sel_fd.SetMaximum(1.0)
-        gPad.SetLogy()
-        legeffFD.Draw()
-        cEffFD.SaveAs(f"{self.d_resultsallpmc}/EffFD{self.case}{self.typean}.eps")
+        do_eff("h_gen_pr", "h_sel_pr", "eff", "Eff", "prompt")
+        do_eff("h_gen_fd", "h_sel_fd", "eff_fd", "EffFD", "feed-down")
+        if self.do_ptshape:
+            do_eff("h_gen_fd_ptshape", "h_sel_fd_ptshape", "eff_fd_ptshape", "EffFDPtShape", "feed-down")
 
     @staticmethod
-    def calculate_norm(logger, hevents, hselevents):  # TO BE FIXED WITH EV SEL
+    def calculate_norm(logger, hevents, hselevents): # TO BE FIXED WITH EV SEL
         if not hevents:
             # pylint: disable=undefined-variable
             logger.error("Missing hevents")
@@ -498,11 +486,13 @@ class AnalyzerDhadrons(Analyzer):  # pylint: disable=invalid-name
         if not os.path.exists(fileouteff):
             self.logger.fatal("Efficiency file %s could not be found", fileouteff)
 
-        fileoutcross = f"{self.d_resultsallpdata}/finalcross{self.case}{self.typean}.root"
+        ptshape = "_ptshape" if self.do_ptshape else ""
+        fileoutcross = f"{self.d_resultsallpdata}/finalcross{self.case}{self.typean}{ptshape}.root"
 
         namehistoeffprompt = "eff"
-        namehistoefffeed = "eff_fd"
+        namehistoefffeed = f"eff_fd{ptshape}"
         nameyield = "hyields0"
+        self.logger.info("Using efficiency histos %s, %s", namehistoeffprompt, namehistoefffeed)
 
         histonorm = TH1F("histonorm", "histonorm", 1, 0, 1)
 
@@ -549,7 +539,8 @@ class AnalyzerDhadrons(Analyzer):  # pylint: disable=invalid-name
             fileoutcross,
         )
 
-        fileoutcrosstot = TFile.Open(f"{self.d_resultsallpdata}/finalcross{self.case}{self.typean}tot.root", "recreate")
+        fileoutcrosstot = TFile.Open(f"{self.d_resultsallpdata}/finalcross{self.case}{self.typean}tot{ptshape}.root",
+                                     "recreate")
 
         f_fileoutcross = TFile.Open(fileoutcross)
         if f_fileoutcross:
