@@ -164,7 +164,7 @@ class ProcesserDhadrons(Processer):  # pylint: disable=too-many-instance-attribu
                     self.lpt_probcutfin[ipt],
                 )
 
-            h_invmass = TH1F("hmass" + suffix, "", self.p_num_bins, self.p_mass_fit_lim[0], self.p_mass_fit_lim[1])
+            h_invmass = TH1F("hmass_" + suffix, "", self.p_num_bins, self.p_mass_fit_lim[0], self.p_mass_fit_lim[1])
 
             fill_hist(h_invmass, df[self.v_invmass])
             myfile.cd()
@@ -174,10 +174,10 @@ class ProcesserDhadrons(Processer):  # pylint: disable=too-many-instance-attribu
                 df_sig = df[df[self.v_ismcsignal] == 1]
                 df_bkg = df[df[self.v_ismcbkg] == 1]
                 h_invmass_sig = TH1F(
-                    "hmass_sig" + suffix, "", self.p_num_bins, self.p_mass_fit_lim[0], self.p_mass_fit_lim[1]
+                    "hmass_sig_" + suffix, "", self.p_num_bins, self.p_mass_fit_lim[0], self.p_mass_fit_lim[1]
                 )
                 h_invmass_bkg = TH1F(
-                    "hmass_bkg" + suffix, "", self.p_num_bins, self.p_mass_fit_lim[0], self.p_mass_fit_lim[1]
+                    "hmass_bkg_" + suffix, "", self.p_num_bins, self.p_mass_fit_lim[0], self.p_mass_fit_lim[1]
                 )
 
                 fill_hist(h_invmass_sig, df_sig[self.v_invmass])

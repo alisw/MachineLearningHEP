@@ -95,9 +95,14 @@ class ProcesserDhadrons_mult(Processer):
             d_mcreweights,
         )
 
+        self.v_is_part = datap["bitmap_sel"].get("var_is_part", "")
+        self.v_is_antipart = datap["bitmap_sel"].get("var_is_antipart", "")
+        self.v_issel_part = datap["bitmap_sel"].get("var_issel_part", "")
+        self.v_issel_antipart = datap["bitmap_sel"].get("var_issel_antipart", "")
         self.v_invmass = datap["variables"].get("var_inv_mass", "fM")
         self.p_mass_fit_lim = datap["analysis"][self.typean]["mass_fit_lim"]
         self.p_bin_width = datap["analysis"][self.typean]["bin_width"]
+        self.reflections = datap["analysis"][self.typean].get("reflections", False)
         self.binarray_pthf = np.asarray(self.cfg("sel_an_binmin", []) + self.cfg("sel_an_binmax", [])[-1:], "d")
         limits_mass = datap["analysis"][self.typean]["mass_fit_lim"]
         nbins_mass = int(round((limits_mass[1] - limits_mass[0]) / self.p_bin_width))
@@ -237,7 +242,7 @@ class ProcesserDhadrons_mult(Processer):
                         self.lvar2_binmin[ibin2],
                         self.lvar2_binmax[ibin2],
                     )
-                h_invmass = TH1F("hmass" + suffix, "", self.p_num_bins, self.p_mass_fit_lim[0], self.p_mass_fit_lim[1])
+                h_invmass = TH1F("hmass_" + suffix, "", self.p_num_bins, self.p_mass_fit_lim[0], self.p_mass_fit_lim[1])
                 df_bin = seldf_singlevar_inclusive(
                     df, self.v_var2_binning, self.lvar2_binmin[ibin2], self.lvar2_binmax[ibin2]
                 )
@@ -247,12 +252,35 @@ class ProcesserDhadrons_mult(Processer):
 
                 if self.mcordata == "mc":
                     df_bin_sig = df_bin[df_bin[self.v_ismcsignal] == 1]
+                    if self.reflections:
+                        df_bin_sig = df_bin[
+                            ((df_bin[self.v_is_part] == 1) & (df_bin[self.v_issel_part] == 1))
+                            | ((df_bin[self.v_is_antipart] == 1) & (df_bin[self.v_issel_antipart] == 1))
+                            & (df_bin[self.v_ismcsignal] == 1)
+                        ]
                     h_invmass_sig = TH1F(
-                        "hmass_sig" + suffix, "", self.p_num_bins, self.p_mass_fit_lim[0], self.p_mass_fit_lim[1]
+                        "hmass_mcsig_" + suffix, "", self.p_num_bins, self.p_mass_fit_lim[0], self.p_mass_fit_lim[1]
                     )
                     fill_hist(h_invmass_sig, df_bin_sig[self.v_invmass])
+
                     myfile.cd()
                     h_invmass_sig.Write()
+
+                    if self.reflections:
+                        df_bin_refl = df_bin[
+                            ((df_bin[self.v_is_part] == 1) & (df_bin[self.v_issel_antipart] == 1))
+                            | ((df_bin[self.v_is_antipart] == 1) & (df_bin[self.v_issel_part] == 1))
+                            & (df_bin[self.v_ismcsignal] == 1)
+                        ]
+                        h_invmass_refl = TH1F(
+                            "hmass_mcrefl_" + suffix,
+                            "",
+                            self.p_num_bins,
+                            self.p_mass_fit_lim[0],
+                            self.p_mass_fit_lim[1],
+                        )
+                        fill_hist(h_invmass_refl, df_bin_refl[self.v_invmass])
+                        h_invmass_refl.Write()
 
         if self.event_cand_validation is True:
             label = "h%s" % self.v_var2_binning
@@ -335,9 +363,7 @@ class ProcesserDhadrons_mult(Processer):
         out_file = TFile.Open(self.l_histoeff[index], "recreate")
         h_list = []
         for ibin2, _ in enumerate(self.lvar2_binmin):
-            stringbin2 = "_{}_{:.2f}_{:.2f}".format(
-                self.v_var2_binning, self.lvar2_binmin[ibin2], self.lvar2_binmax[ibin2]
-            )
+            stringbin2 = f"_{self.v_var2_binning}_{self.lvar2_binmin[ibin2]:.2f}_{self.lvar2_binmax[ibin2]:.2f}"
             n_bins = len(self.lpt_finbinmin)
             analysis_bin_lims_temp = self.lpt_finbinmin.copy()
             analysis_bin_lims_temp.append(self.lpt_finbinmax[n_bins - 1])

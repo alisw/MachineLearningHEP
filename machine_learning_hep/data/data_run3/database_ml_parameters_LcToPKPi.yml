@@ -82,11 +82,11 @@ LcpKpi:
         #extra:
         #fY: log((sqrt(2.28646**2 + (fPt * cosh(fEta))**2) + fPt * sinh(fEta)) / sqrt(2.28646**2 + fPt**2)) #TODO : change mass or make sure Lc mass is updated
         tags:
-          isstd: {var: fFlagMcMatchRec, req: [[1], []], level: mc}
-          ismcsignal: {var: fFlagMcMatchRec, req: [[1], []], abs: true, level: mc}
-          ismcbkg: {var: fFlagMcMatchRec, req: [[], [1]], abs: true, level: mc}
-          ismcprompt: {var: fOriginMcRec, req: [[0], []], level: mc}
-          ismcfd: {var: fOriginMcRec, req: [[1], []], level: mc}
+          isstd: {var: fFlagMcMatchRec, req: 17, level: mc}
+          ismcsignal: {var: fFlagMcMatchRec, req: 17, abs: true, level: mc}
+          ismcbkg: {var: ismcsignal, req: 0, level: mc}
+          ismcprompt: {var: fOriginMcRec, req: 1, level: mc}
+          ismcfd: {var: fOriginMcRec, req: 2, level: mc}
         swap: {cand: fCandidateSelFlag, var_swap: fIsCandidateSwapped, vars: [ismcsignal, ismcprompt, ismcfd], level: mc}
 
       gen:
@@ -94,11 +94,11 @@ LcpKpi:
         trees:
           O2hflcpbase: [fIndexHFLCMCCOLLBASES, fPt, fY, fEta, fPhi, fFlagMcMatchGen, fOriginMcGen]
         tags:
-          isstd: {var: fFlagMcMatchGen, req: [[1], []], level: mc}
-          ismcsignal: {var: fFlagMcMatchGen, req: [[1], []], abs: true, level: mc}
-          ismcbkg: {var: fFlagMcMatchGen, req: [[], [1]], abs: true, level: mc}
-          ismcprompt: {var: fOriginMcGen, req: [[0], []], level: mc}
-          ismcfd: {var: fOriginMcGen, req: [[1], []], level: mc}
+          isstd: {var: fFlagMcMatchGen, req: 17, level: mc}
+          ismcsignal: {var: fFlagMcMatchGen, req: 17, abs: true, level: mc}
+          ismcbkg: {var: ismcsignal, req: 0, level: mc}
+          ismcprompt: {var: fOriginMcGen, req: 1, level: mc}
+          ismcfd: {var: fOriginMcGen, req: 2, level: mc}
           #extra:
           #fY: log((sqrt(2.28646**2 + (fPt * cosh(fEta))**2) + fPt * sinh(fEta)) / sqrt(2.28646**2 + fPt**2)) #TODO : change mass or make sure Lc mass is updated
 
@@ -276,13 +276,13 @@ LcpKpi:
       period: [LHC24h1] #list of periods
       select_period: [1]
       prefix_dir: /data2/MLhep/
-      #unmerged_tree_dir: [sim/train_339426/alice/cern.ch/user/a/alihyperloop/jobs/0130] #list of periods training
-      unmerged_tree_dir: [sim/train_341075/alice/cern.ch/user/a/alihyperloop/jobs/0132] #list of periods
-      pkl: [LHC23pp_mc_tuner_mb/prod_LHC24h1/pklmc] #list of periods
-      pkl_skimmed: [LHC23pp_mc_tuner_mb/prod_LHC24h1/pklskmc] #list of periods
-      pkl_skimmed_merge_for_ml: [LHC23pp_mc_tuner_mb/prod_LHC24h1/pklskmlmc] #list of periods
-      pkl_skimmed_merge_for_ml_all: LHC23pp_mc_tuner_mb/prod_LHC24_ana/mltotmc
-      pkl_evtcounter_all: LHC23pp_mc_tuner_mb/prod_LHC24_ana/evttotmc
+      #unmerged_tree_dir: [trains/428708/alice] #list of periods
+      unmerged_tree_dir: [trains/428753/alice] #list of periods
+      pkl: ["${USER}/LHC23pp_mc_tuner_mb/prod_LHC24h1b/pklmc"] #list of periods
+      pkl_skimmed: ["${USER}/LHC23pp_mc_tuner_mb/prod_LHC24h1b/pklskmc"] #list of periods
+      pkl_skimmed_merge_for_ml: ["${USER}/LHC23pp_mc_tuner_mb/prod_LHC24h1/pklskmlmc"] #list of periods
+      pkl_skimmed_merge_for_ml_all: "${USER}/HC23pp_mc_tuner_mb/prod_LHC24_ana/mltotmc"
+      pkl_evtcounter_all: "${USER}/LHC23pp_mc_tuner_mb/prod_LHC24_anab/evttotmc"
       #select_jobs: [[hy_396609], [hy_396597]]
       mcreweights: [../Analyses]
   ml:
@@ -334,11 +334,11 @@ LcpKpi:
 
   mlapplication:
     data:
-      prefix_dir_app: /data2/ldellost/MLhep_newformat_mb/
+      prefix_dir_app: /data2/ldellost/MLhep_newformat_mb_DD/
       pkl_skimmed_dec: [LHC23pp/MLapplication/prod_LHC23/skpkldecdata] #list of periods
       pkl_skimmed_decmerged: [LHC23pp/MLapplication/prod_LHC23/skpkldecdatamerged] #list of periods
     mc:
-      prefix_dir_app: /data2/ldellost/MLhep_newformat_mb/
+      prefix_dir_app: /data2/ldellost/MLhep_newformat_mb_DD_h1b/
       pkl_skimmed_dec: [LHC23pp_mc/MLapplication_mult/prod_LHC24h1/skpkldecmc] #list of periods
       pkl_skimmed_decmerged: [LHC23pp_mc/MLapplication_mult/prod_LHC24h1/skpkldecmcmerged] #list of periods
     modelname: xgboost
@@ -432,148 +432,40 @@ LcpKpi:
       # Decide whether to take the sigma from MC or data for individual fits
       mass_roofit:
         - level: mc
-          ptrange: [0., 4.]
-          range: [2.18, 2.39]
-          components:
-            sig:
-              fn: 'Gaussian::sig(m[1., 10], mean[2.286, 2.2832,2.289], sigma_g1[.007,.007,.012])'
-              #wide:
-            # fn: 'Gaussian::wide(m, mean, expr("n*sigma_g1", n[1.,5.], sigma_g1))'
-            #model:
-            #  fn: 'SUM::sig(f_peak[0.,1.]*peak, wide)'
-            bkg:
-              fn: 'Exponential::mcbkg(m, mcalpha[0.])'
-            model:
-              fn: 'SUM::mctot(mcfrac[0., 0., 1.0]*sig, mcbkg)'
-        - level: mc
-          ptrange: [4., 6.]
-          range: [2.18, 2.39]
-          components:
-            sig:
-              fn: 'Gaussian::sig(m[1., 10], mean[2.286, 2.283,2.289], sigma_g1[.012,.01,.016])'
-              #wide:
-            # fn: 'Gaussian::wide(m, mean, expr("n*sigma_g1", n[1.,5.], sigma_g1))'
-            #model:
-            #  fn: 'SUM::sig(f_peak[0.,1.]*peak, wide)'
-            bkg:
-              fn: 'Exponential::mcbkg(m, mcalpha[0.])'
-            model:
-              fn: 'SUM::mctot(mcfrac[0., 0., 1.0]*sig, mcbkg)'
-        - level: mc
-          ptrange: [6., 10.]
+          ptrange: [0., 24.]
           range: [2.10, 2.45]
           components:
             sig:
-              fn: 'Gaussian::sig(m[1., 10], mean[2.2865, 2.283,2.289], sigma_g1[.013,.013,.020])'
-              #wide:
-            # fn: 'Gaussian::wide(m, mean, expr("n*sigma_g1", n[1.,5.], sigma_g1))'
-            #model:
-            #  fn: 'SUM::sig(f_peak[0.,1.]*peak, wide)'
-            bkg:
-              fn: 'Exponential::mcbkg(m, mcalpha[0.])'
+              fn: 'Gaussian::peak(m[1., 10], mean[2.283,2.289], sigma_g1[.007,.025])'
+            wide:
+              fn: 'Gaussian::wide(m, mean, expr("n*sigma_g1", n[1.,5.], sigma_g1))'
             model:
-              fn: 'SUM::mctot(mcfrac[0., 0., 1.0]*sig, mcbkg)'
-        - level: mc
-          ptrange: [10., 24.]
-          range: [2.10, 2.45]
-          components:
-            sig:
-              fn: 'Gaussian::sig(m[1., 10], mean[2.2865, 2.283,2.289], sigma_g1[.013,.020,.029])'
-              #wide:
-            # fn: 'Gaussian::wide(m, mean, expr("n*sigma_g1", n[1.,5.], sigma_g1))'
-            #model:
-            #  fn: 'SUM::sig(f_peak[0.,1.]*peak, wide)'
-            bkg:
-              fn: 'Exponential::mcbkg(m, mcalpha[0.])'
-            model:
-              fn: 'SUM::mctot(mcfrac[0., 0., 1.0]*sig, mcbkg)'
-        - ptrange: [0., 2.]
-          range: [2.216, 2.36] #2.216, 2.36
-          #fix_params: ['n', 'f_peak']
-          components:
-            #sig:
-            #fn: 'Gaussian::sig(m, mean[2.28,2.29], sigma_g1[.005,.005,.015])'
-            bkg:
-              fn: 'Polynomial::bkg(m, {a0[-1e10, 1e10], a1[-1e10, 1e10], a2[-1e10, 1e10]})'
-            model:
-              fn: 'SUM::sum(f_sig[0.,1.]*sig, bkg)'
-        - ptrange: [2., 3.]
+              fn: 'SUM::sig(f_peak[0.,1.]*peak, wide)'
+        - ptrange: [0., 4.]
           range: [2.21, 2.36]
-          #fix_params: ['n', 'f_peak']
+          fix_params: ['n', 'f_peak']
           components:
-            #sig:
-            #   fn: 'Gaussian::sig(m, mean[2.28,2.29], sigma_g1[.005,.005,.015])'
             bkg:
-              fn: 'Polynomial::bkg(m, {a0[-1e8, 1e8], a1[-1e8, 1e8], a2[-1e8, 1e8]})'
+              #fn: 'Polynomial::bkg(m, {a0[-1,1], a1[-1,1]})'
+              fn: 'Chebychev::bkg(m, {a0[-1,1], a1[-1,1]})'
             model:
               fn: 'SUM::sum(f_sig[0.,1.]*sig, bkg)'
-        - ptrange: [3., 4.]
-          range: [2.20, 2.37]
-          #fix_params: ['n', 'f_peak']
+        - ptrange: [4., 8.]
+          range: [2.16, 2.40]
+          fix_params: ['n', 'f_peak']
           components:
-            #sig:
-            #fn: 'Gaussian::sig(m, mean[2.28,2.29], sigma_g1[.005,.005,.015])'
             bkg:
-              fn: 'Polynomial::bkg(m, {a0[-1e8, 1e8], a1[-1e8, 1e8], a2[-1e8, 1e8]})'
-            model:
-              fn: 'SUM::sum(f_sig[0., 0., 0.8]*sig, bkg)'
-        - ptrange: [4., 5.]
-          range: [2.19, 2.38]
-          #fix_params: ['n', 'f_peak']
-          components:
-            # sig:
-            #   fn: 'Gaussian::sig(m, mean[2.28,2.29], sigma_g1[.005,.005,.015])'
-            bkg:
-              fn: 'Polynomial::bkg(m, {a0[2000, -1e10, 1e10], a1[-1e10, 1e10], a2[-1e10, 1e10]})'
+              #fn: 'Polynomial::bkg(m, {a0[-1,1], a1[-1,1]})'
+              fn: 'Chebychev::bkg(m, {a0[-1,1], a1[-1,1]})'
             model:
               fn: 'SUM::sum(f_sig[0.,1.]*sig, bkg)'
-        - ptrange: [5., 6.]
-          range: [2.18, 2.39]
-          #fix_params: ['n', 'f_peak']
-          components:
-            # sig:
-            #   fn: 'Gaussian::sig(m, mean[2.28,2.29], sigma_g1[.005,.005,.015])'
-            bkg:
-              fn: 'Polynomial::bkg(m, {a0[8000, -1e10, 1e10], a1[-1e10, 1e10], a2[-1e10, 1e10]})'
-            model:
-              fn: 'SUM::sum(f_sig[0.,1.]*sig, bkg)'
-        - ptrange: [6., 7.]
-          range: [2.16, 2.42]
-          #fix_params: ['n', 'f_peak']
-          components:
-            # sig:
-            #   fn: 'Gaussian::sig(m, mean[2.28,2.29], sigma_g1[.005,.03])'
-            bkg:
-              fn: 'Polynomial::bkg(m, {a0[2000, -1e10, 1e10], a1[-1e10, 1e10], a2[-1e10, 1e10]})'
-            model:
-              fn: 'SUM::sum(f_sig[0.,1.]*sig, bkg)'
-        - ptrange: [7., 8.]
-          range: [2.16, 2.42]
-          #fix_params: ['n', 'f_peak']
-          components:
-            # sig:
-            #   fn: 'Gaussian::sig(m, mean[2.28,2.29], sigma_g1[.005,.03])'
-            bkg:
-              fn: 'Polynomial::bkg(m, {a0[2000, -1e10, 1e10], a1[-1e10, 1e10], a2[-1e10, 1e10]})'
-            model:
-              fn: 'SUM::sum(f_sig[0.,1.]*sig, bkg)'
-        - ptrange: [8., 10.]
+        - ptrange: [8., 24.]
           range: [2.1, 2.46]
-          #fix_params: ['n', 'f_peak']
+          fix_params: ['n', 'f_peak']
           components:
-            # sig:
-            #   fn: 'Gaussian::sig(m, mean[2.28,2.29], sigma_g1[.005,.03])'
             bkg:
-              fn: 'Polynomial::bkg(m, {a0[1000, -1e10, 1e10], a1[-1e10, 1e10], a2[-1e10, 1e10]})'
-            model:
-              fn: 'SUM::sum(f_sig[0.,1.]*sig, bkg)'
-        - range: [2.1, 2.46]
-          #fix_params: ['n', 'f_peak']
-          components:
-            # sig:
-            #   fn: 'Gaussian::sig(m, mean[2.28,2.29], sigma_g1[.005,.03])'
-            bkg:
-              fn: 'Polynomial::bkg(m, {a0[2000, -1e10, 1e10], a1[-1e10, 1e10], a2[-1e10, 1e10]})'
+              #fn: 'Polynomial::bkg(m, {a0[-1,1], a1[-1,1]})'
+              fn: 'Chebychev::bkg(m, {a0[-1,1], a1[-1,1]})'
             model:
               fn: 'SUM::sum(f_sig[0.,1.]*sig, bkg)'
 

@@ -50,7 +50,7 @@ from machine_learning_hep.fitting.roofitter import (
 )
 from machine_learning_hep.hf_pt_spectrum import hf_pt_spectrum
 from machine_learning_hep.logger import get_logger
-from machine_learning_hep.utils.hist import get_dim, project_hist
+from machine_learning_hep.utils.hist import get_dim
 
 
 # pylint: disable=too-few-public-methods, too-many-instance-attributes, too-many-statements, fixme
@@ -320,7 +320,7 @@ class AnalyzerDhadrons_mult(Analyzer):  # pylint: disable=invalid-name
                     for ipt in range(len(self.lpt_finbinmin)):
                         lpt_probcutfin[ipt] = self.lpt_probcutfin_tmp[self.bin_matching[ipt]]
                         self.logger.debug("fitting %s - %i - %i", level, ipt, ibin2)
-                        roows = self.roows.get(ipt)
+                        roows = self.roows.get((ibin2, ipt))
                         if self.mltype == "MultiClassification":
                             suffix = "%s%d_%d_%.2f%.2f%s_%.2f_%.2f" % (
                                 self.v_var_binning,
@@ -342,7 +342,7 @@ class AnalyzerDhadrons_mult(Analyzer):  # pylint: disable=invalid-name
                                 self.lvar2_binmin[ibin2],
                                 self.lvar2_binmax[ibin2],
                             )
-                        h_invmass = rfile.Get("hmass" + suffix)
+                        h_invmass = rfile.Get("hmass_" + suffix)
                         # Rebin
                         h_invmass.Rebin(self.p_rebin[ipt])
                         if h_invmass.GetEntries() < 100:  # TODO: reconsider criterion
@@ -378,12 +378,14 @@ class AnalyzerDhadrons_mult(Analyzer):  # pylint: disable=invalid-name
                                 break
                             self.logger.debug("Using fit config for %i: %s", ipt, fitcfg)
                             if datasel := fitcfg.get("datasel"):
-                                h = rfile.Get(f"h_mass-pthf_{datasel}")
-                                h_invmass = project_hist(h, [0], {1: (ipt + 1, ipt + 1)})
+                                h_invmass = rfile.Get(f"hmass_{datasel}_{suffix}")
 
                             for fixpar in fitcfg.get("fix_params", []):
                                 if roows.var(fixpar):
                                     roows.var(fixpar).setConstant(True)
+                            for par in fitcfg.get("free_params", []):
+                                if roows.var(par):
+                                    roows.var(par).setConstant(False)
                             if h_invmass.GetEntries() == 0:
                                 continue
 
@@ -405,8 +407,8 @@ class AnalyzerDhadrons_mult(Analyzer):  # pylint: disable=invalid-name
                             )
                             # if level == 'mc':
                             #     roo_ws.Print()
-                            self.roo_ws[level][ipt] = roo_ws
-                            self.roows[ipt] = roo_ws
+                            self.roows[(ibin2, ipt)] = roo_ws.Clone()
+                            self.roo_ws[(level, ibin2, ipt)] = roo_ws.Clone()
                             if roo_res.status() == 0:
                                 if level in ("data", "mc_sig"):
                                     self.fit_mean[level][ipt] = roo_ws.var(self.p_param_names["gauss_mean"]).getValV()
