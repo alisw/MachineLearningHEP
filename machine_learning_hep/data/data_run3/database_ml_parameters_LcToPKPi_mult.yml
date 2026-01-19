@@ -266,7 +266,8 @@ LcpKpi:
       maxfiles: [-1] #list of periods
       chunksizeunp: [100] #list of periods
       chunksizeskim: [100] #list of periods
-      fracmerge: [0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05] #list of periods
+      # fracmerge: [0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05]
+      fracmerge: [0.05] #list of periods
       seedmerge: [12] #list of periods
       period: [LHC23] #list of periods
       select_period: [1]
@@ -284,7 +285,8 @@ LcpKpi:
       maxfiles: [-1] #list of periods
       chunksizeunp: [100] #list of periods
       chunksizeskim: [100] #list of periods
-      fracmerge: [1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0] #list of periods
+      # fracmerge: [1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0]
+      fracmerge: [1.0] #list of periods
       seedmerge: [1] #list of periods
       period: [LHC24h1] #list of periods
       select_period: [1]

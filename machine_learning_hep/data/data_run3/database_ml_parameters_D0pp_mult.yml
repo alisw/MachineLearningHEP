@@ -189,8 +189,8 @@ D0ml_pp:
       maxfiles: [-1] #list of periods
       chunksizeunp: [100] #list of periods
       chunksizeskim: [100] #list of periods
-      fracmerge: [0.10, 0.03, 0.05, 0.1, 0.2, 0.3, 0.4, 0.6, 0.6, 0.8, 1.0, 1.0] #list of periods
-      #fracmerge: [0.05, 0.10, 0.40, 0.80, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0] #list of periods
+      #fracmerge: [0.10, 0.03, 0.05, 0.1, 0.2, 0.3, 0.4, 0.6, 0.6, 0.8, 1.0, 1.0]
+      fracmerge: [0.1] #list of periods
       seedmerge: [12] #list of periods
       period: [LHC22o] #list of periods
       select_period: [1]
@@ -208,7 +208,8 @@ D0ml_pp:
       maxfiles: [-1] #list of periods
       chunksizeunp: [100] #list of periods
       chunksizeskim: [1000] #list of periods
-      fracmerge: [1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0] #list of periods
+      #fracmerge: [1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0]
+      fracmerge: [1.0] #list of periods
       seedmerge: [12] #list of periods
       period: [LHC24b1b] #list of periods
       select_period: [1]

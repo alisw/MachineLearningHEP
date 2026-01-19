@@ -174,7 +174,8 @@ BPlus_ml:
       maxfiles: [-1] #list of periods
       chunksizeunp: [100] #list of periods
       chunksizeskim: [100] #list of periods
-      fracmerge: [1.0, 1.0, 1.0, 1.0] #list of periods
+      # fracmerge: [1.0, 1.0, 1.0, 1.0]
+      fracmerge: [1.0] #list of periods
       seedmerge: [12] #list of periods
       period: [LHC24ao] #list of periods
       select_period: [1]
@@ -192,7 +193,8 @@ BPlus_ml:
       maxfiles: [-1] #list of periods
       chunksizeunp: [100] #list of periods
       chunksizeskim: [100] #list of periods
-      fracmerge: [1.0, 1.0, 1.0, 1.0] #list of periods
+      # fracmerge: [1.0, 1.0, 1.0, 1.0]
+      fracmerge: [1.0] #list of periods
       seedmerge: [12] #list of periods
       period: [LHC24i4] #list of periods
       select_period: [1]
