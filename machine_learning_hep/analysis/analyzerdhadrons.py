@@ -183,7 +183,7 @@ class AnalyzerDhadrons(Analyzer):  # pylint: disable=invalid-name
         if level == "data":
             mean_sgn = ws.var(self.p_param_names["gauss_mean"])
             sigma_sgn = ws.var(self.p_param_names["gauss_sigma"])
-            (sig, sig_err, bkg, bkg_err, signif, signif_err, s_over_b, s_over_b_err) = calc_signif(
+            (sig, sig_err, _, _, bkg, bkg_err, signif, signif_err, s_over_b, s_over_b_err) = calc_signif(
                 ws, res, pdfnames, param_names, mean_sgn, sigma_sgn
             )
 
@@ -372,7 +372,7 @@ class AnalyzerDhadrons(Analyzer):  # pylint: disable=invalid-name
                         if level == "data":
                             mean_sgn = roo_ws.var(self.p_param_names["gauss_mean"])
                             sigma_sgn = roo_ws.var(self.p_param_names["gauss_sigma"])
-                            (sig, sig_err, _, _, signif, signif_err, s_over_b, s_over_b_err) = calc_signif(
+                            (sig, sig_err, _, _, _, _, signif, signif_err, s_over_b, s_over_b_err) = calc_signif(
                                 roo_ws, roo_res, self.p_pdfnames, self.p_param_names, mean_sgn, sigma_sgn
                             )
 

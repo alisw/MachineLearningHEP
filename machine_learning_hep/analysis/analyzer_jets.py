@@ -401,7 +401,7 @@ class AnalyzerJets(Analyzer):
         if level == "data":
             mean_sgn = ws.var(self.p_param_names["gauss_mean"])
             sigma_sgn = ws.var(self.p_param_names["gauss_sigma"])
-            (sig, sig_err, bkg, bkg_err, signif, signif_err, s_over_b, s_over_b_err) = calc_signif(
+            (sig, sig_err, _, _, bkg, bkg_err, signif, signif_err, s_over_b, s_over_b_err) = calc_signif(
                 ws, res, pdfnames, param_names, mean_sgn, sigma_sgn
             )
             add_text_info_perf(textInfoLeft, sig, sig_err, bkg, bkg_err, s_over_b, s_over_b_err, signif, signif_err)

@@ -121,7 +121,24 @@ class RooFitter:
             # c.Update()
 
         if level == "data" and USE_EXTMODEL and frame is not None:
-            residuals = frame.residHist("data", "pdf_bkg")
+            tmp_frame = m.frame()
+            dh.plotOn(tmp_frame, ROOT.RooFit.Name("data"))
+
+            if (ws.pdf("refl") and ws.pdf("corr")):
+                model.plotOn(
+                    tmp_frame,
+                    ROOT.RooFit.Components("bkg,refl,corr"),
+                    ROOT.RooFit.Name("bkg_total")
+                )
+            else:
+                model.plotOn(
+                    tmp_frame,
+                    ROOT.RooFit.Components("bkg"),
+                    ROOT.RooFit.Name("bkg_total")
+                )
+
+            residuals = tmp_frame.residHist("data", "bkg_total")
+
             residual_frame = m.frame()
             residual_frame.addPlotable(residuals, "P")
 
@@ -176,6 +193,8 @@ def calc_signif(roows, res, pdfnames, param_names, mean_sgn, sigma_sgn):
     if not USE_EXTMODEL:
         return (0., 0., 0., 0., 0., 0, 0, 0.)
     f_sig = roows.pdf(pdfnames["pdf_sig"])
+
+    # total signal under the fit function
     n_signal = res.floatParsFinal().find("n_signal").getVal()
     sigma_n_signal = res.floatParsFinal().find("n_signal").getError()
 
@@ -197,6 +216,7 @@ def calc_signif(roows, res, pdfnames, param_names, mean_sgn, sigma_sgn):
     signal_integral = f_sig.createIntegral(massvar_set, norm_set, signal_range)
     bkg_integral = f_bkg.createIntegral(massvar_set, norm_set, signal_range)
 
+    # signal under the fit function in 3sigma
     n_signal_signal = signal_integral.getVal() * n_signal
     n_bkg_signal = bkg_integral.getVal() * n_bkg
 
@@ -224,6 +244,8 @@ def calc_signif(roows, res, pdfnames, param_names, mean_sgn, sigma_sgn):
     )
 
     return (
+        n_signal,
+        sigma_n_signal,
         n_signal_signal,
         sigma_n_signal_signal,
         n_bkg_signal,

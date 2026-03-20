@@ -211,7 +211,7 @@ class AnalyzerDhadrons_mult(Analyzer):  # pylint: disable=invalid-name
         if level == "data":
             mean_sgn = ws.var(self.p_param_names["gauss_mean"])
             sigma_sgn = ws.var(self.p_param_names["gauss_sigma"])
-            (sig, sig_err, bkg, bkg_err, signif, signif_err, s_over_b, s_over_b_err) = calc_signif(
+            (sig, sig_err, _, _, bkg, bkg_err, signif, signif_err, s_over_b, s_over_b_err) = calc_signif(
                 ws, res, pdfnames, param_names, mean_sgn, sigma_sgn
             )
 
@@ -344,7 +344,9 @@ class AnalyzerDhadrons_mult(Analyzer):  # pylint: disable=invalid-name
                             )
                         h_invmass = rfile.Get("hmass_" + suffix)
                         # Rebin
-                        h_invmass.Rebin(self.p_rebin[ipt])
+                        #rebin = self.p_rebin[ibin2][ipt]
+                        rebin = self.p_rebin[ipt]
+                        h_invmass.Rebin(rebin)
                         if h_invmass.GetEntries() < 100:  # TODO: reconsider criterion
                             self.logger.error(
                                 "Not enough entries to fit for %s, pt bin %d, mult bin %d", level, ipt, ibin2
@@ -427,7 +429,7 @@ class AnalyzerDhadrons_mult(Analyzer):  # pylint: disable=invalid-name
                             if level == "data":
                                 mean_sgn = roo_ws.var(self.p_param_names["gauss_mean"])
                                 sigma_sgn = roo_ws.var(self.p_param_names["gauss_sigma"])
-                                (sig, sig_err, _, _, signif, signif_err, s_over_b, s_over_b_err) = calc_signif(
+                                (sig, sig_err, _, _, _, _, signif, signif_err, s_over_b, s_over_b_err) = calc_signif(
                                     roo_ws, roo_res, self.p_pdfnames, self.p_param_names, mean_sgn, sigma_sgn
                                 )
 
@@ -575,7 +577,7 @@ class AnalyzerDhadrons_mult(Analyzer):  # pylint: disable=invalid-name
                 h_sel_fd_sl.SetName("signal_loss_fd_mult%d" % imult)
                 h_sel_fd_sl.Write()
 
-                legslFD.AddEntry(h_sel_fd_sl, legeffstring, "LEP")
+                legslFD.AddEntry(h_sel_fd_sl, legeffFDstring, "LEP")
                 h_sel_fd_sl.GetXaxis().SetTitle("#it{p}_{T} (GeV/#it{c})")
                 h_sel_fd_sl.GetYaxis().SetTitle("Signal loss (feeddown) %s" % (self.p_latexnhadron))
                 h_sel_fd_sl.SetMinimum(0.7)
