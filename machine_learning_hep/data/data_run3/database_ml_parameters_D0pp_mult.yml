@@ -100,7 +100,8 @@ D0ml_pp:
     merge:
       - {base: reco, ref: evtorig}
       - {base: gen, ref: evtoriggen}
-      - {base: gen, ref: evtorig, left_on: fIndexArrayHFD0COLLBASES, out: genrec,}
+      - {base: gen, ref: evtorig, left_on: fIndexArrayHFD0COLLBASES, out: genrec}
+    # workaround for yamlfmt issue #110
 
     write:
       evtorig:
@@ -194,7 +195,6 @@ D0ml_pp:
       seedmerge: [12] #list of periods
       period: [LHC22o] #list of periods
       select_period: [1]
-      # prefix_dir: /data2/MLhep/real/train_235436/
       prefix_dir: /data2/MLhep/trains/
       unmerged_tree_dir: [489217/alice/] #list of periods
       pkl: ['${USER}/train_489217/D0ml/pkl'] #list of periods
@@ -211,14 +211,13 @@ D0ml_pp:
       #fracmerge: [1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0]
       fracmerge: [1.0] #list of periods
       seedmerge: [12] #list of periods
-      period: [LHC24b1b] #list of periods
+      period: [LHC24b1c] #list of periods
       select_period: [1]
-      # prefix_dir: /data2/MLhep/sim/train_235437/
       prefix_dir: /data2/MLhep/trains/
-      unmerged_tree_dir: [508674/alice/]
-      pkl: ['${USER}/train_508674/D0ml/pkl'] #list of periods
-      pkl_skimmed: ['${USER}/train_508674/D0ml/pklsk'] #list of periods
-      pkl_skimmed_merge_for_ml: ['${USER}/train_508674/D0ml/pklskml'] #list of periods
+      unmerged_tree_dir: [610453/alice/]
+      pkl: ['${USER}/train_610453/D0ml/pkl'] #list of periods
+      pkl_skimmed: ['${USER}/train_610453/D0ml/pklsk'] #list of periods
+      pkl_skimmed_merge_for_ml: ['${USER}/train_610453/D0ml/pklskml'] #list of periods
       pkl_skimmed_merge_for_ml_all: '${USER}/pass6/D0ml/pp_mc_prod_mltot'
       pkl_evtcounter_all: '${USER}/pass6/D0ml/pp_mc_prod_evttot'
       mcreweights: [../Analyses] #list of periods
@@ -274,8 +273,8 @@ D0ml_pp:
       pkl_skimmed_decmerged: [LHC22pp/MLapplication/prod_LHC22o/skpkldecdatamerged] #list of periods
     mc:
       prefix_dir_app: /data2/ldellost/MLHEP_d0/
-      pkl_skimmed_dec: [LHC22pp_mc/MLapplication/LHC24d3a/skpkldecmc] #list of periods
-      pkl_skimmed_decmerged: [LHC22pp_mc/MLapplication/LHC24d3a/skpkldecmcmerged] #list of periods
+      pkl_skimmed_dec: [LHC22pp_mc/MLapplication/LHC24h1c/skpkldecmc] #list of periods
+      pkl_skimmed_decmerged: [LHC22pp_mc/MLapplication/LHC24h1c/skpkldecmcmerged] #list of periods
     modelname: xgboost
     modelsperptbin: [xgboost_classifierD0ml_pp_dfselection_fPt_0.0_1.0.sav, xgboost_classifierD0ml_pp_dfselection_fPt_1.0_2.0.sav, xgboost_classifierD0ml_pp_dfselection_fPt_2.0_3.0.sav, xgboost_classifierD0ml_pp_dfselection_fPt_3.0_4.0.sav, xgboost_classifierD0ml_pp_dfselection_fPt_4.0_5.0.sav, xgboost_classifierD0ml_pp_dfselection_fPt_5.0_6.0.sav, xgboost_classifierD0ml_pp_dfselection_fPt_6.0_7.0.sav, xgboost_classifierD0ml_pp_dfselection_fPt_7.0_8.0.sav, xgboost_classifierD0ml_pp_dfselection_fPt_8.0_10.0.sav, xgboost_classifierD0ml_pp_dfselection_fPt_10.0_12.0.sav, xgboost_classifierD0ml_pp_dfselection_fPt_12.0_16.0.sav, xgboost_classifierD0ml_pp_dfselection_fPt_16.0_24.0.sav] # sel_skim_binmin bins
     probcutpresel:
@@ -324,29 +323,29 @@ D0ml_pp:
           label_y: "D^{0} Cross section"
 
       event_weighting_mc:
-        LHC24h1:
-          - filepath: data/event_weighting_mc/MultWeigths.root
+        LHC24b1c:
+          - filepath: data/event_weighting_mc/D0weights/MultWeigths.root
             histo_name: MultWeigths_0_1
             according_to: fMultZeqNTracksPV
-          - filepath: data/event_weighting_mc/MultWeigths.root
+          - filepath: data/event_weighting_mc/D0weights/MultWeigths.root
             histo_name: MultWeigths_85_100
             according_to: fMultZeqNTracksPV
-          - filepath: data/event_weighting_mc/MultWeigths.root
+          - filepath: data/event_weighting_mc/D0weights/MultWeigths.root
             histo_name: MultWeigths_70_85
             according_to: fMultZeqNTracksPV
-          - filepath: data/event_weighting_mc/MultWeigths.root
+          - filepath: data/event_weighting_mc/D0weights/MultWeigths.root
             histo_name: MultWeigths_50_70
             according_to: fMultZeqNTracksPV
-          - filepath: data/event_weighting_mc/MultWeigths.root
+          - filepath: data/event_weighting_mc/D0weights/MultWeigths.root
             histo_name: MultWeigths_30_50
             according_to: fMultZeqNTracksPV
-          - filepath: data/event_weighting_mc/MultWeigths.root
+          - filepath: data/event_weighting_mc/D0weights/MultWeigths.root
             histo_name: MultWeigths_10_30
             according_to: fMultZeqNTracksPV
-          - filepath: data/event_weighting_mc/MultWeigths.root
+          - filepath: data/event_weighting_mc/D0weights/MultWeigths.root
             histo_name: MultWeigths_1_10
             according_to: fMultZeqNTracksPV
-          - filepath: data/event_weighting_mc/MultWeigths.root
+          - filepath: data/event_weighting_mc/D0weights/MultWeigths.root
             histo_name: MultWeigths_0_1
             according_to: fMultZeqNTracksPV
 
@@ -371,17 +370,26 @@ D0ml_pp:
       mc:
         runselection: [null] #FIXME
         prefix_dir_res: /data2/ldellost/D0analysis/
-        results: [LHC23pp_forw_mc/ResultsFit/prod_LHC24h1/resultsmc/default/default] #list of periods
+        results: [LHC23pp_forw_mc/ResultsFit/prod_LHC24h1c/resultsmc/default/default] #list of periods
         resultsallp: LHC23pp_forw_mc/ResultsFit/prod_LHC23/resultsmctot/default/default
 
       fitcase: D0
-      latexnamehadron: "D^{0}#arrow{K#pi}"
+      latexnamehadron: "D^{0}#rightarrow{K#pi}"
       latexbin2var: "FT0M"
       nevents: 290860860000
       dobkgfromsideband: false
       mass_fit_lim: [1.5, 2.22] # region for the fit of the invariant mass distribution [GeV/c^2]
       bin_width: 0.001 # bin width of the invariant mass histogram
-      n_rebin: [2, 3, 3, 3, 3, 4, 4, 4, 5, 6, 7, 8] # number of mass bins to merge
+      n_rebin: [3, 3, 3, 3, 3, 4, 4, 4, 5, 6, 7, 8] # number of mass bins to merge
+
+      #n_rebin: [[2, 3, 3, 3, 3, 4, 4, 4, 5, 6, 7, 8],
+      #          [4, 3, 3, 3, 3, 4, 4, 4, 5, 6, 7, 8],
+      #          [4, 3, 3, 3, 3, 4, 4, 4, 5, 6, 7, 8],
+      #          [4, 3, 3, 3, 3, 4, 4, 4, 5, 6, 7, 8],
+      #          [5, 3, 3, 3, 3, 4, 4, 4, 5, 6, 7, 8],
+      #          [2, 3, 3, 3, 3, 4, 4, 4, 5, 6, 7, 8],
+      #          [3, 3, 3, 3, 3, 4, 4, 4, 5, 6, 7, 8],
+      #          [5, 3, 3, 3, 3, 4, 4, 4, 5, 6, 7, 8]]
 
       data_selections:
         mcsig:

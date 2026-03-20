@@ -21,6 +21,7 @@ from ROOT import RooAddPdf, RooArgList, RooArgSet, RooFit, RooRealVar, TPaveText
 
 USE_EXTMODEL = True
 
+
 # pylint: disable=too-few-public-methods, too-many-statements
 # (temporary until we add more functionality)
 class RooFitter:
@@ -70,7 +71,7 @@ class RooFitter:
             m.setRange("fit", *range_m)
             # print(f'using fit range: {range_m}, var range: {m.getRange("fit")}')
             res = model.fitTo(dh, Range=(range_m[0], range_m[1]), Save=True, PrintLevel=-1, Strategy=1, MaxCalls=5000)
-            if level == 'data' and USE_EXTMODEL:
+            if level == "data" and USE_EXTMODEL:
                 for v in ws.allVars():
                     v.setConstant(True)
                 res = extmodel.fitTo(
@@ -78,7 +79,7 @@ class RooFitter:
                 )
         else:
             res = model.fitTo(dh, Save=True, PrintLevel=-1, Strategy=1, MaxCalls=5000)
-            if level == 'data' and USE_EXTMODEL:
+            if level == "data" and USE_EXTMODEL:
                 for v in ws.allVars():
                     v.setConstant(True)
                 res = extmodel.fitTo(dh, Save=True, PrintLevel=-1, Strategy=1, MaxCalls=5000)
@@ -124,18 +125,10 @@ class RooFitter:
             tmp_frame = m.frame()
             dh.plotOn(tmp_frame, ROOT.RooFit.Name("data"))
 
-            if (ws.pdf("refl") and ws.pdf("corr")):
-                model.plotOn(
-                    tmp_frame,
-                    ROOT.RooFit.Components("bkg,refl,corr"),
-                    ROOT.RooFit.Name("bkg_total")
-                )
+            if ws.pdf("refl") and ws.pdf("corr"):
+                model.plotOn(tmp_frame, ROOT.RooFit.Components("bkg,refl,corr"), ROOT.RooFit.Name("bkg_total"))
             else:
-                model.plotOn(
-                    tmp_frame,
-                    ROOT.RooFit.Components("bkg"),
-                    ROOT.RooFit.Name("bkg_total")
-                )
+                model.plotOn(tmp_frame, ROOT.RooFit.Components("bkg"), ROOT.RooFit.Name("bkg_total"))
 
             residuals = tmp_frame.residHist("data", "bkg_total")
 
@@ -191,7 +184,7 @@ class RooFitter:
 def calc_signif(roows, res, pdfnames, param_names, mean_sgn, sigma_sgn):
     """Calculate significance, signal, background, signal/background ratio."""
     if not USE_EXTMODEL:
-        return (0., 0., 0., 0., 0., 0, 0, 0.)
+        return (0.0, 0.0, 0.0, 0.0, 0.0, 0, 0, 0.0)
     f_sig = roows.pdf(pdfnames["pdf_sig"])
 
     # total signal under the fit function
