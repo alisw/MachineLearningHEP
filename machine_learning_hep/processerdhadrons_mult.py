@@ -99,10 +99,12 @@ class ProcesserDhadrons_mult(Processer):
         self.v_is_antipart = datap["bitmap_sel"].get("var_is_antipart", "")
         self.v_issel_part = datap["bitmap_sel"].get("var_issel_part", "")
         self.v_issel_antipart = datap["bitmap_sel"].get("var_issel_antipart", "")
+        self.v_is_corrbkg = datap["bitmap_sel"].get("var_is_corrbkg", "")
         self.v_invmass = datap["variables"].get("var_inv_mass", "fM")
         self.p_mass_fit_lim = datap["analysis"][self.typean]["mass_fit_lim"]
         self.p_bin_width = datap["analysis"][self.typean]["bin_width"]
         self.reflections = datap["analysis"][self.typean].get("reflections", False)
+        self.corr_bkg = datap["analysis"][self.typean].get("corr_bkg", False)
         self.binarray_pthf = np.asarray(self.cfg("sel_an_binmin", []) + self.cfg("sel_an_binmax", [])[-1:], "d")
         limits_mass = datap["analysis"][self.typean]["mass_fit_lim"]
         nbins_mass = int(round((limits_mass[1] - limits_mass[0]) / self.p_bin_width))
@@ -246,7 +248,13 @@ class ProcesserDhadrons_mult(Processer):
                 df_bin = seldf_singlevar_inclusive(
                     df, self.v_var2_binning, self.lvar2_binmin[ibin2], self.lvar2_binmax[ibin2]
                 )
-                fill_hist(h_invmass, df_bin[self.v_invmass])
+
+                if self.mcordata == "mc" and self.corr_bkg:
+                    df_bin_mc = df_bin[(df_bin[self.v_ismcsignal] == 1) | (df_bin[self.v_is_corrbkg] == 1)]
+                    fill_hist(h_invmass, df_bin_mc[self.v_invmass])
+                else:
+                    fill_hist(h_invmass, df_bin[self.v_invmass])
+
                 myfile.cd()
                 h_invmass.Write()
 
@@ -281,6 +289,18 @@ class ProcesserDhadrons_mult(Processer):
                         )
                         fill_hist(h_invmass_refl, df_bin_refl[self.v_invmass])
                         h_invmass_refl.Write()
+
+                    if self.corr_bkg:
+                        df_bin_corrbkg = df_bin[df_bin[self.v_is_corrbkg] == 1]
+                        h_invmass_corrbkg = TH1F(
+                            "hmass_mcbkgcorr_" + suffix,
+                            "",
+                            self.p_num_bins,
+                            self.p_mass_fit_lim[0],
+                            self.p_mass_fit_lim[1],
+                        )
+                        fill_hist(h_invmass_corrbkg, df_bin_corrbkg[self.v_invmass])
+                        h_invmass_corrbkg.Write()
 
         if self.event_cand_validation is True:
             label = "h%s" % self.v_var2_binning
@@ -506,6 +526,9 @@ class ProcesserDhadrons_mult(Processer):
 
         create_folder_struc(self.d_results, self.l_path)
         arguments = [(i,) for i in range(len(self.l_root))]
+        # tmp_merged = f"/data2/ldellost/hadd/{self.case}_{self.typean}/histoeff_{self.period}/{get_timestamp_string()}/"
+        # os.makedirs(tmp_merged, exist_ok=True)
+
         self.parallelizer(self.process_efficiency_single, arguments, self.p_chunksizeunp)
         tmp_merged = f"/data/tmp/hadd/{self.case}_{self.typean}/histoeff_{self.period}/{get_timestamp_string()}/"
         mergerootfiles(self.l_histoeff, self.n_fileeff, tmp_merged)
