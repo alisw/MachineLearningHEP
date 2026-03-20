@@ -344,7 +344,7 @@ class AnalyzerDhadrons_mult(Analyzer):  # pylint: disable=invalid-name
                             )
                         h_invmass = rfile.Get("hmass_" + suffix)
                         # Rebin
-                        #rebin = self.p_rebin[ibin2][ipt]
+                        # rebin = self.p_rebin[ibin2][ipt]
                         rebin = self.p_rebin[ipt]
                         h_invmass.Rebin(rebin)
                         if h_invmass.GetEntries() < 100:  # TODO: reconsider criterion
