@@ -114,7 +114,7 @@ def hf_pt_spectrum(
                 infile_pred.Get("hCovNonPromptNonPrompt"),
                 infile_pred.Get("hCovPromptNonPrompt"),
             ]
-        else:
+        elif frac_method in ("Nb", "fc"):
             histos["FONLL"] = {"prompt": {}, "nonprompt": {}}
             for pred in ("central", "min", "max"):
                 histos["FONLL"]["nonprompt"][pred] = infile_pred.Get(f"{fonll_hist_name[channel]}fromBpred_{pred}_corr")
@@ -185,7 +185,7 @@ def hf_pt_spectrum(
         rawy_unc = histos["rawyields"].GetBinError(i_pt + 1)
         eff_times_acc_prompt = histos["acceffp"].GetBinContent(i_pt + 1)
         eff_times_acc_nonprompt = histos["acceffnp"].GetBinContent(i_pt + 1)
-        if frac_method not in ("dd", "dd_N"):
+        if frac_method not in ("dd", "dd_N", "ext"):
             ptmin_fonll = histos["FONLL"]["nonprompt"]["central"].GetXaxis().FindBin(ptmin * 1.0001)
             ptmax_fonll = histos["FONLL"]["nonprompt"]["central"].GetXaxis().FindBin(ptmax * 0.9999)
             crosssec_nonprompt_fonll = [
