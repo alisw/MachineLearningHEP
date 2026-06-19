@@ -83,8 +83,10 @@ class ProcesserJets(Processer):
         self.s_evtsel = datap["analysis"][self.typean]["evtsel"]
 
         # bins: 2d array [[low, high], ...]
-        self.bins_skimming = np.array(list(zip(self.lpt_anbinmin, self.lpt_anbinmax)), "d")  # TODO: replace with cfg
-        self.bins_analysis = np.array(list(zip(self.lpt_finbinmin, self.lpt_finbinmax)), "d")
+        self.bins_skimming = np.array(
+            list(zip(self.lpt_anbinmin, self.lpt_anbinmax, strict=True)), "d"
+        )  # TODO: replace with cfg
+        self.bins_analysis = np.array(list(zip(self.lpt_finbinmin, self.lpt_finbinmax, strict=True)), "d")
 
         # skimming bins in overlap with the analysis range
         self.active_bins_skim = [
@@ -143,7 +145,7 @@ class ProcesserJets(Processer):
         for idx, row in df.iterrows():
             isSoftDropped = False
             nsd = 0
-            for zg, theta in zip(row["zg_array"], row["fTheta"]):
+            for zg, theta in zip(row["zg_array"], row["fTheta"], strict=True):
                 if zg >= self.cfg("zcut", 0.1):
                     if not isSoftDropped:
                         df.loc[idx, "zg"] = zg
@@ -178,7 +180,12 @@ class ProcesserJets(Processer):
                 df["zg"] = df["zg_array"].apply(lambda ar: next((zg for zg in ar if zg >= zcut), -0.1))
             if "rg" in observables:
                 df["rg"] = df[["zg_array", "fTheta"]].apply(
-                    (lambda ar: next((rg for (zg, rg) in zip(ar.zg_array, ar.fTheta) if zg >= zcut), -0.1)), axis=1
+                    (
+                        lambda ar: next(
+                            (rg for (zg, rg) in zip(ar.zg_array, ar.fTheta, strict=True) if zg >= zcut), -0.1
+                        )
+                    ),
+                    axis=1,
                 )
             if "nsd" in observables:
                 df["nsd"] = df["zg_array"].apply(lambda ar: len([zg for zg in ar if zg >= zcut]))
@@ -233,11 +240,11 @@ class ProcesserJets(Processer):
 
         with TFile.Open(self.l_histomass[index], "recreate") as _:
             dfevtorig = read_df(self.l_evtorig[index])
-            histonorm = TH1F("histonorm", "histonorm", 4, 0, 4)
+            histonorm = TH1F("histonorm", "histonorm", 6, 0, 6)
             histonorm.SetBinContent(1, len(dfquery(dfevtorig, self.s_evtsel)))
             if self.l_collcnt:
                 dfcollcnt = read_df(self.l_collcnt[index])
-                ser_collcnt = dfcollcnt[self.cfg(f"counter_read_{self.mcordata}")]
+                ser_collcnt = dfcollcnt[self.cfg(f"counter_read_{self.datatype}")]
                 collcnt_read = functools.reduce(lambda x, y: float(x) + float(y), (ar[0] for ar in ser_collcnt))
                 self.logger.info("sampled %g collisions", collcnt_read)
                 histonorm.SetBinContent(2, collcnt_read)
@@ -249,19 +256,32 @@ class ProcesserJets(Processer):
                 ser_bccnt = dfbccnt[self.cfg("counter_tvx")]
                 bccnt_tvx = functools.reduce(lambda x, y: float(x) + float(y), (ar[0] for ar in ser_bccnt))
                 histonorm.SetBinContent(4, bccnt_tvx)
+            if self.l_wgt:
+                self.logger.info("Filling event weights")
+                dfwgt = read_df(self.l_wgt[index])
+                histonorm.SetBinContent(5, len(dfwgt["fEventWeight"]))
+                histonorm.SetBinContent(6, dfwgt["fEventWeight"].sum())
+            elif self.datatype == "fd":
+                self.logger.warning("No event weights found, empty list: %s", self.l_wgt)
             get_axis(histonorm, 0).SetBinLabel(1, "N_{evt}")
             get_axis(histonorm, 0).SetBinLabel(2, "N_{coll}")
             get_axis(histonorm, 0).SetBinLabel(3, "N_{coll}^{TVX}")
             get_axis(histonorm, 0).SetBinLabel(4, "N_{BC}^{TVX}")
+            get_axis(histonorm, 0).SetBinLabel(5, "N_{POWHEG}")
+            get_axis(histonorm, 0).SetBinLabel(6, "sum_xs_{POWHEG}")
             histonorm.Write()
 
-            df = pd.concat(read_df(self.mptfiles_recosk[bin][index]) for bin in self.active_bins_skim)
+            if self.datatype != "fd":
+                df = pd.concat(read_df(self.mptfiles_recosk[bin][index]) for bin in self.active_bins_skim)
+            else:
+                df = pd.concat(read_df(self.mptfiles_gensk[bin][index]) for bin in self.active_bins_skim)
             # remove entries outside of kinematic range (should be taken care of by projections in analyzer)
             df = df.loc[(df.fJetPt >= min(self.binarray_ptjet)) & (df.fJetPt < max(self.binarray_ptjet))]
             df = df.loc[(df.fPt >= min(self.bins_analysis[:, 0])) & (df.fPt < max(self.bins_analysis[:, 1]))]
 
             # Custom skimming cuts
-            df = self.apply_cuts_all_ptbins(df)
+            if self.datatype != "fd":
+                df = self.apply_cuts_all_ptbins(df)
 
             if col_evtidx := self.cfg("cand_collidx"):
                 h = create_hist("h_ncand", ";N_{cand}", 20, 0.0, 20.0)
@@ -277,7 +297,7 @@ class ProcesserJets(Processer):
             fill_hist(h, df[["fM", "fJetPt", "fPt"]], write=True)
 
             for sel_name, sel_spec in self.cfg("data_selections", {}).items():
-                if sel_spec["level"] == self.mcordata:
+                if sel_spec["level"] == self.datatype:
                     df_sel = dfquery(df, sel_spec["query"])
                     h = create_hist(
                         f"h_mass-ptjet-pthf_{sel_name}",
@@ -288,7 +308,7 @@ class ProcesserJets(Processer):
                     )
                     fill_hist(h, df_sel[["fM", "fJetPt", "fPt"]], write=True)
 
-            if self.mcordata == "mc":
+            if self.datatype == "mc":
                 df, _ = self.split_df(df, self.cfg("frac_mcana", 0.2))
                 if len(df) == 0:
                     return
@@ -433,8 +453,8 @@ class ProcesserJets(Processer):
                     "fNSub2",
                     "fJetNConstituents",
                     "fEnergyMother",
-                    "fPairTheta",
-                    "fPairPt",
+                    # "fPairTheta",
+                    # "fPairPt",
                 ]
             )
             cols = None

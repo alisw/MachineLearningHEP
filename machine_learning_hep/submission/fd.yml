@@ -6,20 +6,28 @@ download:
 conversion: # pkl
   mc:
     activate: false
+  fd:
+    activate: true
   data:
     activate: false
 skimming: # pkl_skimmed (pklsk), pkl_evtcounter_all
   mc:
     activate: false
+  fd:
+    activate: true
   data:
     activate: false
 merging: # pkl_skimmed_merge_for_ml (pklskml)
   mc:
     activate: false
+  fd:
+    activate: false
   data:
     activate: false
 mergingperiods: # pkl_skimmed_merge_for_ml_all
   mc:
+    activate: false
+  fd:
     activate: false
   data:
     activate: false
@@ -60,12 +68,12 @@ analysis:
   # Do only merged (false)
   doperperiod: false
   data:
-    histomass: true # processer: process_histomass
-  mc:
-    histomass: true # processer: process_histomass
-    efficiency: true # processer: process_efficiency
+    histomass: false # processer: process_histomass
   fd:
-    histomass: true
+    histomass: false
+  mc:
+    histomass: false # processer: process_histomass
+    efficiency: false # processer: process_efficiency
   steps:
 
 systematics:
