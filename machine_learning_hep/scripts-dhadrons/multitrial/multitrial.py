@@ -9,10 +9,10 @@ import argparse
 import glob
 import json
 import re
-import numpy as np
-import matplotlib.pyplot as plt
-from matplotlib.ticker import MultipleLocator, AutoMinorLocator
 
+import matplotlib.pyplot as plt  # pylint: disable=import-error
+import numpy as np
+from matplotlib.ticker import AutoMinorLocator, MultipleLocator  # pylint: disable=import-error
 from ROOT import (  # pylint: disable=import-error,no-name-in-module
     TFile,
     gROOT,
@@ -33,7 +33,7 @@ def get_yields(cfg):
     yields_err = {}
     trials = {}
     chis = {}
-    for pt_bin_min, pt_bin_max in zip(cfg["pt_bins_min"], cfg["pt_bins_max"]):
+    for pt_bin_min, pt_bin_max in zip(cfg["pt_bins_min"], cfg["pt_bins_max"], strict=False):
         yields[f"{pt_bin_min}_{pt_bin_max}"] = []
         yields_err[f"{pt_bin_min}_{pt_bin_max}"] = []
         trials[f"{pt_bin_min}_{pt_bin_max}"] = []
@@ -50,7 +50,7 @@ def get_yields(cfg):
             dirname = re.split("/", filename)[4] # [-2] for D2H fitter
             trial_name = dirname.replace(cfg["dir_pattern"], "")
             for ind, (pt_bin_min, pt_bin_max) in enumerate(zip(cfg["pt_bins_min"],
-                                                               cfg["pt_bins_max"])):
+                                                               cfg["pt_bins_max"], strict=False)):
                 if eval(cfg["selection"])(hist_sel.GetBinContent(ind + 1)) \
                         and hist.GetBinContent(ind + 1) > 1.0 : # pylint: disable=eval-used
                     yields[f"{pt_bin_min}_{pt_bin_max}"].append(hist.GetBinContent(ind + 1))
@@ -110,7 +110,7 @@ def plot_yields_trials(yields, yields_err, trials, cfg, pt_string, plot_pt_strin
     plot_trial_line(ax, central_trial_ind)
     plot_text_box(ax, plot_pt_string)
     fig.savefig(f'{cfg["outdir"]}/{cfg["outfile"]}_yields_trials_{pt_string}.png',
-                bbox_inches='tight')
+                bbox_inches="tight")
     plt.close()
 
 
@@ -121,7 +121,7 @@ def plot_chis(chis, cfg, pt_string, plot_pt_string):
     set_ax_limits(ax, pt_string, chis)
     plot_text_box(ax, plot_pt_string)
     fig.savefig(f'{cfg["outdir"]}/{cfg["outfile"]}_chis_{pt_string}.png',
-                bbox_inches='tight')
+                bbox_inches="tight")
     plt.close()
 
 
@@ -145,7 +145,7 @@ def plot_yields_distr(yields, cfg, pt_string, plot_pt_string, central_trial_ind,
                       f"std dev: {std_dev:.2f}\n"\
                       f"RMSE:    {rmse:.2f}\n"\
                       f"#trials: {len(yields)}")
-    plt.savefig(f'{cfg["outdir"]}/{cfg["outfile"]}_distr_{pt_string}.png', bbox_inches='tight')
+    plt.savefig(f'{cfg["outdir"]}/{cfg["outfile"]}_distr_{pt_string}.png', bbox_inches="tight")
     plt.close()
 
 
@@ -161,7 +161,7 @@ def main():
 
         yields, yields_err, trials, chis = get_yields(cfg)
 
-        for pt_bin_min, pt_bin_max in zip(cfg["pt_bins_min"], cfg["pt_bins_max"]):
+        for pt_bin_min, pt_bin_max in zip(cfg["pt_bins_min"], cfg["pt_bins_max"], strict=False):
             plot_pt_string = f"${pt_bin_min} < p_\\mathrm{{T}}/(\\mathrm{{GeV}}/c) < {pt_bin_max}$"
             pt_string = f"{pt_bin_min}_{pt_bin_max}"
 

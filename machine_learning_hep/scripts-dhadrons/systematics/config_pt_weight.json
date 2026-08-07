@@ -1,0 +1,26 @@
+{
+  "inputdir": "/data8/majak/systematics/032025/pt-weight",
+  "histoname": "hptspectrum",
+  "default": "Default",
+  "hists": {
+    "Weighted #it{p}_{T}": {
+      "file": [
+        "finalcrossLcpKpiRun3analysis_ptshape.root"
+      ]
+    },
+    "Default": {
+      "file": [
+        "finalcrossLcpKpiRun3analysis.root"
+      ]
+    }
+  },
+  "bin_min": [1,2,3,4,5,6,7,8,10,12,16],
+  "bin_max": [2,3,4,5,6,7,8,10,12,16,24],
+  "y_axis": "#Lambda_{c} cross section (pb)",
+  "legend": [0.50, 0.18, 0.90, 0.38],
+  "legend_ratio": [0.50, 0.70, 0.90, 0.90],
+  "output": {
+    "outdir": "/data8/majak/systematics/032025/pt-weight",
+    "file": "crosssec_pt_weight_1-24"
+  }
+}

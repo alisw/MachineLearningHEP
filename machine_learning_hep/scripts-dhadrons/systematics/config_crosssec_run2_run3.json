@@ -1,0 +1,45 @@
+{
+  "inputdir": "/data8/majak/crosssec/032025",
+  "histoname": "hptspectrum",
+  "default": "#sqrt{#it{s}} = 13 TeV",
+  "hists": {
+    "#sqrt{#it{s}} = 13 TeV": {
+      "file": [
+        "LcpKpi_generated_Run2.root"
+      ],
+      "systematics": [
+        "LcpKpi_generated_Run2.root",
+        "graph_syst"
+      ]
+    },
+    "#sqrt{#it{s}} = 13.6 TeV": {
+      "file": [
+        "finalcrossLcpKpiRun3analysis_0-1_scaled_6.root"
+      ],
+      "systematics": [
+        [0.0],
+        [0.19],
+        [0.16],
+        [0.16],
+        [0.16],
+        [0.16],
+        [0.16],
+        [0.16],
+        [0.16],
+        [0.16],
+        [0.16],
+        [0.24]
+      ]
+    }
+  },
+  "y_axis": "d^{2}#it{#sigma}/(d#it{y}d#it{p}_{T}) (#mub GeV^{-1}#it{c})",
+  "alice_text": "pp, |#kern[0.06]{#it{y}| < 0.5}",
+  "_alice_text": "#splitline{#Lambda_{c}^{#plus} (and charge conj.)}{|#it{y}| < 0.5}",
+  "legend": [0.52, 0.50, 0.89, 0.77],
+  "legend_ratio": [0.40, 0.60, 0.90, 0.90],
+  "log_scale": true,
+  "output": {
+    "outdir": "/data8/majak/crosssec/032025",
+    "file": "crosssec_Lc_run2_run3_review"
+  }
+}
